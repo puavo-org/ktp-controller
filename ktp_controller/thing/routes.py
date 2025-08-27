@@ -4,7 +4,7 @@ import typing
 
 # Third-party imports
 import fastapi  # type: ignore
-import pydantic.types
+import pydantic
 import sqlalchemy.orm
 
 # Internal imports
@@ -48,7 +48,7 @@ def _get_all_things(
     summary="Get a thing",
 )
 def _get_thing(
-    name: pydantic.types.StrictStr,
+    name: pydantic.StrictStr,
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ):
     """

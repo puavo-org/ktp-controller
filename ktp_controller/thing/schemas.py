@@ -2,7 +2,7 @@
 
 # Third-party imports
 import pydantic
-import pydantic.types
+
 
 __all__ = [
     "UpsertThingRequest",
@@ -11,10 +11,10 @@ __all__ = [
 
 
 class UpsertThingRequest(pydantic.BaseModel):
-    name: pydantic.types.StrictStr
-    size: pydantic.types.StrictInt
+    name: pydantic.StrictStr
+    size: pydantic.StrictInt
 
 
 class Thing(pydantic.BaseModel):
-    name: pydantic.types.StrictStr
-    size: pydantic.types.StrictInt
+    name: pydantic.StrictStr
+    size: pydantic.StrictInt
