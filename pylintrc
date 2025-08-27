@@ -1,0 +1,8 @@
+[MASTER]
+disable=global-statement,
+        missing-class-docstring,
+        missing-module-docstring,
+        missing-function-docstring,
+        too-few-public-methods,
+ignore-patterns=^\.#,
+                ^flycheck_

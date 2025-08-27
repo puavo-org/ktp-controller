@@ -15,7 +15,8 @@ uvicorn = {extras = ["standard"], version = "^0.35.0"}
 alembic = "^1.16.4"
 
 [tool.poetry.group.dev.dependencies]
-#pytest = "*"
+pytest = "*"
+pylint = "*"
 #black = "*"
 #isort = "*"
 
