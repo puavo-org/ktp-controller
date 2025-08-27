@@ -17,6 +17,7 @@ alembic = "^1.16.4"
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
 pylint = "*"
+httpx = "*"
 #black = "*"
 #isort = "*"
 
