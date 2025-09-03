@@ -2,9 +2,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    exam_o_matic_host: str
-    exam_o_matic_username: str
-    exam_o_matic_password_file: str
+    examomatic_host: str
+    examomatic_username: str
+    examomatic_password_file: str
     domain: str
     hostname: str
     id: str
