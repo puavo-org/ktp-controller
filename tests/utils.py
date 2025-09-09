@@ -5,9 +5,9 @@ import fastapi.testclient
 import pytest
 
 # Internal imports
-from ktp_controller.main import APP
-from ktp_controller.database import get_db
-from ktp_controller.models import Base, Thing
+from ktp_controller.api.main import APP
+from ktp_controller.api.database import get_db
+from ktp_controller.api.models import Base, Thing
 
 
 @pytest.fixture(scope="session")

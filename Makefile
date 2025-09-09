@@ -1,7 +1,7 @@
 .PHONY: all
-all: ktp_controller/ktp_controller.sqlite
+all: ktp_controller/api/ktp_controller.sqlite
 
-ktp_controller/ktp_controller.sqlite:
+ktp_controller/api/ktp_controller.sqlite:
 	poetry run alembic upgrade head
 
 .PHONY: check
@@ -13,8 +13,8 @@ test:
 	poetry run pytest -vv
 
 .PHONY: dev-run
-dev-run: ktp_controller/ktp_controller.sqlite
-	poetry run uvicorn ktp_controller.main:APP --reload
+dev-run: ktp_controller/api/ktp_controller.sqlite
+	poetry run uvicorn ktp_controller.api.main:APP --reload
 
 .PHONY: dev-install
 dev-install:
@@ -26,7 +26,7 @@ dev-update:
 
 .PHONY: dev-clean
 dev-clean:
-	rm -f ktp_controller/ktp_controller.sqlite
+	rm -f ktp_controller/api/ktp_controller.sqlite
 
 .PHONY: dev-migratedb
 dev-migratedb:

@@ -1,6 +1,6 @@
 # Internal imports
 from utils import client, testdb, db_engine
-from ktp_controller.models import Thing
+from ktp_controller.api.models import Thing
 
 
 # Each test function executes in a separate session, each session

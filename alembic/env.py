@@ -9,7 +9,7 @@ import sqlalchemy
 import sqlalchemy.pool
 
 # Internal imports
-from ktp_controller.models import Base
+from ktp_controller.api.models import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

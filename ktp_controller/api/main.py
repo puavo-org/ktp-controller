@@ -7,8 +7,8 @@ import os.path
 import fastapi  # type: ignore
 
 # Internal imports
-import ktp_controller.database
-import ktp_controller.thing.routes
+import ktp_controller.api.database
+import ktp_controller.api.thing.routes
 from ktp_controller.settings import SETTINGS
 
 logging.basicConfig(
@@ -27,7 +27,7 @@ async def _lifespan(app: fastapi.FastAPI):  # pylint: disable=unused-argument
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
     database_url = f"sqlite:///{os.path.join(base_dir, 'ktp_controller.sqlite')}"
-    ktp_controller.database.initialize(database_url)
+    ktp_controller.api.database.initialize(database_url)
 
     ## Alembic creates the database, this should not be needed. It's
     ## a critical error if the database does not exist when the app is
@@ -40,4 +40,4 @@ async def _lifespan(app: fastapi.FastAPI):  # pylint: disable=unused-argument
 
 
 APP = fastapi.FastAPI(lifespan=_lifespan)
-APP.include_router(ktp_controller.thing.routes.router, prefix="/api/v1/thing")
+APP.include_router(ktp_controller.api.thing.routes.router, prefix="/api/v1/thing")

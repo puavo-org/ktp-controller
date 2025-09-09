@@ -8,8 +8,8 @@ import pydantic
 import sqlalchemy.orm
 
 # Internal imports
-from ktp_controller.database import get_db
-from ktp_controller.models import Thing
+from ktp_controller.api.database import get_db
+from ktp_controller.api.models import Thing
 from . import schemas as thing_schemas
 
 
