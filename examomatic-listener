@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+
+# Standard library imports
+import base64
+import json
+import logging
+import signal
+import threading
+import time
+import typing
+import urllib
+import urllib.parse
+
+# Third-party imports
+import websocket
+
+# Internal imports
+import ktp_controller.utils
+from ktp_controller.settings import SETTINGS
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(levelname)s:%(asctime)s:%(name)s:%(funcName)s:%(lineno)d:%(message)s",
+    force=True,
+)
+
+
+_LOGGER = logging.getLogger("examomatic-listener")
+
+
+def open_websock_to_examomatic():
+    url = ktp_controller.utils.get_url(
+        SETTINGS.examomatic_host,
+        "/servers/ers_connection",
+        use_websocket=True,
+    )
+
+    params = urllib.parse.urlencode(
+        {
+            "domain": SETTINGS.domain,
+            "hostname": SETTINGS.hostname,
+            "id": SETTINGS.id,
+        }
+    )
+
+    url = f"{url}?{params}"
+
+    with open(
+        SETTINGS.examomatic_password_file, "r", encoding="ascii"
+    ) as password_file:
+        examomatic_password = password_file.readline().rstrip("\n")
+
+    credentials = f"{SETTINGS.examomatic_username}:{examomatic_password}"
+    creds_encoded = base64.b64encode(credentials.encode("ascii")).decode("ascii")
+    basic_auth = "Basic %s" % creds_encoded
+
+    websock = websocket.WebSocket()
+    _LOGGER.debug("connecting websocket to %r", url)
+    websock.connect(
+        url,
+        connection="Connection: Upgrade",
+        header={"Authorization": basic_auth},
+        timeout=30,
+    )
+    websock.settimeout(45)
+
+    return websock
+
+
+def validate_message_from_examomatic(message_from_examomatic):
+    if not isinstance(message_from_examomatic, dict):
+        raise ValueError("message is not a dict")
+
+    if not "type" in message_from_examomatic:
+        raise ValueError("message does not have 'type'")
+
+    if not isinstance(message_from_examomatic["type"], str):
+        raise ValueError("message type is not a string")
+
+    if not "id" in message_from_examomatic:
+        raise ValueError("message does not have 'id'")
+
+    if not isinstance(message_from_examomatic["id"], int):
+        raise ValueError("message id is not an integer")
+
+
+class ExamOMaticListener:
+    def __init__(self):
+        self.__websock_to_examomatic = None
+        self.__is_running = False
+
+    def __send_ping_to_examomatic(self):
+        self.__send_message_to_examomatic({"type": "ping"})
+
+    def __send_ack_to_examomatic(self, message):
+        self.__send_message_to_examomatic({"type": "ack", "id": message["id"]})
+
+    def __send_message_to_examomatic(self, message):
+        message_json = json.dumps(message)
+        _LOGGER.debug("sending %r to exam-o-matic", message_json)
+        self.__websock_to_examomatic.send(message_json)
+
+    def __handle_message_from_examomatic(self, message_json_from_examomatic):
+        _LOGGER.debug("received %r from exam-o-matic", message_json_from_examomatic)
+        message_from_examomatic = json.loads(message_json_from_examomatic)
+
+        try:
+            validate_message_from_examomatic(message_from_examomatic)
+        except ValueError as value_error:
+            _LOGGER.warning(
+                "received invalid message from exam-o-matic, ignoring it: %s",
+                value_error,
+            )
+
+        if message_from_examomatic["type"] == "pong":
+            return
+
+        self.__send_ack_to_examomatic(message_from_examomatic)
+
+        if message_from_examomatic["type"] == "change_keycode":
+            _LOGGER.info("received change_keycode message from exam-o-matic")
+            # self.exam_scheduler.request_keycode_change()
+            return
+
+        if message_from_examomatic["type"] == "refresh_exams":
+            _LOGGER.info("received refresh_exams message from exam-o-matic")
+            # self.exam_sync.trigger_sync_exams()
+            return
+
+        _LOGGER.warning(
+            "received unknown message %r from exam-o-matic, ignoring it",
+            message_from_examomatic["type"],
+        )
+
+    def quit(self):
+        self.__is_running = False
+
+    def run(self):
+        self.__is_running = True
+        while self.__is_running:
+            try:
+                _LOGGER.info("opening websocket connection to exam-o-matic")
+                try:
+                    self.__websock_to_examomatic = open_websock_to_examomatic()
+                finally:
+                    # Sync exams should be done always after opening a new connection,
+                    # even if that fails (because we need a plan B if websocket does
+                    # not work).
+                    # self.exam_sync.trigger_sync_exams()
+                    pass
+
+                _LOGGER.info("entering websocket message connection to exam-o-matic")
+                while self.__is_running:
+                    try:
+                        message_json = self.__websock_to_examomatic.recv()
+                    except websocket.WebSocketTimeoutException:
+                        self.__send_ping_to_examomatic()
+                    else:
+                        self.__handle_message_from_examomatic(message_json)
+                break
+            except:
+                _LOGGER.exception("websocket connection to exam-o-matic failed")
+            finally:
+                if self.__websock_to_examomatic:
+                    _LOGGER.info("closing websocket connection to exam-o-matic")
+                    self.__websock_to_examomatic.close()
+                    self.__websock_to_examomatic = None
+
+            siginfo = signal.sigtimedwait(signal.Signals, 60)
+            if siginfo:
+                signal.raise_signal(siginfo.si_signo)
+
+        _LOGGER.info("bye")
+
+
+def main():
+    examomatic_listener = ExamOMaticListener()
+    for quit_signal in [
+        signal.SIGINT,
+        signal.SIGTERM,
+        signal.SIGHUP,
+        signal.SIGUSR1,
+        signal.SIGUSR2,
+        signal.SIGALRM,
+        signal.SIGQUIT,
+    ]:
+        signal.signal(quit_signal, lambda s, e: examomatic_listener.quit())
+    examomatic_listener.run()
+
+
+if __name__ == "__main__":
+    main()
