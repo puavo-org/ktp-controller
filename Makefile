@@ -10,7 +10,7 @@ check:
 
 .PHONY: test
 test:
-	poetry run pytest -vv
+	poetry run pytest --doctest-modules -vv tests ktp_controller
 
 .PHONY: dev-run
 dev-run: ktp_controller/api/ktp_controller.sqlite
