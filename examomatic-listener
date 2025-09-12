@@ -166,25 +166,14 @@ class ExamOMaticListener:
                     self.__websock_to_examomatic.close()
                     self.__websock_to_examomatic = None
 
-            siginfo = signal.sigtimedwait(signal.Signals, 60)
-            if siginfo:
-                signal.raise_signal(siginfo.si_signo)
+            ktp_controller.utils.sigawaresleep(60)
 
         _LOGGER.info("bye")
 
 
 def main():
     examomatic_listener = ExamOMaticListener()
-    for quit_signal in [
-        signal.SIGINT,
-        signal.SIGTERM,
-        signal.SIGHUP,
-        signal.SIGUSR1,
-        signal.SIGUSR2,
-        signal.SIGALRM,
-        signal.SIGQUIT,
-    ]:
-        signal.signal(quit_signal, lambda s, e: examomatic_listener.quit())
+    ktp_controller.utils.common_term_signal(examomatic_listener.quit)
     examomatic_listener.run()
 
 

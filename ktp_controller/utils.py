@@ -1,3 +1,6 @@
+import signal
+
+
 def get_url(
     host: str,
     path: str,
@@ -25,3 +28,22 @@ def get_url(
         scheme = f"{scheme}s"
 
     return f"{scheme}://{host}/{path}"
+
+
+def sigawaresleep(seconds):
+    siginfo = signal.sigtimedwait(signal.Signals, seconds)
+    if siginfo:
+        signal.raise_signal(siginfo.si_signo)
+
+
+def common_term_signal(func):
+    for quit_signal in [
+        signal.SIGINT,
+        signal.SIGTERM,
+        signal.SIGHUP,
+        signal.SIGUSR1,
+        signal.SIGUSR2,
+        signal.SIGALRM,
+        signal.SIGQUIT,
+    ]:
+        signal.signal(quit_signal, lambda s, e: func())
