@@ -48,7 +48,7 @@ class ExamOMaticListener(ktp_controller.utils.Listener):
     def _validate_message(self, message):
         try:
             message = json.loads(message)
-        except Exception:
+        except Exception as e:
             raise ValueError("message is not JSON") from e
 
         if not isinstance(message, dict):
