@@ -75,11 +75,12 @@ def open_websock(
     params: typing.Optional[typing.Dict[str, str]] = None,
     header: typing.Optional[typing.Dict[str, str]] = None,
     timeout: int = 45,
+    use_tls: bool = True,
 ) -> websocket.WebSocket:
     if header is None:
         header = {}
 
-    url = get_url(host, path, use_websocket=True)
+    url = get_url(host, path, use_websocket=True, use_tls=use_tls)
 
     if params is not None:
         url = f"{url}?{urllib.parse.urlencode(params)}"
