@@ -4,9 +4,6 @@
 import json
 import logging
 
-# Third-party imports
-import websocket
-
 # Internal imports
 import ktp_controller.utils
 from ktp_controller.settings import SETTINGS
@@ -21,129 +18,76 @@ logging.basicConfig(
 _LOGGER = logging.getLogger("examomatic-listener")
 
 
-def open_websock_to_examomatic():
-    examomatic_password = ktp_controller.utils.readfirstline(
-        SETTINGS.examomatic_password_file, encoding="ascii"
-    )
-
-    return ktp_controller.utils.open_websock(
-        SETTINGS.examomatic_host,
-        "/servers/ers_connection",
-        params={
-            "domain": SETTINGS.domain,
-            "hostname": SETTINGS.hostname,
-            "id": SETTINGS.id,
-        },
-        header={
-            "Authorization": ktp_controller.utils.get_basic_auth(
-                SETTINGS.examomatic_username, examomatic_password
-            )
-        },
-    )
-
-
-def validate_message_from_examomatic(message_from_examomatic):
-    if not isinstance(message_from_examomatic, dict):
-        raise ValueError("message is not a dict")
-
-    if not "type" in message_from_examomatic:
-        raise ValueError("message does not have 'type'")
-
-    if not isinstance(message_from_examomatic["type"], str):
-        raise ValueError("message type is not a string")
-
-    if not "id" in message_from_examomatic:
-        raise ValueError("message does not have 'id'")
-
-    if not isinstance(message_from_examomatic["id"], int):
-        raise ValueError("message id is not an integer")
-
-
-class ExamOMaticListener:
-    def __init__(self):
-        self.__websock_to_examomatic = None
-        self.__is_running = False
-
-    def __send_ping_to_examomatic(self):
-        self.__send_message_to_examomatic({"type": "ping"})
-
-    def __send_ack_to_examomatic(self, message):
-        self.__send_message_to_examomatic({"type": "ack", "id": message["id"]})
-
-    def __send_message_to_examomatic(self, message):
-        message_json = json.dumps(message)
-        _LOGGER.debug("sending %r to exam-o-matic", message_json)
-        self.__websock_to_examomatic.send(message_json)
-
-    def __handle_message_from_examomatic(self, message_json_from_examomatic):
-        _LOGGER.debug("received %r from exam-o-matic", message_json_from_examomatic)
-        message_from_examomatic = json.loads(message_json_from_examomatic)
-
-        try:
-            validate_message_from_examomatic(message_from_examomatic)
-        except ValueError as value_error:
-            _LOGGER.warning(
-                "received invalid message from exam-o-matic, ignoring it: %s",
-                value_error,
-            )
-
-        if message_from_examomatic["type"] == "pong":
-            return
-
-        self.__send_ack_to_examomatic(message_from_examomatic)
-
-        if message_from_examomatic["type"] == "change_keycode":
-            _LOGGER.info("received change_keycode message from exam-o-matic")
-            # self.exam_scheduler.request_keycode_change()
-            return
-
-        if message_from_examomatic["type"] == "refresh_exams":
-            _LOGGER.info("received refresh_exams message from exam-o-matic")
-            # self.exam_sync.trigger_sync_exams()
-            return
-
-        _LOGGER.warning(
-            "received unknown message %r from exam-o-matic, ignoring it",
-            message_from_examomatic["type"],
+class ExamOMaticListener(ktp_controller.utils.Listener):
+    def _open_websock(self):
+        examomatic_password = ktp_controller.utils.readfirstline(
+            SETTINGS.examomatic_password_file, encoding="ascii"
         )
 
-    def quit(self):
-        self.__is_running = False
+        return ktp_controller.utils.open_websock(
+            SETTINGS.examomatic_host,
+            "/servers/ers_connection",
+            params={
+                "domain": SETTINGS.domain,
+                "hostname": SETTINGS.hostname,
+                "id": SETTINGS.id,
+            },
+            header={
+                "Authorization": ktp_controller.utils.get_basic_auth(
+                    SETTINGS.examomatic_username, examomatic_password
+                )
+            },
+        )
 
-    def run(self):
-        self.__is_running = True
-        while self.__is_running:
-            try:
-                _LOGGER.info("opening websocket connection to exam-o-matic")
-                try:
-                    self.__websock_to_examomatic = open_websock_to_examomatic()
-                finally:
-                    # Sync exams should be done always after opening a new connection,
-                    # even if that fails (because we need a plan B if websocket does
-                    # not work).
-                    # self.exam_sync.trigger_sync_exams()
-                    pass
+    def __send_ping(self):
+        self._send({"type": "ping"}, encoder=json.dumps)
 
-                _LOGGER.info("entering websocket message connection to exam-o-matic")
-                while self.__is_running:
-                    try:
-                        message_json = self.__websock_to_examomatic.recv()
-                    except websocket.WebSocketTimeoutException:
-                        self.__send_ping_to_examomatic()
-                    else:
-                        self.__handle_message_from_examomatic(message_json)
-                break
-            except:
-                _LOGGER.exception("websocket connection to exam-o-matic failed")
-            finally:
-                if self.__websock_to_examomatic:
-                    _LOGGER.info("closing websocket connection to exam-o-matic")
-                    self.__websock_to_examomatic.close()
-                    self.__websock_to_examomatic = None
+    def __send_ack(self, message):
+        self._send({"type": "ack", "id": message["id"]}, encoder=json.dumps)
 
-            ktp_controller.utils.sigawaresleep(60)
+    def _validate_message(self, message):
+        try:
+            message = json.loads(message)
+        except Exception:
+            raise ValueError("message is not JSON") from e
 
-        _LOGGER.info("bye")
+        if not isinstance(message, dict):
+            raise ValueError("message is not a dict")
+
+        if not "type" in message:
+            raise ValueError("message does not have 'type'")
+
+        if not isinstance(message["type"], str):
+            raise ValueError("message type is not a string")
+
+        if not "id" in message:
+            raise ValueError("message does not have 'id'")
+
+        if not isinstance(message["id"], int):
+            raise ValueError("message id is not an integer")
+
+        return message
+
+    def _handle_validated_message(self, message):
+        if message["type"] == "pong":
+            return True
+
+        self.__send_ack(message)
+
+        if message["type"] == "change_keycode":
+            _LOGGER.info("received change_keycode message from exam-o-matic")
+            # self.exam_scheduler.request_keycode_change()
+            return True
+
+        if message["type"] == "refresh_exams":
+            _LOGGER.info("received refresh_exams message from exam-o-matic")
+            # self.exam_sync.trigger_sync_exams()
+            return True
+
+        return False
+
+    def _on_recv_timeout(self):
+        self.__send_ping()
 
 
 def main():
