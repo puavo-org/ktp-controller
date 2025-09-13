@@ -74,7 +74,7 @@ def open_websock(
     *,
     params: typing.Optional[typing.Dict[str, str]] = None,
     header: typing.Optional[typing.Dict[str, str]] = None,
-    timeout: int = 45,
+    timeout: int = 5,
     use_tls: bool = True,
 ) -> websocket.WebSocket:
     if header is None:
