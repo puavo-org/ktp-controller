@@ -6,7 +6,7 @@ ktp_controller/api/ktp_controller.sqlite:
 
 .PHONY: check
 check:
-	poetry run pylint --verbose ktp_controller
+	poetry run pylint --verbose ktp_controller examomatic-listener abitti2-listener
 
 .PHONY: test
 test:
