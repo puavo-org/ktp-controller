@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # Standard library imports
+import datetime
 import json
 import logging
 
@@ -19,6 +20,11 @@ _LOGGER = logging.getLogger("examomatic-listener")
 
 
 class ExamOMaticListener(ktp_controller.utils.Listener):
+    def __init__(self, ping_interval_seconds: int = 30, **kwargs):
+        super().__init__(**kwargs)
+        self.__ping_interval_seconds = ping_interval_seconds
+        self.__utc_last_ping = datetime.datetime.min
+
     def _open_websock(self):
         examomatic_password = ktp_controller.utils.readfirstline(
             SETTINGS.examomatic_password_file, encoding="ascii"
@@ -87,7 +93,12 @@ class ExamOMaticListener(ktp_controller.utils.Listener):
         return False
 
     def _on_recv_timeout(self):
-        self.__send_ping()
+        utcnow = datetime.datetime.utcnow()
+        if (
+            utcnow - self.__utc_last_ping
+        ).total_seconds() > self.__ping_interval_seconds:
+            self.__utc_last_ping = utcnow
+            self.__send_ping()
 
 
 def main():
