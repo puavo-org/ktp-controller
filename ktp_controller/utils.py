@@ -1,4 +1,17 @@
+# Standard library imports
+import base64
+import logging
+import os
 import signal
+import sys
+import typing
+import urllib.parse
+
+# Third-party imports
+import websocket
+
+
+_LOGGER = logging.getLogger(__file__)
 
 
 def get_url(
@@ -47,3 +60,41 @@ def common_term_signal(func):
         signal.SIGQUIT,
     ]:
         signal.signal(quit_signal, lambda s, e: func())
+
+
+def get_basic_auth(username: str, password: str) -> str:
+    auth = base64.b64encode(f"{username}:{password}".encode("ascii")).decode("ascii")
+    return f"Basic {auth}"
+
+
+def open_websock(
+    host: str,
+    path: str,
+    *,
+    params: typing.Optional[typing.Dict[str, str]] = None,
+    header: typing.Optional[typing.Dict[str, str]] = None,
+    timeout: int = 45,
+) -> websocket.WebSocket:
+    if header is None:
+        header = {}
+
+    url = get_url(host, path, use_websocket=True)
+
+    if params is not None:
+        url = f"{url}?{urllib.parse.urlencode(params)}"
+
+    websock = websocket.WebSocket()
+    _LOGGER.debug("connecting websocket to %r", url)
+    websock.connect(
+        url,
+        connection="Connection: Upgrade",
+        header=header,
+        timeout=timeout,
+    )
+
+    return websock
+
+
+def readfirstline(filepath, encoding=sys.getdefaultencoding()):
+    with open(filepath, "r", encoding=encoding) as f:
+        return f.readline().rstrip(os.linesep)
