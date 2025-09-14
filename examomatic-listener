@@ -82,12 +82,12 @@ class ExamOMaticListener(ktp_controller.utils.Listener):
 
         if message["type"] == "change_keycode":
             _LOGGER.info("received change_keycode message from exam-o-matic")
-            # self.exam_scheduler.request_keycode_change()
+            ktp_controller.api.client.change_keycode()
             return True
 
         if message["type"] == "refresh_exams":
             _LOGGER.info("received refresh_exams message from exam-o-matic")
-            # self.exam_sync.trigger_sync_exams()
+            ktp_controller.api.client.sync_exams()
             return True
 
         return False
