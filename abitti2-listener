@@ -63,18 +63,7 @@ class Abitti2Listener(ktp_controller.utils.Listener):
             return True
 
         if message_type == "status":
-            abitti2_version = ktp_controller.abitti2.client.get_version()
-            message["singleSecurityCode"] = {
-                "keyCode": "1234",
-                "confirmationCode": "AA",
-            }
-            ktp_controller.api.client.update_abitti2_status(
-                {
-                    "monitoring_passphrase": "",
-                    "server_version": abitti2_version,
-                    "status": message,
-                }
-            )
+            ktp_controller.api.client.update_abitti2_status(message)
             return True
 
         return False
