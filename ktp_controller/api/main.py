@@ -8,6 +8,7 @@ import fastapi  # type: ignore
 
 # Internal imports
 import ktp_controller.api.database
+import ktp_controller.api.status.routes
 from ktp_controller.settings import SETTINGS
 
 logging.basicConfig(
@@ -23,7 +24,6 @@ _LOGGER.setLevel(logging.INFO)
 @contextlib.asynccontextmanager
 async def _lifespan(app: fastapi.FastAPI):  # pylint: disable=unused-argument
     _LOGGER.info("Starting with following settings: %s", SETTINGS)
-
     base_dir = os.path.dirname(os.path.abspath(__file__))
     database_url = f"sqlite:///{os.path.join(base_dir, 'ktp_controller.sqlite')}"
     ktp_controller.api.database.initialize(database_url)
@@ -39,3 +39,4 @@ async def _lifespan(app: fastapi.FastAPI):  # pylint: disable=unused-argument
 
 
 APP = fastapi.FastAPI(lifespan=_lifespan)
+APP.include_router(ktp_controller.api.status.routes.router, prefix="/api/v1/status")
