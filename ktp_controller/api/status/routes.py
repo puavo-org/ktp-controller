@@ -8,6 +8,7 @@ import fastapi  # type: ignore
 
 # Internal imports
 import ktp_controller.abitti2.client
+import ktp_controller.abitti2.naksu2
 import ktp_controller.examomatic.client
 
 # from ktp_controller.api.database import get_db
@@ -43,7 +44,7 @@ def _update_abitti2_status(
     # bit more information.
 
     examomatic_message = {
-        "monitoring_passphrase": ktp_controller.abitti2.utils.read_password(),
+        "monitoring_passphrase": ktp_controller.abitti2.naksu2.read_password(),
         "server_version": ktp_controller.abitti2.client.get_version(),
         "status": request.data,
     }

@@ -4,17 +4,17 @@ import requests
 import requests.auth
 
 import ktp_controller.utils
-import ktp_controller.abitti2.utils
+import ktp_controller.abitti2.naksu2
 
 
 def get_json(path: str, *, timeout: int = 20) -> typing.Any:
-    host = ktp_controller.abitti2.utils.read_domain()
+    host = ktp_controller.abitti2.naksu2.read_domain()
     url = ktp_controller.utils.get_url(host, path)
 
     response = requests.get(
         url,
         auth=requests.auth.HTTPBasicAuth(
-            "valvoja", ktp_controller.abitti2.utils.read_password()
+            "valvoja", ktp_controller.abitti2.naksu2.read_password()
         ),
         timeout=timeout,
     )
@@ -30,3 +30,16 @@ def get_version() -> str:
 
 def get_single_security_code() -> typing.Dict:
     return get_json("/api/single-security-code")
+
+
+def open_websock():
+    password = ktp_controller.abitti2.naksu2.read_password()
+    host = ktp_controller.abitti2.naksu2.read_domain()
+
+    return ktp_controller.utils.open_websock(
+        host,
+        "/ws/stats",
+        header={
+            "Authorization": ktp_controller.utils.get_basic_auth("valvoja", password)
+        },
+    )

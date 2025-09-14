@@ -6,7 +6,6 @@ import logging
 
 # Internal imports
 import ktp_controller.abitti2.client
-import ktp_controller.abitti2.utils
 import ktp_controller.api.client
 import ktp_controller.utils
 
@@ -26,18 +25,7 @@ class Abitti2Listener(ktp_controller.utils.Listener):
         self._send("pong", encoder=str)
 
     def _open_websock(self):
-        password = ktp_controller.abitti2.utils.read_password()
-        host = ktp_controller.abitti2.utils.read_domain()
-
-        return ktp_controller.utils.open_websock(
-            host,
-            "/ws/stats",
-            header={
-                "Authorization": ktp_controller.utils.get_basic_auth(
-                    "valvoja", password
-                )
-            },
-        )
+        return ktp_controller.abitti2.client.open_websock()
 
     def _validate_message(self, message):
         if message == "ping":
