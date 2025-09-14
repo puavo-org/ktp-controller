@@ -1,2 +1,2 @@
-def update_server_status(message):
+def update_abitti2_status(message):
     pass
