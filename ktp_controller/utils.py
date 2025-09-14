@@ -9,7 +9,7 @@ import typing
 import urllib.parse
 
 # Third-party imports
-import websocket
+import websocket  # type: ignore
 
 
 _LOGGER = logging.getLogger(__file__)
