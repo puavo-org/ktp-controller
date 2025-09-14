@@ -26,3 +26,7 @@ def get_json(path: str, *, timeout: int = 20) -> typing.Any:
 
 def get_version() -> str:
     return get_json("/api/version")["version"]
+
+
+def get_single_security_code() -> typing.Dict:
+    return get_json("/api/single-security-code")
