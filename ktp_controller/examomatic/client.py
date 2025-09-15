@@ -32,3 +32,24 @@ def post_v1_servers_status_update(
         },
         timeout=timeout,
     )
+
+
+def open_websock():
+    examomatic_password = ktp_controller.utils.readfirstline(
+        SETTINGS.examomatic_password_file, encoding="ascii"
+    )
+
+    return ktp_controller.utils.open_websock(
+        SETTINGS.examomatic_host,
+        "/servers/ers_connection",
+        params={
+            "domain": SETTINGS.domain,
+            "hostname": SETTINGS.hostname,
+            "id": SETTINGS.id,
+        },
+        header={
+            "Authorization": ktp_controller.utils.get_basic_auth(
+                SETTINGS.examomatic_username, examomatic_password
+            )
+        },
+    )

@@ -6,6 +6,7 @@ import json
 import logging
 
 # Internal imports
+import ktp_controller.examomatic.client
 import ktp_controller.utils
 from ktp_controller.settings import SETTINGS
 
@@ -26,24 +27,7 @@ class ExamOMaticListener(ktp_controller.utils.Listener):
         self.__utc_last_ping = datetime.datetime.min
 
     def _open_websock(self):
-        examomatic_password = ktp_controller.utils.readfirstline(
-            SETTINGS.examomatic_password_file, encoding="ascii"
-        )
-
-        return ktp_controller.utils.open_websock(
-            SETTINGS.examomatic_host,
-            "/servers/ers_connection",
-            params={
-                "domain": SETTINGS.domain,
-                "hostname": SETTINGS.hostname,
-                "id": SETTINGS.id,
-            },
-            header={
-                "Authorization": ktp_controller.utils.get_basic_auth(
-                    SETTINGS.examomatic_username, examomatic_password
-                )
-            },
-        )
+        return ktp_controller.examomatic.client.open_websock()
 
     def __send_ping(self):
         self._send({"type": "ping"}, encoder=json.dumps)
