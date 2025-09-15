@@ -3,6 +3,12 @@ import contextlib
 import logging
 import os.path
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s:%(asctime)s:%(name)s:%(funcName)s:%(lineno)d:%(message)s",
+    force=True,
+)
+
 # Third-party imports
 import fastapi  # type: ignore
 
@@ -10,12 +16,6 @@ import fastapi  # type: ignore
 import ktp_controller.api.database
 import ktp_controller.api.status.routes
 from ktp_controller.settings import SETTINGS
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(levelname)s:%(asctime)s:%(name)s:%(funcName)s:%(lineno)d:%(message)s",
-    force=True,
-)
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.INFO)
