@@ -6,6 +6,8 @@ import requests.auth
 import ktp_controller.utils
 import ktp_controller.abitti2.naksu2
 
+_ABITTI2_USERNAME = "valvoja"
+
 
 def get_json(path: str, *, timeout: int = 20) -> typing.Any:
     host = ktp_controller.abitti2.naksu2.read_domain()
@@ -14,7 +16,7 @@ def get_json(path: str, *, timeout: int = 20) -> typing.Any:
     response = requests.get(
         url,
         auth=requests.auth.HTTPBasicAuth(
-            "valvoja", ktp_controller.abitti2.naksu2.read_password()
+            _ABITTI2_USERNAME, ktp_controller.abitti2.naksu2.read_password()
         ),
         timeout=timeout,
     )
@@ -40,6 +42,8 @@ def open_websock():
         host,
         "/ws/stats",
         header={
-            "Authorization": ktp_controller.utils.get_basic_auth("valvoja", password)
+            "Authorization": ktp_controller.utils.get_basic_auth(
+                _ABITTI2_USERNAME, password
+            )
         },
     )
