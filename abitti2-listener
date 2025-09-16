@@ -4,12 +4,6 @@
 import json
 import logging
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(levelname)s:%(asctime)s:%(name)s:%(funcName)s:%(lineno)d:%(message)s",
-    force=True,
-)
-
 # Internal imports
 import ktp_controller.abitti2.client
 import ktp_controller.api.client

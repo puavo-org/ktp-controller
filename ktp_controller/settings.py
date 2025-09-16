@@ -1,20 +1,22 @@
+import getpass
 import logging
 import os.path
+import platform
 import subprocess
 from typing import Any
 
-from pydantic.fields import FieldInfo
+from pydantic.fields import FieldInfo, Field
+
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict  # type: ignore
 
 _LOGGER = logging.getLogger(__file__)
-_LOGGER.setLevel(logging.INFO)
 
 
 class PuavoSettingsSource(PydanticBaseSettingsSource):
     def get_field_value(
         self, field: FieldInfo, field_name: str
     ) -> tuple[Any, str, bool]:
-        field_value = self.current_state.get(field_name)
+        field_value = field.default
 
         if field_name in ["hostname", "domain", "id"]:
             puavo_filepath = f"/etc/puavo/{field_name}"
@@ -76,16 +78,24 @@ class PuavoSettingsSource(PydanticBaseSettingsSource):
 
 
 class Settings(BaseSettings):
-    examomatic_host: str
-    examomatic_username: str
-    examomatic_password_file: str
-    domain: str
-    hostname: str
-    id: str
-
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", env_prefix="KTP_CONTROLLER_"
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="KTP_CONTROLLER_",
     )
+
+    # .invalid is reserved IANA TLD
+    examomatic_host: str = "koejakaja.example.invalid"
+    examomatic_username: str = getpass.getuser()
+    examomatic_password_file: str = os.path.expanduser(
+        "~/ktp-controller-examomatic-listener-password.txt"
+    )
+    domain: str = "example.invalid"
+    hostname: str = platform.node()
+    id: str = "1"
+    api_host: str = "127.0.0.1"
+    api_port: int = 8000
+    api_reload: bool = True
 
     @classmethod
     def settings_customise_sources(
@@ -100,8 +110,10 @@ class Settings(BaseSettings):
             init_settings,
             env_settings,
             dotenv_settings,
+            file_secret_settings,
             PuavoSettingsSource(settings_cls),
         )
 
 
 SETTINGS = Settings()
+_LOGGER.info("Using following settings: %s", SETTINGS)
