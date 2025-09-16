@@ -49,9 +49,15 @@ def _update_abitti2_status(
         "status": request.data,
     }
 
-    examomatic_message["status"][
-        "singleSecurityCode"
-    ] = ktp_controller.abitti2.client.get_single_security_code()["securityCode"]
+    try:
+        single_security_code = ktp_controller.abitti2.client.get_single_security_code()[
+            "securityCode"
+        ]
+    except KeyError:
+        # TODO: It's not always there, why not?
+        pass
+    else:
+        examomatic_message["status"]["singleSecurityCode"] = single_security_code
 
     examomatic_response = (
         ktp_controller.examomatic.client.post_v1_servers_status_update(
