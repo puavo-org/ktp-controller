@@ -6,11 +6,14 @@ import requests
 
 # Internal imports
 import ktp_controller.utils
+from ktp_controller.settings import SETTINGS
 
 
 def post_json(path, data, *, timeout: int = 5) -> requests.Response:
     return requests.post(
-        ktp_controller.utils.get_url("127.0.0.1:8000", path, use_tls=False),
+        ktp_controller.utils.get_url(
+            f"{SETTINGS.api_host}:{SETTINGS.api_port}", path, use_tls=False
+        ),
         json={"data": data},
         timeout=timeout,
     )
