@@ -20,7 +20,7 @@ def post_json(path, data, *, timeout: int = 5) -> requests.Response:
 def update_abitti2_status(
     message: typing.Dict, *, timeout: int = 5
 ) -> requests.Response:
-    return post_json("/api/v1/status/update_abitti2_status", message)
+    return post_json("/api/v1/status/update_abitti2_status", message, timeout=timeout)
 
 
 def sync_exams():
