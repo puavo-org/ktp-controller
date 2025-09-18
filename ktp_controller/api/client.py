@@ -1,5 +1,4 @@
 # Standard library imports
-import json
 import typing
 
 # Third-party imports

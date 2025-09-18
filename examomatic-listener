@@ -9,7 +9,6 @@ import logging
 import ktp_controller.api.client
 import ktp_controller.examomatic.client
 import ktp_controller.utils
-from ktp_controller.settings import SETTINGS
 
 
 _LOGGER = logging.getLogger("examomatic-listener")

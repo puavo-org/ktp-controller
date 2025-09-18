@@ -5,7 +5,7 @@ import platform
 import subprocess
 from typing import Any
 
-from pydantic.fields import FieldInfo, Field
+from pydantic.fields import FieldInfo
 
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict  # type: ignore
 
