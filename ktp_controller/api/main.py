@@ -11,6 +11,7 @@ import uvicorn  # type: ignore
 # Internal imports
 import ktp_controller.api.database
 import ktp_controller.api.status.routes
+import ktp_controller.api.abitti2.routes
 from ktp_controller.settings import SETTINGS
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,6 +36,7 @@ async def _lifespan(app: fastapi.FastAPI):  # pylint: disable=unused-argument
 
 APP = fastapi.FastAPI(lifespan=_lifespan)
 APP.include_router(ktp_controller.api.status.routes.router, prefix="/api/v1/status")
+APP.include_router(ktp_controller.api.abitti2.routes.router, prefix="/api/v1/status")
 
 
 def run():

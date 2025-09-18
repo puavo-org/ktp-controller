@@ -27,16 +27,16 @@ router = fastapi.APIRouter(tags=["status"])
 
 
 @router.post(
-    "/update_abitti2_status",
-    response_model=schemas.UpdateAbitti2StatusResponse,
-    summary="Update Abitti2 status",
+    "/status",
+    response_model=schemas.PostStatusResponse,
+    summary="Update status",
 )
-def _update_abitti2_status(
-    request: schemas.UpdateAbitti2StatusRequest,
+def _post_status(
+    request: schemas.PostStatusRequest,
     #    db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ):
     """
-    Update Abitti2 status
+    Update status
     """
     # TODO: error handling
 
