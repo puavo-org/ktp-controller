@@ -1,88 +1,11 @@
 #!/usr/bin/env python3
 
-# Standard library imports
-import datetime
-import json
-import logging
-
 # Internal imports
-import ktp_controller.api.client
-import ktp_controller.examomatic.client
-import ktp_controller.utils
-
-
-_LOGGER = logging.getLogger("examomatic-listener")
-
-
-class ExamOMaticListener(ktp_controller.utils.Listener):
-    def __init__(self, ping_interval_seconds: int = 30, **kwargs):
-        super().__init__(**kwargs)
-        self.__ping_interval_seconds = ping_interval_seconds
-        self.__utc_last_ping = datetime.datetime.min
-
-    def _open_websock(self):
-        return ktp_controller.examomatic.client.open_websock()
-
-    def __send_ping(self):
-        self._send({"type": "ping"}, encoder=json.dumps)
-
-    def __send_ack(self, message):
-        self._send({"type": "ack", "id": message["id"]}, encoder=json.dumps)
-
-    def _validate_message(self, message):
-        try:
-            message = json.loads(message)
-        except Exception as e:
-            raise ValueError("message is not JSON") from e
-
-        if not isinstance(message, dict):
-            raise ValueError("message is not a dict")
-
-        if not "type" in message:
-            raise ValueError("message does not have 'type'")
-
-        if not isinstance(message["type"], str):
-            raise ValueError("message type is not a string")
-
-        if not "id" in message:
-            raise ValueError("message does not have 'id'")
-
-        if not isinstance(message["id"], int):
-            raise ValueError("message id is not an integer")
-
-        return message
-
-    def _handle_validated_message(self, message):
-        if message["type"] == "pong":
-            return True
-
-        self.__send_ack(message)
-
-        if message["type"] == "change_keycode":
-            _LOGGER.info("received change_keycode message from exam-o-matic")
-            ktp_controller.api.client.change_keycode()
-            return True
-
-        if message["type"] == "refresh_exams":
-            _LOGGER.info("received refresh_exams message from exam-o-matic")
-            ktp_controller.api.client.sync_exams()
-            return True
-
-        return False
-
-    def _on_recv_timeout(self):
-        utcnow = datetime.datetime.utcnow()
-        if (
-            utcnow - self.__utc_last_ping
-        ).total_seconds() > self.__ping_interval_seconds:
-            self.__utc_last_ping = utcnow
-            self.__send_ping()
+import ktp_controller.examomatic.main
 
 
 def main():
-    examomatic_listener = ExamOMaticListener()
-    ktp_controller.utils.common_term_signal(examomatic_listener.quit)
-    examomatic_listener.run()
+    ktp_controller.examomatic.main.run_listener()
 
 
 if __name__ == "__main__":
