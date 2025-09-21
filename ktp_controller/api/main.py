@@ -44,7 +44,7 @@ def run():
         "ktp_controller.api.main:APP",
         host=SETTINGS.api_host,
         port=SETTINGS.api_port,
-        reload=SETTINGS.api_reload,
+        reload=False,
         #        log_config={
         #            "version": 1,
         #            "level": "DEBUG",

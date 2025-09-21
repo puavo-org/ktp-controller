@@ -1057,6 +1057,21 @@ typing-extensions = {version = ">=4.10.0", markers = "python_version < \"3.13\""
 full = ["httpx (>=0.27.0,<0.29.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.18)", "pyyaml"]
 
 [[package]]
+name = "supervisor"
+version = "4.3.0"
+description = "A system for controlling process state under UNIX"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "supervisor-4.3.0-py2.py3-none-any.whl", hash = "sha256:0bcb763fddafba410f35cbde226aa7f8514b9fb82eb05a0c85f6588d1c13f8db"},
+    {file = "supervisor-4.3.0.tar.gz", hash = "sha256:4a2bf149adf42997e1bb44b70c43b613275ec9852c3edacca86a9166b27e945e"},
+]
+
+[package.extras]
+test = ["pytest", "pytest-cov"]
+
+[[package]]
 name = "tomlkit"
 version = "0.13.3"
 description = "Style preserving TOML library"
@@ -1411,4 +1426,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "7ab583ef3b3a127127b73824cd483c6b29147d1f02fa567d1f28de17eb0adf80"
+content-hash = "da105fa1e51311ca80c991647dfc280b27206da38fefab1d43eb14dcbe18d06e"
