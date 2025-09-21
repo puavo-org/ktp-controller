@@ -13,10 +13,8 @@ _LOGGER = logging.getLogger(__file__)
 
 
 class ExamOMaticListener(ktp_controller.utils.Listener):
-    def __init__(self, ping_interval_seconds: int = 30, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.__ping_interval_seconds = ping_interval_seconds
-        self.__utc_last_ping = datetime.datetime.min
 
     def _open_websock(self):
         return ktp_controller.examomatic.client.open_websock()
@@ -68,16 +66,9 @@ class ExamOMaticListener(ktp_controller.utils.Listener):
 
         return False
 
-    def _on_recv_timeout(self):
-        utcnow = datetime.datetime.utcnow()
-        if (
-            utcnow - self.__utc_last_ping
-        ).total_seconds() > self.__ping_interval_seconds:
-            self.__utc_last_ping = utcnow
-            self.__send_ping()
+    def _on_alarm(self):
+        self.__send_ping()
 
 
 def run_listener():
-    examomatic_listener = ExamOMaticListener()
-    ktp_controller.utils.common_term_signal(examomatic_listener.quit)
-    examomatic_listener.run()
+    ExamOMaticListener(alarm_interval=30).run()

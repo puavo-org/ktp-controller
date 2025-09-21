@@ -3,6 +3,7 @@ import abc
 import base64
 import logging
 import os
+import select
 import signal
 import sys
 import typing
@@ -60,7 +61,7 @@ def common_term_signal(func):
         signal.SIGALRM,
         signal.SIGQUIT,
     ]:
-        signal.signal(quit_signal, lambda s, e: func())
+        signal.signal(quit_signal, lambda s, e: func(s))
 
 
 def get_basic_auth(username: str, password: str) -> str:
@@ -74,7 +75,6 @@ def open_websock(
     *,
     params: typing.Optional[typing.Dict[str, str]] = None,
     header: typing.Optional[typing.Dict[str, str]] = None,
-    timeout: int = 5,
     use_tls: bool = True,
 ) -> websocket.WebSocket:
     if header is None:
@@ -91,7 +91,6 @@ def open_websock(
         url,
         connection="Connection: Upgrade",
         header=header,
-        timeout=timeout,
     )
 
     return websock
@@ -103,29 +102,43 @@ def readfirstline(filepath, encoding=sys.getdefaultencoding()):
 
 
 class Listener(abc.ABC):
-    def __init__(self, failure_sleep=5):
+    def __init__(self, failure_sleep=5, alarm_interval=None):
         self.__websock = None
         self.__is_running = False
         self.__failure_sleep = failure_sleep
+        self.__rfd, self.__wfd = os.pipe()
+
+        common_term_signal(self.__sigwakeup)
+
+        if alarm_interval:
+            signal.setitimer(signal.ITIMER_REAL, alarm_interval, alarm_interval)
+
+    def __sigwakeup(self, signum: int):
+        os.write(self.__wfd, int.to_bytes(signum))
 
     def __quit(self):
         self.__is_running = False
 
     def __run(self):
         self.__is_running = True
-        while self.__is_running:
-            try:
-                _LOGGER.info("opening websocket connection")
-                self.__websock = self._open_websock()
+        try:
+            _LOGGER.info("opening websocket connection")
+            self.__websock = self._open_websock()
 
-                while self.__is_running:
-                    try:
-                        message = self.__websock.recv()
-                    except websocket.WebSocketTimeoutException:
-                        _LOGGER.debug("websocket recv timeout")
-                        self._on_recv_timeout()
+            while self.__is_running:
+                rlist, _, _ = select.select([self.__rfd, self.__websock.sock], [], [])
+                _LOGGER.debug("wakeup")
+
+                if self.__rfd in rlist:
+                    signum = int.from_bytes(os.read(self.__rfd, 4))
+                    if signum == signal.SIGALRM:
+                        self._on_alarm()
+                    else:
+                        self.__quit()
                         continue
 
+                if self.__websock.sock in rlist:
+                    message = self.__websock.recv()
                     _LOGGER.debug("received %r", message)
 
                     try:
@@ -142,20 +155,11 @@ class Listener(abc.ABC):
                                 validated_message,
                             )
 
-                break
-            except websocket.WebSocketException as websocket_exception:
-                _LOGGER.error("websocket failed: %s", websocket_exception)
-            except ConnectionError as connection_error:
-                _LOGGER.error("connection failed: %s", connection_error)
-            except:
-                _LOGGER.exception("something failed")
-            finally:
-                if self.__websock:
-                    _LOGGER.info("closing websocket connection")
-                    self.__websock.close()
-                    self.__websock = None
-
-            sigawaresleep(self.__failure_sleep)
+        finally:
+            if self.__websock:
+                _LOGGER.info("closing websocket connection")
+                self.__websock.close()
+                self.__websock = None
 
         _LOGGER.info("bye")
 
@@ -167,7 +171,7 @@ class Listener(abc.ABC):
     def _open_websock(self):
         ...
 
-    def _on_recv_timeout(self):
+    def _on_alarm(self):
         pass
 
     def _send(self, message, encoder):

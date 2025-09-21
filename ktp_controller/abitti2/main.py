@@ -49,6 +49,4 @@ class Abitti2Listener(ktp_controller.utils.Listener):
 
 
 def run_listener():
-    abitti2_listener = Abitti2Listener()
-    ktp_controller.utils.common_term_signal(abitti2_listener.quit)
-    abitti2_listener.run()
+    Abitti2Listener().run()
