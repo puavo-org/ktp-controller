@@ -122,7 +122,7 @@ class Listener(abc.ABC):
                     try:
                         message = self.__websock.recv()
                     except websocket.WebSocketTimeoutException:
-                        _LOGGER.info("websocket recv timeout")
+                        _LOGGER.debug("websocket recv timeout")
                         self._on_recv_timeout()
                         continue
 
