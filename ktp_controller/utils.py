@@ -102,10 +102,9 @@ def readfirstline(filepath, encoding=sys.getdefaultencoding()):
 
 
 class Listener(abc.ABC):
-    def __init__(self, failure_sleep=5, alarm_interval=None):
+    def __init__(self, alarm_interval=None):
         self.__websock = None
         self.__is_running = False
-        self.__failure_sleep = failure_sleep
         self.__rfd, self.__wfd = os.pipe()
 
         common_term_signal(self.__sigwakeup)
