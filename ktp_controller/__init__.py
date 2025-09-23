@@ -11,4 +11,4 @@ logging.basicConfig(
 )
 
 
-from .settings import SETTINGS
+from .settings import SETTINGS  # pylint: disable=wrong-import-position

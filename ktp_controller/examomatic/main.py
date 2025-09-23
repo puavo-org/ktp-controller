@@ -41,18 +41,18 @@ class ExamOMaticListener(ktp_controller.utils.Listener):
 
         return message
 
-    def _handle_validated_message(self, message):
-        if message["type"] == "pong":
+    def _handle_validated_message(self, validated_message):
+        if validated_message["type"] == "pong":
             return True
 
-        self.__send_ack(message)
+        self.__send_ack(validated_message)
 
-        if message["type"] == "change_keycode":
+        if validated_message["type"] == "change_keycode":
             _LOGGER.info("received change_keycode message from exam-o-matic")
             ktp_controller.api.client.change_keycode()
             return True
 
-        if message["type"] == "refresh_exams":
+        if validated_message["type"] == "refresh_exams":
             _LOGGER.info("received refresh_exams message from exam-o-matic")
             ktp_controller.api.client.sync_exams()
             return True

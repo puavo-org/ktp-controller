@@ -4,5 +4,11 @@ disable=global-statement,
         missing-module-docstring,
         missing-function-docstring,
         too-few-public-methods,
+        invalid-name,
 ignore-patterns=^\.#,
                 ^flycheck_
+max-line-length=120
+
+notes=HACK,
+      FIXME,
+      XXX

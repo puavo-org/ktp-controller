@@ -13,7 +13,7 @@ _LOGGER = logging.getLogger(__file__)
 
 
 class PuavoSettingsSource(PydanticBaseSettingsSource):
-    def get_field_value(
+    def get_field_value(  # pylint: disable=too-many-branches
         self, field: FieldInfo, field_name: str
     ) -> tuple[Any, str, bool]:
         field_value = field.default
@@ -25,7 +25,7 @@ class PuavoSettingsSource(PydanticBaseSettingsSource):
                     field_value = f.read().rstrip()
             except FileNotFoundError:
                 pass
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 _LOGGER.warning("warning: failed to read %r: %s", puavo_filepath, e)
 
         if field_name == "examomatic_host":
@@ -35,7 +35,7 @@ class PuavoSettingsSource(PydanticBaseSettingsSource):
                 ).rstrip()
             except FileNotFoundError:
                 pass
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 _LOGGER.warning(
                     "warning: failed to get puavo.abitti.exam_server: %s", e
                 )
@@ -46,7 +46,7 @@ class PuavoSettingsSource(PydanticBaseSettingsSource):
                     field_value = f.read().rstrip()
             except FileNotFoundError:
                 pass
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 _LOGGER.warning("warning: failed to read /etc/puavo/ldap/dn: %s", e)
 
         if field_name == "examomatic_password_file":
@@ -60,7 +60,7 @@ class PuavoSettingsSource(PydanticBaseSettingsSource):
                 field_value = puavo_ldap_password_file
             except FileNotFoundError:
                 pass
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 _LOGGER.warning(
                     "warning: failed to read %r': %s", puavo_ldap_password_file, e
                 )
@@ -98,7 +98,7 @@ class Settings(BaseSettings):
     api_reload: bool = True
 
     @classmethod
-    def settings_customise_sources(
+    def settings_customise_sources(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         cls,
         settings_cls: type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
