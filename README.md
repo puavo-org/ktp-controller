@@ -45,6 +45,8 @@ The database access is abstracted with SQLAlchemy (https://www.sqlalchemy.org/).
 
 Database migrations are handled by Alembic (https://alembic.sqlalchemy.org/en/latest/).
 
+Processes are launched and kept running with Supervisor (https://supervisord.org/).
+
 ## Development
 
 Install poetry from APT repositories:
