@@ -49,13 +49,7 @@ Processes are launched and kept running with Supervisor (https://supervisord.org
 
 ## Development
 
-Install poetry from APT repositories:
-
-```
-apt install python3-poetry
-```
-
-or install the latest from PyPI:
+Install poetry from PyPI:
 
 ```
 pip3 install --user --break-system-packages poetry # For some strange reason, you need --break-system-packages eventhough you are installing to user's homedir.
@@ -63,7 +57,7 @@ pip3 install --user --break-system-packages poetry # For some strange reason, yo
 
 This installs poetry to `~/.local/bin` so ensure it's in your PATH.
 
-After installing poetry, everything you need for development is one make command aways
+After installing poetry, everything you need for development is one make command away.
 
 ### Create new development environment
 
