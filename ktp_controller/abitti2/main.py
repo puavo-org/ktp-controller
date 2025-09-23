@@ -1,5 +1,4 @@
 # Standard library imports
-import json
 import logging
 
 # Internal imports
@@ -22,15 +21,9 @@ class Abitti2Listener(ktp_controller.utils.Listener):
         if message == "ping":
             return ("ping", message)
 
-        try:
-            message = json.loads(message)
-        except Exception as e:
-            raise ValueError("message is not JSON") from e
+        message = ktp_controller.utils.json_loads_dict(message)
 
-        if not isinstance(message, dict):
-            raise ValueError("message is not a dict")
-
-        # TODO: any dict is valid, is it ok?
+        # TODO: any dict is valid message, is it ok?
 
         return ("status", message)
 

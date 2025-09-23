@@ -25,13 +25,7 @@ class ExamOMaticListener(ktp_controller.utils.Listener):
         self._send({"type": "ack", "id": message["id"]}, encoder=json.dumps)
 
     def _validate_message(self, message):
-        try:
-            message = json.loads(message)
-        except Exception as e:
-            raise ValueError("message is not JSON") from e
-
-        if not isinstance(message, dict):
-            raise ValueError("message is not a dict")
+        message = ktp_controller.utils.json_loads_dict(message)
 
         if not "type" in message:
             raise ValueError("message does not have 'type'")

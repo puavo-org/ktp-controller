@@ -1,6 +1,7 @@
 # Standard library imports
 import abc
 import base64
+import json
 import logging
 import os
 import select
@@ -14,6 +15,18 @@ import websocket  # type: ignore
 
 
 _LOGGER = logging.getLogger(__file__)
+
+
+def json_loads_dict(string: str) -> typing.Dict[str, typing.Any]:
+    try:
+        data = json.loads(string)
+    except Exception as e:
+        raise ValueError("string is not valid JSON") from e
+
+    if not isinstance(data, dict):
+        raise ValueError("data is not a dict")
+
+    return data
 
 
 def get_url(
