@@ -69,25 +69,13 @@ make dev-install
 
 ### Run in development mode
 
-Run API app:
+Just run:
 
 ```
-make dev-run-api
+make dev-run
 ```
 
-Interactive API documentation: http://127.0.0.1:8000/docs
-
-Run Exam-O-Matic listener:
-
-```
-make dev-run-examomatic-listener
-```
-
-Run Abitti2 listener:
-
-```
-make dev-run-abitti2-listener
-```
+Then interactive API documentation: http://127.0.0.1:8000/docs
 
 
 ### Update dependencies
@@ -102,5 +90,5 @@ make dev-update
 If the set of packages is ok, remember to commit the lock file:
 
 ```
-git commit poetry.lock -m 'poetry update'
+git commit poetry.lock -m 'Update dependencies'
 ```
