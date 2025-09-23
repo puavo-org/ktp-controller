@@ -1,5 +1,4 @@
 # Standard library imports
-import datetime
 import json
 import logging
 
