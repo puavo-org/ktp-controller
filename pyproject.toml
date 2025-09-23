@@ -10,9 +10,9 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.11"
-fastapi = "^0.116.1"
-uvicorn = {extras = ["standard"], version = "^0.35.0"}
-alembic = "^1.16.4"
+fastapi = "*"
+uvicorn = {extras = ["standard"], version = "*"}
+alembic = "*"
 pydantic-settings = "*"
 requests = "*"
 websocket-client = "*"
