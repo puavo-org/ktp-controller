@@ -36,7 +36,7 @@ async def _lifespan(app: fastapi.FastAPI):  # pylint: disable=unused-argument
 
 APP = fastapi.FastAPI(lifespan=_lifespan)
 APP.include_router(ktp_controller.api.status.routes.router, prefix="/api/v1/status")
-APP.include_router(ktp_controller.api.abitti2.routes.router, prefix="/api/v1/status")
+APP.include_router(ktp_controller.api.abitti2.routes.router, prefix="/api/v1/abitti2")
 
 
 def run():
