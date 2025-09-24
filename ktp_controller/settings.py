@@ -95,7 +95,6 @@ class Settings(BaseSettings):
     id: str = "1"
     api_host: str = "127.0.0.1"
     api_port: int = 8000
-    api_reload: bool = True
 
     @classmethod
     def settings_customise_sources(  # pylint: disable=too-many-arguments,too-many-positional-arguments
