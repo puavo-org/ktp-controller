@@ -95,6 +95,7 @@ class Settings(BaseSettings):
     id: str = "1"
     api_host: str = "127.0.0.1"
     api_port: int = 8000
+    logging_level: str = "INFO"
 
     @classmethod
     def settings_customise_sources(  # pylint: disable=too-many-arguments,too-many-positional-arguments
@@ -115,4 +116,7 @@ class Settings(BaseSettings):
 
 
 SETTINGS = Settings()
+logging.getLogger().setLevel(
+    logging.getLevelNamesMapping()[SETTINGS.logging_level.upper()]
+)
 _LOGGER.info("Using following settings: %s", SETTINGS)

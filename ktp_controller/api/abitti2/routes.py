@@ -16,7 +16,6 @@ from . import schemas
 
 
 _LOGGER = logging.getLogger(__name__)
-_LOGGER.setLevel(logging.INFO)
 
 
 __all__ = [
