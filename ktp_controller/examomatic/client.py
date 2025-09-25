@@ -11,9 +11,7 @@ import ktp_controller.utils
 from ktp_controller.settings import SETTINGS
 
 
-def post_v1_servers_status_update(
-    data: typing.Dict, *, timeout: int = 20
-) -> requests.Response:
+def push_abitti2_status(data: typing.Dict, *, timeout: int = 20) -> requests.Response:
     return requests.post(
         ktp_controller.utils.get_url(
             SETTINGS.examomatic_host, "/v1/servers/status_update"

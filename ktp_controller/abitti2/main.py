@@ -35,7 +35,7 @@ class Abitti2Listener(ktp_controller.utils.Listener):
             return True
 
         if message_type == "status":
-            ktp_controller.api.client.post_api_v1_abitti2_status(message)
+            ktp_controller.api.client.push_abitti2_status(message)
             return True
 
         return False
