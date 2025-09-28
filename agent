@@ -1,0 +1,495 @@
+#!/usr/bin/env python3
+
+# Standard library imports
+import asyncio
+import datetime
+import enum
+import hashlib
+import json
+import logging
+import os.path
+import typing
+import uuid
+import zipfile
+
+# Third-party imports
+import websockets
+
+# Internal imports
+import ktp_controller.abitti2.client
+import ktp_controller.abitti2.naksu2
+import ktp_controller.api.client
+import ktp_controller.examomatic.client
+import ktp_controller.utils
+
+
+_LOGGER = logging.getLogger(__file__)
+
+# All exam files will be stored here like so:
+# ~/.local/share/ktp-controller/exam-files/FILE_UUID/FILE_SHA256
+_EXAM_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-files")
+
+# All exam packages will be stored here like so:
+# ~/.local/share/ktp-controller/exam-packages/FILE_UUID/COMPOUND_EXAM_FILE_SHA256
+_EXAM_PACKAGE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-packages")
+
+
+class LocalFilepathType(str, enum.Enum):
+    EXAM_FILE = "exam-file"
+    EXAM_PACKAGE = "exam-package"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+def _get_local_filepath(
+    local_filepath_type: LocalFilepathType, dirname: str, filename_suffix: str
+) -> str:
+    LocalFilepathType(local_filepath_type)
+    if local_filepath_type == LocalFilepathType.EXAM_FILE:
+        basedir = _EXAM_FILE_DIR
+        ext = ".mex"
+    elif local_filepath_type == LocalFilepathType.EXAM_PACKAGE:
+        basedir = _EXAM_PACKAGE_DIR
+        ext = ".zip"
+    else:
+        raise ValueError("invalid local_filepath_type")
+
+    dirpath = os.path.join(basedir, dirname)
+
+    try:
+        os.makedirs(dirpath)
+    except FileExistsError:
+        pass
+
+    return os.path.join(dirpath, f"{local_filepath_type}_{filename_suffix}{ext}")
+
+
+def _create_exam_package_file(
+    api_scheduled_exam_package,
+) -> typing.Tuple[str, typing.Set[str]]:
+    exam_file_infos = []
+    for api_scheduled_exam_external_id in api_scheduled_exam_package[
+        "scheduled_exam_external_ids"
+    ]:
+        api_scheduled_exam = ktp_controller.api.client.get_scheduled_exam(
+            api_scheduled_exam_external_id
+        )
+        exam_file_infos.append(api_scheduled_exam["exam_file_info"])
+
+    decrypt_codes: typing.Set[str] = set()
+    exam_package_filepath = _get_local_filepath(
+        LocalFilepathType.EXAM_PACKAGE,
+        api_scheduled_exam_package["external_id"],
+        hashlib.sha256(
+            "".join(sorted([i["sha256"] for i in exam_file_infos])).encode("ascii")
+        ).hexdigest(),
+    )
+
+    with ktp_controller.utils.open_atomic_write(
+        exam_package_filepath
+    ) as exam_package_file:
+        with zipfile.ZipFile(exam_package_file, "w") as exam_package_file_zip:
+            for exam_file_info in exam_file_infos:
+                exam_package_file_zip.write(
+                    _get_local_filepath(
+                        LocalFilepathType.EXAM_FILE,
+                        exam_file_info["external_id"],
+                        exam_file_info["sha256"],
+                    ),
+                    datetime.datetime.utcnow().isoformat() + exam_file_info["name"],
+                )
+                decrypt_codes.add(exam_file_info["decrypt_code"])
+
+    return exam_package_filepath, decrypt_codes
+
+
+def _init_current_scheduled_exam_package(
+    exam_package: typing.Dict, utcnow: datetime.datetime
+):
+    # This exam package is newly set as the current. Let's reset the
+    # Abitti2 server.
+    # ktp_controller.abitti2.client.reset()
+    ktp_controller.api.client.set_current_scheduled_exam_package_state(
+        exam_package["external_id"], "waiting"
+    )
+
+    exam_package["state"] = "waiting"
+
+
+def _prepare_current_scheduled_exam_package(exam_package, utcnow):
+    (filepath, decrypt_codes) = _create_exam_package_file(exam_package)
+
+    ktp_controller.abitti2.client.load_exam_package(filepath)
+
+    for decrypt_code in decrypt_codes:
+        ktp_controller.abitti2.client.decrypt_exams(decrypt_code)
+    # TODO: verify that all exams are decrypted
+
+    ktp_controller.api.client.set_current_scheduled_exam_package_state(
+        exam_package["external_id"], "ready"
+    )
+
+    exam_package["state"] = "ready"
+
+
+def _start_current_scheduled_exam_package(exam_package, utcnow):
+    ktp_controller.abitti2.client.start_decrypted_exams()
+    ktp_controller.api.client.set_current_scheduled_exam_package_state(
+        exam_package["external_id"], "running"
+    )
+
+    exam_package["state"] = "running"
+
+
+def _stop_current_scheduled_exam_package(exam_package, utcnow):
+    # ktp_controller.abitti2.client.stop_all_exam_sessions()
+    ktp_controller.api.client.set_current_scheduled_exam_package_state(
+        exam_package["external_id"], "stopped"
+    )
+
+    exam_package["state"] = "stopped"
+
+
+def _archive_current_scheduled_exam_package(exam_package, utcnow):
+    # ktp_controller.abitti2.client.download_exam_results()
+    # ktp_controller.examomatic.client.upload_exam_results()
+    # TODO: verify that we got all results
+    # ktp_controller.abitti2.client.reset()
+    ktp_controller.api.client.set_current_scheduled_exam_package_state(
+        exam_package["external_id"], "archived"
+    )
+
+    exam_package["state"] = "archived"
+
+
+class Agent:
+    def __init__(
+        self,
+        *,
+        approx_api_ping_interval_sec: int = 30,
+        approx_examomatic_ping_interval_sec: int = 30,
+        approx_restart_timeout_sec: int = 5,
+    ):
+        self.__approx_api_ping_interval_sec = approx_api_ping_interval_sec
+        self.__approx_examomatic_ping_interval_sec = approx_examomatic_ping_interval_sec
+        self.__approx_restart_timeout_sec = approx_restart_timeout_sec
+
+    async def __work_on_current_scheduled_exam_package(self):
+        utcnow = datetime.datetime.utcnow()
+
+        exam_package = ktp_controller.api.client.get_current_scheduled_exam_package()
+
+        if exam_package["state"] is None:
+            _init_current_scheduled_exam_package(exam_package, utcnow)
+
+            # To reduce unnecessary delays, since we are here, we can
+            # as well proceed to the next step right away.
+            # Hence no return here.
+
+        if (
+            exam_package["state"] == "waiting"
+            and datetime.datetime.fromisoformat(exam_package["lock_time"]) >= utcnow
+        ):
+            _prepare_current_scheduled_exam_package(exam_package, utcnow)
+
+            # To reduce unnecessary delays, since we are here, we can
+            # as well proceed to the next step right away.
+            # Hence no return here.
+
+        if (
+            exam_package["state"] == "ready"
+            and datetime.datetime.fromisoformat(exam_package["start_time"]) >= utcnow
+        ):
+            _start_current_scheduled_exam_package(exam_package, utcnow)
+
+            # We just started all exams, there's nothing else we need to do this time.
+            return
+
+        if (
+            exam_package["state"] == "running"
+            and datetime.datetime.fromisoformat(exam_package["end_time"]) >= utcnow
+        ):
+            _stop_current_scheduled_exam_package(exam_package, utcnow)
+
+            # We just stopped all exams, we will have a short coffee
+            # break now and when we get back, we will collect all
+            # results and archive the exam package.
+            return
+
+        if exam_package["state"] == "stopped":
+            _archive_current_scheduled_exam_package(exam_package, utcnow)
+            return
+
+        raise RuntimeError(
+            "currently scheduled exam package is in an unknown state",
+            exam_package,
+        )
+
+    async def __send_pings_to_api(self, websock):
+        while True:
+            message = json.dumps(
+                {
+                    "kind": "ping",
+                    "uuid": str(uuid.uuid4()),
+                },
+                ensure_ascii=True,
+                separators=(",", ":"),
+            )
+            await websock.send(message)
+            _LOGGER.debug("--> API: %s", message)
+            await asyncio.sleep(self.__approx_api_ping_interval_sec)
+
+    async def __send_pings_to_examomatic(self, websock):
+        while True:
+            message = json.dumps(
+                {
+                    "type": "ping",
+                },
+                ensure_ascii=True,
+                separators=(",", ":"),
+            )
+            await websock.send(message)
+            _LOGGER.debug("--> Exam-O-Matic: %s", message)
+            await asyncio.sleep(self.__approx_examomatic_ping_interval_sec)
+
+    async def __communicate_with_api(self, websock):
+        async for data in websock:
+            _LOGGER.debug("<-- API: %s", data)
+            try:
+                message = ktp_controller.utils.json_loads_dict(data)
+            except ValueError:
+                # Most probably a programming error, API should not
+                # send invalid JSON to agents.
+                _LOGGER.exception("API sent invalid JSON data")
+                continue
+            if message["kind"] == "bleep":
+                # TODO: ask API if there are tasks for me
+                continue
+            if message["kind"] == "pong":
+                # Whenever we get ponged, it's a sign for us to work
+                # on the currently scheduled exam package. So, keep
+                # ping pong interval quite short. This could be
+                # replaced with more sophisticated scheduling logic,
+                # but for now, ping-pong is enough.
+                await self.__work_on_current_scheduled_exam_package()
+                # Ping pong is a great game!
+                # Let's
+                continue  # playing it!
+
+            _LOGGER.error("unknown API message kind: %s", message["kind"])
+
+    async def __communicate_with_examomatic(self, websock):
+        async for data in websock:
+            _LOGGER.debug("<-- Exam-O-Matic: %s", data)
+            try:
+                message = ktp_controller.examomatic.client.websock_validate_message(
+                    data
+                )
+            except ValueError:
+                _LOGGER.exception("received invalid data from Exam-O-Matic: %r", data)
+                continue
+
+            if message["type"] == "pong":
+                continue
+
+            if message["type"] == "change_keycode":
+                _LOGGER.info("received change_keycode message from Exam-O-Matic")
+                ktp_controller.abitti2.client.change_single_security_code()
+            elif message["type"] == "refresh_exams":
+                _LOGGER.info("received refresh_exams message from Exam-O-Matic")
+                self.__refresh_exams()
+            else:
+                _LOGGER.error(
+                    "received message of unknown type %r from Exam-O-Matic",
+                    message["type"],
+                )
+                continue
+
+            await ktp_controller.examomatic.client.websock_ack(websock, message)
+
+    async def __communicate_with_abitti2(self, websock):
+        async for data in websock:
+            received_at = datetime.datetime.utcnow()
+            _LOGGER.debug("<-- Abitti2: %s", data)
+
+            if data == "ping":
+                await websock.send("pong")
+                continue
+            try:
+                status = ktp_controller.utils.json_loads_dict(data)
+            except ValueError:
+                _LOGGER.exception("received invalid JSON from Abitti2: %r", data)
+                continue
+
+            _LOGGER.info("received status report from Abitti2")
+
+            status_report = {
+                "monitoring_passphrase": ktp_controller.abitti2.naksu2.read_password(),
+                "server_version": ktp_controller.abitti2.client.get_current_abitti2_version(),
+                "status": status,
+            }
+
+            single_security_code_data = (
+                ktp_controller.abitti2.client.get_single_security_code()
+            )
+            try:
+                single_security_code = single_security_code_data["securityCode"]
+            except KeyError:
+                # Abitti2 server does not seem to have one by default,
+                # it needs to be set first.
+                _LOGGER.warning(
+                    "Keycode (single security code) is not set, generating it"
+                )
+                single_security_code_data = (
+                    ktp_controller.abitti2.client.change_single_security_code()
+                )
+                single_security_code = single_security_code_data["securityCode"]
+            else:
+                status_report["status"]["singleSecurityCode"] = single_security_code
+
+            try:
+                ktp_controller.examomatic.client.send_abitti2_status_report(
+                    status_report
+                )
+                status_report["reported_at"] = datetime.datetime.utcnow().isoformat()
+                status_report["received_at"] = received_at.isoformat()
+                _LOGGER.info("sent Abitti2 status report to Exam-O-Matic")
+            finally:
+                ktp_controller.api.client.send_abitti2_status_report(status_report)
+                _LOGGER.info("sent Abitti2 status report to KTP Controller")
+
+    async def __maintain_websocket_connection_to_api(self):
+        async with websockets.connect(
+            ktp_controller.api.client.websock_get_url()
+        ) as websock:
+            async with asyncio.TaskGroup() as tg:
+                tg.create_task(self.__send_pings_to_api(websock))
+                tg.create_task(self.__communicate_with_api(websock))
+
+    async def __maintain_websocket_connection_to_examomatic(self):
+        async with websockets.connect(
+            ktp_controller.examomatic.client.websock_get_url(),
+            additional_headers=ktp_controller.examomatic.client.get_basic_auth(),
+        ) as websock:
+            async with asyncio.TaskGroup() as tg:
+                tg.create_task(self.__send_pings_to_examomatic(websock))
+                tg.create_task(self.__communicate_with_examomatic(websock))
+
+    async def __maintain_websocket_connection_to_abitti2(self):
+        async with websockets.connect(
+            ktp_controller.abitti2.client.websock_get_url(),
+            additional_headers=ktp_controller.abitti2.client.get_basic_auth(),
+        ) as websock:
+            async with asyncio.TaskGroup() as tg:
+                tg.create_task(self.__communicate_with_abitti2(websock))
+
+    def __ensure_exam_file_exists(self, eom_scheduled_exam):
+        _LOGGER.info(
+            "ensuring exam file %r (file_uuid=%s) exists",
+            eom_scheduled_exam["file_name"],
+            eom_scheduled_exam["file_uuid"],
+        )
+
+        utcnow = datetime.datetime.utcnow().isoformat()
+
+        filepath = _get_local_filepath(
+            LocalFilepathType.EXAM_FILE,
+            eom_scheduled_exam["file_uuid"],
+            eom_scheduled_exam["file_sha256"],
+        )
+
+        do_download = False
+        if not os.path.exists(filepath):
+            do_download = True
+        elif os.path.getsize(filepath) != eom_scheduled_exam["file_size"]:
+            _LOGGER.warning(
+                "exam file %r (file_uuid=%s) is already downloaded, but Exam-O-Matic claims it has incorrect size, re-downloading it now",
+                eom_scheduled_exam["file_name"],
+                eom_scheduled_exam["file_uuid"],
+            )
+            os.rename(
+                filepath, f"{filepath}.incorrect_size-{utcnow}"
+            )  # Saved for possible investigation.
+            do_download = True
+        elif ktp_controller.utils.sha256(filepath) != eom_scheduled_exam["file_sha256"]:
+            _LOGGER.warning(
+                "exam file %r (file_uuid=%s) is already downloaded, but Exam-O-Matic claims it has incorrect SHA256 checksum, re-downloading it now",
+                eom_scheduled_exam["file_name"],
+                eom_scheduled_exam["file_uuid"],
+            )
+            os.rename(
+                filepath, f"{filepath}.incorrect_sha256-{utcnow}"
+            )  # Saved for possible investigation.
+            do_download = True
+
+        if do_download:
+            _LOGGER.info(
+                "starting to download exam file %r (file_uuid=%s) to %r",
+                eom_scheduled_exam["file_name"],
+                eom_scheduled_exam["file_uuid"],
+                filepath,
+            )
+            ktp_controller.examomatic.client.download_exam_file(
+                eom_scheduled_exam["file_sha256"], filepath
+            )
+            _LOGGER.info(
+                "downloaded exam file %r (file_uuid=%s) successfully to %r",
+                eom_scheduled_exam["file_name"],
+                eom_scheduled_exam["file_uuid"],
+                filepath,
+            )
+        else:
+            _LOGGER.info(
+                "exam file %r (file_uuid=%s) already exists at %r and is up to date",
+                eom_scheduled_exam["file_name"],
+                eom_scheduled_exam["file_uuid"],
+                filepath,
+            )
+
+    def __refresh_exams(self):
+        _LOGGER.info("starting to refresh exams")
+
+        eom_exam_info = ktp_controller.examomatic.client.get_exam_info()
+        _LOGGER.debug("received exam info from Exam-O-Matic: %s:", eom_exam_info)
+
+        for eom_scheduled_exam in eom_exam_info["schedules"]:
+            self.__ensure_exam_file_exists(eom_scheduled_exam)
+
+        ktp_controller.api.client.save_exam_info(eom_exam_info)
+
+        _LOGGER.info("refreshed exams successfully")
+
+    async def forever(self):
+        while True:
+            _LOGGER.info("Start!")
+
+            try:
+                self.__refresh_exams()
+                async with asyncio.TaskGroup() as tg:
+                    tg.create_task(self.__maintain_websocket_connection_to_api())
+                    tg.create_task(self.__maintain_websocket_connection_to_abitti2())
+                    tg.create_task(self.__maintain_websocket_connection_to_examomatic())
+            except* Exception:
+                _LOGGER.exception("Operational failure")
+                _LOGGER.error(
+                    "Restart approximately in %d seconds...",
+                    self.__approx_restart_timeout_sec,
+                )
+                await asyncio.sleep(self.__approx_restart_timeout_sec)
+
+    def run(self):
+        for d in (_EXAM_FILE_DIR, _EXAM_PACKAGE_DIR):
+            try:
+                os.makedirs(d)
+            except FileExistsError:
+                pass
+        asyncio.run(self.forever())
+
+
+def _main():
+    Agent().run()
+
+
+if __name__ == "__main__":
+    _main()

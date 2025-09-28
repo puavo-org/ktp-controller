@@ -1,41 +1,38 @@
 # ktp-controller
 
+Connection diagram:
+
 ```
-                                                +-------+
-                                                |  UI   |
-                                                +-------+
-                                                    |
-                                                    | HTTP
-                                                    v
-+-----------------------+                       +-------+                +------------------+
-| Exam-O-Matic listener |---------(HTTP)------->|       |<-----(HTTP)----| Abitti2 listener |
-+-----------------------+                       |       |                +------------------+
-            o                                   |  API  |                       o
-            |                                   |       |                       |
-            | WSS                               |       |                       |
--.-.-.-.-.-.|-.-.-.-.-.--.-.+                   |       |                   WSS |
-            o               :                   |       |                       o
-+-----------------------+   :                   +-------+                  +---------+
-|      Exam-O-Matic     |<---------(HTTPS)-----/    ^     \----(HTTPS)---->| Abitti2 |
-+-----------------------+   :                       |                      +---------+
-                            :                       | HTTP
-                   Internet : Device            +-------+
-                            :                   | Agent |
                             :                   +-------+
-```
+                   Internet : Device            |  UI   |
+                            :                   +-------+
+                            :                       |
+                            :                       | HTTP
+                            :                       v
+                            :                   +-------+                                     
+                            :                   |       |                                    
+                            :                   |  API  |                        
+                            :                   |       |                        
+                            :                   +-------+                        
++-----------------------+   :                     o ^                      +---------+
+|      Exam-O-Matic     |<------(HTTPS)---+       | |       +--(HTTPS)---->| Abitti2 |
++-----------------------+   :             |    WS | | HTTP  |              +---------+
+                      o     :             |       o |       |                  o
+                      |     :             +-----+-------+---+                  |
+                      |     :                   |       |                      |
+                      +---------(WSS)----------o| Agent |o--------(WSS)--------+
+                            :                   |       |
+                            :                   +-------+
+```    
 
-KTP Controller consists of three components:
+KTP Controller consists of two main components:
+- Agent
 - API
-- Abitti2 listener
-- Exam-O-Matic listener
+- DB
 
-Abitti2 listener is responsible for maintaining a websocket to
-Abitti2, listening to it, and delivering events, sent by Abitti2, to
-the API app.
-
-Exam-O-Matic listener is to Exam-O-Matic what Abitti2 listener is to
-Abitti2; it is responsible for maintaining a websocket to
-Exam-O-Matic, listening to it, and delivering events to the API app.
+Agent communicates with all components (Exam-O-Matic, Abitti2 and API)
+and is responsible for making them play well together. It uses API to
+store necessary data in a persistent database storage.
 
 The API application is built on FastAPI (https://fastapi.tiangolo.com/).
 

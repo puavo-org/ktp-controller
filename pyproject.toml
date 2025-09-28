@@ -15,8 +15,9 @@ uvicorn = {extras = ["standard"], version = "*"}
 alembic = "*"
 pydantic-settings = "*"
 requests = "*"
-websocket-client = "*"
 supervisor = "*"
+redis = "*"
+websockets = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"

@@ -1,20 +1,66 @@
 # Standard library imports
-import abc
 import base64
+import contextlib
+import hashlib
 import json
 import logging
 import os
-import select
-import signal
 import sys
 import typing
 import urllib.parse
 
-# Third-party imports
-import websocket  # type: ignore
-
-
 _LOGGER = logging.getLogger(__file__)
+_LOGGER.setLevel(logging.DEBUG)
+
+
+def sha256(filepath: str, chunk_size_bytes: int = 1024**2) -> str:
+    if chunk_size_bytes < 1:
+        raise ValueError(
+            "invalid chunk_size, must be greater than zero", chunk_size_bytes
+        )
+
+    cs = hashlib.sha256()
+    with open(filepath, "rb") as f:
+        while True:
+            chunk = f.read(chunk_size_bytes)
+            if not chunk:
+                break
+            cs.update(chunk)
+
+    return cs.hexdigest()
+
+
+@contextlib.contextmanager
+def open_atomic_write(
+    dest_filepath: str, exclusive: bool = False, encoding: typing.Optional[str] = None
+):
+    if exclusive:
+        mode = "x"
+    else:
+        mode = "w"
+    if encoding is None:
+        mode = f"{mode}b"
+
+    tmp_dest_filepath = f"{dest_filepath}.ktp_controller_open_atomic_write_tmp"
+    success = False
+    created_dest_file = False
+    created_tmp_file = False
+    try:
+        with open(dest_filepath, mode, encoding=encoding) as _:
+            created_dest_file = True
+            with open(tmp_dest_filepath, mode, encoding=encoding) as tmp_dest_file:
+                created_tmp_file = True
+                yield tmp_dest_file
+            os.rename(tmp_dest_filepath, dest_filepath)
+        success = True
+    finally:
+        if not success:
+            try:
+                if created_dest_file:
+                    os.unlink(dest_filepath)
+            finally:
+                if created_tmp_file:
+                    os.unlink(tmp_dest_filepath)
 
 
 def json_loads_dict(string: str) -> typing.Dict[str, typing.Any]:
@@ -33,6 +79,7 @@ def get_url(
     host: str,
     path: str,
     *,
+    params=None,
     use_websocket: bool = False,
     use_tls: bool = True,
 ) -> str:
@@ -55,58 +102,17 @@ def get_url(
     if use_tls:
         scheme = f"{scheme}s"
 
-    return f"{scheme}://{host}/{path}"
-
-
-def sigawaresleep(seconds):
-    siginfo = signal.sigtimedwait(signal.Signals, seconds)
-    if siginfo:
-        signal.raise_signal(siginfo.si_signo)
-
-
-def common_term_signal(func):
-    for quit_signal in [
-        signal.SIGINT,
-        signal.SIGTERM,
-        signal.SIGHUP,
-        signal.SIGUSR1,
-        signal.SIGUSR2,
-        signal.SIGALRM,
-        signal.SIGQUIT,
-    ]:
-        signal.signal(quit_signal, lambda s, e: func(s))
-
-
-def get_basic_auth(username: str, password: str) -> str:
-    auth = base64.b64encode(f"{username}:{password}".encode("ascii")).decode("ascii")
-    return f"Basic {auth}"
-
-
-def open_websock(
-    host: str,
-    path: str,
-    *,
-    params: typing.Optional[typing.Dict[str, str]] = None,
-    header: typing.Optional[typing.Dict[str, str]] = None,
-    use_tls: bool = True,
-) -> websocket.WebSocket:
-    if header is None:
-        header = {}
-
-    url = get_url(host, path, use_websocket=True, use_tls=use_tls)
+    url = f"{scheme}://{host}/{path}"
 
     if params is not None:
         url = f"{url}?{urllib.parse.urlencode(params)}"
 
-    websock = websocket.WebSocket()
-    _LOGGER.debug("connecting websocket to %r", url)
-    websock.connect(
-        url,
-        connection="Connection: Upgrade",
-        header=header,
-    )
+    return url
 
-    return websock
+
+def get_basic_auth(username: str, password: str) -> typing.Dict[str, str]:
+    auth = base64.b64encode(f"{username}:{password}".encode("ascii")).decode("ascii")
+    return {"Authorization": f"Basic {auth}"}
 
 
 def readfirstline(filepath, encoding=sys.getdefaultencoding()):
@@ -114,88 +120,12 @@ def readfirstline(filepath, encoding=sys.getdefaultencoding()):
         return f.readline().rstrip(os.linesep)
 
 
-class Listener(abc.ABC):
-    def __init__(self, alarm_interval=None):
-        self.__websock = None
-        self.__is_running = False
-        self.__rfd, self.__wfd = os.pipe()
+async def websock_send_json(websock, data) -> str:
+    message = json.dumps(
+        data,
+        ensure_ascii=True,
+        separators=(",", ":"),
+    )
+    await websock.send(message)
 
-        common_term_signal(self.__sigwakeup)
-
-        if alarm_interval:
-            signal.setitimer(signal.ITIMER_REAL, alarm_interval, alarm_interval)
-
-    def __sigwakeup(self, signum: int):
-        os.write(self.__wfd, int.to_bytes(signum))
-
-    def __quit(self):
-        self.__is_running = False
-
-    def __run(self):
-        self.__is_running = True
-        try:
-            _LOGGER.info("opening websocket connection")
-            self.__websock = self._open_websock()
-
-            while self.__is_running:
-                rlist, _, _ = select.select([self.__rfd, self.__websock.sock], [], [])
-                _LOGGER.debug("wakeup")
-
-                if self.__rfd in rlist:
-                    signum = int.from_bytes(os.read(self.__rfd, 4))
-                    if signum == signal.SIGALRM:
-                        self._on_alarm()
-                    else:
-                        self.__quit()
-                        continue
-
-                if self.__websock.sock in rlist:
-                    message = self.__websock.recv()
-                    _LOGGER.debug("received %r", message)
-
-                    try:
-                        validated_message = self._validate_message(message)
-                    except ValueError as value_error:
-                        _LOGGER.warning(
-                            "received invalid message, ignoring it: %s",
-                            value_error,
-                        )
-                    else:
-                        if not self._handle_validated_message(validated_message):
-                            _LOGGER.error(
-                                "validated message left unhandled: %s",
-                                validated_message,
-                            )
-
-        finally:
-            if self.__websock:
-                _LOGGER.info("closing websocket connection")
-                self.__websock.close()
-                self.__websock = None
-
-        _LOGGER.info("bye")
-
-    @abc.abstractmethod
-    def _handle_validated_message(self, validated_message) -> bool:
-        ...
-
-    @abc.abstractmethod
-    def _open_websock(self):
-        ...
-
-    def _on_alarm(self):
-        pass
-
-    def _send(self, message, encoder):
-        message = encoder(message)
-        _LOGGER.debug("sending %r", message)
-        self.__websock.send(message)
-
-    def _validate_message(self, message):
-        return message
-
-    def quit(self):
-        return self.__quit()
-
-    def run(self):
-        return self.__run()
+    return message

@@ -88,7 +88,7 @@ class Settings(BaseSettings):
     examomatic_host: str = "koejakaja.example.invalid"
     examomatic_username: str = getpass.getuser()
     examomatic_password_file: str = os.path.expanduser(
-        "~/ktp-controller-examomatic-listener-password.txt"
+        "~/ktp-controller-examomatic-password.txt"
     )
     domain: str = "example.invalid"
     hostname: str = platform.node()

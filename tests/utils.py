@@ -1,3 +1,6 @@
+import datetime
+import sys
+
 # Third-party imports
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -42,3 +45,16 @@ def client(testdb):
     APP.dependency_overrides[get_db] = override_get_db
     yield fastapi.testclient.TestClient(APP)
     APP.dependency_overrides.clear()
+
+
+@pytest.fixture
+def utcnow():
+    yield datetime.datetime.utcnow()
+
+
+def assert_response(response, *, expected_status_code: int):
+    try:
+        assert response.status_code == expected_status_code
+    except AssertionError:
+        print(response.content, file=sys.stderr)
+        raise
