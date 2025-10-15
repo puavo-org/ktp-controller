@@ -8,7 +8,6 @@ import fastapi  # type: ignore
 
 # Internal imports
 import ktp_controller.api.database
-import ktp_controller.api.thing.routes
 from ktp_controller.settings import SETTINGS
 
 logging.basicConfig(
@@ -40,4 +39,3 @@ async def _lifespan(app: fastapi.FastAPI):  # pylint: disable=unused-argument
 
 
 APP = fastapi.FastAPI(lifespan=_lifespan)
-APP.include_router(ktp_controller.api.thing.routes.router, prefix="/api/v1/thing")

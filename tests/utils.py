@@ -7,7 +7,7 @@ import pytest
 # Internal imports
 from ktp_controller.api.main import APP
 from ktp_controller.api.database import get_db
-from ktp_controller.api.models import Base, Thing
+from ktp_controller.api.models import Base
 
 
 @pytest.fixture(scope="session")
