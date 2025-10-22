@@ -328,6 +328,7 @@ class Agent:
                 "monitoring_passphrase": ktp_controller.abitti2.naksu2.read_password(),
                 "server_version": ktp_controller.abitti2.client.get_current_abitti2_version(),
                 "status": status,
+                "received_at": received_at.isoformat(),
             }
 
             single_security_code_data = (
@@ -353,7 +354,6 @@ class Agent:
                     status_report
                 )
                 status_report["reported_at"] = datetime.datetime.utcnow().isoformat()
-                status_report["received_at"] = received_at.isoformat()
                 _LOGGER.info("sent Abitti2 status report to Exam-O-Matic")
             finally:
                 ktp_controller.api.client.send_abitti2_status_report(status_report)
