@@ -32,11 +32,11 @@ router = fastapi.APIRouter(tags=["abitti2"])
 # preserved and all the rest deleted.
 _STATUS_REPORT_MAX_COUNT = 35000  # approx. 60 / 5 * 60 * 24 * 2 which means 2 days of reports will be stored, Abitti2 sends one report every 5secs
 
-# 300 difference, means that
-# delete will hit once per
-# hour because Abitti2 sends
-# status reports one per 5sec.
-_STATUS_REPORT_PRESERVE_COUNT = 34700
+
+def _get_status_report_preserve_count():
+    # 360 difference, means that delete will hit twice per hour
+    # because Abitti2 sends status reports one per 5sec.
+    return _STATUS_REPORT_MAX_COUNT - 360  # 60 / 5 * 30 = 360
 
 
 @router.post(
@@ -52,8 +52,8 @@ async def _send_status_report(
     if status_report_count >= _STATUS_REPORT_MAX_COUNT:
         delete_subquery = (
             db.query(models.Abitti2StatusReport.dbid)
-            .order_by(sqlalchemy.asc(models.Abitti2StatusReport.created_at))
-            .limit(status_report_count - _STATUS_REPORT_PRESERVE_COUNT)
+            .order_by(sqlalchemy.asc(models.Abitti2StatusReport._row_created_at))
+            .limit(status_report_count - _get_status_report_preserve_count())
             .subquery()
         )
         db.query(models.Abitti2StatusReport).filter(
