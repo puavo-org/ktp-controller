@@ -208,6 +208,7 @@ class ExamInfo(Base):  # type: ignore
         index=True,
         unique=True,
     )
+
     raw_data: Mapped[sqlalchemy.JSON] = mapped_column(
         sqlalchemy.JSON,
         nullable=False,

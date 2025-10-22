@@ -1,12 +1,11 @@
 # Standard library imports
 import datetime
-import json
 import logging
-import typing
+
 
 # Third-party imports
-import fastapi  # type: ignore
-import fastapi.exceptions  # type: ignore
+import fastapi
+import fastapi.exceptions
 import sqlalchemy.orm
 import sqlalchemy.sql
 

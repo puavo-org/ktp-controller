@@ -1,20 +1,17 @@
 # Standard library imports
 import enum
-import typing
 
 # Third-party imports
-import pydantic
+
+# Internal imports
+import ktp_controller.pydantic
 
 __all__ = [
+    "AddAgentTaskResponseStatus",
     "AgentTask",
     "AgentTaskName",
+    "AddAgentTaskResponse",
 ]
-
-
-StrictPositiveIntT = typing.TypeVar(
-    "StrictPositiveIntT", pydantic.StrictInt, pydantic.PositiveInt
-)
-StrictPositiveInt: typing.TypeAlias = StrictPositiveIntT
 
 
 class AddAgentTaskResponseStatus(str, enum.Enum):
@@ -33,10 +30,10 @@ class AgentTaskName(str, enum.Enum):
         return self.value
 
 
-class AgentTask(pydantic.BaseModel):
+class AgentTask(ktp_controller.pydantic.BaseModel):
     name: AgentTaskName
 
 
-class AddAgentTaskResponse(pydantic.BaseModel):
+class AddAgentTaskResponse(ktp_controller.pydantic.BaseModel):
     status: AddAgentTaskResponseStatus
     agent_task: AgentTask
