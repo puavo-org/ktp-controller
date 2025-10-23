@@ -37,7 +37,7 @@ def open_atomic_write(
     if exclusive:
         mode = "x"
     else:
-        mode = "w"
+        mode = "a"  # "a" does not truncate the file rightaway, rename will do it if all succeeds
     if encoding is None:
         mode = f"{mode}b"
 
@@ -45,6 +45,7 @@ def open_atomic_write(
     success = False
     created_dest_file = False
     created_tmp_file = False
+    pre_exists = os.path.exists(dest_filepath)
     try:
         with open(dest_filepath, mode, encoding=encoding) as _:
             created_dest_file = True
@@ -56,7 +57,7 @@ def open_atomic_write(
     finally:
         if not success:
             try:
-                if created_dest_file:
+                if not pre_exists and created_dest_file:
                     os.unlink(dest_filepath)
             finally:
                 if created_tmp_file:
