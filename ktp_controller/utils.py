@@ -64,6 +64,18 @@ def open_atomic_write(
                     os.unlink(tmp_dest_filepath)
 
 
+def copy_atomic(src_filepath: str, dest_filepath: str, exclusive: bool = False):
+    with open(src_filepath, "rb") as src_file:
+        with open_atomic_write(
+            dest_filepath, exclusive=exclusive, encoding=None
+        ) as dest_file:
+            while True:
+                data = src_file.read(4096)
+                if not data:
+                    break
+                dest_file.write(data)
+
+
 def json_loads_dict(string: str) -> typing.Dict[str, typing.Any]:
     try:
         data = json.loads(string)
