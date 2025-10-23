@@ -10,8 +10,11 @@ import requests.auth
 import ktp_controller.utils
 import ktp_controller.abitti2.naksu2
 
-
 _ABITTI2_USERNAME = "valvoja"
+
+DUMMY_EXAM_PACKAGE_FILEPATH = os.path.expanduser(
+    "~/.local/share/ktp-controller/dummy-exam-package.zip"
+)
 
 
 def _get(path: str, *, timeout: int = 20) -> requests.Response:
@@ -107,9 +110,10 @@ def start_decrypted_exams() -> typing.Dict:
     return _post("/api/start-exam").json()
 
 
-# def stop_all_exam_sessions() -> typing.Dict:
-#    for session_uuid in session_uuids:
-#        _post("/api/end-session", data=session_uuid).json()
+def reset():
+    load_exam_package(DUMMY_EXAM_PACKAGE_FILEPATH)
+    decrypt_exams("dummy")
+    # TODO: verify that dummy exam got decrypted
 
 
 def websock_get_url():

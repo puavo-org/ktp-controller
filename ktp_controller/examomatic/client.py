@@ -1,6 +1,7 @@
 # Standard library imports
 import hashlib
 import json
+import os.path
 import typing
 
 # Third-party imports
@@ -111,6 +112,12 @@ def download_exam_file(sha256sum: str, dest_filepath: str, *, timeout: int = 20)
     ) as dest_file:
         for chunk in get_exam_file_stream(sha256sum, timeout=timeout):
             dest_file.write(chunk)
+
+
+def download_dummy_exam_file(dest_filepath: str, *, timeout: int = 20):
+    ktp_controller.utils.copy_atomic(
+        os.path.join(os.path.dirname(__file__), "dummy-exam-file.mex"), dest_filepath
+    )
 
 
 def get_basic_auth():

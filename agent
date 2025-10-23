@@ -33,6 +33,20 @@ _EXAM_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-files")
 # ~/.local/share/ktp-controller/exam-packages/FILE_UUID/COMPOUND_EXAM_FILE_SHA256
 _EXAM_PACKAGE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-packages")
 
+_DUMMY_EXAM_FILE_FILEPATH = os.path.expanduser(
+    "~/.local/share/ktp-controller/dummy-exam-file.mex"
+)
+
+
+def _create_dummy_exam_package_file():
+    ktp_controller.examomatic.client.download_dummy_exam_file(_DUMMY_EXAM_FILE_FILEPATH)
+
+    with ktp_controller.utils.open_atomic_write(
+        ktp_controller.abitti2.client.DUMMY_EXAM_PACKAGE_FILEPATH
+    ) as exam_package_file:
+        with zipfile.ZipFile(exam_package_file, "w") as exam_package_file_zip:
+            exam_package_file_zip.write(_DUMMY_EXAM_FILE_FILEPATH)
+
 
 class LocalFilepathType(str, enum.Enum):
     EXAM_FILE = "exam-file"
@@ -115,10 +129,9 @@ def _set_scheduled_exam_package_state(scheduled_exam_package, next_state):
 def _init_current_scheduled_exam_package(
     exam_package: typing.Dict, utcnow: datetime.datetime
 ):
-    # This exam package is newly set as the current. Let's reset the
+    # This exam package was just set as the current. Let's reset the
     # Abitti2 server.
-    # ktp_controller.abitti2.client.reset()
-    pass
+    ktp_controller.abitti2.client.reset()
 
 
 def _prepare_current_scheduled_exam_package(exam_package, utcnow):
@@ -128,7 +141,9 @@ def _prepare_current_scheduled_exam_package(exam_package, utcnow):
 
     for decrypt_code in decrypt_codes:
         ktp_controller.abitti2.client.decrypt_exams(decrypt_code)
-    # TODO: verify that all exams are decrypted
+
+    # TODO: verify that all exams are decrypted, if not, an exception
+    # should be raise to ensure preparation is aborted and state is not changed.
 
 
 def _start_current_scheduled_exam_package(exam_package, utcnow):
@@ -136,16 +151,16 @@ def _start_current_scheduled_exam_package(exam_package, utcnow):
 
 
 def _stop_current_scheduled_exam_package(exam_package, utcnow):
-    # ktp_controller.abitti2.client.stop_all_exam_sessions()
-    pass
+    # Change the security code first to ensure student cannot enter anymore.
+    ktp_controller.abitti2.client.change_single_security_code()
+    # TODO: stop all exam sessions
 
 
 def _archive_current_scheduled_exam_package(exam_package, utcnow):
-    # ktp_controller.abitti2.client.download_exam_results()
-    # ktp_controller.examomatic.client.upload_exam_results()
+    # TODO: download exam results from Abitti2
+    # TODO: upload exam results to EOM
     # TODO: verify that we got all results
-    # ktp_controller.abitti2.client.reset()
-    pass
+    ktp_controller.abitti2.client.reset()
 
 
 class Agent:
@@ -510,6 +525,10 @@ class Agent:
                 os.makedirs(d)
             except FileExistsError:
                 pass
+
+        # ktp_controller.abitti2.client needs dummy exam package to reset Abitti2.
+        _create_dummy_exam_package_file()
+
         asyncio.run(self.forever())
 
 
