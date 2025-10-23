@@ -104,17 +104,21 @@ def _create_exam_package_file(
     return exam_package_filepath, decrypt_codes
 
 
+def _set_scheduled_exam_package_state(scheduled_exam_package, next_state):
+    ktp_controller.api.client.set_current_scheduled_exam_package_state(
+        scheduled_exam_package["external_id"], next_state
+    )
+
+    scheduled_exam_package["state"] = next_state
+
+
 def _init_current_scheduled_exam_package(
     exam_package: typing.Dict, utcnow: datetime.datetime
 ):
     # This exam package is newly set as the current. Let's reset the
     # Abitti2 server.
     # ktp_controller.abitti2.client.reset()
-    ktp_controller.api.client.set_current_scheduled_exam_package_state(
-        exam_package["external_id"], "waiting"
-    )
-
-    exam_package["state"] = "waiting"
+    pass
 
 
 def _prepare_current_scheduled_exam_package(exam_package, utcnow):
@@ -126,29 +130,14 @@ def _prepare_current_scheduled_exam_package(exam_package, utcnow):
         ktp_controller.abitti2.client.decrypt_exams(decrypt_code)
     # TODO: verify that all exams are decrypted
 
-    ktp_controller.api.client.set_current_scheduled_exam_package_state(
-        exam_package["external_id"], "ready"
-    )
-
-    exam_package["state"] = "ready"
-
 
 def _start_current_scheduled_exam_package(exam_package, utcnow):
     ktp_controller.abitti2.client.start_decrypted_exams()
-    ktp_controller.api.client.set_current_scheduled_exam_package_state(
-        exam_package["external_id"], "running"
-    )
-
-    exam_package["state"] = "running"
 
 
 def _stop_current_scheduled_exam_package(exam_package, utcnow):
     # ktp_controller.abitti2.client.stop_all_exam_sessions()
-    ktp_controller.api.client.set_current_scheduled_exam_package_state(
-        exam_package["external_id"], "stopped"
-    )
-
-    exam_package["state"] = "stopped"
+    pass
 
 
 def _archive_current_scheduled_exam_package(exam_package, utcnow):
@@ -156,11 +145,7 @@ def _archive_current_scheduled_exam_package(exam_package, utcnow):
     # ktp_controller.examomatic.client.upload_exam_results()
     # TODO: verify that we got all results
     # ktp_controller.abitti2.client.reset()
-    ktp_controller.api.client.set_current_scheduled_exam_package_state(
-        exam_package["external_id"], "archived"
-    )
-
-    exam_package["state"] = "archived"
+    pass
 
 
 class Agent:
@@ -203,52 +188,65 @@ class Agent:
     async def __work_on_current_scheduled_exam_package(self):
         utcnow = datetime.datetime.utcnow()
 
-        exam_package = ktp_controller.api.client.get_current_scheduled_exam_package()
+        scheduled_exam_package = (
+            ktp_controller.api.client.get_current_scheduled_exam_package()
+        )
 
-        if exam_package["state"] is None:
-            _init_current_scheduled_exam_package(exam_package, utcnow)
-
-            # To reduce unnecessary delays, since we are here, we can
-            # as well proceed to the next step right away.
-            # Hence no return here.
-
-        if (
-            exam_package["state"] == "waiting"
-            and datetime.datetime.fromisoformat(exam_package["lock_time"]) >= utcnow
-        ):
-            _prepare_current_scheduled_exam_package(exam_package, utcnow)
+        if scheduled_exam_package["state"] is None:
+            _init_current_scheduled_exam_package(scheduled_exam_package, utcnow)
+            _set_scheduled_exam_package_state(scheduled_exam_package, "waiting")
 
             # To reduce unnecessary delays, since we are here, we can
             # as well proceed to the next step right away.
             # Hence no return here.
 
         if (
-            exam_package["state"] == "ready"
-            and datetime.datetime.fromisoformat(exam_package["start_time"]) >= utcnow
+            scheduled_exam_package["state"] == "waiting"
+            and datetime.datetime.fromisoformat(scheduled_exam_package["lock_time"])
+            >= utcnow
         ):
-            _start_current_scheduled_exam_package(exam_package, utcnow)
+            _prepare_current_scheduled_exam_package(scheduled_exam_package, utcnow)
+            _set_scheduled_exam_package_state(scheduled_exam_package, "ready")
+
+            # To reduce unnecessary delays, since we are here, we can
+            # as well proceed to the next step right away.
+            # Hence no return here.
+
+        if (
+            scheduled_exam_package["state"] == "ready"
+            and datetime.datetime.fromisoformat(scheduled_exam_package["start_time"])
+            >= utcnow
+        ):
+            _start_current_scheduled_exam_package(scheduled_exam_package, utcnow)
+            _set_scheduled_exam_package_state(scheduled_exam_package, "running")
 
             # We just started all exams, there's nothing else we need to do this time.
             return
 
         if (
-            exam_package["state"] == "running"
-            and datetime.datetime.fromisoformat(exam_package["end_time"]) >= utcnow
+            scheduled_exam_package["state"] == "running"
+            and datetime.datetime.fromisoformat(scheduled_exam_package["end_time"])
+            >= utcnow
         ):
-            _stop_current_scheduled_exam_package(exam_package, utcnow)
+            _stop_current_scheduled_exam_package(scheduled_exam_package, utcnow)
+            _set_scheduled_exam_package_state(scheduled_exam_package, "stopped")
 
             # We just stopped all exams, we will have a short coffee
             # break now and when we get back, we will collect all
             # results and archive the exam package.
             return
 
-        if exam_package["state"] == "stopped":
-            _archive_current_scheduled_exam_package(exam_package, utcnow)
+        if scheduled_exam_package["state"] == "stopped":
+            _archive_current_scheduled_exam_package(scheduled_exam_package, utcnow)
+            _set_scheduled_exam_package_state(scheduled_exam_package, "archived")
+
+            # Final return for this exam package. Now there's no way
+            # back. Once it's archived, it stays archived. Forever.
             return
 
         raise RuntimeError(
             "currently scheduled exam package is in an unknown state",
-            exam_package,
+            scheduled_exam_package,
         )
 
     async def __send_pings_to_api(self, websock):
