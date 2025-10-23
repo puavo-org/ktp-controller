@@ -109,17 +109,16 @@ def get_scheduled_exam_packages(
 def get_current_scheduled_exam_package(
     *, timeout: int = 20
 ) -> typing.Dict[str, typing.Any]:
-    return _post("/api/v1/exam/get_current_exam_package", timeout=timeout).json()
+    return _post(
+        "/api/v1/exam/get_current_scheduled_exam_package", timeout=timeout
+    ).json()
 
 
 def set_current_scheduled_exam_package_state(
-    external_id: str,
-    state: str,
-    *,
-    timeout: int = 20,
-) -> typing.Dict[str, typing.Any]:
+    external_id: str, state: str, *, timeout: int = 20
+) -> str:
     return _post(
-        "/api/v1/exam/get_current_exam_package",
+        "/api/v1/exam/set_current_scheduled_exam_package_state",
         json={"external_id": external_id, "state": state},
         timeout=timeout,
     ).json()
