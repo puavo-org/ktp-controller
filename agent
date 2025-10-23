@@ -271,7 +271,7 @@ class Agent:
                 # on the currently scheduled exam package. So, keep
                 # ping pong interval quite short. This could be
                 # replaced with more sophisticated scheduling logic,
-                # but for now, ping-pong is enough.
+                # but for now, ping-pong scheduling is good enough.
                 await self.__work_on_current_scheduled_exam_package()
                 # Ping pong is a great game!
                 # Let's
@@ -357,7 +357,7 @@ class Agent:
                 _LOGGER.info("sent Abitti2 status report to Exam-O-Matic")
             finally:
                 ktp_controller.api.client.send_abitti2_status_report(status_report)
-                _LOGGER.info("sent Abitti2 status report to KTP Controller")
+                _LOGGER.info("sent Abitti2 status report to KTP Controller API")
 
     async def __maintain_websocket_connection_to_api(self):
         async with websockets.connect(
