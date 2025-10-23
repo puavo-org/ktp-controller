@@ -45,7 +45,7 @@ def _get_status_report_preserve_count():
     summary="Send status report",
 )
 async def _send_status_report(
-    request: schemas.StatusReport,
+    request: schemas.Abitti2StatusReport,
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ):
     status_report_count = db.query(models.Abitti2StatusReport).count()

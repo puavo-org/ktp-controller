@@ -8,11 +8,11 @@ import pydantic
 import ktp_controller.pydantic
 
 __all__ = [
-    "StatusReport",
+    "Abitti2StatusReport",
 ]
 
 
-class StatusReport(ktp_controller.pydantic.BaseModel):
+class Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
     received_at: datetime.datetime
     reported_at: datetime.datetime | None
     monitoring_passphrase: pydantic.StrictStr
