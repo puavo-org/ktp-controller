@@ -12,6 +12,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 __all__ = [
     "Base",
     "ExamFileInfo",
+    "ExamInfo",
     "ScheduledExam",
     "ScheduledExamPackage",
     "Abitti2StatusReport",
