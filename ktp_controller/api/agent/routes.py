@@ -24,6 +24,28 @@ router = fastapi.APIRouter(tags=["agent"])
 
 
 @router.post(
+    "/stop_auto_control",
+    response_model=None,
+    summary="Stop auto control.",
+)
+async def _stop_auto_control():
+    await ktp_controller.agent.send_command(
+        ktp_controller.agent.Command.STOP_AUTO_CONTROL
+    )
+
+
+@router.post(
+    "/start_auto_control",
+    response_model=None,
+    summary="Start auto control.",
+)
+async def _start_auto_control():
+    await ktp_controller.agent.send_command(
+        ktp_controller.agent.Command.START_AUTO_CONTROL
+    )
+
+
+@router.post(
     "/bleep",
     response_model=None,
     summary="Bleep all agents, i.e. ask them to call home to check if there are tasks for them.",
