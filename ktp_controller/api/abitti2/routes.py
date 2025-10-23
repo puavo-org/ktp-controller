@@ -52,7 +52,7 @@ async def _send_status_report(
     if status_report_count >= _STATUS_REPORT_MAX_COUNT:
         delete_subquery = (
             db.query(models.Abitti2StatusReport.dbid)
-            .order_by(sqlalchemy.asc(models.Abitti2StatusReport._row_created_at))
+            .order_by(sqlalchemy.asc(models.Abitti2StatusReport.dbrow_created_at))
             .limit(status_report_count - _get_status_report_preserve_count())
             .subquery()
         )

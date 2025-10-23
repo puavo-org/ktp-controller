@@ -30,7 +30,7 @@ class ExamFileInfo(Base):  # type: ignore
         primary_key=True,
         autoincrement=True,
     )
-    _row_created_at: Mapped[datetime.datetime] = mapped_column(
+    dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
         sqlalchemy.DateTime,
         default=datetime.datetime.utcnow,
         nullable=False,
@@ -78,7 +78,7 @@ class ScheduledExam(Base):  # type: ignore
         primary_key=True,
         autoincrement=True,
     )
-    _row_created_at: Mapped[datetime.datetime] = mapped_column(
+    dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
         sqlalchemy.DateTime,
         default=datetime.datetime.utcnow,
         nullable=False,
@@ -137,7 +137,7 @@ class ScheduledExamPackage(Base):  # type: ignore
         primary_key=True,
         autoincrement=True,
     )
-    _row_created_at: Mapped[datetime.datetime] = mapped_column(
+    dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
         sqlalchemy.DateTime,
         default=datetime.datetime.utcnow,
         nullable=False,
@@ -195,7 +195,7 @@ class ExamInfo(Base):  # type: ignore
         primary_key=True,
         autoincrement=True,
     )
-    _row_created_at: Mapped[datetime.datetime] = mapped_column(
+    dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
         sqlalchemy.DateTime,
         default=datetime.datetime.utcnow,
         nullable=False,
@@ -224,7 +224,7 @@ class Abitti2StatusReport(Base):  # type: ignore
         primary_key=True,
         autoincrement=True,
     )
-    _row_created_at: Mapped[datetime.datetime] = mapped_column(
+    dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
         sqlalchemy.DateTime,
         default=datetime.datetime.utcnow,
         nullable=False,
