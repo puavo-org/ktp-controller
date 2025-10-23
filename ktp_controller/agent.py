@@ -26,8 +26,8 @@ async def _pubsub_send(data) -> str:
 
 
 class Command(str, enum.Enum):
-    STOP_AUTO_CONTROL = "stop_auto_control"
-    START_AUTO_CONTROL = "start_auto_control"
+    ENABLE_AUTO_CONTROL = "enable_auto_control"
+    DISABLE_AUTO_CONTROL = "disable_auto_control"
 
     def __str__(self) -> str:
         return self.value

@@ -175,6 +175,31 @@ class Agent:
         self.__approx_examomatic_ping_interval_sec = approx_examomatic_ping_interval_sec
         self.__approx_restart_timeout_sec = approx_restart_timeout_sec
 
+        self.__auto_control_enabled = True
+
+        self.__commands = {
+            str(
+                ktp_controller.agent.Command.ENABLE_AUTO_CONTROL
+            ): self.__command_enable_auto_control,
+            str(
+                ktp_controller.agent.Command.DISABLE_AUTO_CONTROL
+            ): self.__command_disable_auto_control,
+        }
+
+    def __command_enable_auto_control(self):
+        self.__auto_control_enabled = True
+
+    def __command_disable_auto_control(self):
+        self.__auto_control_enabled = False
+
+    async def __do_auto_control_work(self) -> bool:
+        if not self.__auto_control_enabled:
+            return False
+
+        _LOGGER.debug("Auto control is enabled, going to do some work.")
+
+        return await self.__work_on_current_scheduled_exam_package()
+
     async def __work_on_current_scheduled_exam_package(self):
         utcnow = datetime.datetime.utcnow()
 
@@ -266,13 +291,16 @@ class Agent:
             if message["kind"] == "bleep":
                 # TODO: ask API if there are tasks for me
                 continue
+            if message["kind"] == "command":
+                self.__commands[message["command"]]()
+                continue
             if message["kind"] == "pong":
-                # Whenever we get ponged, it's a sign for us to work
-                # on the currently scheduled exam package. So, keep
-                # ping pong interval quite short. This could be
-                # replaced with more sophisticated scheduling logic,
-                # but for now, ping-pong scheduling is good enough.
-                await self.__work_on_current_scheduled_exam_package()
+                # Whenever we get ponged, it's a sign for us to do
+                # some auto control work. So, keep ping pong interval
+                # quite short. This could be replaced with more
+                # sophisticated scheduling logic, but for now,
+                # ping-pong scheduling is good enough.
+                await self.__do_auto_control_work()
                 # Ping pong is a great game!
                 # Let's
                 continue  # playing it!

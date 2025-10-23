@@ -24,24 +24,24 @@ router = fastapi.APIRouter(tags=["agent"])
 
 
 @router.post(
-    "/stop_auto_control",
+    "/enable_auto_control",
     response_model=None,
-    summary="Stop auto control.",
+    summary="Enable auto control.",
 )
-async def _stop_auto_control():
+async def _enable_auto_control():
     await ktp_controller.agent.send_command(
-        ktp_controller.agent.Command.STOP_AUTO_CONTROL
+        ktp_controller.agent.Command.ENABLE_AUTO_CONTROL
     )
 
 
 @router.post(
-    "/start_auto_control",
+    "/disable_auto_control",
     response_model=None,
-    summary="Start auto control.",
+    summary="Disable auto control.",
 )
-async def _start_auto_control():
+async def _disable_auto_control():
     await ktp_controller.agent.send_command(
-        ktp_controller.agent.Command.START_AUTO_CONTROL
+        ktp_controller.agent.Command.DISABLE_AUTO_CONTROL
     )
 
 
