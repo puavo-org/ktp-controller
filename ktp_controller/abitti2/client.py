@@ -112,7 +112,7 @@ def start_decrypted_exams() -> typing.Dict:
 
 def reset():
     load_exam_package(DUMMY_EXAM_PACKAGE_FILEPATH)
-    decrypt_exams("dummy")
+    decrypt_exams("odotusaulakoe")
     # TODO: verify that dummy exam got decrypted
 
 
