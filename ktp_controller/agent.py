@@ -37,10 +37,6 @@ async def send_command(command: Command) -> str:
     return _pubsub_send({"kind": "command", "command": str(command)})
 
 
-async def bleep() -> str:
-    return _pubsub_send({"kind": "bleep"})
-
-
 @contextlib.asynccontextmanager
 async def pubsub():
     async with redis.from_url("redis://127.0.0.1") as redis_client:

@@ -45,15 +45,6 @@ async def _disable_auto_control():
     )
 
 
-@router.post(
-    "/bleep",
-    response_model=None,
-    summary="Bleep all agents, i.e. ask them to call home to check if there are tasks for them.",
-)
-async def _bleep():
-    await ktp_controller.agent.bleep()
-
-
 async def _deliver_pubsub_messages_to_agent(
     pubsub: redis.client.PubSub, websock: fastapi.WebSocket
 ):
