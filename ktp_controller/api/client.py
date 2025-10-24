@@ -12,6 +12,8 @@ from ktp_controller.settings import SETTINGS
 
 
 __all__ = [
+    "enable_auto_control",
+    "disable_auto_control",
     "eom_exam_info_to_api_exam_info",
     "get_current_scheduled_exam_package",
     "get_scheduled_exam",
@@ -151,3 +153,11 @@ def websock_get_url():
         use_tls=False,
         use_websocket=True,
     )
+
+
+def enable_auto_control():
+    return _post("/api/v1/agent/enable_auto_control").json()
+
+
+def disable_auto_control():
+    return _post("/api/v1/agent/disable_auto_control").json()
