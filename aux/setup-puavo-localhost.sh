@@ -14,7 +14,7 @@ sudo chown -R puavo-ers:puavo-ers /home/puavo-ers/ktp-controller
 #sudo install -m0640 -oroot -groot /dev/null /etc/sudoers.d/ktp-controller
 #sudo sh -c "echo '%puavo-ers      ALL = (:puavo) NOPASSWD: /usr/bin/make dev-run' >>/etc/sudoers.d/ktp-controller"
 head -n1 /etc/resolv.conf | grep -n -x 'nameserver 9.9.9.9' /etc/resolv.conf || {
-  sed -r -i '1 i nameserver 9.9.9.9' /etc/resolv.conf
+  sudo sed -r -i '1 i nameserver 9.9.9.9' /etc/resolv.conf
 }
 
 groups_changed=false
