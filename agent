@@ -204,7 +204,9 @@ class Agent:
 
         _LOGGER.debug("Auto control is enabled, going to do some work.")
 
-        return await self.__work_on_current_scheduled_exam_package()
+        await self.__work_on_current_scheduled_exam_package()
+
+        return True
 
     async def __work_on_current_scheduled_exam_package(self):
         utcnow = datetime.datetime.utcnow()
