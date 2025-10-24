@@ -187,10 +187,16 @@ class Agent:
         }
 
     def __command_enable_auto_control(self):
+        changed = not self.__auto_control_enabled
         self.__auto_control_enabled = True
+        if changed:
+            _LOGGER.info("Auto control is now enabled.")
 
     def __command_disable_auto_control(self):
+        changed = self.__auto_control_enabled
         self.__auto_control_enabled = False
+        if changed:
+            _LOGGER.info("Auto control is now disabled.")
 
     async def __do_auto_control_work(self) -> bool:
         if not self.__auto_control_enabled:
