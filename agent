@@ -267,11 +267,6 @@ class Agent:
             # back. Once it's archived, it stays archived. Forever.
             return
 
-        raise RuntimeError(
-            "currently scheduled exam package is in an unknown state",
-            scheduled_exam_package,
-        )
-
     async def __send_pings_to_api(self, websock):
         while True:
             message = json.dumps(
