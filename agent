@@ -308,7 +308,9 @@ class Agent:
                 # TODO: ask API if there are tasks for me
                 continue
             if message["kind"] == "command":
+                _LOGGER.info("Executing command %r...", message["command"])
                 self.__commands[message["command"]]()
+                _LOGGER.info("Executed command %r successfully.", message["command"])
                 continue
             if message["kind"] == "pong":
                 # Whenever we get ponged, it's a sign for us to do
