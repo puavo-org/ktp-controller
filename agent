@@ -175,7 +175,7 @@ class Agent:
         self.__approx_examomatic_ping_interval_sec = approx_examomatic_ping_interval_sec
         self.__approx_restart_timeout_sec = approx_restart_timeout_sec
 
-        self.__auto_control_enabled = True
+        self.__is_auto_control_enabled = True
 
         self.__commands = {
             str(
@@ -187,19 +187,19 @@ class Agent:
         }
 
     def __command_enable_auto_control(self):
-        changed = not self.__auto_control_enabled
-        self.__auto_control_enabled = True
+        changed = not self.__is_auto_control_enabled
+        self.__is_auto_control_enabled = True
         if changed:
             _LOGGER.info("Auto control is now enabled.")
 
     def __command_disable_auto_control(self):
-        changed = self.__auto_control_enabled
-        self.__auto_control_enabled = False
+        changed = self.__is_auto_control_enabled
+        self.__is_auto_control_enabled = False
         if changed:
             _LOGGER.info("Auto control is now disabled.")
 
     async def __do_auto_control_work(self) -> bool:
-        if not self.__auto_control_enabled:
+        if not self.__is_auto_control_enabled:
             return False
 
         _LOGGER.debug("Auto control is enabled, going to do some work.")
