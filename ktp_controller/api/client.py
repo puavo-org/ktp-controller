@@ -53,7 +53,7 @@ def send_abitti2_status_report(
     timeout: int = 5,
 ) -> typing.Any:
     return _post(
-        "/api/v1/abitti2/send_abitti2_status_report",
+        "/api/v1/system/send_abitti2_status_report",
         json=abitti2_status_report,
         timeout=timeout,
     )
@@ -150,7 +150,7 @@ def save_exam_info(
 def get_agent_websock_url():
     return ktp_controller.utils.get_url(
         f"{SETTINGS.api_host}:{SETTINGS.api_port}",
-        "/api/v1/agent/websocket",
+        "/api/v1/system/agent_websocket",
         use_tls=False,
         use_websocket=True,
     )
@@ -159,7 +159,7 @@ def get_agent_websock_url():
 def get_ui_websock_url():
     return ktp_controller.utils.get_url(
         f"{SETTINGS.api_host}:{SETTINGS.api_port}",
-        "/api/v1/ui/websocket",
+        "/api/v1/system/ui_websocket",
         use_tls=False,
         use_websocket=True,
     )
@@ -170,8 +170,8 @@ async def connect_ui_websock() -> websockets.connect:
 
 
 def async_enable_auto_control() -> str:
-    return _post("/api/v1/ui/async_enable_auto_control").json()
+    return _post("/api/v1/system/async_enable_auto_control").json()
 
 
 def async_disable_auto_control() -> str:
-    return _post("/api/v1/ui/async_disable_auto_control").json()
+    return _post("/api/v1/system/async_disable_auto_control").json()

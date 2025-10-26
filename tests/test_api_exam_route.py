@@ -1,16 +1,13 @@
-import datetime
+# Standard library imports
 import json
 
-import pytest
-import fastapi
-
 # Internal imports
+from ktp_controller.api import models
+import ktp_controller.api.client
+
+# Relative imports
 from .data import REAL_ANONYMIZED_EOM_EXAM_INFO_JSON
 from .utils import client, testdb, db_engine, utcnow, assert_response
-from ktp_controller.api import models
-import ktp_controller.api.exam.schemas as exam_schemas
-import ktp_controller.api.exam.utils as exam_utils
-import ktp_controller.api.client
 
 # Each test function executes in a separate session, each session
 # starts with an empty database.

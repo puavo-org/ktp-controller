@@ -1,0 +1,148 @@
+# Standard library imports
+import asyncio
+import json
+import logging
+
+# Third-party imports
+import fastapi  # type: ignore
+import fastapi.exceptions  # type: ignore
+import pydantic
+import sqlalchemy
+import sqlalchemy.orm
+import sqlalchemy.sql
+
+# Internal imports
+from ktp_controller.api.database import get_db
+from ktp_controller.api import models
+
+import ktp_controller.agent
+import ktp_controller.redis
+import ktp_controller.api.utils
+import ktp_controller.ui
+
+# Relative imports
+from . import schemas
+
+_LOGGER = logging.getLogger(__name__)
+
+
+__all__ = [
+    "router",
+]
+
+router = fastapi.APIRouter(tags=["system"])
+
+
+@router.post(
+    "/async_enable_auto_control",
+    response_model=pydantic.UUID4,
+    status_code=202,
+    summary="""\
+Asynchronously enable auto control.
+Auto control will be enabled soon after the response is sent.
+Return asynchronous message UUID as application/json body.
+""",
+)
+async def _async_enable_auto_control():
+    return await ktp_controller.agent.send_command(
+        ktp_controller.messages.CommandData(
+            command=ktp_controller.messages.Command.ENABLE_AUTO_CONTROL
+        )
+    )
+
+
+@router.post(
+    "/async_disable_auto_control",
+    response_model=pydantic.UUID4,
+    status_code=202,
+    summary="""\
+Asynchronously disable auto control.
+Auto control will be disabled soon after the response is sent.
+Return asynchronous message UUID as application/json body.
+""",
+)
+async def _async_disable_auto_control():
+    return await ktp_controller.agent.send_command(
+        ktp_controller.messages.CommandData(
+            command=ktp_controller.messages.Command.DISABLE_AUTO_CONTROL
+        )
+    )
+
+
+@router.websocket("/ui_websocket")
+async def _ui_websocket(websock: fastapi.WebSocket):
+    await websock.accept()
+
+    async with ktp_controller.redis.pubsub(ktp_controller.ui.PUBSUB_CHANNEL) as pubsub:
+        async with asyncio.TaskGroup() as tg:
+            tg.create_task(
+                ktp_controller.api.utils.deliver_pubsub_messages_to_websock(
+                    pubsub, websock
+                )
+            )
+
+
+# How many status reports will ever get stored at most. If this limit
+# is hit, then latest _STATUS_REPORT_PRESERVE_COUNT will be
+# preserved and all the rest deleted.
+_STATUS_REPORT_MAX_COUNT = 35000  # approx. 60 / 5 * 60 * 24 * 2 which means 2 days of reports will be stored, Abitti2 sends one report every 5secs
+
+
+def _get_status_report_preserve_count():
+    # 360 difference, means that delete will hit twice per hour
+    # because Abitti2 sends status reports one per 5sec.
+    return _STATUS_REPORT_MAX_COUNT - 360  # 60 / 5 * 30 = 360
+
+
+@router.post(
+    "/send_abitti2_status_report",
+    response_model=None,
+    summary="Send status report",
+)
+async def _send_abitti2_status_report(
+    request: schemas.Abitti2StatusReport,
+    db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
+):
+    status_report_count = db.query(models.Abitti2StatusReport).count()
+    if status_report_count >= _STATUS_REPORT_MAX_COUNT:
+        delete_subquery = (
+            db.query(models.Abitti2StatusReport.dbid)
+            .order_by(sqlalchemy.asc(models.Abitti2StatusReport.dbrow_created_at))
+            .limit(status_report_count - _get_status_report_preserve_count())
+            .subquery()
+        )
+        db.query(models.Abitti2StatusReport).filter(
+            models.Abitti2StatusReport.dbid.in_(sqlalchemy.sql.select(delete_subquery))
+        ).delete(synchronize_session="fetch")
+
+    db_status_report = models.Abitti2StatusReport(
+        dbid=None, raw_data=json.loads(request.model_dump_json())
+    )
+    db.add(db_status_report)
+    db.commit()
+
+
+async def _play_ping_pong_with_agent(websock: fastapi.WebSocket):
+    async for message in websock.iter_json():
+        if message["kind"] == "ping":
+            await websock.send_json({"kind": "pong", "uuid": message["uuid"]})
+            continue
+        _LOGGER.warning("Received and ignored unknown message: %s", message)
+
+
+@router.websocket("/agent_websocket")
+async def _agent_websocket(
+    websock: fastapi.WebSocket,
+):
+    await websock.accept()
+
+    async with ktp_controller.redis.pubsub(
+        ktp_controller.agent.PUBSUB_CHANNEL
+    ) as pubsub:
+        async with asyncio.TaskGroup() as tg:
+            tg.create_task(
+                ktp_controller.api.utils.deliver_pubsub_messages_to_websock(
+                    pubsub, websock
+                )
+            )
+            tg.create_task(_play_ping_pong_with_agent(websock))
