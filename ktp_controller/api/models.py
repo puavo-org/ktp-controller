@@ -9,7 +9,9 @@ import sqlalchemy
 import sqlalchemy.orm
 from sqlalchemy.orm import Mapped, mapped_column
 
+
 __all__ = [
+    # Types:
     "Base",
     "ExamFileInfo",
     "ExamInfo",
@@ -17,6 +19,9 @@ __all__ = [
     "ScheduledExamPackage",
     "Abitti2StatusReport",
 ]
+
+
+# Types:
 
 
 Base = sqlalchemy.orm.declarative_base()

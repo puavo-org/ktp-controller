@@ -13,6 +13,24 @@ import ktp_controller.utils
 from ktp_controller.settings import SETTINGS
 
 
+__all__ = [
+    # Utils:
+    "get_basic_auth",
+    "get_examomatic_websock_url",
+    "websock_validate_message",
+    # Exam-O-Matic API commands:
+    "send_abitti2_status_report",
+    "get_exam_info",
+    "get_exam_file_stream",
+    "download_exam_file",
+    "download_dummy_exam_file",
+    "websock_ack",
+]
+
+
+# Utils:
+
+
 def _get(
     path: str,
     *,
@@ -72,6 +90,50 @@ def _post(path: str, data: bytes, *, timeout: int = 20) -> requests.Response:
     return response
 
 
+def get_basic_auth():
+    return ktp_controller.utils.get_basic_auth(
+        SETTINGS.examomatic_username,
+        ktp_controller.utils.readfirstline(
+            SETTINGS.examomatic_password_file, encoding="ascii"
+        ),
+    )
+
+
+def get_examomatic_websock_url():
+    return ktp_controller.utils.get_url(
+        SETTINGS.examomatic_host,
+        "/servers/ers_connection",
+        params={
+            "domain": SETTINGS.domain,
+            "hostname": SETTINGS.hostname,
+            "id": SETTINGS.id,
+        },
+        use_tls=True,
+        use_websocket=True,
+    )
+
+
+def websock_validate_message(data):
+    message = ktp_controller.utils.json_loads_dict(data)
+
+    if not "type" in message:
+        raise ValueError("message does not have 'type'")
+
+    if not isinstance(message["type"], str):
+        raise ValueError("message type is not a string")
+
+    if not "id" in message:
+        raise ValueError("message does not have 'id'")
+
+    if not isinstance(message["id"], int):
+        raise ValueError("message id is not an integer")
+
+    return message
+
+
+# Exam-O-Matic API commands:
+
+
 def send_abitti2_status_report(
     status_report: typing.Dict, *, timeout: int = 20
 ) -> typing.Any:
@@ -118,47 +180,6 @@ def download_dummy_exam_file(dest_filepath: str, *, timeout: int = 20):
     ktp_controller.utils.copy_atomic(
         os.path.join(os.path.dirname(__file__), "dummy-exam-file.mex"), dest_filepath
     )
-
-
-def get_basic_auth():
-    return ktp_controller.utils.get_basic_auth(
-        SETTINGS.examomatic_username,
-        ktp_controller.utils.readfirstline(
-            SETTINGS.examomatic_password_file, encoding="ascii"
-        ),
-    )
-
-
-def get_examomatic_websock_url():
-    return ktp_controller.utils.get_url(
-        SETTINGS.examomatic_host,
-        "/servers/ers_connection",
-        params={
-            "domain": SETTINGS.domain,
-            "hostname": SETTINGS.hostname,
-            "id": SETTINGS.id,
-        },
-        use_tls=True,
-        use_websocket=True,
-    )
-
-
-def websock_validate_message(data):
-    message = ktp_controller.utils.json_loads_dict(data)
-
-    if not "type" in message:
-        raise ValueError("message does not have 'type'")
-
-    if not isinstance(message["type"], str):
-        raise ValueError("message type is not a string")
-
-    if not "id" in message:
-        raise ValueError("message does not have 'id'")
-
-    if not isinstance(message["id"], int):
-        raise ValueError("message id is not an integer")
-
-    return message
 
 
 async def websock_ack(websock, message):

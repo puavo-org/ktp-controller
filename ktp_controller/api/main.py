@@ -14,6 +14,18 @@ import ktp_controller.api.exam.routes
 import ktp_controller.api.system.routes
 from ktp_controller.settings import SETTINGS
 
+
+__all__ = [
+    # Constants:
+    "APP",
+    # Interface:
+    "run",
+]
+
+
+# Constants:
+
+
 _LOGGER = logging.getLogger(__name__)
 
 

@@ -5,7 +5,6 @@ import typing
 # Third-party imports
 import requests
 import requests.exceptions
-import websockets
 
 # Internal imports
 import ktp_controller.utils
@@ -13,19 +12,29 @@ from ktp_controller.settings import SETTINGS
 
 
 __all__ = [
+    # Utils:
+    "eom_exam_info_to_api_exam_info",
+    "get_agent_websock_url",
+    "get_ui_websock_url",
+    # API commands:
     "async_enable_auto_control",
     "async_disable_auto_control",
-    "eom_exam_info_to_api_exam_info",
     "get_current_scheduled_exam_package",
+    "set_current_scheduled_exam_package_state",
     "get_scheduled_exam",
     "get_scheduled_exam_packages",
     "save_exam_info",
     "send_abitti2_status_report",
-    "set_current_scheduled_exam_package_state",
-    "get_agent_websock_url",
 ]
 
+
+# Constants:
+
+
 _LOGGER = logging.getLogger(__name__)
+
+
+# Utils:
 
 
 def _post(path: str, *, data=None, json=None, timeout: int = 5) -> requests.Response:
@@ -45,18 +54,6 @@ def _post(path: str, *, data=None, json=None, timeout: int = 5) -> requests.Resp
         _LOGGER.exception("POST failed: %s", http_error.response.content)
         raise
     return response.json()
-
-
-def send_abitti2_status_report(
-    abitti2_status_report: typing.Dict,
-    *,
-    timeout: int = 5,
-) -> typing.Any:
-    return _post(
-        "/api/v1/system/send_abitti2_status_report",
-        json=abitti2_status_report,
-        timeout=timeout,
-    )
 
 
 def eom_exam_info_to_api_exam_info(
@@ -103,6 +100,39 @@ def eom_exam_info_to_api_exam_info(
     }
 
 
+def get_agent_websock_url():
+    return ktp_controller.utils.get_url(
+        f"{SETTINGS.api_host}:{SETTINGS.api_port}",
+        "/api/v1/system/agent_websocket",
+        use_tls=False,
+        use_websocket=True,
+    )
+
+
+def get_ui_websock_url():
+    return ktp_controller.utils.get_url(
+        f"{SETTINGS.api_host}:{SETTINGS.api_port}",
+        "/api/v1/system/ui_websocket",
+        use_tls=False,
+        use_websocket=True,
+    )
+
+
+# API commands:
+
+
+def send_abitti2_status_report(
+    abitti2_status_report: typing.Dict,
+    *,
+    timeout: int = 5,
+) -> typing.Any:
+    return _post(
+        "/api/v1/system/send_abitti2_status_report",
+        json=abitti2_status_report,
+        timeout=timeout,
+    )
+
+
 def get_scheduled_exam_packages(
     *, timeout: int = 20
 ) -> typing.List[typing.Dict[str, typing.Any]]:
@@ -145,28 +175,6 @@ def save_exam_info(
         json=eom_exam_info_to_api_exam_info(eom_exam_info),
         timeout=timeout,
     ).json()
-
-
-def get_agent_websock_url():
-    return ktp_controller.utils.get_url(
-        f"{SETTINGS.api_host}:{SETTINGS.api_port}",
-        "/api/v1/system/agent_websocket",
-        use_tls=False,
-        use_websocket=True,
-    )
-
-
-def get_ui_websock_url():
-    return ktp_controller.utils.get_url(
-        f"{SETTINGS.api_host}:{SETTINGS.api_port}",
-        "/api/v1/system/ui_websocket",
-        use_tls=False,
-        use_websocket=True,
-    )
-
-
-async def connect_ui_websock() -> websockets.connect:
-    return await websockets.connect(get_ui_websock_url())
 
 
 def async_enable_auto_control() -> str:

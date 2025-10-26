@@ -6,12 +6,20 @@ import sqlalchemy.orm
 
 
 __all__ = [
+    # Utils:
     "get_db",
     "initialize",
 ]
 
+
+# Constants:
+
+
 _ENGINE = None
 _SESSION_MAKER = None
+
+
+# Utils:
 
 
 def initialize(database_url):

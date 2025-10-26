@@ -7,8 +7,23 @@ import uuid
 import ktp_controller.messages
 import ktp_controller.redis
 
+# Relative imports
+
+__all__ = [
+    # Constants:
+    "PUBSUB_CHANNEL",
+    # Utils:
+    "send_command",
+]
+
+
+# Constants:
+
 
 PUBSUB_CHANNEL = f"ktp-controller__agent_messages__{ str(uuid.uuid4()) }"
+
+
+# Utils:
 
 
 async def send_command(command_data: ktp_controller.messages.CommandData) -> str:

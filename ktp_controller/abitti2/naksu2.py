@@ -8,6 +8,13 @@ import typing
 # Internal imports
 import ktp_controller.abitti2.words
 
+__all__ = [
+    "make_password",
+    "read_naksu2_conf",
+    "read_password",
+    "read_domain",
+]
+
 
 _NAKSU2_CONF_DIR_PATH = "~/.local/share/digabi/naksu2"
 

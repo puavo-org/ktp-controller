@@ -6,9 +6,13 @@ import typing
 # Third-party imports
 import pydantic
 
+# Internal imports
 import ktp_controller.pydantic
 
+# Relative imports
+
 __all__ = [
+    # Types:
     "ExamFileInfo",
     "ExamInfo",
     "GetScheduledExamData",
@@ -17,6 +21,9 @@ __all__ = [
     "ScheduledExamPackageState",
     "SetCurrentScheduledExamPackageStateData",
 ]
+
+
+# Types:
 
 
 class ExamFileInfo(ktp_controller.pydantic.BaseModel):

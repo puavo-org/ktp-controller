@@ -11,11 +11,12 @@ import sqlalchemy.sql
 
 # Internal imports
 # import ktp_controller.agent
-
 from ktp_controller.api import models
 from ktp_controller.api.database import get_db
 
+# Relative imports
 from . import schemas
+
 
 _LOGGER = logging.getLogger(__name__)
 

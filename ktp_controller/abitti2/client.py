@@ -10,11 +10,35 @@ import requests.auth
 import ktp_controller.utils
 import ktp_controller.abitti2.naksu2
 
+__all__ = [
+    # Constants:
+    "DUMMY_EXAM_PACKAGE_FILEPATH",
+    # Utils:
+    "get_basic_auth",
+    "get_abitti2_websock_url",
+    # Abitti2 API commands:
+    "get_current_abitti2_version",
+    "get_single_security_code",
+    "change_single_security_code",
+    "decrypt_exams",
+    "load_exam_package",
+    "get_decrypted_exams",
+    "start_decrypted_exams",
+    "reset",
+]
+
+
+# Constants:
+
+
 _ABITTI2_USERNAME = "valvoja"
 
 DUMMY_EXAM_PACKAGE_FILEPATH = os.path.expanduser(
     "~/.local/share/ktp-controller/dummy-exam-package.zip"
 )
+
+
+# Utils:
 
 
 def _get(path: str, *, timeout: int = 20) -> requests.Response:
@@ -55,6 +79,24 @@ def _post(path: str, *, data=None, timeout: int = 20) -> requests.Response:
     return response
 
 
+def get_basic_auth() -> typing.Dict[str, str]:
+    return ktp_controller.utils.get_basic_auth(
+        _ABITTI2_USERNAME, ktp_controller.abitti2.naksu2.read_password()
+    )
+
+
+def get_abitti2_websock_url():
+    return ktp_controller.utils.get_url(
+        ktp_controller.abitti2.naksu2.read_domain(),
+        "/ws/stats",
+        use_tls=True,
+        use_websocket=True,
+    )
+
+
+# Abitti2 API commands:
+
+
 def get_current_abitti2_version() -> str:
     return _get("/api/version").json()["version"]
 
@@ -71,12 +113,6 @@ def decrypt_exams(decrypt_code: str, timeout: int = 60) -> typing.Dict:
     return _post(
         "/api/decrypt-exam", data={"decryptPassword": decrypt_code}, timeout=timeout
     ).json()
-
-
-def get_basic_auth() -> typing.Dict[str, str]:
-    return ktp_controller.utils.get_basic_auth(
-        _ABITTI2_USERNAME, ktp_controller.abitti2.naksu2.read_password()
-    )
 
 
 def load_exam_package(exam_package_filepath, *, timeout: int = 20) -> typing.Any:
@@ -114,12 +150,3 @@ def reset():
     load_exam_package(DUMMY_EXAM_PACKAGE_FILEPATH)
     decrypt_exams("odotusaulakoe")
     # TODO: verify that dummy exam got decrypted
-
-
-def get_abitti2_websock_url():
-    return ktp_controller.utils.get_url(
-        ktp_controller.abitti2.naksu2.read_domain(),
-        "/ws/stats",
-        use_tls=True,
-        use_websocket=True,
-    )
