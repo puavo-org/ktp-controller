@@ -53,7 +53,7 @@ def _post(path: str, *, data=None, json=None, timeout: int = 5) -> requests.Resp
     except requests.exceptions.HTTPError as http_error:
         _LOGGER.exception("POST failed: %s", http_error.response.content)
         raise
-    return response.json()
+    return response
 
 
 def eom_exam_info_to_api_exam_info(
@@ -130,7 +130,7 @@ def send_abitti2_status_report(
         "/api/v1/system/send_abitti2_status_report",
         json=abitti2_status_report,
         timeout=timeout,
-    )
+    ).json()
 
 
 def get_scheduled_exam_packages(
