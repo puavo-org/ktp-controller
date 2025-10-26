@@ -18,10 +18,10 @@ import ktp_controller.api.client
 def test_send_abitti2_status_report__invalid_input(client, testdb, utcnow):
     assert testdb.query(models.Abitti2StatusReport).all() == []
 
-    response = client.post("/api/v1/abitti2/send_status_report", data={})
+    response = client.post("/api/v1/abitti2/send_abitti2_status_report", data={})
     assert_response(response, expected_status_code=422)
 
-    response = client.post("/api/v1/abitti2/send_status_report", json={})
+    response = client.post("/api/v1/abitti2/send_abitti2_status_report", json={})
     assert_response(response, expected_status_code=422)
 
     status_report_with_extra_field = {
@@ -34,7 +34,8 @@ def test_send_abitti2_status_report__invalid_input(client, testdb, utcnow):
     }
 
     response = client.post(
-        "/api/v1/abitti2/send_status_report", json=status_report_with_extra_field
+        "/api/v1/abitti2/send_abitti2_status_report",
+        json=status_report_with_extra_field,
     )
     assert_response(response, expected_status_code=422)
 
@@ -53,7 +54,9 @@ def test_send_abitti2_status_report__valid_minimal_input(client, testdb, utcnow)
         "status": {},
     }
 
-    response = client.post("/api/v1/abitti2/send_status_report", json=status_report)
+    response = client.post(
+        "/api/v1/abitti2/send_abitti2_status_report", json=status_report
+    )
     assert_response(response, expected_status_code=200)
 
     db_abitti2_status_report = testdb.query(models.Abitti2StatusReport).one()
@@ -75,10 +78,14 @@ def test_send_abitti2_status_report__same_valid_minimal_input_twice(
         "status": {},
     }
 
-    response = client.post("/api/v1/abitti2/send_status_report", json=status_report)
+    response = client.post(
+        "/api/v1/abitti2/send_abitti2_status_report", json=status_report
+    )
     assert_response(response, expected_status_code=200)
 
-    response = client.post("/api/v1/abitti2/send_status_report", json=status_report)
+    response = client.post(
+        "/api/v1/abitti2/send_abitti2_status_report", json=status_report
+    )
     assert_response(response, expected_status_code=200)
 
     db_abitti2_status_report1, db_abitti2_status_report2 = (
@@ -118,7 +125,9 @@ def test_send_abitti2_status_report__valid_but_highly_unlikely_abitti2_status(
         },
     }
 
-    response = client.post("/api/v1/abitti2/send_status_report", json=status_report)
+    response = client.post(
+        "/api/v1/abitti2/send_abitti2_status_report", json=status_report
+    )
     assert_response(response, expected_status_code=200)
 
     db_abitti2_status_report = testdb.query(models.Abitti2StatusReport).one()

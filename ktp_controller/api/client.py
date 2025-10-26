@@ -53,7 +53,7 @@ def send_abitti2_status_report(
     timeout: int = 5,
 ) -> typing.Any:
     return _post(
-        "/api/v1/abitti2/send_status_report",
+        "/api/v1/abitti2/send_abitti2_status_report",
         json=abitti2_status_report,
         timeout=timeout,
     )

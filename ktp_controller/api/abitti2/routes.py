@@ -40,11 +40,11 @@ def _get_status_report_preserve_count():
 
 
 @router.post(
-    "/send_status_report",
+    "/send_abitti2_status_report",
     response_model=None,
     summary="Send status report",
 )
-async def _send_status_report(
+async def _send_abitti2_status_report(
     request: schemas.Abitti2StatusReport,
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ):
