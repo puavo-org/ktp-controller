@@ -129,7 +129,7 @@ def get_basic_auth():
     )
 
 
-def websock_get_url():
+def get_examomatic_websock_url():
     return ktp_controller.utils.get_url(
         SETTINGS.examomatic_host,
         "/servers/ers_connection",

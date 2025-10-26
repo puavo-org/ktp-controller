@@ -116,7 +116,7 @@ def reset():
     # TODO: verify that dummy exam got decrypted
 
 
-def websock_get_url():
+def get_abitti2_websock_url():
     return ktp_controller.utils.get_url(
         ktp_controller.abitti2.naksu2.read_domain(),
         "/ws/stats",

@@ -436,7 +436,7 @@ class Agent:
 
     async def __maintain_websocket_connection_to_api(self):
         async with websockets.connect(
-            ktp_controller.api.client.websock_get_url()
+            ktp_controller.api.client.get_agent_websock_url()
         ) as websock:
             async with asyncio.TaskGroup() as tg:
                 tg.create_task(self.__send_pings_to_api(websock))
@@ -444,7 +444,7 @@ class Agent:
 
     async def __maintain_websocket_connection_to_examomatic(self):
         async with websockets.connect(
-            ktp_controller.examomatic.client.websock_get_url(),
+            ktp_controller.examomatic.client.get_examomatic_websock_url(),
             additional_headers=ktp_controller.examomatic.client.get_basic_auth(),
         ) as websock:
             async with asyncio.TaskGroup() as tg:
@@ -453,7 +453,7 @@ class Agent:
 
     async def __maintain_websocket_connection_to_abitti2(self):
         async with websockets.connect(
-            ktp_controller.abitti2.client.websock_get_url(),
+            ktp_controller.abitti2.client.get_abitti2_websock_url(),
             additional_headers=ktp_controller.abitti2.client.get_basic_auth(),
         ) as websock:
             async with asyncio.TaskGroup() as tg:

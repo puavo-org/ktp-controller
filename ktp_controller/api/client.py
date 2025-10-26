@@ -22,7 +22,7 @@ __all__ = [
     "save_exam_info",
     "send_abitti2_status_report",
     "set_current_scheduled_exam_package_state",
-    "websock_get_url",
+    "get_agent_websock_url",
 ]
 
 _LOGGER = logging.getLogger(__name__)
@@ -147,7 +147,7 @@ def save_exam_info(
     ).json()
 
 
-def websock_get_url():
+def get_agent_websock_url():
     return ktp_controller.utils.get_url(
         f"{SETTINGS.api_host}:{SETTINGS.api_port}",
         "/api/v1/agent/websocket",
