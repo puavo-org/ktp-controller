@@ -5,6 +5,7 @@ import typing
 # Third-party imports
 import requests
 import requests.exceptions
+import websockets
 
 # Internal imports
 import ktp_controller.utils
@@ -12,8 +13,8 @@ from ktp_controller.settings import SETTINGS
 
 
 __all__ = [
-    "enable_auto_control",
-    "disable_auto_control",
+    "async_enable_auto_control",
+    "async_disable_auto_control",
     "eom_exam_info_to_api_exam_info",
     "get_current_scheduled_exam_package",
     "get_scheduled_exam",
@@ -155,9 +156,22 @@ def websock_get_url():
     )
 
 
-def enable_auto_control():
-    return _post("/api/v1/agent/enable_auto_control").json()
+def get_ui_websock_url():
+    return ktp_controller.utils.get_url(
+        f"{SETTINGS.api_host}:{SETTINGS.api_port}",
+        "/api/v1/ui/websocket",
+        use_tls=False,
+        use_websocket=True,
+    )
 
 
-def disable_auto_control():
-    return _post("/api/v1/agent/disable_auto_control").json()
+async def connect_ui_websock() -> websockets.connect:
+    return await websockets.connect(get_ui_websock_url())
+
+
+def async_enable_auto_control() -> str:
+    return _post("/api/v1/ui/async_enable_auto_control").json()
+
+
+def async_disable_auto_control() -> str:
+    return _post("/api/v1/ui/async_disable_auto_control").json()

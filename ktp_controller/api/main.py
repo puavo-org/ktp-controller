@@ -13,6 +13,7 @@ import ktp_controller.api.database
 import ktp_controller.api.abitti2.routes
 import ktp_controller.api.agent.routes
 import ktp_controller.api.exam.routes
+import ktp_controller.api.ui.routes
 from ktp_controller.settings import SETTINGS
 
 _LOGGER = logging.getLogger(__name__)
@@ -39,6 +40,7 @@ APP = fastapi.FastAPI(lifespan=_lifespan)
 APP.include_router(ktp_controller.api.abitti2.routes.router, prefix="/api/v1/abitti2")
 APP.include_router(ktp_controller.api.agent.routes.router, prefix="/api/v1/agent")
 APP.include_router(ktp_controller.api.exam.routes.router, prefix="/api/v1/exam")
+APP.include_router(ktp_controller.api.ui.routes.router, prefix="/api/v1/ui")
 
 
 def run():

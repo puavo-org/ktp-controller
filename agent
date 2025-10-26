@@ -21,6 +21,7 @@ import ktp_controller.abitti2.naksu2
 import ktp_controller.api.client
 import ktp_controller.examomatic.client
 import ktp_controller.utils
+import ktp_controller.messages
 
 
 _LOGGER = logging.getLogger(__file__)
@@ -179,24 +180,42 @@ class Agent:
 
         self.__commands = {
             str(
-                ktp_controller.agent.Command.ENABLE_AUTO_CONTROL
+                ktp_controller.messages.Command.ENABLE_AUTO_CONTROL
             ): self.__command_enable_auto_control,
             str(
-                ktp_controller.agent.Command.DISABLE_AUTO_CONTROL
+                ktp_controller.messages.Command.DISABLE_AUTO_CONTROL
             ): self.__command_disable_auto_control,
         }
 
-    def __command_enable_auto_control(self):
+    def __command_enable_auto_control(
+        self, command_uuid: str, command_data: typing.Dict[str, typing.Any]
+    ) -> ktp_controller.messages.CommandResultData:
         changed = not self.__is_auto_control_enabled
         self.__is_auto_control_enabled = True
         if changed:
             _LOGGER.info("Auto control is now enabled.")
+            command_status = ktp_controller.messages.CommandStatus.OK
+        else:
+            command_status = ktp_controller.messages.CommandStatus.OK_NO_CHANGE
 
-    def __command_disable_auto_control(self):
+        return ktp_controller.messages.CommandResultData(
+            command_uuid=command_uuid, command_status=command_status
+        )
+
+    def __command_disable_auto_control(
+        self, command_uuid: str, command_data: typing.Dict[str, typing.Any]
+    ):
         changed = self.__is_auto_control_enabled
         self.__is_auto_control_enabled = False
         if changed:
             _LOGGER.info("Auto control is now disabled.")
+            command_status = ktp_controller.messages.CommandStatus.OK
+        else:
+            command_status = ktp_controller.messages.CommandStatus.OK_NO_CHANGE
+
+        return ktp_controller.messages.CommandResultData(
+            command_uuid=command_uuid, command_status=command_status
+        )
 
     async def __do_auto_control_work(self) -> bool:
         if not self.__is_auto_control_enabled:
@@ -304,11 +323,24 @@ class Agent:
                 # send invalid JSON to agents.
                 _LOGGER.exception("API sent invalid JSON data")
                 continue
+
             if message["kind"] == "command":
-                _LOGGER.info("Executing command %r...", message["command"])
-                self.__commands[message["command"]]()
-                _LOGGER.info("Executed command %r successfully.", message["command"])
+                command_data = ktp_controller.messages.CommandData.validate(
+                    message["data"]
+                )
+                _LOGGER.info("Executing command %r...", command_data.command)
+                command_result = self.__commands[command_data.command](
+                    message["uuid"], command_data
+                )
+                _LOGGER.info("Executed command %r successfully.", command_data.command)
+                websock.send(
+                    ktp_controller.messages.CommandMessage(
+                        kind=ktp_controller.messages.MessageKind.COMMAND_RESULT,
+                        data=command_result,
+                    ).model_dump_json()
+                )
                 continue
+
             if message["kind"] == "pong":
                 # Whenever we get ponged, it's a sign for us to do
                 # some auto control work. So, keep ping pong interval

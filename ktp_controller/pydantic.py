@@ -1,3 +1,4 @@
+import json
 import typing
 
 import pydantic
@@ -15,3 +16,7 @@ class BaseModel(pydantic.BaseModel):
         "validate_default": True,
         "validate_return": True,
     }
+
+
+def json_serializable(m: pydantic.BaseModel):
+    return json.loads(m).model_dump_json()
