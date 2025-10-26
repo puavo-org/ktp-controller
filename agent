@@ -234,6 +234,9 @@ class Agent:
             ktp_controller.api.client.get_current_scheduled_exam_package()
         )
 
+        if scheduled_exam_package is None:
+            return
+
         if scheduled_exam_package["state"] is None:
             _init_current_scheduled_exam_package(scheduled_exam_package, utcnow)
             _set_scheduled_exam_package_state(scheduled_exam_package, "waiting")
