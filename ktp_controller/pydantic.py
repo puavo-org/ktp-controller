@@ -42,4 +42,4 @@ class BaseModel(pydantic.BaseModel):
 
 
 def json_serializable(m: pydantic.BaseModel):
-    return json.loads(m).model_dump_json()
+    return json.loads(m.model_dump_json())
