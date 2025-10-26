@@ -52,6 +52,10 @@ class CommandStatus(str, enum.Enum):
     def __str__(self) -> str:
         return self.value
 
+    @property
+    def is_ok(self) -> bool:
+        return self.value == "ok" or self.value.startswith("ok_")
+
 
 class MessageKind(str, enum.Enum):
     PING = "ping"
@@ -106,7 +110,7 @@ class CommandResultMessage(_MessageBase):
 
 class PingMessage(_MessageBase):
     kind: typing.Literal[MessageKind.PING] = MessageKind.PING
-    data: None
+    data: None = None
 
 
 class PongMessage(_MessageBase):

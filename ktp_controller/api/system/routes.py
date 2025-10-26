@@ -17,6 +17,7 @@ from ktp_controller.api import models
 
 import ktp_controller.agent
 import ktp_controller.redis
+import ktp_controller.pydantic
 import ktp_controller.api.utils
 import ktp_controller.ui
 
@@ -125,7 +126,26 @@ async def _send_abitti2_status_report(
 async def _play_ping_pong_with_agent(websock: fastapi.WebSocket):
     async for message in websock.iter_json():
         if message["kind"] == "ping":
-            await websock.send_json({"kind": "pong", "uuid": message["uuid"]})
+            ping_message = ktp_controller.messages.PingMessage.model_validate(message)
+            pong_message = ktp_controller.messages.PongMessage(
+                data=ktp_controller.messages.PongData(ping_uuid=ping_message.uuid)
+            )
+            await websock.send_json(
+                ktp_controller.pydantic.json_serializable(pong_message)
+            )
+            continue
+        if message["kind"] == "command_result":
+            command_result_message = (
+                ktp_controller.messages.CommandResultMessage.model_validate(message)
+            )
+            if command_result_message.data.command_status.startswith("error_"):
+                _LOGGER.error(
+                    "Agent command %r failed", command_result_message.data.command_uuid
+                )
+            await ktp_controller.ui.forward_command_result_message(
+                command_result_message
+            )
+            _LOGGER.info("forwarded command result successfully")
             continue
         _LOGGER.warning("Received and ignored unknown message: %s", message)
 

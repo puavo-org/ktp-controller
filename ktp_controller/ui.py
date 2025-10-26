@@ -14,6 +14,7 @@ __all__ = [
     # Constants:
     "PUBSUB_CHANNEL",
     # Utils:
+    "forward_command_result_message",
     "send_status_report",
 ]
 
@@ -25,6 +26,14 @@ PUBSUB_CHANNEL = f"ktp-controller__ui_messages__{ str(uuid.uuid4()) }"
 
 
 # Utils:
+
+
+async def forward_command_result_message(
+    command_result_message: ktp_controller.messages.CommandResultMessage,
+) -> str:
+    return await ktp_controller.redis.pubsub_send(
+        command_result_message, PUBSUB_CHANNEL
+    )
 
 
 async def send_status_report(
