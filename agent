@@ -336,12 +336,13 @@ class Agent:
                     message["uuid"], command_data
                 )
                 _LOGGER.info("Executed command %r successfully.", command_data.command)
-                websock.send(
-                    ktp_controller.messages.CommandMessage(
+                await websock.send(
+                    ktp_controller.messages.CommandResultMessage(
                         kind=ktp_controller.messages.MessageKind.COMMAND_RESULT,
                         data=command_result,
                     ).model_dump_json()
                 )
+                _LOGGER.info("Sent command result %r successfully.", command_result)
                 continue
 
             if message["kind"] == "pong":
