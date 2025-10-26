@@ -328,7 +328,7 @@ class Agent:
                 continue
 
             if message["kind"] == "command":
-                command_data = ktp_controller.messages.CommandData.validate(
+                command_data = ktp_controller.messages.CommandData.model_validate(
                     message["data"]
                 )
                 _LOGGER.info("Executing command %r...", command_data.command)
