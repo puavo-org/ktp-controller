@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+
+# Standard library imports
+import argparse
+import asyncio
+import sys
+
+# Third-party imports
+import websockets
+
+# Internal imports
+import ktp_controller.api.client
+
+
+async def _command_enable_auto_control(args) -> int:
+    return ktp_controller.api.client.async_enable_auto_control()
+
+
+async def _command_disable_auto_control(args) -> int:
+    return ktp_controller.api.client.async_disable_auto_control()
+
+
+_COMMANDS = {
+    "enable_auto_control": _command_enable_auto_control,
+    "disable_auto_control": _command_disable_auto_control,
+}
+
+
+async def _dispatch_command(args) -> int:
+    # Lazily imported here to avoid long start-up time of this script.
+    import ktp_controller.api.client  # pylint: disable=import-outside-toplevel
+    import ktp_controller.messages  # pylint: disable=import-outside-toplevel
+
+    async with websockets.connect(
+        ktp_controller.api.client.get_ui_websock_url()
+    ) as ui_websock:
+        command_uuid = await _COMMANDS[args.COMMAND](args)
+        async for data in ui_websock:
+            try:
+                message_dict = ktp_controller.utils.json_loads_dict(data)
+            except ValueError:
+                # Most probably a programming error, API should not
+                # send invalid JSON to agents.
+                _LOGGER.exception("API sent invalid JSON data")
+                continue
+            if message_dict["kind"] != "command_result":
+                continue
+            command_result_message = (
+                ktp_controller.messages.CommandResultMessage.model_validate(
+                    message_dict
+                )
+            )
+            command_result_data = command_result_message.data
+            if str(command_result_data.command_uuid) != command_uuid:
+                continue
+            break
+
+    if not command_result_data.command_status.is_ok:
+        print(f"ERROR: {args.COMMAND} failed: {command_result_data.error_message}")
+        return 1
+
+    return 0
+
+
+def _main() -> int:
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    subparsers = parser.add_subparsers(title="Commands", dest="COMMAND", required=True)
+    parser_status = subparsers.add_parser("status")
+    parser_enable_auto_control = subparsers.add_parser("enable_auto_control")
+    parser_disable_auto_control = subparsers.add_parser("disable_auto_control")
+
+    args = parser.parse_args()
+
+    asyncio.run(_dispatch_command(args))
+
+
+if __name__ == "__main__":
+    sys.exit(_main())
