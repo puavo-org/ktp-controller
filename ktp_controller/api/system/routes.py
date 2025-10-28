@@ -123,6 +123,24 @@ async def _send_abitti2_status_report(
     db.commit()
 
 
+@router.post(
+    "/get_last_abitti2_status_report",
+    response_model=schemas.Abitti2StatusReport | None,
+    summary="Get last Abitti2 status report",
+)
+async def _get_last_abitti2_status_report(
+    db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
+):
+    db_status_report = (
+        db.query(models.Abitti2StatusReport)
+        .order_by(sqlalchemy.sql.desc(models.Abitti2StatusReport.dbrow_created_at))
+        .limit(1)
+        .one_or_none()
+    )
+
+    return None if db_status_report is None else db_status_report.raw_data
+
+
 async def _play_ping_pong_with_agent(websock: fastapi.WebSocket):
     async for message in websock.iter_json():
         if message["kind"] == "ping":

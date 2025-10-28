@@ -95,6 +95,11 @@ def test_send_abitti2_status_report__valid_minimal_input(client, testdb, utcnow)
     assert db_abitti2_status_report.dbrow_created_at > utcnow
     assert db_abitti2_status_report.raw_data == status_report
 
+    response = client.post("/api/v1/system/get_last_abitti2_status_report")
+    assert_response(response, expected_status_code=200)
+
+    assert response.json() == status_report
+
 
 def test_send_abitti2_status_report__same_valid_minimal_input_twice(
     client, testdb, utcnow
@@ -286,3 +291,54 @@ def test_send_abitti2_status_report__valid_but_highly_unlikely_abitti2_status(
 
     assert db_abitti2_status_report.dbrow_created_at > utcnow
     assert db_abitti2_status_report.raw_data == status_report
+
+
+def test_send_abitti2_status_report__two_different_reports(client, testdb, utcnow):
+    assert testdb.query(models.Abitti2StatusReport).all() == []
+
+    status_report1 = {
+        "received_at": "2025-01-01T10:00:00",
+        "reported_at": "2025-01-01T10:00:05",
+        "monitoring_passphrase": "first report",
+        "server_version": "1.6.0",
+        "status": {},
+    }
+
+    response = client.post(
+        "/api/v1/system/send_abitti2_status_report", json=status_report1
+    )
+    assert_response(response, expected_status_code=200)
+
+    status_report2 = {
+        "received_at": "2024-01-01T10:00:00",  # For the sake of testing, agent's clock goes backward between reports
+        "reported_at": "2024-01-01T10:00:05",
+        "monitoring_passphrase": "second report",
+        "server_version": "1.7.0",
+        "status": {},
+    }
+    response = client.post(
+        "/api/v1/system/send_abitti2_status_report", json=status_report2
+    )
+    assert_response(response, expected_status_code=200)
+
+    db_abitti2_status_report1, db_abitti2_status_report2 = (
+        testdb.query(models.Abitti2StatusReport)
+        .order_by(models.Abitti2StatusReport.dbid)
+        .all()
+    )
+
+    assert db_abitti2_status_report1.dbrow_created_at > utcnow
+
+    assert (
+        db_abitti2_status_report1.dbrow_created_at
+        < db_abitti2_status_report2.dbrow_created_at
+    )
+
+    assert db_abitti2_status_report1.raw_data == status_report1
+    assert db_abitti2_status_report2.raw_data == status_report2
+    assert db_abitti2_status_report1.raw_data != db_abitti2_status_report2.raw_data
+
+    response = client.post("/api/v1/system/get_last_abitti2_status_report")
+    assert_response(response, expected_status_code=200)
+
+    assert response.json() == status_report2
