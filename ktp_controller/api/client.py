@@ -133,6 +133,15 @@ def send_abitti2_status_report(
     ).json()
 
 
+def get_last_abitti2_status_report(
+    *,
+    timeout: int = 5,
+) -> typing.Dict[str, typing.Any] | None:
+    return _post(
+        "/api/v1/system/get_last_abitti2_status_report", timeout=timeout
+    ).json()
+
+
 def get_scheduled_exam_packages(
     *, timeout: int = 20
 ) -> typing.List[typing.Dict[str, typing.Any]]:
