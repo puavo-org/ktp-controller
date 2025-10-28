@@ -146,7 +146,40 @@ def start_decrypted_exams() -> typing.Dict:
     return _post("/api/start-exam").json()
 
 
-def reset():
-    load_exam_package(DUMMY_EXAM_PACKAGE_FILEPATH)
-    decrypt_exams("odotusaulakoe")
-    # TODO: verify that dummy exam got decrypted
+def prepare_exam_package(
+    exam_package_filepath: str, decrypt_codes: typing.Iterable[str]
+):
+    exam_filenames = set(ktp_controller.abitti2.client.load_exam_package(filepath))
+
+    decrypted_exam_filenames = set()
+    had_invalid_decrypt_code = False
+    for decrypt_code in decrypt_codes:
+        retval = ktp_controller.abitti2.client.decrypt_exams(decrypt_code)
+        if retval["wrongPassword"]:
+            # TODO: is it ok to expose the decrypt code in log files?
+            _LOGGER.error(
+                "invalid decrypt code (sha1 hash: %r)",
+                hashlib.sha1(decrypt_code.encode("ascii")).hexdigest(),
+            )
+            had_invalid_decrypt_code = True
+        decrypted_exam_filenames.update(retval["mebs"])
+
+    still_encrypted_exam_filenames = exam_filenames - decrypted_exam_filenames
+
+    if len(still_encrypted_exam_filenames) > 0:
+        raise RuntimeError(
+            f"failed to decrypt {len(still_encrypted_exam_filenames)/len(exam_filenames)} exams",
+            still_encrypted_exam_filenames,
+        )
+
+    if had_invalid_decrypt_code:
+        raise RuntimeError(
+            "Encountered an invalid decrypt code, but all exams were "
+            "decrypted nevertheless. So, something is crooked!"
+        )
+
+    return exam_filenames
+
+
+def reset() -> typing.List[str]:
+    return prepare_exam_package(DUMMY_EXAM_PACKAGE_FILEPATH, ["odotusaulakoe"])

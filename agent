@@ -136,15 +136,11 @@ def _init_current_scheduled_exam_package(
 
 
 def _prepare_current_scheduled_exam_package(exam_package, utcnow):
-    (filepath, decrypt_codes) = _create_exam_package_file(exam_package)
-
-    ktp_controller.abitti2.client.load_exam_package(filepath)
-
-    for decrypt_code in decrypt_codes:
-        ktp_controller.abitti2.client.decrypt_exams(decrypt_code)
-
-    # TODO: verify that all exams are decrypted, if not, an exception
-    # should be raise to ensure preparation is aborted and state is not changed.
+    (exam_package_filepath, decrypt_codes) = _create_exam_package_file(exam_package)
+    exam_filenames = ktp_controller.abitti2.client.prepare_exam_package(
+        exam_package_filepath, decrypt_codes
+    )
+    _LOGGED.info("decrypted all %d exams successfully", len(exam_filenames))
 
 
 def _start_current_scheduled_exam_package(exam_package, utcnow):
