@@ -147,10 +147,19 @@ def _start_current_scheduled_exam_package(exam_package, utcnow):
     ktp_controller.abitti2.client.start_decrypted_exams()
 
 
-def _stop_current_scheduled_exam_package(exam_package, utcnow):
-    # Change the security code first to ensure student cannot enter anymore.
+def _stop_current_scheduled_exam_package(exam_package, utcnow) -> bool:
+    # Change the security code first to ensure students cannot enter anymore.
     ktp_controller.abitti2.client.change_single_security_code()
-    # TODO: stop all exam sessions
+
+    abitti2_status_report = ktp_controller.api.client.get_last_abitti2_status_report()
+    for student in abitti2_status_report["status"]["students"]:
+        ktp_controller.abitti2.client.stop_exam_session(student["sessionUuid"])
+
+    return (
+        all(s["examFinished"] for s in abitti2_status_report["status"]["students"])
+        and exam_package["state"] == "stopping"
+        and abitti2_status_report["received_at"] > exam_package["state_changed_at"]
+    )
 
 
 def _archive_current_scheduled_exam_package(exam_package, utcnow):
@@ -270,11 +279,21 @@ class Agent:
             >= utcnow
         ):
             _stop_current_scheduled_exam_package(scheduled_exam_package, utcnow)
-            _set_scheduled_exam_package_state(scheduled_exam_package, "stopped")
+            _set_scheduled_exam_package_state(scheduled_exam_package, "stopping")
 
-            # We just stopped all exams, we will have a short coffee
-            # break now and when we get back, we will collect all
-            # results and archive the exam package.
+            # We just started to stop all exams, we will have a short
+            # coffee break now and when we get back, we will check if
+            # all exams are stopped.
+            return
+
+        if scheduled_exam_package["state"] == "stopping":
+            if _stop_current_scheduled_exam_package(scheduled_exam_package, utcnow):
+                _set_scheduled_exam_package_state(scheduled_exam_package, "stopped")
+
+            # We might have just stopped all exams. We will have again
+            # a short coffee break and when we get back, if really
+            # stopped all exams, we will proceed to collecting all
+            # results and archiving the exam package.
             return
 
         if scheduled_exam_package["state"] == "stopped":

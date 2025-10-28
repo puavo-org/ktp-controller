@@ -90,6 +90,7 @@ def eom_exam_info_to_api_exam_info(
                 "locked": package["locked"],
                 "scheduled_exam_external_ids": package["schedules"],
                 "state": None,
+                "state_changed_at": None,
             }
         )
     return {

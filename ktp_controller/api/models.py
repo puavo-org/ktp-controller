@@ -186,6 +186,10 @@ class ScheduledExamPackage(Base):  # type: ignore
         sqlalchemy.String,
         nullable=True,
     )
+    state_changed_at: Mapped[datetime.datetime] = mapped_column(
+        sqlalchemy.DateTime,
+        nullable=True,
+    )
 
     scheduled_exams: Mapped[typing.List[ScheduledExam]] = sqlalchemy.orm.relationship(
         back_populates="scheduled_exam_package"

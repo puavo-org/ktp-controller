@@ -183,3 +183,7 @@ def prepare_exam_package(
 
 def reset() -> typing.List[str]:
     return prepare_exam_package(DUMMY_EXAM_PACKAGE_FILEPATH, ["odotusaulakoe"])
+
+
+def stop_exam_session(session_uuid: str) -> None:
+    _post("/api/end-student-session", data={"sessionUuid": session_uuid})

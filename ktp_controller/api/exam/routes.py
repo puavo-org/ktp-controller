@@ -179,7 +179,8 @@ _VALID_TRANSITIONS = {
     None: "waiting",
     "waiting": "ready",
     "ready": "running",
-    "running": "stopped",
+    "running": "stopping",
+    "stopping": "stopped",
     "stopped": "archived",
 }
 
@@ -193,6 +194,8 @@ async def _set_current_scheduled_exam_package_state(
     data: schemas.SetCurrentScheduledExamPackageStateData,
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ):
+    utcnow = datetime.datetime.utcnow()
+
     db_current_scheduled_exam_package = (
         db.query(models.ScheduledExamPackage)
         .filter_by(external_id=data.external_id, current=True)
@@ -217,8 +220,11 @@ async def _set_current_scheduled_exam_package_state(
         )
 
     old_state = db_current_scheduled_exam_package.state
-    db_current_scheduled_exam_package.state = data.state
-    db.commit()
+
+    if old_state != data.state:
+        db_current_scheduled_exam_package.state = data.state
+        db_current_scheduled_exam_package.state_changed_at = utcnow
+        db.commit()
 
     return old_state
 
@@ -269,4 +275,5 @@ async def _get_current_scheduled_exam_package(
             se.external_id for se in db_current_scheduled_exam_package.scheduled_exams
         ],
         "state": db_current_scheduled_exam_package.state,
+        "state_changed_at": db_current_scheduled_exam_package.state_changed_at,
     }

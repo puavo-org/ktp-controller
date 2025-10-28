@@ -48,6 +48,7 @@ class ScheduledExamPackageState(str, enum.Enum):
     WAITING = "waiting"
     READY = "ready"
     RUNNING = "running"
+    STOPPING = "stopping"
     STOPPED = "stopped"
     ARCHIVED = "archived"
 
@@ -63,6 +64,7 @@ class ScheduledExamPackage(ktp_controller.pydantic.BaseModel):
     locked: pydantic.StrictBool
     scheduled_exam_external_ids: typing.List[pydantic.StrictStr]
     state: ScheduledExamPackageState | None
+    state_changed_at: datetime.datetime | None
 
 
 class ExamInfo(ktp_controller.pydantic.BaseModel):
