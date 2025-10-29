@@ -30,7 +30,6 @@ Connection diagram:
 KTP Controller consists of two main components:
 - Agent
 - API
-- DB
 
 Agent communicates with all components (Exam-O-Matic, Abitti2 and API)
 and is responsible for making them play well together. It uses API to
@@ -74,7 +73,7 @@ Just run:
 make dev-run
 ```
 
-Then interactive API documentation: http://127.0.0.1:8000/docs
+Then interactive API documentation is available at http://127.0.0.1:8000/docs
 
 
 ### Update dependencies
