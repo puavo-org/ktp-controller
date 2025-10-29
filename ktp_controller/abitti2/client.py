@@ -155,7 +155,9 @@ def start_decrypted_exams() -> typing.Dict:
 def prepare_exam_package(
     exam_package_filepath: str, decrypt_codes: typing.Iterable[str]
 ):
-    exam_filenames = set(ktp_controller.abitti2.client.load_exam_package(filepath))
+    exam_filenames = set(
+        ktp_controller.abitti2.client.load_exam_package(exam_package_filepath)
+    )
 
     decrypted_exam_filenames = set()
     had_invalid_decrypt_code = False
