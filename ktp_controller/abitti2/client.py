@@ -12,6 +12,10 @@ import requests.auth
 import ktp_controller.utils
 import ktp_controller.abitti2.naksu2
 
+
+_LOGGER = logging.getLogger(__name__)
+
+
 __all__ = [
     # Constants:
     "DUMMY_EXAM_PACKAGE_FILEPATH",
