@@ -1,0 +1,35 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ "agent" ]
+  pull_request:
+    branches: [ "agent" ]
+permissions:
+  contents: read # access to check out code and install dependencies
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+    steps:
+    - uses: actions/checkout@v5
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.11'
+    - name: Install deps
+      run: |
+        pip install -U pip
+        pip install poetry
+        poetry install
+        make dev-migratedb
+
+    - name: Run check
+      run: make check
+
+    - name: Run tests
+      run: make test
