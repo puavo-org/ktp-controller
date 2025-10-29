@@ -2,14 +2,15 @@ name: Makefile CI
 
 on:
   push:
-    branches: [ "agent" ]
+    branches: [ "*" ]
   pull_request:
-    branches: [ "agent" ]
+    branches: [ "*" ]
+
 permissions:
-  contents: read # access to check out code and install dependencies
+  contents: read
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
     services:
       redis:
