@@ -140,7 +140,7 @@ def _prepare_current_scheduled_exam_package(exam_package, utcnow):
     exam_filenames = ktp_controller.abitti2.client.prepare_exam_package(
         exam_package_filepath, decrypt_codes
     )
-    _LOGGED.info("decrypted all %d exams successfully", len(exam_filenames))
+    _LOGGER.info("decrypted all %d exams successfully", len(exam_filenames))
 
 
 def _start_current_scheduled_exam_package(exam_package, utcnow):
