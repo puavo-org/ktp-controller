@@ -176,7 +176,11 @@ def download_exam_file(sha256sum: str, dest_filepath: str, *, timeout: int = 20)
             dest_file.write(chunk)
 
 
-def download_dummy_exam_file(dest_filepath: str, *, timeout: int = 20):
+def download_dummy_exam_file(
+    dest_filepath: str,
+    *,
+    timeout: int = 20,  # pylint: disable=unused-argument
+):
     ktp_controller.utils.copy_atomic(
         os.path.join(os.path.dirname(__file__), "dummy-exam-file.mex"), dest_filepath
     )

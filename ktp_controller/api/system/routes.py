@@ -86,7 +86,9 @@ async def _ui_websocket(websock: fastapi.WebSocket):
 # How many status reports will ever get stored at most. If this limit
 # is hit, then latest _STATUS_REPORT_PRESERVE_COUNT will be
 # preserved and all the rest deleted.
-_STATUS_REPORT_MAX_COUNT = 35000  # approx. 60 / 5 * 60 * 24 * 2 which means 2 days of reports will be stored, Abitti2 sends one report every 5secs
+# approx. 60 / 5 * 60 * 24 * 2
+# which means 2 days of reports will be stored, Abitti2 sends one report every 5secs
+_STATUS_REPORT_MAX_COUNT = 35000
 
 
 def _get_status_report_preserve_count():

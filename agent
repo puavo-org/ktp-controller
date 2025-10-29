@@ -128,14 +128,18 @@ def _set_scheduled_exam_package_state(scheduled_exam_package, next_state):
 
 
 def _init_current_scheduled_exam_package(
-    exam_package: typing.Dict, utcnow: datetime.datetime
+    exam_package: typing.Dict,  # pylint: disable=unused-argument
+    utcnow: datetime.datetime,  # pylint: disable=unused-argument
 ):
     # This exam package was just set as the current. Let's reset the
     # Abitti2 server.
     ktp_controller.abitti2.client.reset()
 
 
-def _prepare_current_scheduled_exam_package(exam_package, utcnow):
+def _prepare_current_scheduled_exam_package(
+    exam_package: typing.Dict,
+    utcnow: datetime.datetime,  # pylint: disable=unused-argument
+):
     (exam_package_filepath, decrypt_codes) = _create_exam_package_file(exam_package)
     exam_filenames = ktp_controller.abitti2.client.prepare_exam_package(
         exam_package_filepath, decrypt_codes
@@ -143,11 +147,17 @@ def _prepare_current_scheduled_exam_package(exam_package, utcnow):
     _LOGGER.info("decrypted all %d exams successfully", len(exam_filenames))
 
 
-def _start_current_scheduled_exam_package(exam_package, utcnow):
+def _start_current_scheduled_exam_package(
+    exam_package,  # pylint: disable=unused-argument
+    utcnow,  # pylint: disable=unused-argument
+):
     ktp_controller.abitti2.client.start_decrypted_exams()
 
 
-def _stop_current_scheduled_exam_package(exam_package, utcnow) -> bool:
+def _stop_current_scheduled_exam_package(
+    exam_package,
+    utcnow,  # pylint: disable=unused-argument
+) -> bool:
     # Change the security code first to ensure students cannot enter anymore.
     ktp_controller.abitti2.client.change_single_security_code()
 
@@ -162,7 +172,10 @@ def _stop_current_scheduled_exam_package(exam_package, utcnow) -> bool:
     )
 
 
-def _archive_current_scheduled_exam_package(exam_package, utcnow):
+def _archive_current_scheduled_exam_package(
+    exam_package,  # pylint: disable=unused-argument
+    utcnow,  # pylint: disable=unused-argument
+):
     # TODO: download exam results from Abitti2
     # TODO: upload exam results to EOM
     # TODO: verify that we got all results
@@ -193,7 +206,9 @@ class Agent:
         }
 
     def __command_enable_auto_control(
-        self, command_uuid: str, command_data: typing.Dict[str, typing.Any]
+        self,
+        command_uuid: str,
+        command_data: typing.Dict[str, typing.Any],  # pylint: disable=unused-argument
     ) -> ktp_controller.messages.CommandResultData:
         changed = not self.__is_auto_control_enabled
         self.__is_auto_control_enabled = True
@@ -208,7 +223,9 @@ class Agent:
         )
 
     def __command_disable_auto_control(
-        self, command_uuid: str, command_data: typing.Dict[str, typing.Any]
+        self,
+        command_uuid: str,
+        command_data: typing.Dict[str, typing.Any],  # pylint: disable=unused-argument
     ):
         changed = self.__is_auto_control_enabled
         self.__is_auto_control_enabled = False
@@ -498,7 +515,8 @@ class Agent:
             do_download = True
         elif os.path.getsize(filepath) != eom_scheduled_exam["file_size"]:
             _LOGGER.warning(
-                "exam file %r (file_uuid=%s) is already downloaded, but Exam-O-Matic claims it has incorrect size, re-downloading it now",
+                "exam file %r (file_uuid=%s) is already downloaded, "
+                "but Exam-O-Matic claims it has incorrect size, re-downloading it now",
                 eom_scheduled_exam["file_name"],
                 eom_scheduled_exam["file_uuid"],
             )
@@ -508,7 +526,8 @@ class Agent:
             do_download = True
         elif ktp_controller.utils.sha256(filepath) != eom_scheduled_exam["file_sha256"]:
             _LOGGER.warning(
-                "exam file %r (file_uuid=%s) is already downloaded, but Exam-O-Matic claims it has incorrect SHA256 checksum, re-downloading it now",
+                "exam file %r (file_uuid=%s) is already downloaded, "
+                "but Exam-O-Matic claims it has incorrect SHA256 checksum, re-downloading it now",
                 eom_scheduled_exam["file_name"],
                 eom_scheduled_exam["file_uuid"],
             )
@@ -564,7 +583,7 @@ class Agent:
                     tg.create_task(self.__maintain_websocket_connection_to_api())
                     tg.create_task(self.__maintain_websocket_connection_to_abitti2())
                     tg.create_task(self.__maintain_websocket_connection_to_examomatic())
-            except* Exception:
+            except* Exception:  # pylint: disable=broad-exception-caught
                 _LOGGER.exception("Operational failure")
                 _LOGGER.error(
                     "Restart approximately in %d seconds...",
