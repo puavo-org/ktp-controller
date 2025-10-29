@@ -47,23 +47,16 @@ Processes are launched and kept running with Supervisor (https://supervisord.org
 
 ## Development
 
-Install poetry from PyPI:
-
-```
-pip3 install --user --break-system-packages poetry # For some strange reason, you need --break-system-packages eventhough you are installing to user's homedir.
-```
-
-This installs poetry to `~/.local/bin` so ensure it's in your PATH.
-
-After installing poetry, everything you need for development is one make command away.
-
-### Create new development environment
-
-To create a new virtual environment and install all the required packages into it, run:
+Install poetry and all dependencies from PyPI:
 
 ```
 make dev-install
 ```
+
+This installs poetry to `~/.local/bin` so ensure it's in your PATH.
+
+All other packages are installed BY poetry to a separate virtual env.
+
 
 ### Run in development mode
 

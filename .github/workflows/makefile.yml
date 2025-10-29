@@ -23,13 +23,8 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Install poetry
-      run: |
-        pip install -U pip
-        pip install poetry
-
-    - name: Install dependencies
-      run: poetry install
+    - name: Install poetry and dependencies
+      run: make dev-install
 
     - name: Initialize the database
       run: make dev-migratedb

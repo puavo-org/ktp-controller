@@ -18,6 +18,7 @@ dev-run: ktp_controller/api/ktp_controller.sqlite
 
 .PHONY: dev-install
 dev-install:
+	pip install --user --upgrade --break-system-packages poetry
 	poetry install
 
 .PHONY: dev-update
