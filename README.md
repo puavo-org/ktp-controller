@@ -1,5 +1,7 @@
 # ktp-controller
 
+[![Makefile CI](https://github.com/opinsys/ktp-controller/actions/workflows/makefile.yml/badge.svg)](https://github.com/opinsys/ktp-controller/actions/workflows/makefile.yml)
+
 Connection diagram:
 
 ```
