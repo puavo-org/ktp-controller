@@ -46,7 +46,9 @@ def _create_dummy_exam_package_file():
         ktp_controller.abitti2.client.DUMMY_EXAM_PACKAGE_FILEPATH
     ) as exam_package_file:
         with zipfile.ZipFile(exam_package_file, "w") as exam_package_file_zip:
-            exam_package_file_zip.write(_DUMMY_EXAM_FILE_FILEPATH)
+            exam_package_file_zip.write(
+                _DUMMY_EXAM_FILE_FILEPATH, os.path.basename(_DUMMY_EXAM_FILE_FILEPATH)
+            )
 
 
 class LocalFilepathType(str, enum.Enum):
