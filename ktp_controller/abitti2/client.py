@@ -177,7 +177,7 @@ def prepare_exam_package(
 
     if len(still_encrypted_exam_filenames) > 0:
         raise RuntimeError(
-            f"failed to decrypt {len(still_encrypted_exam_filenames)/len(exam_filenames)} exams",
+            f"failed to decrypt {len(still_encrypted_exam_filenames)}/{len(exam_filenames)} exams",
             still_encrypted_exam_filenames,
         )
 
