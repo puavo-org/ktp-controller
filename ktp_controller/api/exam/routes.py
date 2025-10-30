@@ -187,7 +187,7 @@ _VALID_TRANSITIONS = {
 
 @router.post(
     "/set_current_scheduled_exam_package_state",
-    response_model=schemas.ScheduledExamPackageState,
+    response_model=schemas.ScheduledExamPackageState | None,
     summary="Set current scheduled exam package state",
 )
 async def _set_current_scheduled_exam_package_state(
