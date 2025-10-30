@@ -58,8 +58,11 @@ def open_atomic_write(
         mode = "x"
     else:
         mode = "a"  # "a" does not truncate the file rightaway, rename will do it if all succeeds
+    tmpfilemode = "w"
+
     if encoding is None:
         mode = f"{mode}b"
+        tmpfilemode = f"{tmpfilemode}b"
 
     tmp_dest_filepath = f"{dest_filepath}.ktp_controller_open_atomic_write_tmp"
     success = False
@@ -69,7 +72,9 @@ def open_atomic_write(
     try:
         with open(dest_filepath, mode, encoding=encoding) as _:
             created_dest_file = True
-            with open(tmp_dest_filepath, mode, encoding=encoding) as tmp_dest_file:
+            with open(
+                tmp_dest_filepath, tmpfilemode, encoding=encoding
+            ) as tmp_dest_file:
                 created_tmp_file = True
                 yield tmp_dest_file
             os.rename(tmp_dest_filepath, dest_filepath)
