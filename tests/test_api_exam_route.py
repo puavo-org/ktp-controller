@@ -164,6 +164,51 @@ def test_save_exam_info__real_anonymized_input(client, testdb, utcnow):
     )
 
 
+def test_save_exam_info__real_anonymized_input_start_time_and_end_time_switched_around(
+    client, testdb, utcnow
+):
+    assert testdb.query(models.ExamInfo).all() == []
+
+    eom_exam_info = json.loads(REAL_ANONYMIZED_EOM_EXAM_INFO_JSON)
+
+    api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
+        eom_exam_info
+    )
+
+    start_time = api_exam_info["scheduled_exam_packages"][0]["start_time"]
+    api_exam_info["scheduled_exam_packages"][0]["start_time"] = api_exam_info[
+        "scheduled_exam_packages"
+    ][0]["end_time"]
+    api_exam_info["scheduled_exam_packages"][0]["end_time"] = start_time
+
+    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
+    assert_response(response, expected_status_code=422)
+
+    assert response.json() == {
+        "detail": [
+            {
+                "type": "value_error",
+                "loc": ["body", "scheduled_exam_packages", 0],
+                "msg": "Value error, ('start_time >= end_time', datetime.datetime(2025, 5, 28, 11, 15, tzinfo=TzInfo(0)), datetime.datetime(2025, 5, 28, 5, 0, tzinfo=TzInfo(0)))",
+                "input": {
+                    "external_id": "49cdca0d-3d77-4fe1-a69b-b89a7ddf46f0",
+                    "start_time": "2025-05-28T11:15:00.000+0000",
+                    "end_time": "2025-05-28T05:00:00.000+0000",
+                    "lock_time": "2025-05-28T04:45:00.000+0000",
+                    "locked": True,
+                    "scheduled_exam_external_ids": [
+                        "5db14454-8d68-47af-9e23-e1bb45170d89",
+                        "fe20d1cb-c30d-47f4-88b1-3e7dd492d061",
+                    ],
+                    "state": None,
+                    "state_changed_at": None,
+                },
+                "ctx": {"error": {}},
+            }
+        ]
+    }
+
+
 def test_get_current_scheduled_exam_package__empty_database(client, testdb, utcnow):
     assert testdb.query(models.ScheduledExamPackage).all() == []
 

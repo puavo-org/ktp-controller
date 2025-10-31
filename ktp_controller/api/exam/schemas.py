@@ -2,6 +2,7 @@
 import datetime
 import enum
 import typing
+from typing_extensions import Self
 
 # Third-party imports
 import pydantic
@@ -43,6 +44,12 @@ class ScheduledExam(ktp_controller.pydantic.BaseModel):
     exam_file_info: ExamFileInfo
     modified_at: datetime.datetime
 
+    @pydantic.model_validator(mode="after")
+    def check_times(self) -> Self:
+        if self.start_time >= self.end_time:
+            raise ValueError("start_time >= end_time", self.start_time, self.end_time)
+        return self
+
 
 class ScheduledExamPackageState(str, enum.Enum):
     WAITING = "waiting"
@@ -65,6 +72,12 @@ class ScheduledExamPackage(ktp_controller.pydantic.BaseModel):
     scheduled_exam_external_ids: typing.List[pydantic.StrictStr]
     state: ScheduledExamPackageState | None
     state_changed_at: datetime.datetime | None
+
+    @pydantic.model_validator(mode="after")
+    def check_times(self) -> Self:
+        if self.start_time >= self.end_time:
+            raise ValueError("start_time >= end_time", self.start_time, self.end_time)
+        return self
 
 
 class ExamInfo(ktp_controller.pydantic.BaseModel):
