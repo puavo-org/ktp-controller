@@ -21,6 +21,7 @@ websockets = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
+pytest-mock = "*"
 pylint = "*"
 httpx = "*"
 #black = "*"
