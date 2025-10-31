@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+import json
+import os
+import subprocess
+import sys
+
+
+def write_stdout(s):
+    # only eventlistener protocol messages may be sent to stdout
+    sys.stdout.write(s)
+    sys.stdout.flush()
+
+
+def write_stderr(s):
+    sys.stderr.write(s)
+    sys.stderr.flush()
+
+
+def _supervisorctl(command, *args):
+    subprocess.check_call(
+        ["supervisorctl", "-c", "supervisor.conf", command] + list(args),
+        stdout=open("/dev/null", "wb"),
+    )
+
+
+def main():
+    try:
+        os.unlink("tests/result")
+    except FileNotFoundError:
+        pass
+    while 1:
+        # transition from ACKNOWLEDGED to READY
+        write_stdout("READY\n")
+
+        # read header line and print it to stderr
+        header_line = sys.stdin.readline()
+
+        # read event payload and print it to stderr
+        headers = dict([x.split(":") for x in header_line.split()])
+        write_stderr(json.dumps(headers))
+        write_stderr("\n")
+
+        payload_data = sys.stdin.read(int(headers["len"]))
+        payload = dict([x.split(":") for x in payload_data.split()])
+        write_stderr(json.dumps(payload))
+        write_stderr("\n")
+
+        if (
+            headers["eventname"] == "PROCESS_STATE_RUNNING"
+            and payload["processname"] == "redis"
+        ):
+            _supervisorctl("start", "test")
+        elif (
+            headers["eventname"]
+            in ("PROCESS_STATE_EXITED", "PROCESS_STATE_STOPPED", "PROCESS_STATE_FATAL")
+            and payload["processname"] == "test"
+        ):
+            if headers["eventname"] == "PROCESS_STATE_EXITED" and bool(
+                payload["expected"]
+            ):
+                with open("tests/result", "wb") as f:
+                    f.write("ok\n".encode("ascii"))
+            else:
+                with open("tests/result", "wb") as f:
+                    f.write("fail\n".encode("ascii"))
+
+            _supervisorctl("shutdown")
+
+        # transition from READY to ACKNOWLEDGED
+        write_stdout("RESULT 2\nOK")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        write_stderr(str(e))
+        write_stdout("RESULT 4\nFAIL")
