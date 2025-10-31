@@ -99,6 +99,10 @@ def _get_status_report_preserve_count():
     return _get_status_report_max_count() - 360  # 60 / 5 * 30 = 360
 
 
+# Logical invariant
+assert 0 < _get_status_report_preserve_count() < _get_status_report_max_count()
+
+
 @router.post(
     "/send_abitti2_status_report",
     response_model=None,
