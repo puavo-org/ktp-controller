@@ -1,4 +1,5 @@
 # Standard library imports
+import datetime
 
 # Third-party imports
 import fastapi
@@ -342,3 +343,210 @@ def test_send_abitti2_status_report__two_different_reports(client, testdb, utcno
     assert_response(response, expected_status_code=200)
 
     assert response.json() == status_report2
+
+
+def test_send_abitti2_status_report__multiple_reports_exactly_max_count(
+    client, testdb, utcnow, mocker
+):
+    assert testdb.query(models.Abitti2StatusReport).all() == []
+
+    max_count = 6
+    preserve_count = 3
+
+    mocked_get_status_report_max_count = mocker.patch(
+        "ktp_controller.api.system.routes._get_status_report_max_count"
+    )
+    mocked_get_status_report_max_count.return_value = max_count
+
+    mocked_get_status_report_preserve_count = mocker.patch(
+        "ktp_controller.api.system.routes._get_status_report_preserve_count"
+    )
+    mocked_get_status_report_preserve_count.return_value = preserve_count
+
+    status_reports = []
+    for i in range(max_count):
+        status_report = {
+            "received_at": (utcnow + datetime.timedelta(seconds=i * 5)).isoformat(),
+            "reported_at": (utcnow + datetime.timedelta(seconds=i * 5 + 2)).isoformat(),
+            "monitoring_passphrase": "pass",
+            "server_version": "1.11.0",
+            "status": {},
+        }
+
+        response = client.post(
+            "/api/v1/system/send_abitti2_status_report", json=status_report
+        )
+        assert_response(response, expected_status_code=200)
+        status_reports.append(status_report)
+
+    db_abitti2_status_reports = (
+        testdb.query(models.Abitti2StatusReport)
+        .order_by(models.Abitti2StatusReport.dbid)
+        .all()
+    )
+
+    assert len(db_abitti2_status_reports) == max_count
+
+    assert [db_sr.raw_data for db_sr in db_abitti2_status_reports] == status_reports
+
+    response = client.post("/api/v1/system/get_last_abitti2_status_report")
+    assert_response(response, expected_status_code=200)
+
+    assert response.json() == status_reports[-1]
+
+
+def test_send_abitti2_status_report__multiple_reports_less_than_max_count(
+    client, testdb, utcnow, mocker
+):
+    assert testdb.query(models.Abitti2StatusReport).all() == []
+
+    max_count = 6
+    preserve_count = 3
+    send_count = 5
+
+    mocked_get_status_report_max_count = mocker.patch(
+        "ktp_controller.api.system.routes._get_status_report_max_count"
+    )
+    mocked_get_status_report_max_count.return_value = max_count
+
+    mocked_get_status_report_preserve_count = mocker.patch(
+        "ktp_controller.api.system.routes._get_status_report_preserve_count"
+    )
+    mocked_get_status_report_preserve_count.return_value = preserve_count
+
+    status_reports = []
+    for i in range(send_count):
+        status_report = {
+            "received_at": (utcnow + datetime.timedelta(seconds=i * 5)).isoformat(),
+            "reported_at": (utcnow + datetime.timedelta(seconds=i * 5 + 2)).isoformat(),
+            "monitoring_passphrase": "pass",
+            "server_version": "1.11.0",
+            "status": {},
+        }
+
+        response = client.post(
+            "/api/v1/system/send_abitti2_status_report", json=status_report
+        )
+        assert_response(response, expected_status_code=200)
+        status_reports.append(status_report)
+
+    db_abitti2_status_reports = (
+        testdb.query(models.Abitti2StatusReport)
+        .order_by(models.Abitti2StatusReport.dbid)
+        .all()
+    )
+
+    assert len(db_abitti2_status_reports) == send_count
+
+    assert [db_sr.raw_data for db_sr in db_abitti2_status_reports] == status_reports
+
+    response = client.post("/api/v1/system/get_last_abitti2_status_report")
+    assert_response(response, expected_status_code=200)
+
+    assert response.json() == status_reports[-1]
+
+
+def test_send_abitti2_status_report__multiple_reports_one_more_than_max_count(
+    client, testdb, utcnow, mocker
+):
+    assert testdb.query(models.Abitti2StatusReport).all() == []
+
+    max_count = 6
+    preserve_count = 3
+    send_count = 7
+
+    mocked_get_status_report_max_count = mocker.patch(
+        "ktp_controller.api.system.routes._get_status_report_max_count"
+    )
+    mocked_get_status_report_max_count.return_value = max_count
+
+    mocked_get_status_report_preserve_count = mocker.patch(
+        "ktp_controller.api.system.routes._get_status_report_preserve_count"
+    )
+    mocked_get_status_report_preserve_count.return_value = preserve_count
+
+    status_reports = []
+    for i in range(send_count):
+        status_report = {
+            "received_at": (utcnow + datetime.timedelta(seconds=i * 5)).isoformat(),
+            "reported_at": (utcnow + datetime.timedelta(seconds=i * 5 + 2)).isoformat(),
+            "monitoring_passphrase": "pass",
+            "server_version": "1.11.0",
+            "status": {},
+        }
+
+        response = client.post(
+            "/api/v1/system/send_abitti2_status_report", json=status_report
+        )
+        assert_response(response, expected_status_code=200)
+        status_reports.append(status_report)
+
+    db_abitti2_status_reports = (
+        testdb.query(models.Abitti2StatusReport)
+        .order_by(models.Abitti2StatusReport.dbid)
+        .all()
+    )
+
+    assert len(db_abitti2_status_reports) == preserve_count + 1
+
+    assert [db_sr.raw_data for db_sr in db_abitti2_status_reports] == status_reports[
+        -(preserve_count + 1) :
+    ]
+
+    response = client.post("/api/v1/system/get_last_abitti2_status_report")
+    assert_response(response, expected_status_code=200)
+
+    assert response.json() == status_reports[-1]
+
+
+def test_send_abitti2_status_report__multiple_reports_many_more_than_max_count(
+    client, testdb, utcnow, mocker
+):
+    assert testdb.query(models.Abitti2StatusReport).all() == []
+
+    max_count = 6
+    preserve_count = 3
+    send_count = 23
+
+    mocked_get_status_report_max_count = mocker.patch(
+        "ktp_controller.api.system.routes._get_status_report_max_count"
+    )
+    mocked_get_status_report_max_count.return_value = max_count
+
+    mocked_get_status_report_preserve_count = mocker.patch(
+        "ktp_controller.api.system.routes._get_status_report_preserve_count"
+    )
+    mocked_get_status_report_preserve_count.return_value = preserve_count
+
+    status_reports = []
+    for i in range(send_count):
+        status_report = {
+            "received_at": (utcnow + datetime.timedelta(seconds=i * 5)).isoformat(),
+            "reported_at": (utcnow + datetime.timedelta(seconds=i * 5 + 2)).isoformat(),
+            "monitoring_passphrase": "pass",
+            "server_version": "1.11.0",
+            "status": {},
+        }
+
+        response = client.post(
+            "/api/v1/system/send_abitti2_status_report", json=status_report
+        )
+        assert_response(response, expected_status_code=200)
+        status_reports.append(status_report)
+
+    db_abitti2_status_reports = (
+        testdb.query(models.Abitti2StatusReport)
+        .order_by(models.Abitti2StatusReport.dbid)
+        .all()
+    )
+
+    assert len(db_abitti2_status_reports) == preserve_count + 2
+
+    assert [db_sr.raw_data for db_sr in db_abitti2_status_reports] == status_reports[
+        -(preserve_count + 2) :
+    ]
+
+    response = client.post("/api/v1/system/get_last_abitti2_status_report")
+    assert_response(response, expected_status_code=200)
+
+    assert response.json() == status_reports[-1]

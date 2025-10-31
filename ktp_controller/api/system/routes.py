@@ -84,17 +84,19 @@ async def _ui_websocket(websock: fastapi.WebSocket):
 
 
 # How many status reports will ever get stored at most. If this limit
-# is hit, then latest _STATUS_REPORT_PRESERVE_COUNT will be
+# is hit, then latest _get_status_report_preserve_count() will be
 # preserved and all the rest deleted.
 # approx. 60 / 5 * 60 * 24 * 2
 # which means 2 days of reports will be stored, Abitti2 sends one report every 5secs
-_STATUS_REPORT_MAX_COUNT = 35000
+# This constant is implemented as a function so that it can be easily mocked in tests.
+def _get_status_report_max_count():
+    return 35000
 
 
 def _get_status_report_preserve_count():
     # 360 difference, means that delete will hit twice per hour
     # because Abitti2 sends status reports one per 5sec.
-    return _STATUS_REPORT_MAX_COUNT - 360  # 60 / 5 * 30 = 360
+    return _get_status_report_max_count() - 360  # 60 / 5 * 30 = 360
 
 
 @router.post(
@@ -107,7 +109,7 @@ async def _send_abitti2_status_report(
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ):
     status_report_count = db.query(models.Abitti2StatusReport).count()
-    if status_report_count >= _STATUS_REPORT_MAX_COUNT:
+    if status_report_count >= _get_status_report_max_count():
         delete_subquery = (
             db.query(models.Abitti2StatusReport.dbid)
             .order_by(sqlalchemy.asc(models.Abitti2StatusReport.dbrow_created_at))

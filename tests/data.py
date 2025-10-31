@@ -1,3 +1,7 @@
+import datetime
+import json
+import uuid
+
 REAL_ANONYMIZED_EOM_EXAM_INFO_JSON = """
 {
   "schedules": [
@@ -89,3 +93,63 @@ REAL_ANONYMIZED_EOM_EXAM_INFO_JSON = """
   "request_id": "REQ1"
 }
 """
+
+
+def get_synthetic_exam_info(
+    *,
+    start_time: datetime.datetime,
+    utcnow: datetime.datetime | None = None,
+    duration: datetime.timedelta | None = None
+):
+    if utcnow is None:
+        utcnow = datetime.datetime.utcnow()
+    if duration is None:
+        duration = datetime.timedelta(minutes=30)
+
+    exam_uuid = str(uuid.uuid4())
+    exam_package_uuid = str(uuid.uuid4())
+    end_time = start_time + duration
+    lock_time = start_time - datetime.timedelta(minutes=15)
+
+    return json.loads(
+        json.dumps(
+            {
+                "schedules": [
+                    {
+                        "id": exam_uuid,
+                        "exam_title": "exam1",
+                        "file_name": "exam1.mex",
+                        "file_size": 9294014,
+                        "file_sha256": "fd3a4a6021d4b53daa4494db4b907085917ab542ee10864d426abdf01d5ccc8f",
+                        "file_uuid": "12cb630c-9419-4fa8-93f7-f1b01779e470",
+                        "decrypt_code": "kukka ahma reiluus sotaonni",
+                        "start_time": start_time.isoformat(),
+                        "end_time": end_time.isoformat(),
+                        "exam_modified_at": (
+                            start_time - datetime.timedelta(hours=1)
+                        ).isoformat(),
+                        "schedule_modified_at": (
+                            start_time - datetime.timedelta(minutes=30)
+                        ).isoformat(),
+                        "school_name": "school1",
+                        "server_id": 2,
+                        "is_retake": False,
+                        "retake_participants": 0,
+                    },
+                ],
+                "packages": {
+                    exam_package_uuid: {
+                        "id": exam_package_uuid,
+                        "start_time": start_time.isoformat(),
+                        "end_time": end_time.isoformat(),
+                        "lock_time": lock_time.isoformat(),
+                        "schedules": [exam_uuid],
+                        "locked": utcnow >= lock_time,
+                        "server_id": 2,
+                        "estimated_total_size": 0,
+                    },
+                },
+                "request_id": str(uuid.uuid4()),
+            }
+        )
+    )
