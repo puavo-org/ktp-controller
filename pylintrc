@@ -1,5 +1,6 @@
 [MASTER]
 disable=global-statement,
+        duplicate-code,
         missing-class-docstring,
         missing-module-docstring,
         missing-function-docstring,

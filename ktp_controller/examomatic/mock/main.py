@@ -2,7 +2,6 @@
 import contextlib
 import datetime
 import logging
-import logging.config
 import os.path
 import typing
 import uuid
@@ -15,10 +14,6 @@ import pydantic
 
 # Internal imports
 import ktp_controller.pydantic
-
-# import ktp_controller.api.exam.routes
-# import ktp_controller.api.system.routes
-from ktp_controller.settings import SETTINGS
 
 
 __all__ = [
@@ -63,8 +58,8 @@ def _exam_file_streamer(sha256):
 )
 def _get_exam_file_stream(
     domain: str,
-    hostname: str,
-    server_id: str = fastapi.Query(..., alias="id"),
+    hostname: str,  # pylint: disable=unused-argument
+    server_id: str = fastapi.Query(..., alias="id"),  # pylint: disable=unused-argument
     sha256sum: pydantic.constr(
         strict=True, pattern=r"^[0-9a-fA-F]{64}$"
     ) = fastapi.Query(..., alias="hash"),
@@ -206,10 +201,10 @@ class _Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
     status_code=200,
 )
 def _send_abitti2_status_report(
-    request: _Abitti2StatusReport,
+    request: _Abitti2StatusReport,  # pylint: disable=unused-argument
     domain: str,
-    hostname: str,
-    server_id: int = fastapi.Query(..., alias="id"),
+    hostname: str,  # pylint: disable=unused-argument
+    server_id: int = fastapi.Query(..., alias="id"),  # pylint: disable=unused-argument
 ):
     # For usability, user wanting to use this Exam-O-Matic mock needs
     # to explicitly claim it.
