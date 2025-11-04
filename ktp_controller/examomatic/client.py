@@ -46,14 +46,19 @@ def _get(
         "id": SETTINGS.id,
     }
     params.update(extra_params)
-    response = requests.get(
-        ktp_controller.utils.get_url(SETTINGS.examomatic_host, path),
-        auth=requests.auth.HTTPBasicAuth(
+
+    auth = None
+    if SETTINGS.examomatic_username and SETTINGS.examomatic_password_file:
+        auth = requests.auth.HTTPBasicAuth(
             SETTINGS.examomatic_username,
             ktp_controller.utils.readfirstline(
                 SETTINGS.examomatic_password_file, encoding="ascii"
             ),
-        ),
+        )
+
+    response = requests.get(
+        ktp_controller.utils.get_url(SETTINGS.examomatic_host, path),
+        auth=auth,
         params=params,
         timeout=timeout,
         stream=stream,
