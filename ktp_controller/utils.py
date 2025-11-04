@@ -118,8 +118,8 @@ def get_url(
     path: str,
     *,
     params=None,
-    use_websocket: bool = False,
-    use_tls: bool = True,
+    use_websocket: bool | None = None,
+    use_tls: bool | None = None,
 ) -> str:
     """Construct valid URL
 
@@ -128,17 +128,46 @@ def get_url(
 
     >>> get_url('example.invalid', 'another/path/without/leading/slash', use_websocket=True)
     'wss://example.invalid/another/path/without/leading/slash'
+
+    >>> get_url('http://example.invalid', 'another/path/without/leading/slash', use_websocket=True)
+    Traceback (most recent call last):
+    ...
+    ValueError: use_websocket cannot be given if host contains scheme
+
+    >>> get_url('ws://example.invalid', '/what/not')
+    'ws://example.invalid/what/not'
     """
 
     path = path.removeprefix("/")
 
-    if use_websocket:
-        scheme = "ws"
-    else:
-        scheme = "http"
+    maybe_scheme, part, rest = host.partition("://")
+    if part:
+        if use_websocket is not None:
+            raise ValueError("use_websocket cannot be given if host contains scheme")
+        if use_tls is not None:
+            raise ValueError("use_tls cannot be given if host contains scheme")
 
-    if use_tls:
-        scheme = f"{scheme}s"
+        expected_schemes = ("http", "https", "ws", "wss")
+        if maybe_scheme.lower() not in expected_schemes:
+            raise ValueError(
+                f"invalid scheme, expected one of {expected_schemes}", host
+            )
+        host = rest
+        scheme = maybe_scheme
+    else:
+        if use_websocket is None:
+            use_websocket = False
+
+        if use_tls is None:
+            use_tls = True
+
+        if use_websocket:
+            scheme = "ws"
+        else:
+            scheme = "http"
+
+        if use_tls:
+            scheme = f"{scheme}s"
 
     url = f"{scheme}://{host}/{path}"
 
