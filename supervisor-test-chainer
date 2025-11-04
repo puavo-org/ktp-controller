@@ -63,11 +63,12 @@ def main():
             if headers["eventname"] == "PROCESS_STATE_EXITED" and bool(
                 payload["expected"]
             ):
-                with open("tests/result", "wb") as f:
-                    f.write("ok\n".encode("ascii"))
+                result = "ok"
             else:
-                with open("tests/result", "wb") as f:
-                    f.write("fail\n".encode("ascii"))
+                result = "fail"
+            with open("tests/result.tmp", "wb") as f:
+                f.write(f"{result}\n".encode("ascii"))
+            os.rename("tests/result.tmp", "tests/result")
 
             _supervisorctl("shutdown")
 
