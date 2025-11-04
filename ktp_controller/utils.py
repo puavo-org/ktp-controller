@@ -134,11 +134,12 @@ def get_url(
     ...
     ValueError: use_websocket cannot be given if host contains scheme
 
-    >>> get_url('ws://example.invalid', '/what/not')
+    >>> get_url('ws://example.invalid/', '/what/not')
     'ws://example.invalid/what/not'
     """
 
     path = path.removeprefix("/")
+    host = host.removesuffix("/")
 
     maybe_scheme, part, rest = host.partition("://")
     if part:
