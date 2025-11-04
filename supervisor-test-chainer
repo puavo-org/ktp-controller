@@ -46,6 +46,11 @@ def main():
         write_stderr("\n")
 
         if (
+            headers["eventname"] == "PROCESS_STATE_EXITED"
+            and payload["processname"] == "docker-pull"
+        ):
+            _supervisorctl("start", "redis")
+        elif (
             headers["eventname"] == "PROCESS_STATE_RUNNING"
             and payload["processname"] == "redis"
         ):
