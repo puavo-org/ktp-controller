@@ -1,0 +1,33 @@
+#!/usr/bin/env python3
+
+# Standard library imports
+import argparse
+import os.path
+
+# Third-party imports
+
+# Internal imports
+import ktp_controller.examomatic.mock.main
+
+# Relative imports
+
+# Constants:
+
+_THIS_DIR = os.path.dirname(__file__)
+_DATA_DIR = os.path.join(_THIS_DIR, "examomatic-mock-data")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument("--port", type=int, default=8001)
+    parser.add_argument("--data-dir", type=str, default=_DATA_DIR)
+
+    args = parser.parse_args()
+
+    ktp_controller.examomatic.mock.main.run(args.port, args.data_dir)
+
+
+if __name__ == "__main__":
+    main()
