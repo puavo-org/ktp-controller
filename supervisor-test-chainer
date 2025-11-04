@@ -18,7 +18,7 @@ def write_stderr(s):
 
 def _supervisorctl(command, *args):
     subprocess.check_call(
-        ["supervisorctl", "-c", "supervisor.conf", command] + list(args),
+        ["supervisorctl", "-c", "supervisor-test.conf", command] + list(args),
         stdout=open("/dev/null", "wb"),
     )
 
