@@ -1,4 +1,5 @@
 # Standard library imports
+import asyncio
 import contextlib
 import datetime
 import logging
@@ -210,6 +211,27 @@ def _send_abitti2_status_report(
     # to explicitly claim it.
     if domain != "integration.test":
         raise fastapi.HTTPException(400, detail="domain must be integration.test")
+
+
+async def _play_ping_pong_with_ktp_controller(websock: fastapi.WebSocket):
+    pong_count = 0
+    async for message in websock.iter_json():
+        if message["type"] == "ping":
+            pong_count += 1
+            await websock.send_json({"type": "pong", "id": pong_count})
+            _LOGGER.info("Responded successfully to ping with pong (#%d).", pong_count)
+            continue
+        _LOGGER.warning("Received and ignored unknown message: %s", message)
+
+
+@APP.websocket("/servers/ers_connection")
+async def _ktp_controller_websocket(
+    websock: fastapi.WebSocket,
+):
+    await websock.accept()
+
+    async with asyncio.TaskGroup() as tg:
+        tg.create_task(_play_ping_pong_with_ktp_controller(websock))
 
 
 def run(port: int, data_dir: str):
