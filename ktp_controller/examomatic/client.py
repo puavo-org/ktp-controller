@@ -75,7 +75,9 @@ def _get(
     return response
 
 
-def _post(path: str, data: bytes, *, timeout: int = 20) -> requests.Response:
+def _post(
+    path: str, *, data: bytes | None = None, timeout: int = 20
+) -> requests.Response:
     response = requests.post(
         ktp_controller.utils.get_url(
             SETTINGS.examomatic_host,
@@ -147,7 +149,7 @@ def send_abitti2_status_report(
 ) -> typing.Any:
     return _post(
         "/v1/servers/status_update",
-        json.dumps(status_report).encode("ascii"),
+        data=json.dumps(status_report).encode("ascii"),
         timeout=timeout,
     ).json()
 
