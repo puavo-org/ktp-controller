@@ -7,7 +7,7 @@ import logging
 import os.path
 import uuid
 
-from typing import Annotated, Dict, List
+from typing import Annotated, Dict, List, Any
 
 # Third-party imports
 import fastapi  # type: ignore
@@ -36,18 +36,36 @@ _LOGGER = logging.getLogger(__name__)
 @contextlib.asynccontextmanager
 async def _lifespan(app: fastapi.FastAPI):  # pylint: disable=unused-argument
     _LOGGER.info("Starting...")
+    app.state.is_running = True
     yield
+    app.state.is_running = False
     _LOGGER.info("Stopping...")
 
 
+def _check_domain(domain: str):
+    # For safety and user-friendlyness, user wanting to use this
+    # Exam-O-Matic mock needs to explicitly claim it.
+    if domain != "integration.test":
+        raise fastapi.HTTPException(400, detail="domain must be integration.test")
+
+
 APP = fastapi.FastAPI(lifespan=_lifespan)
-
-
-_g_data_dir = None
+APP.state.exam_infos = {}
+APP.state.do_send_refresh_exams = False
+APP.state.data_dir = None
+APP.state.is_running = False
+APP.state.status_reports = {}
+APP.state.request_counts = {}
+APP.state.pong_count = 0
+APP.state.ack_count = 0
+APP.state.refresh_exams_count = 0
+APP.state.data = {}
 
 
 def _exam_file_streamer(sha256):
-    with open(os.path.join(_g_data_dir, "exam-files", sha256.lower()), "rb") as f:
+    with open(
+        os.path.join(APP.state.data_dir, "exam-files", sha256.lower()), "rb"
+    ) as f:
         while True:
             data = f.read(4096)
             if not data:
@@ -60,7 +78,7 @@ def _exam_file_streamer(sha256):
     response_model=None,
     status_code=200,
 )
-def _get_exam_file_stream(
+async def _get_exam_file_stream(
     domain: str,
     hostname: str,  # pylint: disable=unused-argument
     server_id: str = fastapi.Query(..., alias="id"),  # pylint: disable=unused-argument
@@ -68,12 +86,8 @@ def _get_exam_file_stream(
         strict=True, pattern=r"^[0-9a-fA-F]{64}$"
     ) = fastapi.Query(..., alias="hash"),
 ):
-    # For usability, user wanting to use this Exam-O-Matic mock needs
-    # to explicitly claim it.
-    if domain != "integration.test":
-        raise fastapi.HTTPException(400, detail="domain must be integration.test")
-
-    return fastapi.responses.StreamingResponse(
+    _check_domain(domain)
+    return await fastapi.responses.StreamingResponse(
         _exam_file_streamer(sha256sum), media_type="application/zip"
     )
 
@@ -164,34 +178,6 @@ _TEST_DATA_FUNCTIONS = {
 }
 
 
-@APP.get(
-    "/v2/schedules/exam_packages",
-    response_model=_ExamInfo,
-    status_code=200,
-)
-def _get_exam_info(
-    domain: str, hostname: str, server_id: int = fastapi.Query(..., alias="id")
-):
-    # For usability, user wanting to use this Exam-O-Matic mock needs
-    # to explicitly claim it.
-    if domain != "integration.test":
-        raise fastapi.HTTPException(400, detail="domain must be integration.test")
-
-    utcnow = ktp_controller.utils.utcnow()
-
-    # We try to be clever here and let the caller select the test case
-    # data with hostname parameter.
-    try:
-        test_data_func = _TEST_DATA_FUNCTIONS[hostname]
-    except KeyError as key_error:
-        raise fastapi.HTTPException(
-            404,
-            detail=f"available hostnames (test data sets): {list(_TEST_DATA_FUNCTIONS.keys())}",
-        ) from key_error
-
-    return test_data_func(domain, hostname, server_id, utcnow)
-
-
 class _Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
     received_at: datetime.datetime
     monitoring_passphrase: pydantic.StrictStr
@@ -200,20 +186,81 @@ class _Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
 
 
 @APP.post(
+    "/mock/setup_exam_info",
+    response_model=None,
+    status_code=200,
+)
+async def _mock_setup_exam_info(
+    exam_info: _ExamInfo,
+    domain: str,
+    hostname: str,
+    server_id: int = fastapi.Query(..., alias="id"),
+):
+    _check_domain(domain)
+
+    APP.state.exam_infos[(domain, hostname, server_id)] = exam_info.model_dump()
+    APP.state.do_send_refresh_exams = True
+
+
+@APP.post(
+    "/mock/get_state",
+    response_model=Dict[str, Any],
+    status_code=200,
+)
+async def _mock_get_state(
+    domain: str,
+    hostname: str,  # pylint: disable=unused-argument
+    server_id: int = fastapi.Query(..., alias="id"),  # pylint: disable=unused-argument
+):
+    _check_domain(domain)
+
+    return APP.state._state  # pylint: disable=protected-access
+
+
+@APP.get(
+    "/v2/schedules/exam_packages",
+    response_model=_ExamInfo,
+    status_code=200,
+)
+async def _get_exam_info(
+    domain: str, hostname: str, server_id: int = fastapi.Query(..., alias="id")
+):
+    utcnow = datetime.datetime.utcnow()
+
+    _check_domain(domain)
+
+    APP.state.request_counts.setdefault(
+        (domain, hostname, server_id), {"get_exam_info": 0}
+    )["get_exam_info"] += 1
+
+    try:
+        exam_info = APP.state.exam_infos[(domain, hostname, server_id)]
+    except KeyError as key_error:
+        raise fastapi.HTTPException(404) from key_error
+
+    exam_info[
+        "request_id"
+    ] = f"{domain} {hostname} {server_id} {utcnow.isoformat()} {str(uuid.uuid4())}"
+
+    return exam_info
+
+
+@APP.post(
     "/v1/servers/status_update",
     response_model=None,
     status_code=200,
 )
-def _send_abitti2_status_report(
+async def _send_abitti2_status_report(
     request: _Abitti2StatusReport,  # pylint: disable=unused-argument
     domain: str,
     hostname: str,  # pylint: disable=unused-argument
     server_id: int = fastapi.Query(..., alias="id"),  # pylint: disable=unused-argument
 ):
-    # For usability, user wanting to use this Exam-O-Matic mock needs
-    # to explicitly claim it.
-    if domain != "integration.test":
-        raise fastapi.HTTPException(400, detail="domain must be integration.test")
+    _check_domain(domain)
+
+    APP.state.status_reports.setdefault((domain, hostname, server_id), []).append(
+        request.model_dump()
+    )
 
 
 @APP.post(
@@ -232,10 +279,7 @@ def _upload_answers_file(  # pylint: disable=too-many-arguments
     hostname: str,  # pylint: disable=unused-argument
     server_id: int = fastapi.Query(..., alias="id"),  # pylint: disable=unused-argument
 ):
-    # For usability, user wanting to use this Exam-O-Matic mock needs
-    # to explicitly claim it.
-    if domain != "integration.test":
-        raise fastapi.HTTPException(400, detail="domain must be integration.test")
+    _check_domain(domain)
 
     if answers_file.size != file_size:
         raise fastapi.HTTPException(
@@ -255,32 +299,55 @@ def _upload_answers_file(  # pylint: disable=too-many-arguments
 
 
 async def _play_ping_pong_with_ktp_controller(websock: fastapi.WebSocket):
-    pong_count = 0
     async for message in websock.iter_json():
         if message["type"] == "ping":
-            pong_count += 1
-            await websock.send_json({"type": "pong", "id": pong_count})
-            _LOGGER.info("Responded successfully to ping with pong (#%d).", pong_count)
+            APP.state.pong_count += 1
+            await websock.send_json({"type": "pong", "id": 1})
+            _LOGGER.info(
+                "Responded successfully to ping #%d with pong.", APP.state.pong_count
+            )
+            continue
+        if message["type"] == "ack":
+            APP.state.ack_count += 1
+            _LOGGER.info("Received ack: %s", message)
             continue
         _LOGGER.warning("Received and ignored unknown message: %s", message)
+
+
+async def _send_refresh_exams(websock: fastapi.WebSocket):
+    while APP.state.is_running:
+        if APP.state.do_send_refresh_exams:
+            APP.state.do_send_refresh_exams = False
+            APP.state.refresh_exams_count += 1
+            await websock.send_json({"type": "refresh_exams", "id": 1})
+            _LOGGER.info("Sent refresh_exams #%d.", APP.state.refresh_exams_count)
+        await asyncio.sleep(1)
 
 
 @APP.websocket("/servers/ers_connection")
 async def _ktp_controller_websocket(
     websock: fastapi.WebSocket,
+    domain: str,  # pylint: disable=unused-argument
+    hostname: str,  # pylint: disable=unused-argument
+    server_id: int = fastapi.Query(..., alias="id"),  # pylint: disable=unused-argument
 ):
+    try:
+        _check_domain(domain)
+    except fastapi.exceptions.HTTPException as e:
+        await websock.close(1008, e.detail)
+
     await websock.accept()
 
     async with asyncio.TaskGroup() as tg:
         tg.create_task(_play_ping_pong_with_ktp_controller(websock))
+        tg.create_task(_send_refresh_exams(websock))
 
 
 def run(port: int, data_dir: str):
-    global _g_data_dir
-    if _g_data_dir is None:
-        _g_data_dir = data_dir
+    if APP.state.data_dir is None:
+        APP.state.data_dir = data_dir
     else:
-        raise RuntimeError("_DATA_DIR is already set")
+        raise RuntimeError("APP.state.data_dir is already set")
 
     uvicorn.run(
         "ktp_controller.examomatic.mock.main:APP",
