@@ -62,7 +62,7 @@ def _get(
         ktp_controller.utils.get_url(
             SETTINGS.examomatic_host,
             path,
-            use_tls=SETTINGS.examomatic_use_tls,
+            scheme="https" if SETTINGS.examomatic_use_tls else "http",
         ),
         auth=_get_auth(),
         params=params,
@@ -80,7 +80,7 @@ def _post(path: str, data: bytes, *, timeout: int = 20) -> requests.Response:
         ktp_controller.utils.get_url(
             SETTINGS.examomatic_host,
             path,
-            use_tls=SETTINGS.examomatic_use_tls,
+            scheme="https" if SETTINGS.examomatic_use_tls else "http",
         ),
         data=data,
         auth=_get_auth(),
@@ -117,8 +117,7 @@ def get_examomatic_websock_url():
             "hostname": SETTINGS.hostname,
             "id": SETTINGS.id,
         },
-        use_tls=SETTINGS.examomatic_use_tls,
-        use_websocket=True,
+        scheme="wss" if SETTINGS.examomatic_use_tls else "ws",
     )
 
 

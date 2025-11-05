@@ -118,57 +118,33 @@ def get_url(
     path: str,
     *,
     params=None,
-    use_websocket: bool | None = None,
-    use_tls: bool | None = None,
+    scheme: str = "https",
 ) -> str:
-    """Construct valid URL
+    r"""Construct valid URL
 
     >>> get_url('example.invalid', '/what/not')
     'https://example.invalid/what/not'
 
-    >>> get_url('example.invalid', 'another/path/without/leading/slash', use_websocket=True)
+    >>> get_url('example.invalid', 'another/path/without/leading/slash', scheme='wss')
     'wss://example.invalid/another/path/without/leading/slash'
 
-    >>> get_url('http://example.invalid', 'another/path/without/leading/slash', use_websocket=True)
+    >>> get_url('example.invalid:8899', '/what/not', scheme='ftp')
+    'ftp://example.invalid:8899/what/not'
+
+    >>> get_url('http://example.invalid:8899', '/what/not')
     Traceback (most recent call last):
     ...
-    ValueError: use_websocket cannot be given if host contains scheme
+    ValueError: ('invalid host', 'http://example.invalid:8899')
 
-    >>> get_url('ws://example.invalid/', '/what/not')
-    'ws://example.invalid/what/not'
+    >>> get_url('example.invalid:8899/', '/what/not/', params={"myid": 7, "color": "black&white right\n"})
+    'https://example.invalid:8899/what/not/?myid=7&color=black%26white+right%0A'
     """
 
     path = path.removeprefix("/")
     host = host.removesuffix("/")
 
-    maybe_scheme, part, rest = host.partition("://")
-    if part:
-        if use_websocket is not None:
-            raise ValueError("use_websocket cannot be given if host contains scheme")
-        if use_tls is not None:
-            raise ValueError("use_tls cannot be given if host contains scheme")
-
-        expected_schemes = ("http", "https", "ws", "wss")
-        if maybe_scheme.lower() not in expected_schemes:
-            raise ValueError(
-                f"invalid scheme, expected one of {expected_schemes}", host
-            )
-        host = rest
-        scheme = maybe_scheme
-    else:
-        if use_websocket is None:
-            use_websocket = False
-
-        if use_tls is None:
-            use_tls = True
-
-        if use_websocket:
-            scheme = "ws"
-        else:
-            scheme = "http"
-
-        if use_tls:
-            scheme = f"{scheme}s"
+    if host.partition("://")[1]:
+        raise ValueError("invalid host", host)
 
     url = f"{scheme}://{host}/{path}"
 

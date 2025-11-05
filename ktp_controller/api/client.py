@@ -42,7 +42,7 @@ def _post(path: str, *, data=None, json=None, timeout: int = 5) -> requests.Resp
         data = {}
     response = requests.post(
         ktp_controller.utils.get_url(
-            f"{SETTINGS.api_host}:{SETTINGS.api_port}", path, use_tls=False
+            f"{SETTINGS.api_host}:{SETTINGS.api_port}", path, scheme="http"
         ),
         data=data,
         json=json,
@@ -105,8 +105,7 @@ def get_agent_websock_url():
     return ktp_controller.utils.get_url(
         f"{SETTINGS.api_host}:{SETTINGS.api_port}",
         "/api/v1/system/agent_websocket",
-        use_tls=False,
-        use_websocket=True,
+        scheme="ws",
     )
 
 
@@ -114,8 +113,7 @@ def get_ui_websock_url():
     return ktp_controller.utils.get_url(
         f"{SETTINGS.api_host}:{SETTINGS.api_port}",
         "/api/v1/system/ui_websocket",
-        use_tls=False,
-        use_websocket=True,
+        scheme="ws",
     )
 
 
