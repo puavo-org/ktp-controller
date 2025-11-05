@@ -106,7 +106,7 @@ class Settings(BaseSettings):
     examomatic_use_tls: bool = True
     domain: str = "example.invalid"
     hostname: str = platform.node()
-    id: str = "1"
+    id: int = 1
     api_host: str = "127.0.0.1"
     api_port: int = 8000
     logging_level: str = "INFO"
