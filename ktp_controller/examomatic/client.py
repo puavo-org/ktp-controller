@@ -31,6 +31,17 @@ __all__ = [
 # Utils:
 
 
+def _get_auth():
+    if SETTINGS.examomatic_username and SETTINGS.examomatic_password_file:
+        return requests.auth.HTTPBasicAuth(
+            SETTINGS.examomatic_username,
+            ktp_controller.utils.readfirstline(
+                SETTINGS.examomatic_password_file, encoding="ascii"
+            ),
+        )
+    return None
+
+
 def _get(
     path: str,
     *,
@@ -47,18 +58,13 @@ def _get(
     }
     params.update(extra_params)
 
-    auth = None
-    if SETTINGS.examomatic_username and SETTINGS.examomatic_password_file:
-        auth = requests.auth.HTTPBasicAuth(
-            SETTINGS.examomatic_username,
-            ktp_controller.utils.readfirstline(
-                SETTINGS.examomatic_password_file, encoding="ascii"
-            ),
-        )
-
     response = requests.get(
-        ktp_controller.utils.get_url(SETTINGS.examomatic_host, path),
-        auth=auth,
+        ktp_controller.utils.get_url(
+            SETTINGS.examomatic_host,
+            path,
+            use_tls=SETTINGS.examomatic_use_tls,
+        ),
+        auth=_get_auth(),
         params=params,
         timeout=timeout,
         stream=stream,
@@ -74,14 +80,10 @@ def _post(path: str, data: bytes, *, timeout: int = 20) -> requests.Response:
         ktp_controller.utils.get_url(
             SETTINGS.examomatic_host,
             path,
+            use_tls=SETTINGS.examomatic_use_tls,
         ),
         data=data,
-        auth=requests.auth.HTTPBasicAuth(
-            SETTINGS.examomatic_username,
-            ktp_controller.utils.readfirstline(
-                SETTINGS.examomatic_password_file, encoding="ascii"
-            ),
-        ),
+        auth=_get_auth(),
         params={
             "domain": SETTINGS.domain,
             "hostname": SETTINGS.hostname,
@@ -95,13 +97,15 @@ def _post(path: str, data: bytes, *, timeout: int = 20) -> requests.Response:
     return response
 
 
-def get_basic_auth():
-    return ktp_controller.utils.get_basic_auth(
-        SETTINGS.examomatic_username,
-        ktp_controller.utils.readfirstline(
-            SETTINGS.examomatic_password_file, encoding="ascii"
-        ),
-    )
+def get_basic_auth() -> typing.Dict[str, str]:
+    if SETTINGS.examomatic_username and SETTINGS.examomatic_password_file:
+        return ktp_controller.utils.get_basic_auth(
+            SETTINGS.examomatic_username,
+            ktp_controller.utils.readfirstline(
+                SETTINGS.examomatic_password_file, encoding="ascii"
+            ),
+        )
+    return {}
 
 
 def get_examomatic_websock_url():
@@ -113,7 +117,7 @@ def get_examomatic_websock_url():
             "hostname": SETTINGS.hostname,
             "id": SETTINGS.id,
         },
-        use_tls=True,
+        use_tls=SETTINGS.examomatic_use_tls,
         use_websocket=True,
     )
 

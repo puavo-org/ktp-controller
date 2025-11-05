@@ -4,9 +4,10 @@ import logging
 import os.path
 import platform
 import subprocess
-from typing import Any
+import typing
 
 # Third-party imports
+from pydantic import field_validator
 from pydantic.fields import FieldInfo
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict  # type: ignore
 
@@ -27,7 +28,7 @@ _LOGGER = logging.getLogger(__file__)
 class PuavoSettingsSource(PydanticBaseSettingsSource):
     def get_field_value(  # pylint: disable=too-many-branches
         self, field: FieldInfo, field_name: str
-    ) -> tuple[Any, str, bool]:
+    ) -> tuple[typing.Any, str, bool]:
         field_value = field.default
 
         if field_name in ["hostname", "domain", "id"]:
@@ -79,8 +80,8 @@ class PuavoSettingsSource(PydanticBaseSettingsSource):
 
         return (field_value, field_name, False)
 
-    def __call__(self) -> dict[str, Any]:
-        d: dict[str, Any] = {}
+    def __call__(self) -> dict[str, typing.Any]:
+        d: dict[str, typing.Any] = {}
 
         for field_name, field in self.settings_cls.model_fields.items():
             field_value, _, _ = self.get_field_value(field, field_name)
@@ -102,12 +103,24 @@ class Settings(BaseSettings):
     examomatic_password_file: str = os.path.expanduser(
         "~/ktp-controller-examomatic-password.txt"
     )
+    examomatic_use_tls: bool = True
     domain: str = "example.invalid"
     hostname: str = platform.node()
     id: str = "1"
     api_host: str = "127.0.0.1"
     api_port: int = 8000
     logging_level: str = "INFO"
+
+    @field_validator("examomatic_use_tls", mode="before")
+    @classmethod
+    def _validate_examomatic_use_tls(cls, v) -> bool:
+        if isinstance(v, str):
+            if v.lower().strip() in ["yes", "y", "true", "1"]:
+                return True
+            if v.lower().strip() in ["no", "n", "false", "0"]:
+                return False
+            raise ValueError("invalid examomatic_use_tls value", v)
+        return bool(v)
 
     @classmethod
     def settings_customise_sources(  # pylint: disable=too-many-arguments,too-many-positional-arguments
