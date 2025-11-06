@@ -219,10 +219,14 @@ class Agent:
         self,
         *,
         approx_api_ping_interval_sec: int = 30,
+        approx_api_status_report_interval_sec: int = 30,
         approx_examomatic_ping_interval_sec: int = 30,
         approx_restart_timeout_sec: int = 5,
     ):
         self.__approx_api_ping_interval_sec = approx_api_ping_interval_sec
+        self.__approx_api_status_report_interval_sec = (
+            approx_api_status_report_interval_sec
+        )
         self.__approx_examomatic_ping_interval_sec = approx_examomatic_ping_interval_sec
         self.__approx_restart_timeout_sec = approx_restart_timeout_sec
 
@@ -369,6 +373,17 @@ class Agent:
             _LOGGER.debug("--> API: %s", message)
             await asyncio.sleep(self.__approx_api_ping_interval_sec)
 
+    async def __send_status_reports_to_api(self, websock):
+        while True:
+            message = ktp_controller.messages.StatusReportMessage(
+                data=ktp_controller.messages.StatusReportData(
+                    is_auto_control_enabled=self.__is_auto_control_enabled
+                ),
+            ).model_dump_json()
+            await websock.send(message)
+            _LOGGER.debug("--> API: %s", message)
+            await asyncio.sleep(self.__approx_api_status_report_interval_sec)
+
     async def __send_pings_to_examomatic(self, websock):
         while True:
             message = json.dumps(
@@ -512,6 +527,7 @@ class Agent:
         ) as websock:
             async with asyncio.TaskGroup() as tg:
                 tg.create_task(self.__send_pings_to_api(websock))
+                tg.create_task(self.__send_status_reports_to_api(websock))
                 tg.create_task(self.__communicate_with_api(websock))
 
     async def __maintain_websocket_connection_to_examomatic(self):
