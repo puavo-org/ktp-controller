@@ -361,14 +361,7 @@ class Agent:
 
     async def __send_pings_to_api(self, websock):
         while True:
-            message = json.dumps(
-                {
-                    "kind": "ping",
-                    "uuid": str(uuid.uuid4()),
-                },
-                ensure_ascii=True,
-                separators=(",", ":"),
-            )
+            message = ktp_controller.messages.PingMessage().model_dump_json()
             await websock.send(message)
             _LOGGER.debug("--> API: %s", message)
             await asyncio.sleep(self.__approx_api_ping_interval_sec)
