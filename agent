@@ -214,6 +214,15 @@ class Trigger(str, enum.Enum):
         return self.value
 
 
+class Component(str, enum.Enum):
+    API = "API"
+    EXAMOMATIC = "Exam-O-Matic"
+    ABITTI2 = "Abitti2"
+
+    def __str__(self) -> str:
+        return self.value
+
+
 class Agent:
     def __init__(
         self,
@@ -232,6 +241,7 @@ class Agent:
 
         self.__is_auto_control_enabled = True
 
+        self.__connection_stats = {}
         self.__commands = {
             str(
                 ktp_controller.messages.Command.ENABLE_AUTO_CONTROL
@@ -436,6 +446,7 @@ class Agent:
 
     async def __communicate_with_examomatic(self, websock):
         async for data in websock:
+            received_at = datetime.datetime.utcnow()
             _LOGGER.debug("<-- Exam-O-Matic: %s", data)
             try:
                 message = ktp_controller.examomatic.client.websock_validate_message(
@@ -444,6 +455,10 @@ class Agent:
             except ValueError:
                 _LOGGER.exception("received invalid data from Exam-O-Matic: %r", data)
                 continue
+
+            self.__connection_stats[Component.EXAMOMATIC][
+                "last_message_received_at"
+            ] = received_at
 
             if message["type"] == "pong":
                 continue
@@ -514,31 +529,67 @@ class Agent:
                 ktp_controller.api.client.send_abitti2_status_report(status_report)
                 _LOGGER.info("sent Abitti2 status report to KTP Controller API")
 
+    async def __maintain_websocket_connection(
+        self,
+        name: str,
+        url: str,
+        coroutines: typing.List[typing.Coroutine],
+        *,
+        additional_headers: typing.Dict[str, str] | None = None,
+    ):
+        while True:
+            try:
+                async with websockets.connect(
+                    url,
+                    additional_headers=additional_headers,
+                ) as websock:
+                    self.__connection_stats[name] = {
+                        "connected_at": datetime.datetime.utcnow()
+                    }
+                    async with asyncio.TaskGroup() as tg:
+                        for coro in coroutines:
+                            tg.create_task(coro)
+            except* Exception:  # pylint: disable=broad-exception-caught
+                _LOGGER.exception("Websocket connection to %s has failed!", name)
+                _LOGGER.error(
+                    "Reconnect approximately in %d seconds...",
+                    self.__approx_restart_timeout_sec,
+                )
+                await asyncio.sleep(self.__approx_restart_timeout_sec)
+            finally:
+                self.__connection_stats.pop(name, None)
+
     async def __maintain_websocket_connection_to_api(self):
-        async with websockets.connect(
-            ktp_controller.api.client.get_agent_websock_url()
-        ) as websock:
-            async with asyncio.TaskGroup() as tg:
-                tg.create_task(self.__send_pings_to_api(websock))
-                tg.create_task(self.__send_status_reports_to_api(websock))
-                tg.create_task(self.__communicate_with_api(websock))
+        await self.__maintain_websocket_connection(
+            Component.API,
+            ktp_controller.api.client.get_agent_websock_url(),
+            [
+                self.__send_pings_to_api(websock),
+                self.__send_status_reports_to_api(websock),
+                self.__communicate_with_api(websock),
+            ],
+        )
 
     async def __maintain_websocket_connection_to_examomatic(self):
-        async with websockets.connect(
+        await self.__maintain_websocket_connection(
+            Component.EXAMOMATIC,
             ktp_controller.examomatic.client.get_examomatic_websock_url(),
+            [
+                self.__send_pings_to_examomatic(websock),
+                self.__communicate_with_examomatic(websock),
+            ],
             additional_headers=ktp_controller.examomatic.client.get_basic_auth(),
-        ) as websock:
-            async with asyncio.TaskGroup() as tg:
-                tg.create_task(self.__send_pings_to_examomatic(websock))
-                tg.create_task(self.__communicate_with_examomatic(websock))
+        )
 
     async def __maintain_websocket_connection_to_abitti2(self):
-        async with websockets.connect(
+        await self.__maintain_websocket_connection(
+            Component.ABITTI2,
             ktp_controller.abitti2.client.get_abitti2_websock_url(),
+            [
+                self.__communicate_with_abitti2(websock),
+            ],
             additional_headers=ktp_controller.abitti2.client.get_basic_auth(),
-        ) as websock:
-            async with asyncio.TaskGroup() as tg:
-                tg.create_task(self.__communicate_with_abitti2(websock))
+        )
 
     def __ensure_exam_file_exists(self, eom_scheduled_exam):
         _LOGGER.info(
