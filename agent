@@ -461,6 +461,17 @@ class Agent:
             ] = received_at
 
             if message["type"] == "pong":
+                if (
+                    self.__connection_stats[Component.EXAMOMATIC].setdefault(
+                        "ping_pong_count", 0
+                    )
+                    == 0
+                ):
+                    _LOGGER.info(
+                        "Very first ping-pong round has been played successfully. Starting initial exam refresh."
+                    )
+                    self.__refresh_exams()
+                self.__connection_stats[Component.EXAMOMATIC]["ping_pong_count"] += 1
                 continue
 
             if message["type"] == "change_keycode":
@@ -674,7 +685,6 @@ class Agent:
             _LOGGER.info("Start!")
 
             try:
-                self.__refresh_exams()
                 async with asyncio.TaskGroup() as tg:
                     tg.create_task(self.__maintain_websocket_connection_to_api())
                     tg.create_task(self.__maintain_websocket_connection_to_abitti2())
