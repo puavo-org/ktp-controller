@@ -543,7 +543,7 @@ class Agent:
         self,
         name: str,
         url: str,
-        coroutines: typing.List[typing.Coroutine],
+        asyncfuncs: typing.Awaitable,
         *,
         additional_headers: typing.Dict[str, str] | None = None,
     ):
@@ -557,8 +557,8 @@ class Agent:
                         "connected_at": datetime.datetime.utcnow()
                     }
                     async with asyncio.TaskGroup() as tg:
-                        for coro in coroutines:
-                            tg.create_task(coro)
+                        for asyncfunc in asyncfuncs:
+                            tg.create_task(asyncfunc(websock))
             except* Exception:  # pylint: disable=broad-exception-caught
                 _LOGGER.exception("Websocket connection to %s has failed!", name)
                 _LOGGER.error(
@@ -574,9 +574,9 @@ class Agent:
             Component.API,
             ktp_controller.api.client.get_agent_websock_url(),
             [
-                self.__send_pings_to_api(websock),
-                self.__send_status_reports_to_api(websock),
-                self.__communicate_with_api(websock),
+                self.__send_pings_to_api,
+                self.__send_status_reports_to_api,
+                self.__communicate_with_api,
             ],
         )
 
@@ -585,8 +585,8 @@ class Agent:
             Component.EXAMOMATIC,
             ktp_controller.examomatic.client.get_examomatic_websock_url(),
             [
-                self.__send_pings_to_examomatic(websock),
-                self.__communicate_with_examomatic(websock),
+                self.__send_pings_to_examomatic,
+                self.__communicate_with_examomatic,
             ],
             additional_headers=ktp_controller.examomatic.client.get_basic_auth(),
         )
@@ -596,7 +596,7 @@ class Agent:
             Component.ABITTI2,
             ktp_controller.abitti2.client.get_abitti2_websock_url(),
             [
-                self.__communicate_with_abitti2(websock),
+                self.__communicate_with_abitti2,
             ],
             additional_headers=ktp_controller.abitti2.client.get_basic_auth(),
         )
