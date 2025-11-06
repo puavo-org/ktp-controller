@@ -176,8 +176,7 @@ async def _save_exam_info(
 
 
 _VALID_TRANSITIONS = {
-    None: "waiting",
-    "waiting": "ready",
+    None: "ready",
     "ready": "running",
     "running": "stopping",
     "stopping": "stopped",

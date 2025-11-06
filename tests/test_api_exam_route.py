@@ -453,7 +453,7 @@ def test_set_current_scheduled_exam_package_state__empty_database(
 ):
     response = client.post(
         "/api/v1/exam/set_current_scheduled_exam_package_state",
-        json={"external_id": str(uuid.uuid4()), "state": "waiting"},
+        json={"external_id": str(uuid.uuid4()), "state": "ready"},
     )
 
     assert_response(response, expected_status_code=409)
@@ -473,12 +473,12 @@ def test_set_current_scheduled_exam_package_state__empty_database_invalid_input(
         "detail": [
             {
                 "ctx": {
-                    "expected": "'waiting', 'ready', 'running', 'stopping', 'stopped' or "
+                    "expected": "'ready', 'running', 'stopping', 'stopped' or "
                     "'archived'"
                 },
                 "input": "burp",
                 "loc": ["body", "state"],
-                "msg": "Input should be 'waiting', 'ready', 'running', 'stopping', "
+                "msg": "Input should be 'ready', 'running', 'stopping', "
                 "'stopped' or 'archived'",
                 "type": "enum",
             },
@@ -504,7 +504,7 @@ def test_set_current_scheduled_exam_package_state__set_state_of_exam_package_whi
         "/api/v1/exam/set_current_scheduled_exam_package_state",
         json={
             "external_id": api_exam_info["scheduled_exam_packages"][0]["external_id"],
-            "state": "waiting",
+            "state": "ready",
         },
     )
 
@@ -565,7 +565,7 @@ def test_set_current_scheduled_exam_package_state__set_state_of_current_exam_pac
     assert api_exam_info["scheduled_exam_packages"][0].pop("state") == None
     assert api_exam_info["scheduled_exam_packages"][0].pop("state_changed_at") == None
 
-    for state in ("waiting", "ready", "running", "stopping", "stopped", "archived"):
+    for state in ("ready", "running", "stopping", "stopped", "archived"):
         utcnow_before_state_change = datetime.datetime.utcnow()
         response = client.post(
             "/api/v1/exam/set_current_scheduled_exam_package_state",

@@ -52,7 +52,6 @@ class ScheduledExam(ktp_controller.pydantic.BaseModel):
 
 
 class ScheduledExamPackageState(str, enum.Enum):
-    WAITING = "waiting"
     READY = "ready"
     RUNNING = "running"
     STOPPING = "stopping"
