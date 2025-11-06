@@ -241,16 +241,6 @@ class Agent:
             command_uuid=command_uuid, command_status=command_status
         )
 
-    async def __do_auto_control_work(self) -> bool:
-        if not self.__is_auto_control_enabled:
-            return False
-
-        _LOGGER.debug("Auto control is enabled, going to do some work.")
-
-        await self.__work_on_current_scheduled_exam_package()
-
-        return True
-
     async def __work_on_current_scheduled_exam_package(self):
         utcnow = datetime.datetime.utcnow()
 
@@ -385,7 +375,9 @@ class Agent:
                 # quite short. This could be replaced with more
                 # sophisticated scheduling logic, but for now,
                 # ping-pong scheduling is good enough.
-                await self.__do_auto_control_work()
+                if self.__is_auto_control_enabled:
+                    _LOGGER.debug("Auto control is enabled, going to do some work.")
+                    await self.__work_on_current_scheduled_exam_package()
                 # Ping pong is a great game!
                 # Let's
                 continue  # playing it!
