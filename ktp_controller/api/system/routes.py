@@ -149,9 +149,9 @@ async def _get_last_abitti2_status_report(
     return None if db_status_report is None else db_status_report.raw_data
 
 
-async def _play_ping_pong_with_agent(websock: fastapi.WebSocket):
+async def _communicate_with_agent(websock: fastapi.WebSocket):
     async for message in websock.iter_json():
-        if message["kind"] == "ping":
+        if message["kind"] == ktp_controller.messages.MessageKind.PING:
             ping_message = ktp_controller.messages.PingMessage.model_validate(message)
             pong_message = ktp_controller.messages.PongMessage(
                 data=ktp_controller.messages.PongData(ping_uuid=ping_message.uuid)
@@ -160,7 +160,7 @@ async def _play_ping_pong_with_agent(websock: fastapi.WebSocket):
                 ktp_controller.pydantic.json_serializable(pong_message)
             )
             continue
-        if message["kind"] == "command_result":
+        if message["kind"] == ktp_controller.messages.MessageKind.COMMAND_RESULT:
             command_result_message = (
                 ktp_controller.messages.CommandResultMessage.model_validate(message)
             )
@@ -172,6 +172,13 @@ async def _play_ping_pong_with_agent(websock: fastapi.WebSocket):
                 command_result_message
             )
             _LOGGER.info("forwarded command result successfully")
+            continue
+        if message["kind"] == ktp_controller.messages.MessageKind.STATUS_REPORT:
+            status_report_message = (
+                ktp_controller.messages.StatusReportMessage.model_validate(message)
+            )
+            await ktp_controller.ui.forward_status_report_message(status_report_message)
+            _LOGGER.info("forwarded status report successfully")
             continue
         _LOGGER.warning("Received and ignored unknown message: %s", message)
 
@@ -191,4 +198,4 @@ async def _agent_websocket(
                     pubsub, websock
                 )
             )
-            tg.create_task(_play_ping_pong_with_agent(websock))
+            tg.create_task(_communicate_with_agent(websock))

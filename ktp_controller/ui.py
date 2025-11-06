@@ -36,6 +36,12 @@ async def forward_command_result_message(
     )
 
 
+async def forward_status_report_message(
+    status_report_message: ktp_controller.messages.StatusReportMessage,
+) -> str:
+    return await ktp_controller.redis.pubsub_send(status_report_message, PUBSUB_CHANNEL)
+
+
 async def send_status_report(
     status_repot_data: ktp_controller.messages.StatusReportData,
 ) -> str:
