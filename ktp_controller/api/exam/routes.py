@@ -288,3 +288,44 @@ async def _get_current_scheduled_exam_package(
             tzinfo=datetime.timezone.utc
         ),
     }
+
+
+@router.post(
+    "/get_scheduled_exam",
+    response_model=schemas.ScheduledExam | None,
+    summary="Get scheduled exam",
+)
+async def _get_scheduled_exam(
+    data: schemas.GetScheduledExamData,
+    db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
+):
+    db_scheduled_exam = (
+        db.query(models.ScheduledExam)
+        .filter_by(external_id=data.external_id)
+        .one_or_none()
+    )
+
+    if db_scheduled_exam is None:
+        return None
+
+    return {
+        "external_id": db_scheduled_exam.external_id,
+        "exam_title": db_scheduled_exam.exam_title,
+        "start_time": db_scheduled_exam.start_time.replace(
+            tzinfo=datetime.timezone.utc
+        ),
+        "end_time": db_scheduled_exam.end_time.replace(tzinfo=datetime.timezone.utc),
+        "exam_file_info": {
+            "external_id": db_scheduled_exam.exam_file_info.external_id,
+            "name": db_scheduled_exam.exam_file_info.name,
+            "size": db_scheduled_exam.exam_file_info.size,
+            "sha256": db_scheduled_exam.exam_file_info.sha256,
+            "decrypt_code": db_scheduled_exam.exam_file_info.decrypt_code,
+            "modified_at": db_scheduled_exam.exam_file_info.modified_at.replace(
+                tzinfo=datetime.timezone.utc
+            ),
+        },
+        "modified_at": db_scheduled_exam.modified_at.replace(
+            tzinfo=datetime.timezone.utc
+        ),
+    }

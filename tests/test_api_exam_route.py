@@ -164,6 +164,17 @@ def test_save_exam_info__real_anonymized_input(client, testdb, utcnow):
         == eom_exam_info["request_id"]
     )
 
+    for i in range(len(eom_exam_info["schedules"])):
+        assert (
+            ktp_controller.api.exam.schemas.ScheduledExam.model_construct(
+                **api_exam_info["scheduled_exams"][i]
+            ).model_dump()
+            == client.post(
+                "/api/v1/exam/get_scheduled_exam",
+                json={"external_id": eom_exam_info["schedules"][i]["id"]},
+            ).json()
+        )
+
 
 def test_save_exam_info__real_anonymized_input_start_time_and_end_time_switched_around(
     client, testdb, utcnow
