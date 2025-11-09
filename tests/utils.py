@@ -49,7 +49,7 @@ def client(testdb):
 
 @pytest.fixture
 def utcnow():
-    yield datetime.datetime.utcnow()
+    yield datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
 
 
 def assert_response(response, *, expected_status_code: int):

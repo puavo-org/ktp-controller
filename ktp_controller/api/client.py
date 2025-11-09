@@ -93,12 +93,14 @@ def eom_exam_info_to_api_exam_info(
                 "state_changed_at": None,
             }
         )
-    return {
-        "request_id": eom_exam_info["request_id"],
-        "scheduled_exams": scheduled_exams,
-        "scheduled_exam_packages": scheduled_exam_packages,
-        "raw_data": eom_exam_info,
-    }
+    return ktp_controller.api.exam.schemas.ExamInfo(
+        **{
+            "request_id": eom_exam_info["request_id"],
+            "scheduled_exams": scheduled_exams,
+            "scheduled_exam_packages": scheduled_exam_packages,
+            "raw_data": eom_exam_info,
+        }
+    ).model_dump()
 
 
 def get_agent_websock_url():

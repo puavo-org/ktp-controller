@@ -1,4 +1,5 @@
 # Standard library imports
+import datetime
 import json
 import typing
 
@@ -6,6 +7,7 @@ import typing
 import pydantic
 
 # Internal imports
+import ktp_controller.utils
 
 # Relative imports
 
@@ -15,6 +17,7 @@ __all__ = [
     "StrictPositiveInt",
     "StrictSHA256String",
     "BaseModel",
+    "DateTime",
     # Utils:
     "json_serializable",
 ]
@@ -43,3 +46,20 @@ class BaseModel(pydantic.BaseModel):
 
 def json_serializable(m: pydantic.BaseModel):
     return json.loads(m.model_dump_json())
+
+
+def _dt_to_str(dt) -> str:
+    if isinstance(dt, str):
+        dt = datetime.datetime.fromisoformat(dt)
+    if dt.tzinfo is None:
+        raise RuntimeError("datetime is naive", dt)
+    return ktp_controller.utils.strfdt(dt)
+
+
+DateTime = typing.Annotated[
+    pydantic.AwareDatetime,
+    pydantic.PlainSerializer(
+        _dt_to_str,
+        return_type=str,
+    ),
+]

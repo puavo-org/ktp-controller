@@ -10,7 +10,7 @@ import sqlalchemy.orm
 import sqlalchemy.sql
 
 # Internal imports
-# import ktp_controller.agent
+import ktp_controller.utils
 from ktp_controller.api import models
 from ktp_controller.api.database import get_db
 
@@ -193,7 +193,7 @@ async def _set_current_scheduled_exam_package_state(
     data: schemas.SetCurrentScheduledExamPackageStateData,
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ):
-    utcnow = datetime.datetime.utcnow()
+    utcnow = ktp_controller.utils.utcnow()
 
     db_current_scheduled_exam_package = (
         db.query(models.ScheduledExamPackage)
@@ -236,7 +236,7 @@ async def _set_current_scheduled_exam_package_state(
 async def _get_current_scheduled_exam_package(
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ):
-    utcnow = datetime.datetime.utcnow()
+    utcnow = ktp_controller.utils.utcnow()
 
     db_current_scheduled_exam_package = (
         db.query(models.ScheduledExamPackage).filter_by(current=True).one_or_none()
@@ -266,13 +266,25 @@ async def _get_current_scheduled_exam_package(
 
     return {
         "external_id": db_current_scheduled_exam_package.external_id,
-        "start_time": db_current_scheduled_exam_package.start_time,
-        "end_time": db_current_scheduled_exam_package.end_time,
-        "lock_time": db_current_scheduled_exam_package.lock_time,
+        "start_time": db_current_scheduled_exam_package.start_time.replace(
+            tzinfo=datetime.timezone.utc
+        ),
+        "end_time": db_current_scheduled_exam_package.end_time.replace(
+            tzinfo=datetime.timezone.utc
+        ),
+        "lock_time": None
+        if db_current_scheduled_exam_package.lock_time is None
+        else db_current_scheduled_exam_package.lock_time.replace(
+            tzinfo=datetime.timezone.utc
+        ),
         "locked": db_current_scheduled_exam_package.locked,
         "scheduled_exam_external_ids": [
             se.external_id for se in db_current_scheduled_exam_package.scheduled_exams
         ],
         "state": db_current_scheduled_exam_package.state,
-        "state_changed_at": db_current_scheduled_exam_package.state_changed_at,
+        "state_changed_at": None
+        if db_current_scheduled_exam_package.state_changed_at is None
+        else db_current_scheduled_exam_package.state_changed_at.replace(
+            tzinfo=datetime.timezone.utc
+        ),
     }

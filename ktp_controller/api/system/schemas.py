@@ -1,5 +1,4 @@
 # Standard library imports
-import datetime
 import typing
 
 # Third-party imports
@@ -21,8 +20,8 @@ __all__ = [
 
 
 class Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
-    received_at: datetime.datetime
-    reported_at: datetime.datetime | None
+    received_at: ktp_controller.pydantic.DateTime
+    reported_at: ktp_controller.pydantic.DateTime | None
     monitoring_passphrase: pydantic.StrictStr
     server_version: pydantic.StrictStr
     status: typing.Dict

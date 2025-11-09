@@ -2,6 +2,8 @@ import datetime
 import json
 import uuid
 
+import ktp_controller.utils
+
 REAL_ANONYMIZED_EOM_EXAM_INFO_JSON = """
 {
   "schedules": [
@@ -102,7 +104,7 @@ def get_synthetic_exam_info(
     duration: datetime.timedelta | None = None
 ):
     if utcnow is None:
-        utcnow = datetime.datetime.utcnow()
+        utcnow = ktp_controller.utils.utcnow()
     if duration is None:
         duration = datetime.timedelta(minutes=30)
 

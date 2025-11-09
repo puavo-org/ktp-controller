@@ -1,5 +1,4 @@
 # Standard library imports
-import datetime
 import enum
 import typing
 from typing_extensions import Self
@@ -33,16 +32,16 @@ class ExamFileInfo(ktp_controller.pydantic.BaseModel):
     size: ktp_controller.pydantic.StrictPositiveInt
     sha256: ktp_controller.pydantic.StrictSHA256String
     decrypt_code: pydantic.StrictStr
-    modified_at: datetime.datetime
+    modified_at: ktp_controller.pydantic.DateTime
 
 
 class ScheduledExam(ktp_controller.pydantic.BaseModel):
     external_id: pydantic.StrictStr
     exam_title: pydantic.StrictStr
-    start_time: datetime.datetime
-    end_time: datetime.datetime
+    start_time: ktp_controller.pydantic.DateTime
+    end_time: ktp_controller.pydantic.DateTime
     exam_file_info: ExamFileInfo
-    modified_at: datetime.datetime
+    modified_at: ktp_controller.pydantic.DateTime
 
     @pydantic.model_validator(mode="after")
     def check_times(self) -> Self:
@@ -64,13 +63,13 @@ class ScheduledExamPackageState(str, enum.Enum):
 
 class ScheduledExamPackage(ktp_controller.pydantic.BaseModel):
     external_id: pydantic.StrictStr
-    start_time: datetime.datetime
-    end_time: datetime.datetime
-    lock_time: datetime.datetime | None
+    start_time: ktp_controller.pydantic.DateTime
+    end_time: ktp_controller.pydantic.DateTime
+    lock_time: ktp_controller.pydantic.DateTime | None
     locked: pydantic.StrictBool
     scheduled_exam_external_ids: typing.List[pydantic.StrictStr]
     state: ScheduledExamPackageState | None
-    state_changed_at: datetime.datetime | None
+    state_changed_at: ktp_controller.pydantic.DateTime | None
 
     @pydantic.model_validator(mode="after")
     def check_times(self) -> Self:

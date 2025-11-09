@@ -7,6 +7,7 @@ import uuid
 # Internal imports
 from ktp_controller.api import models
 import ktp_controller.api.client
+import ktp_controller.api.exam.schemas
 
 # Relative imports
 from .data import REAL_ANONYMIZED_EOM_EXAM_INFO_JSON, get_synthetic_exam_info
@@ -566,7 +567,7 @@ def test_set_current_scheduled_exam_package_state__set_state_of_current_exam_pac
     assert api_exam_info["scheduled_exam_packages"][0].pop("state_changed_at") == None
 
     for state in ("ready", "running", "stopping", "stopped", "archived"):
-        utcnow_before_state_change = datetime.datetime.utcnow()
+        utcnow_before_state_change = ktp_controller.utils.utcnow()
         response = client.post(
             "/api/v1/exam/set_current_scheduled_exam_package_state",
             json={

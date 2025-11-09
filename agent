@@ -113,7 +113,7 @@ def _create_exam_package_file(
                         exam_file_info["external_id"],
                         exam_file_info["sha256"],
                     ),
-                    datetime.datetime.utcnow().isoformat() + exam_file_info["name"],
+                    ktp_controller.utils.utcnow_str() + exam_file_info["name"],
                 )
                 decrypt_codes.add(exam_file_info["decrypt_code"])
 
@@ -285,7 +285,7 @@ class Agent:
         )
 
     async def __work_on_current_scheduled_exam_package(self, *, trigger: Trigger):
-        utcnow = datetime.datetime.utcnow()
+        utcnow = ktp_controller.utils.utcnow()
         trigger = Trigger(trigger)  # Raises ValueError if trigger is not a Trigger.
 
         scheduled_exam_package = (
@@ -445,7 +445,7 @@ class Agent:
 
     async def __communicate_with_examomatic(self, websock):
         async for data in websock:
-            received_at = datetime.datetime.utcnow()
+            received_at = ktp_controller.utils.utcnow()
             _LOGGER.debug("<-- Exam-O-Matic: %s", data)
             try:
                 message = ktp_controller.examomatic.client.websock_validate_message(
@@ -490,7 +490,7 @@ class Agent:
 
     async def __communicate_with_abitti2(self, websock):
         async for data in websock:
-            received_at = datetime.datetime.utcnow()
+            received_at = ktp_controller.utils.utcnow()
             _LOGGER.debug("<-- Abitti2: %s", data)
 
             if data == "ping":
@@ -508,7 +508,7 @@ class Agent:
                 "monitoring_passphrase": ktp_controller.abitti2.naksu2.read_password(),
                 "server_version": ktp_controller.abitti2.client.get_current_abitti2_version(),
                 "status": status,
-                "received_at": received_at.isoformat(),
+                "received_at": ktp_controller.utils.strfdt(received_at),
             }
 
             single_security_code_data = (
@@ -533,7 +533,7 @@ class Agent:
                 ktp_controller.examomatic.client.send_abitti2_status_report(
                     status_report
                 )
-                status_report["reported_at"] = datetime.datetime.utcnow().isoformat()
+                status_report["reported_at"] = ktp_controller.utils.utcnow_str()
                 _LOGGER.info("sent Abitti2 status report to Exam-O-Matic")
             finally:
                 ktp_controller.api.client.send_abitti2_status_report(status_report)
@@ -554,7 +554,7 @@ class Agent:
                     additional_headers=additional_headers,
                 ) as websock:
                     self.__connection_stats[name] = {
-                        "connected_at": datetime.datetime.utcnow()
+                        "connected_at": ktp_controller.utils.utcnow()
                     }
                     async with asyncio.TaskGroup() as tg:
                         for asyncfunc in asyncfuncs:
@@ -608,7 +608,7 @@ class Agent:
             eom_scheduled_exam["file_uuid"],
         )
 
-        utcnow = datetime.datetime.utcnow().isoformat()
+        utcnow = ktp_controller.utils.utcnow_str()
 
         filepath = _get_local_filepath(
             LocalFilepathType.EXAM_FILE,

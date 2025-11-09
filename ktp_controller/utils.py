@@ -1,6 +1,7 @@
 # Standard library imports
 import base64
 import contextlib
+import datetime
 import hashlib
 import json
 import logging
@@ -173,3 +174,15 @@ async def websock_send_json(websock, data) -> str:
     await websock.send(message)
 
     return message
+
+
+def utcnow() -> datetime.datetime:
+    return datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+
+
+def strfdt(dt: datetime.datetime) -> str:
+    return dt.strftime(f"%Y-%m-%dT%H:%M:%S.{dt.microsecond // 1000:0>3}%z")
+
+
+def utcnow_str() -> datetime.datetime:
+    return strfdt(utcnow)
