@@ -184,5 +184,5 @@ def strfdt(dt: datetime.datetime) -> str:
     return dt.strftime(f"%Y-%m-%dT%H:%M:%S.{dt.microsecond // 1000:0>3}%z")
 
 
-def utcnow_str() -> datetime.datetime:
-    return strfdt(utcnow)
+def utcnow_str() -> str:
+    return strfdt(utcnow())
