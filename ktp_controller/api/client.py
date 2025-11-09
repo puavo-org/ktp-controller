@@ -9,7 +9,7 @@ import requests.exceptions
 # Internal imports
 import ktp_controller.utils
 from ktp_controller.settings import SETTINGS
-
+import ktp_controller.api.exam.schemas
 
 __all__ = [
     # Utils:
