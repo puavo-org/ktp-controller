@@ -240,6 +240,8 @@ class Agent:
 
         self.__is_auto_control_enabled = True
 
+        self.__last_received_security_code = None
+
         self.__connection_stats = {}
         self.__commands = {
             str(
@@ -491,53 +493,48 @@ class Agent:
     async def __communicate_with_abitti2(self, websock):
         async for data in websock:
             received_at = ktp_controller.utils.utcnow()
+
             _LOGGER.debug("<-- Abitti2: %s", data)
 
             if data == "ping":
-                await websock.send("pong")
-                continue
-            try:
-                status = ktp_controller.utils.json_loads_dict(data)
-            except ValueError:
-                _LOGGER.exception("received invalid JSON from Abitti2: %r", data)
-                continue
-
-            _LOGGER.info("received status report from Abitti2")
-
-            status_report = {
-                "monitoring_passphrase": ktp_controller.abitti2.naksu2.read_password(),
-                "server_version": ktp_controller.abitti2.client.get_current_abitti2_version(),
-                "status": status,
-                "received_at": ktp_controller.utils.strfdt(received_at),
-            }
-
-            single_security_code_data = (
-                ktp_controller.abitti2.client.get_single_security_code()
-            )
-            try:
-                single_security_code = single_security_code_data["securityCode"]
-            except KeyError:
-                # Abitti2 server does not seem to have one by default,
-                # it needs to be set first.
-                _LOGGER.warning(
-                    "Keycode (single security code) is not set, generating it"
-                )
-                single_security_code_data = (
-                    ktp_controller.abitti2.client.change_single_security_code()
-                )
-                single_security_code = single_security_code_data["securityCode"]
+                message_type = "ping"
             else:
-                status_report["status"]["singleSecurityCode"] = single_security_code
+                try:
+                    message = ktp_controller.utils.json_loads_dict(data)
+                except ValueError:
+                    _LOGGER.exception("received invalid JSON from Abitti2: %r", data)
+                    continue
+                message_type = message["type"]
 
-            try:
-                ktp_controller.examomatic.client.send_abitti2_status_report(
-                    status_report
-                )
-                status_report["reported_at"] = ktp_controller.utils.utcnow_str()
-                _LOGGER.info("sent Abitti2 status report to Exam-O-Matic")
-            finally:
-                ktp_controller.api.client.send_abitti2_status_report(status_report)
-                _LOGGER.info("sent Abitti2 status report to KTP Controller API")
+            _LOGGER.info("received %r message from Abitti2", message_type)
+
+            if message_type == "ping":
+                await websock.send("pong")
+
+            elif message_type == "security-code":
+                self.__last_received_security_code = message["data"]["securityCode"]
+
+            elif message_type == "stats":
+                message["singleSecurityCode"] = self.__last_received_security_code
+                status_report = {
+                    "monitoring_passphrase": ktp_controller.abitti2.naksu2.read_password(),
+                    "server_version": ktp_controller.abitti2.client.get_current_abitti2_version(),
+                    "status": message,
+                    "received_at": ktp_controller.utils.strfdt(received_at),
+                }
+
+                try:
+                    ktp_controller.examomatic.client.send_abitti2_status_report(
+                        status_report
+                    )
+                    status_report["reported_at"] = ktp_controller.utils.utcnow_str()
+                    _LOGGER.info("sent Abitti2 status report to Exam-O-Matic")
+                finally:
+                    ktp_controller.api.client.send_abitti2_status_report(status_report)
+                    _LOGGER.info("sent Abitti2 status report to KTP Controller API")
+
+            else:
+                _LOGGER.warning("unhandled %r message from Abitti2", message_type)
 
     async def __maintain_websocket_connection(
         self,

@@ -25,7 +25,6 @@ __all__ = [
     "get_abitti2_websock_url",
     # Abitti2 API commands:
     "get_current_abitti2_version",
-    "get_single_security_code",
     "change_single_security_code",
     "decrypt_exams",
     "load_exam_package",
@@ -95,7 +94,7 @@ def get_basic_auth() -> typing.Dict[str, str]:
 def get_abitti2_websock_url():
     return ktp_controller.utils.get_url(
         ktp_controller.abitti2.naksu2.read_domain(),
-        "/ws/stats",
+        "/ws/data",
         scheme="wss",
     )
 
@@ -105,10 +104,6 @@ def get_abitti2_websock_url():
 
 def get_current_abitti2_version() -> str:
     return _get("/api/version").json()["version"]
-
-
-def get_single_security_code() -> typing.Dict:
-    return _get("/api/single-security-code").json()
 
 
 def change_single_security_code() -> typing.Dict:

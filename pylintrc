@@ -6,6 +6,7 @@ disable=global-statement,
         missing-function-docstring,
         too-few-public-methods,
         invalid-name,
+        too-many-instance-attributes
 ignore-patterns=^\.#,
                 ^flycheck_
 max-line-length=120
