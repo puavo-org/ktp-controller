@@ -3,59 +3,114 @@
 # Standard library imports
 import argparse
 import asyncio
+import yaml
 import sys
 
 # Third-party imports
-import websockets
 
 # Internal imports
-import ktp_controller.api.client
 
 
 async def _command_enable_auto_control(args) -> int:
+    import ktp_controller.api.client  # pylint: disable=import-outside-toplevel
+
     return ktp_controller.api.client.async_enable_auto_control()
 
 
 async def _command_disable_auto_control(args) -> int:
+    import ktp_controller.api.client  # pylint: disable=import-outside-toplevel
+
     return ktp_controller.api.client.async_disable_auto_control()
+
+
+def _print_as_yaml(obj):
+    print(
+        yaml.dump(
+            obj,
+            default_flow_style=False,
+            sort_keys=False,
+        )
+    )
+
+
+async def _command_status(args) -> int:
+    import ktp_controller.api.client  # pylint: disable=import-outside-toplevel
+
+    current_scheduled_exam_package = (
+        ktp_controller.api.client.get_current_scheduled_exam_package()
+    )
+    last_abitti2_status_report = (
+        ktp_controller.api.client.get_last_abitti2_status_report()
+    )
+
+    if current_scheduled_exam_package is None:
+        print("# Current scheduled exam package: -")
+    else:
+        print("# Current scheduled exam package:")
+        scheduled_exam_external_ids = current_scheduled_exam_package.pop(
+            "scheduled_exam_external_ids"
+        )
+        for scheduled_exam_external_id in scheduled_exam_external_ids:
+            scheduled_exam = ktp_controller.api.client.get_scheduled_exam(
+                scheduled_exam_external_id
+            )
+            current_scheduled_exam_package.setdefault("scheduled_exams", []).append(
+                scheduled_exam
+            )
+        _print_as_yaml(current_scheduled_exam_package)
+    print()
+    if last_abitti2_status_report is None:
+        print("# Last Abitti2 status report: -")
+    else:
+        print("# Last Abitti2 status report:")
+        _print_as_yaml(last_abitti2_status_report)
+    print()
+
+    return None
 
 
 _COMMANDS = {
     "enable_auto_control": _command_enable_auto_control,
     "disable_auto_control": _command_disable_auto_control,
+    "status": _command_status,
 }
 
 
 async def _dispatch_command(args) -> int:
     # Lazily imported here to avoid long start-up time of this script.
+    import websockets  # pylint: disable=import-outside-toplevel
     import ktp_controller.api.client  # pylint: disable=import-outside-toplevel
+    import ktp_controller.utils  # pylint: disable=import-outside-toplevel
     import ktp_controller.messages  # pylint: disable=import-outside-toplevel
+
+    command_result_data = None
 
     async with websockets.connect(
         ktp_controller.api.client.get_ui_websock_url()
     ) as ui_websock:
         command_uuid = await _COMMANDS[args.COMMAND](args)
-        async for data in ui_websock:
-            try:
-                message_dict = ktp_controller.utils.json_loads_dict(data)
-            except ValueError:
-                # Most probably a programming error, API should not
-                # send invalid JSON to agents.
-                _LOGGER.exception("API sent invalid JSON data")
-                continue
-            if message_dict["kind"] != "command_result":
-                continue
-            command_result_message = (
-                ktp_controller.messages.CommandResultMessage.model_validate(
-                    message_dict
+        if command_uuid is not None:
+            async for data in ui_websock:
+                try:
+                    message_dict = ktp_controller.utils.json_loads_dict(data)
+                except ValueError:
+                    # Most probably a programming error, API should not
+                    # send invalid JSON to agents.
+                    _LOGGER.exception("API sent invalid JSON data")
+                    continue
+                if message_dict["kind"] != "command_result":
+                    continue
+                command_result_message = (
+                    ktp_controller.messages.CommandResultMessage.model_validate(
+                        message_dict
+                    )
                 )
-            )
-            command_result_data = command_result_message.data
-            if str(command_result_data.command_uuid) != command_uuid:
-                continue
-            break
+                command_result_data = command_result_message.data
+                if str(command_result_data.command_uuid) != command_uuid:
+                    continue
+                break
 
-    if not command_result_data.command_status.is_ok:
+    if command_result_data is not None and not command_result_data.command_status.is_ok:
         print(f"ERROR: {args.COMMAND} failed: {command_result_data.error_message}")
         return 1
 
