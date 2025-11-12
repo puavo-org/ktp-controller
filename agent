@@ -169,11 +169,14 @@ def _stop_current_scheduled_exam_package(
     ktp_controller.abitti2.client.change_single_security_code()
 
     abitti2_status_report = ktp_controller.api.client.get_last_abitti2_status_report()
-    for student in abitti2_status_report["status"]["students"]:
+    for student in abitti2_status_report["status"]["data"]["students"]:
         ktp_controller.abitti2.client.stop_exam_session(student["sessionUuid"])
 
     is_stopped = (
-        all(s["examFinished"] for s in abitti2_status_report["status"]["students"])
+        all(
+            s["examFinished"]
+            for s in abitti2_status_report["status"]["data"]["students"]
+        )
         and exam_package["state"] == "stopping"
         and abitti2_status_report["received_at"] > exam_package["state_changed_at"]
     )
