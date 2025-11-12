@@ -584,7 +584,10 @@ class Agent:
                 await websock.send("pong")
 
             elif message_type == "security-code":
-                self.__last_received_security_code = message["data"]["securityCode"]
+                try:
+                    self.__last_received_security_code = message["data"]["securityCode"]
+                except KeyError:  # Security code is not always there
+                    pass
 
             elif message_type == "stats":
                 message["singleSecurityCode"] = self.__last_received_security_code
