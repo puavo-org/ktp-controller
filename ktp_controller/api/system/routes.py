@@ -16,6 +16,7 @@ from ktp_controller.api.database import get_db
 from ktp_controller.api import models
 
 import ktp_controller.agent
+import ktp_controller.messages
 import ktp_controller.redis
 import ktp_controller.pydantic
 import ktp_controller.api.utils
@@ -35,39 +36,17 @@ router = fastapi.APIRouter(tags=["system"])
 
 
 @router.post(
-    "/async_enable_auto_control",
+    "/async_command",
     response_model=pydantic.UUID4,
     status_code=202,
     summary="""\
-Asynchronously enable auto control.
-Auto control will be enabled soon after the response is sent.
+Asynchronously execute command.
+Command will be executed soon after the response is sent.
 Return asynchronous message UUID as application/json body.
 """,
 )
-async def _async_enable_auto_control():
-    return await ktp_controller.agent.send_command(
-        ktp_controller.messages.CommandData(
-            command=ktp_controller.messages.Command.ENABLE_AUTO_CONTROL
-        )
-    )
-
-
-@router.post(
-    "/async_disable_auto_control",
-    response_model=pydantic.UUID4,
-    status_code=202,
-    summary="""\
-Asynchronously disable auto control.
-Auto control will be disabled soon after the response is sent.
-Return asynchronous message UUID as application/json body.
-""",
-)
-async def _async_disable_auto_control():
-    return await ktp_controller.agent.send_command(
-        ktp_controller.messages.CommandData(
-            command=ktp_controller.messages.Command.DISABLE_AUTO_CONTROL
-        )
-    )
+async def _async_command(command_data: ktp_controller.messages.CommandData):
+    return await ktp_controller.agent.send_command(command_data)
 
 
 @router.websocket("/ui_websocket")

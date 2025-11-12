@@ -39,6 +39,10 @@ __all__ = [
 class Command(str, enum.Enum):
     ENABLE_AUTO_CONTROL = "enable_auto_control"
     DISABLE_AUTO_CONTROL = "disable_auto_control"
+    STOP_CURRENT_SCHEDULED_EXAM_PACKAGE = "stop_current_scheduled_exam_package"
+    START_CURRENT_SCHEDULED_EXAM_PACKAGE = "start_current_scheduled_exam_package"
+    ARCHIVE_CURRENT_SCHEDULED_EXAM_PACKAGE = "archive_current_scheduled_exam_package"
+    PREPARE_CURRENT_SCHEDULED_EXAM_PACKAGE = "prepare_current_scheduled_exam_package"
 
     def __str__(self) -> str:
         return self.value

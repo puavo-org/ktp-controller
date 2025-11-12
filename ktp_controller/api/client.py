@@ -7,6 +7,7 @@ import requests
 import requests.exceptions
 
 # Internal imports
+import ktp_controller.messages
 import ktp_controller.utils
 from ktp_controller.settings import SETTINGS
 import ktp_controller.api.exam.schemas
@@ -17,8 +18,7 @@ __all__ = [
     "get_agent_websock_url",
     "get_ui_websock_url",
     # API commands:
-    "async_enable_auto_control",
-    "async_disable_auto_control",
+    "async_command",
     "get_current_scheduled_exam_package",
     "set_current_scheduled_exam_package_state",
     "get_scheduled_exam",
@@ -187,9 +187,5 @@ def save_exam_info(
     ).json()
 
 
-def async_enable_auto_control() -> str:
-    return _post("/api/v1/system/async_enable_auto_control").json()
-
-
-def async_disable_auto_control() -> str:
-    return _post("/api/v1/system/async_disable_auto_control").json()
+def async_command(command: ktp_controller.messages.Command) -> str:
+    return _post("/api/v1/system/async_command", json={"command": command}).json()

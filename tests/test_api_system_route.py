@@ -17,7 +17,10 @@ from .utils import client, testdb, db_engine, utcnow, assert_response
 
 def test_enable_auto_control(client: fastapi.testclient.TestClient, testdb, utcnow):
     with client.websocket_connect("/api/v1/system/agent_websocket") as agent_websock:
-        response = client.post("/api/v1/system/async_enable_auto_control")
+        response = client.post(
+            "/api/v1/system/async_command",
+            json={"command": "enable_auto_control"},
+        )
         assert_response(response, expected_status_code=202)
         data = agent_websock.receive_json()
         ktp_controller.messages.CommandMessage.model_validate(data)
@@ -33,7 +36,10 @@ def test_enable_auto_control(client: fastapi.testclient.TestClient, testdb, utcn
 
 def test_disable_auto_control(client: fastapi.testclient.TestClient, testdb, utcnow):
     with client.websocket_connect("/api/v1/system/agent_websocket") as agent_websock:
-        response = client.post("/api/v1/system/async_disable_auto_control")
+        response = client.post(
+            "/api/v1/system/async_command",
+            json={"command": "disable_auto_control"},
+        )
         assert_response(response, expected_status_code=202)
         data = agent_websock.receive_json()
         ktp_controller.messages.CommandMessage.model_validate(data)

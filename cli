@@ -11,16 +11,10 @@ import sys
 # Internal imports
 
 
-async def _command_enable_auto_control(args) -> int:
+async def _command_api_async_command(args) -> int:
     import ktp_controller.api.client  # pylint: disable=import-outside-toplevel
 
-    return ktp_controller.api.client.async_enable_auto_control()
-
-
-async def _command_disable_auto_control(args) -> int:
-    import ktp_controller.api.client  # pylint: disable=import-outside-toplevel
-
-    return ktp_controller.api.client.async_disable_auto_control()
+    return ktp_controller.api.client.async_command(args.COMMAND)
 
 
 def _print_as_yaml(obj):
@@ -70,8 +64,12 @@ async def _command_status(args) -> int:
 
 
 _COMMANDS = {
-    "enable_auto_control": _command_enable_auto_control,
-    "disable_auto_control": _command_disable_auto_control,
+    "enable_auto_control": _command_api_async_command,
+    "disable_auto_control": _command_api_async_command,
+    "start_current_scheduled_exam_package": _command_api_async_command,
+    "stop_current_scheduled_exam_package": _command_api_async_command,
+    "archive_current_scheduled_exam_package": _command_api_async_command,
+    "prepare_current_scheduled_exam_package": _command_api_async_command,
     "status": _command_status,
 }
 
@@ -122,9 +120,8 @@ def _main() -> int:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     subparsers = parser.add_subparsers(title="Commands", dest="COMMAND", required=True)
-    parser_status = subparsers.add_parser("status")
-    parser_enable_auto_control = subparsers.add_parser("enable_auto_control")
-    parser_disable_auto_control = subparsers.add_parser("disable_auto_control")
+    for command in _COMMANDS:
+        subparsers.add_parser(command)
 
     args = parser.parse_args()
 
