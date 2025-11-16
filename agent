@@ -434,7 +434,9 @@ class Agent:
                         )
                     )
                 ),
-                "action": _stop_current_scheduled_exam_package,
+                "action": lambda *args: (
+                    _stop_current_scheduled_exam_package(*args) or True
+                ),
                 "next_state": "stopping",
             },
             "stopping": {
