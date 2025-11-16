@@ -208,7 +208,6 @@ def _archive_current_exam_package(
     # TODO: download exam results from Abitti2
     # TODO: upload exam results to EOM
     # TODO: verify that we got all results
-    ktp_controller.abitti2.client.reset()
 
     return True
 
@@ -255,6 +254,8 @@ class Agent:
         approx_examomatic_ping_interval_sec: int = 30,
         approx_restart_timeout_sec: int = 5,
     ):
+        self.__current_abitti2_exams = None
+
         self.__approx_api_ping_interval_sec = approx_api_ping_interval_sec
         self.__approx_api_status_report_interval_sec = (
             approx_api_status_report_interval_sec
@@ -377,6 +378,8 @@ class Agent:
         scheduled_exam_package = ktp_controller.api.client.get_current_exam_package()
 
         if scheduled_exam_package is None:
+            if self.__is_auto_control_enabled and self.__current_abitti2_exams == []:
+                ktp_controller.abitti2.client.reset()
             return False  # No current exam package
 
         if not scheduled_exam_package["locked"]:
@@ -664,7 +667,8 @@ class Agent:
                 finally:
                     ktp_controller.api.client.send_abitti2_status_report(status_report)
                     _LOGGER.info("sent Abitti2 status report to KTP Controller API")
-
+            elif message_type == "exams":
+                self.__current_abitti2_exams = message["data"]
             else:
                 _LOGGER.warning("unhandled %r message from Abitti2", message_type)
 
