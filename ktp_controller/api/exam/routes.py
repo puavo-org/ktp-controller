@@ -207,6 +207,11 @@ async def _set_current_exam_package_state(
             409, detail="scheduled exam package is not current"
         )
 
+    # Implicitly allow self-transitions, but state_changed_at does not
+    # get updated.
+    if db_current_exam_package.state == data.state:
+        return db_current_exam_package.state
+
     try:
         valid_next_state = _VALID_TRANSITIONS[db_current_exam_package.state]
     except KeyError as key_error:

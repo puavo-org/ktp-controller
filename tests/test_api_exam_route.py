@@ -572,7 +572,9 @@ def test_set_current_exam_package_state__set_state_of_current_exam_package_valid
 
     assert response.json() == api_exam_info["scheduled_exam_packages"][0]
 
-    assert api_exam_info["scheduled_exam_packages"][0].pop("state") == None
+    state = api_exam_info["scheduled_exam_packages"][0].pop("state")
+
+    assert state == None
     assert api_exam_info["scheduled_exam_packages"][0].pop("state_changed_at") == None
 
     for next_state in ("ready", "running", "stopping", "stopped", "archived"):
@@ -587,13 +589,18 @@ def test_set_current_exam_package_state__set_state_of_current_exam_package_valid
             },
         )
         assert_response(response, expected_status_code=200)
+        assert response.json() == state
+        state = next_state
 
-        response = client.post("/api/v1/exam/get_current_exam_package")
-        assert_response(response, expected_status_code=200)
+        get_current_exam_package_response = client.post(
+            "/api/v1/exam/get_current_exam_package"
+        )
+        assert_response(get_current_exam_package_response, expected_status_code=200)
 
         if next_state == "archived":
-            # Exam package is now in the final state, so it is not current anymore.
-            assert response.json() == None
+            # Exam package is now in the final state, so it is not current anymore
+            assert get_current_exam_package_response.json() == None
+
             assert (
                 testdb.query(models.ScheduledExamPackage)
                 .filter_by(
@@ -606,13 +613,35 @@ def test_set_current_exam_package_state__set_state_of_current_exam_package_valid
                 == "archived"
             )
         else:
-            current_exam_package = response.json()
-            assert current_exam_package.pop("state") == next_state
-            assert (
-                datetime.datetime.fromisoformat(
-                    current_exam_package.pop("state_changed_at")
-                )
-                > utcnow_before_state_change
+            current_exam_package = get_current_exam_package_response.json()
+            state_changed_at = datetime.datetime.fromisoformat(
+                current_exam_package.pop("state_changed_at")
             )
+            assert current_exam_package.pop("state") == next_state
+            assert state_changed_at > utcnow_before_state_change
 
             assert current_exam_package == api_exam_info["scheduled_exam_packages"][0]
+
+            # "Changing" the state again to the same state does not have any affect.
+            response = client.post(
+                "/api/v1/exam/set_current_exam_package_state",
+                json={
+                    "external_id": api_exam_info["scheduled_exam_packages"][0][
+                        "external_id"
+                    ],
+                    "state": next_state,
+                },
+            )
+            assert_response(response, expected_status_code=200)
+            assert response.json() == next_state
+
+            get_current_exam_package_response2 = client.post(
+                "/api/v1/exam/get_current_exam_package"
+            )
+            assert_response(
+                get_current_exam_package_response2, expected_status_code=200
+            )
+            assert (
+                get_current_exam_package_response.json()
+                == get_current_exam_package_response2.json()
+            )
