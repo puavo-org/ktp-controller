@@ -149,7 +149,7 @@ def start_decrypted_exams() -> typing.Dict:
 
 def prepare_exam_package(
     exam_package_filepath: str, decrypt_codes: typing.Iterable[str]
-):
+) -> typing.Set[str]:
     exam_filenames = set(
         ktp_controller.abitti2.client.load_exam_package(exam_package_filepath)
     )
@@ -184,8 +184,9 @@ def prepare_exam_package(
     return exam_filenames
 
 
-def reset() -> typing.List[str]:
-    return prepare_exam_package(DUMMY_EXAM_PACKAGE_FILEPATH, ["odotusaulakoe"])
+def reset() -> None:
+    prepare_exam_package(DUMMY_EXAM_PACKAGE_FILEPATH, ["odotusaulakoe"])
+    start_decrypted_exams()
 
 
 def stop_exam_session(session_uuid: str) -> None:
