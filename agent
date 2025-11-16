@@ -37,6 +37,10 @@ _DUMMY_EXAM_FILE_FILEPATH = os.path.expanduser(
     "~/.local/share/ktp-controller/dummy-exam-file.mex"
 )
 
+_AGENT_STATE_FILEPATH = os.path.expanduser(
+    "~/.local/share/ktp-controller/agent-state.json"
+)
+
 
 def _create_dummy_exam_package_file():
     ktp_controller.examomatic.client.download_dummy_exam_file(_DUMMY_EXAM_FILE_FILEPATH)
@@ -246,14 +250,18 @@ class _Conflict(_Error):
 
 
 class Agent:
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         *,
         approx_api_ping_interval_sec: int = 15,
         approx_api_status_report_interval_sec: int = 30,
         approx_examomatic_ping_interval_sec: int = 30,
         approx_restart_timeout_sec: int = 5,
+        state: typing.Dict[str, typing.Any] | None = None,
     ):
+        self.__state = {} if state is None else dict(state)
+        self.__state.setdefault("is_auto_control_enabled", True)
+
         self.__current_abitti2_exams = None
 
         self.__approx_api_ping_interval_sec = approx_api_ping_interval_sec
@@ -262,8 +270,6 @@ class Agent:
         )
         self.__approx_examomatic_ping_interval_sec = approx_examomatic_ping_interval_sec
         self.__approx_restart_timeout_sec = approx_restart_timeout_sec
-
-        self.__is_auto_control_enabled = True
 
         self.__last_received_security_code = None
 
@@ -288,6 +294,16 @@ class Agent:
                 ktp_controller.messages.Command.PREPARE_CURRENT_EXAM_PACKAGE
             ): self.__command_change_current_exam_package_state,
         }
+
+    @property
+    def __is_auto_control_enabled(self) -> bool:
+        return self.__state["is_auto_control_enabled"]
+
+    @__is_auto_control_enabled.setter
+    def __is_auto_control_enabled(self, value: bool) -> None:
+        if not isinstance(value, bool):
+            raise ValueError("__is_auto_control_enabled must be boolean")
+        self.__state["is_auto_control_enabled"] = value
 
     def __set_auto_control(
         self,
@@ -841,9 +857,32 @@ class Agent:
 
         asyncio.run(self.forever())
 
+    def get_state(self) -> typing.Dict[str, typing.Any]:
+        return self.__state.copy()
+
+
+def _load_agent_state() -> typing.Dict[str, typing.Any]:
+    try:
+        with open(_AGENT_STATE_FILEPATH, "r", encoding="ascii") as agent_state_file:
+            return json.load(agent_state_file)
+    except FileNotFoundError:
+        return {}
+
+
+def _save_agent_state(agent_state: typing.Dict[str, typing.Any]) -> None:
+    with ktp_controller.utils.open_atomic_write(
+        _AGENT_STATE_FILEPATH, encoding="ascii"
+    ) as agent_state_file:
+        json.dump(agent_state, agent_state_file, ensure_ascii=True)
+
 
 def _main():
-    Agent().run()
+    agent_state = _load_agent_state()
+    agent = Agent(state=agent_state)
+    try:
+        agent.run()
+    finally:
+        _save_agent_state(agent.get_state())
 
 
 if __name__ == "__main__":
