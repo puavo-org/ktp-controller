@@ -183,6 +183,8 @@ _VALID_TRANSITIONS = {
     "stopped": "archived",
 }
 
+_END_STATES = {"archived"}
+
 
 @router.post(
     "/set_current_exam_package_state",
@@ -223,6 +225,8 @@ async def _set_current_exam_package_state(
     if old_state != data.state:
         db_current_exam_package.state = data.state
         db_current_exam_package.state_changed_at = utcnow
+        if data.state in _END_STATES:
+            db_current_exam_package.current = False
         db.commit()
 
     return old_state
