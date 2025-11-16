@@ -221,16 +221,16 @@ def test_save_exam_info__real_anonymized_input_start_time_and_end_time_switched_
     }
 
 
-def test_get_current_scheduled_exam_package__empty_database(client, testdb, utcnow):
+def test_get_current_exam_package__empty_database(client, testdb, utcnow):
     assert testdb.query(models.ScheduledExamPackage).all() == []
 
-    response = client.post("/api/v1/exam/get_current_scheduled_exam_package")
+    response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == None
 
 
-def test_get_current_scheduled_exam_package__one_package_and_over_15mins_to_start_time_no_current_yet(
+def test_get_current_exam_package__one_package_and_over_15mins_to_start_time_no_current_yet(
     client, testdb, utcnow
 ):
     eom_exam_info = get_synthetic_exam_info(
@@ -243,13 +243,13 @@ def test_get_current_scheduled_exam_package__one_package_and_over_15mins_to_star
     response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
     assert_response(response, expected_status_code=200)
 
-    response = client.post("/api/v1/exam/get_current_scheduled_exam_package")
+    response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == None  # Still None because start_time 30mins in future
 
 
-def test_get_current_scheduled_exam_package__one_package_and_exactly_15mins_to_start_time_no_current_yet(
+def test_get_current_exam_package__one_package_and_exactly_15mins_to_start_time_no_current_yet(
     client, testdb, utcnow
 ):
     eom_exam_info = get_synthetic_exam_info(
@@ -263,13 +263,13 @@ def test_get_current_scheduled_exam_package__one_package_and_exactly_15mins_to_s
     response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
     assert_response(response, expected_status_code=200)
 
-    response = client.post("/api/v1/exam/get_current_scheduled_exam_package")
+    response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == api_exam_info["scheduled_exam_packages"][0]
 
 
-def test_get_current_scheduled_exam_package__one_package_and_under_15mins_to_start_time_no_current_yet(
+def test_get_current_exam_package__one_package_and_under_15mins_to_start_time_no_current_yet(
     client, testdb, utcnow
 ):
     eom_exam_info = get_synthetic_exam_info(
@@ -283,13 +283,13 @@ def test_get_current_scheduled_exam_package__one_package_and_under_15mins_to_sta
     response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
     assert_response(response, expected_status_code=200)
 
-    response = client.post("/api/v1/exam/get_current_scheduled_exam_package")
+    response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == api_exam_info["scheduled_exam_packages"][0]
 
 
-def test_get_current_scheduled_exam_package__one_package_and_lock_time_is_far_in_future_but_already_locked_no_current_yet(
+def test_get_current_exam_package__one_package_and_lock_time_is_far_in_future_but_already_locked_no_current_yet(
     client, testdb, utcnow
 ):
     eom_exam_info = get_synthetic_exam_info(
@@ -306,13 +306,13 @@ def test_get_current_scheduled_exam_package__one_package_and_lock_time_is_far_in
     response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
     assert_response(response, expected_status_code=200)
 
-    response = client.post("/api/v1/exam/get_current_scheduled_exam_package")
+    response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == api_exam_info["scheduled_exam_packages"][0]
 
 
-def test_get_current_scheduled_exam_package__one_package_and_it_is_past_start_time_no_current_yet(
+def test_get_current_exam_package__one_package_and_it_is_past_start_time_no_current_yet(
     client, testdb, utcnow
 ):
     eom_exam_info = get_synthetic_exam_info(
@@ -326,13 +326,13 @@ def test_get_current_scheduled_exam_package__one_package_and_it_is_past_start_ti
     response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
     assert_response(response, expected_status_code=200)
 
-    response = client.post("/api/v1/exam/get_current_scheduled_exam_package")
+    response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == api_exam_info["scheduled_exam_packages"][0]
 
 
-def test_get_current_scheduled_exam_package__one_package_and_it_is_past_end_time_no_current_yet(
+def test_get_current_exam_package__one_package_and_it_is_past_end_time_no_current_yet(
     client, testdb, utcnow
 ):
     eom_exam_info = get_synthetic_exam_info(
@@ -346,13 +346,13 @@ def test_get_current_scheduled_exam_package__one_package_and_it_is_past_end_time
     response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
     assert_response(response, expected_status_code=200)
 
-    response = client.post("/api/v1/exam/get_current_scheduled_exam_package")
+    response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == None
 
 
-def test_get_current_scheduled_exam_package__multiple_locked_packages_starting_at_same_time_no_current_yet(
+def test_get_current_exam_package__multiple_locked_packages_starting_at_same_time_no_current_yet(
     client, testdb, utcnow
 ):
     first_api_exam_info = None
@@ -370,13 +370,13 @@ def test_get_current_scheduled_exam_package__multiple_locked_packages_starting_a
         response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
         assert_response(response, expected_status_code=200)
 
-    response = client.post("/api/v1/exam/get_current_scheduled_exam_package")
+    response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == first_api_exam_info["scheduled_exam_packages"][0]
 
 
-def test_get_current_scheduled_exam_package__multiple_locked_packages_last_saved_starting_first_no_current_yet(
+def test_get_current_exam_package__multiple_locked_packages_last_saved_starting_first_no_current_yet(
     client, testdb, utcnow
 ):
     for i in range(10):
@@ -391,13 +391,13 @@ def test_get_current_scheduled_exam_package__multiple_locked_packages_last_saved
         response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
         assert_response(response, expected_status_code=200)
 
-    response = client.post("/api/v1/exam/get_current_scheduled_exam_package")
+    response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == api_exam_info["scheduled_exam_packages"][0]
 
 
-def test_get_current_scheduled_exam_package__multiple_locked_packages_starting_at_same_time_no_current_yet(
+def test_get_current_exam_package__multiple_locked_packages_starting_at_same_time_no_current_yet(
     client, testdb, utcnow
 ):
     first_api_exam_info = None
@@ -415,13 +415,13 @@ def test_get_current_scheduled_exam_package__multiple_locked_packages_starting_a
         response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
         assert_response(response, expected_status_code=200)
 
-    response = client.post("/api/v1/exam/get_current_scheduled_exam_package")
+    response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == first_api_exam_info["scheduled_exam_packages"][0]
 
 
-def test_get_current_scheduled_exam_package__save_package_which_starts_sooner_than_the_current(
+def test_get_current_exam_package__save_package_which_starts_sooner_than_the_current(
     client, testdb, utcnow
 ):
     eom_exam_info1 = get_synthetic_exam_info(
@@ -435,7 +435,7 @@ def test_get_current_scheduled_exam_package__save_package_which_starts_sooner_th
     response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info1)
     assert_response(response, expected_status_code=200)
 
-    response = client.post("/api/v1/exam/get_current_scheduled_exam_package")
+    response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == api_exam_info1["scheduled_exam_packages"][0]
@@ -451,7 +451,7 @@ def test_get_current_scheduled_exam_package__save_package_which_starts_sooner_th
     response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info2)
     assert_response(response, expected_status_code=200)
 
-    response = client.post("/api/v1/exam/get_current_scheduled_exam_package")
+    response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
     # Still the same first package eventhough the package2 would start
@@ -460,11 +460,9 @@ def test_get_current_scheduled_exam_package__save_package_which_starts_sooner_th
     assert response.json() == api_exam_info1["scheduled_exam_packages"][0]
 
 
-def test_set_current_scheduled_exam_package_state__empty_database(
-    client, testdb, utcnow
-):
+def test_set_current_exam_package_state__empty_database(client, testdb, utcnow):
     response = client.post(
-        "/api/v1/exam/set_current_scheduled_exam_package_state",
+        "/api/v1/exam/set_current_exam_package_state",
         json={"external_id": str(uuid.uuid4()), "state": "ready"},
     )
 
@@ -472,11 +470,11 @@ def test_set_current_scheduled_exam_package_state__empty_database(
     assert response.json() == {"detail": "scheduled exam package is not current"}
 
 
-def test_set_current_scheduled_exam_package_state__empty_database_invalid_input(
+def test_set_current_exam_package_state__empty_database_invalid_input(
     client, testdb, utcnow
 ):
     response = client.post(
-        "/api/v1/exam/set_current_scheduled_exam_package_state",
+        "/api/v1/exam/set_current_exam_package_state",
         json={"external_id": str(uuid.uuid4()), "state": "burp"},
     )
 
@@ -498,7 +496,7 @@ def test_set_current_scheduled_exam_package_state__empty_database_invalid_input(
     }
 
 
-def test_set_current_scheduled_exam_package_state__set_state_of_exam_package_which_is_not_current(
+def test_set_current_exam_package_state__set_state_of_exam_package_which_is_not_current(
     client, testdb, utcnow
 ):
     eom_exam_info = get_synthetic_exam_info(
@@ -513,7 +511,7 @@ def test_set_current_scheduled_exam_package_state__set_state_of_exam_package_whi
     assert_response(response, expected_status_code=200)
 
     response = client.post(
-        "/api/v1/exam/set_current_scheduled_exam_package_state",
+        "/api/v1/exam/set_current_exam_package_state",
         json={
             "external_id": api_exam_info["scheduled_exam_packages"][0]["external_id"],
             "state": "ready",
@@ -524,7 +522,7 @@ def test_set_current_scheduled_exam_package_state__set_state_of_exam_package_whi
     assert response.json() == {"detail": "scheduled exam package is not current"}
 
 
-def test_set_current_scheduled_exam_package_state__set_state_of_current_exam_package_invalid_transition(
+def test_set_current_exam_package_state__set_state_of_current_exam_package_invalid_transition(
     client, testdb, utcnow
 ):
     eom_exam_info = get_synthetic_exam_info(
@@ -538,11 +536,11 @@ def test_set_current_scheduled_exam_package_state__set_state_of_current_exam_pac
     response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
     assert_response(response, expected_status_code=200)
 
-    response = client.post("/api/v1/exam/get_current_scheduled_exam_package")
+    response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
     response = client.post(
-        "/api/v1/exam/set_current_scheduled_exam_package_state",
+        "/api/v1/exam/set_current_exam_package_state",
         json={
             "external_id": api_exam_info["scheduled_exam_packages"][0]["external_id"],
             "state": "running",
@@ -551,11 +549,11 @@ def test_set_current_scheduled_exam_package_state__set_state_of_current_exam_pac
 
     assert_response(response, expected_status_code=409)
     assert response.json() == {
-        "detail": "state of the current scheduled exam package cannot be changed to running"
+        "detail": "state of the current exam package cannot be changed to running"
     }
 
 
-def test_set_current_scheduled_exam_package_state__set_state_of_current_exam_package_valid_transitions(
+def test_set_current_exam_package_state__set_state_of_current_exam_package_valid_transitions(
     client, testdb, utcnow
 ):
     eom_exam_info = get_synthetic_exam_info(
@@ -569,7 +567,7 @@ def test_set_current_scheduled_exam_package_state__set_state_of_current_exam_pac
     response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
     assert_response(response, expected_status_code=200)
 
-    response = client.post("/api/v1/exam/get_current_scheduled_exam_package")
+    response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == api_exam_info["scheduled_exam_packages"][0]
@@ -580,7 +578,7 @@ def test_set_current_scheduled_exam_package_state__set_state_of_current_exam_pac
     for state in ("ready", "running", "stopping", "stopped", "archived"):
         utcnow_before_state_change = ktp_controller.utils.utcnow()
         response = client.post(
-            "/api/v1/exam/set_current_scheduled_exam_package_state",
+            "/api/v1/exam/set_current_exam_package_state",
             json={
                 "external_id": api_exam_info["scheduled_exam_packages"][0][
                     "external_id"
@@ -590,19 +588,16 @@ def test_set_current_scheduled_exam_package_state__set_state_of_current_exam_pac
         )
         assert_response(response, expected_status_code=200)
 
-        response = client.post("/api/v1/exam/get_current_scheduled_exam_package")
+        response = client.post("/api/v1/exam/get_current_exam_package")
         assert_response(response, expected_status_code=200)
 
-        current_scheduled_exam_package = response.json()
-        assert current_scheduled_exam_package.pop("state") == state
+        current_exam_package = response.json()
+        assert current_exam_package.pop("state") == state
         assert (
             datetime.datetime.fromisoformat(
-                current_scheduled_exam_package.pop("state_changed_at")
+                current_exam_package.pop("state_changed_at")
             )
             > utcnow_before_state_change
         )
 
-        assert (
-            current_scheduled_exam_package
-            == api_exam_info["scheduled_exam_packages"][0]
-        )
+        assert current_exam_package == api_exam_info["scheduled_exam_packages"][0]

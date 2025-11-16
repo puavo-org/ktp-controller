@@ -121,14 +121,14 @@ def _create_exam_package_file(
 
 
 def _set_scheduled_exam_package_state(scheduled_exam_package, next_state) -> bool:
-    last_state = ktp_controller.api.client.set_current_scheduled_exam_package_state(
+    last_state = ktp_controller.api.client.set_current_exam_package_state(
         scheduled_exam_package["external_id"], next_state
     )
 
     scheduled_exam_package["state"] = next_state
 
     _LOGGER.debug(
-        "Changed state from %s to %s of the current scheduled exam package: %s",
+        "Changed state from %s to %s of the current exam package: %s",
         last_state,
         next_state,
         scheduled_exam_package,
@@ -137,7 +137,7 @@ def _set_scheduled_exam_package_state(scheduled_exam_package, next_state) -> boo
     return last_state != next_state
 
 
-def _prepare_current_scheduled_exam_package(
+def _prepare_current_exam_package(
     exam_package: typing.Dict,
     utcnow: datetime.datetime,  # pylint: disable=unused-argument
 ) -> bool:
@@ -146,7 +146,7 @@ def _prepare_current_scheduled_exam_package(
         exam_package_filepath, decrypt_codes
     )
     _LOGGER.info(
-        "Prepared current scheduled exam package %r (%d exams) successfully.",
+        "Prepared current exam package %r (%d exams) successfully.",
         exam_package["external_id"],
         len(exam_filenames),
     )
@@ -154,20 +154,20 @@ def _prepare_current_scheduled_exam_package(
     return True
 
 
-def _start_current_scheduled_exam_package(
+def _start_current_exam_package(
     exam_package,
     utcnow,  # pylint: disable=unused-argument
 ) -> bool:
     ktp_controller.abitti2.client.start_decrypted_exams()
     _LOGGER.info(
-        "Started current scheduled exam package %r successfully.",
+        "Started current exam package %r successfully.",
         exam_package["external_id"],
     )
 
     return True
 
 
-def _stop_current_scheduled_exam_package(
+def _stop_current_exam_package(
     exam_package,
     utcnow,  # pylint: disable=unused-argument
 ) -> bool:
@@ -189,19 +189,19 @@ def _stop_current_scheduled_exam_package(
 
     if is_stopped:
         _LOGGER.info(
-            "Stopped current scheduled exam package %r successfully.",
+            "Stopped current exam package %r successfully.",
             exam_package["external_id"],
         )
     else:
         _LOGGER.info(
-            "Stopping current scheduled exam package %r ...",
+            "Stopping current exam package %r ...",
             exam_package["external_id"],
         )
 
     return is_stopped
 
 
-def _archive_current_scheduled_exam_package(
+def _archive_current_exam_package(
     exam_package,  # pylint: disable=unused-argument
     utcnow,  # pylint: disable=unused-argument
 ) -> bool:
@@ -275,17 +275,17 @@ class Agent:
                 ktp_controller.messages.Command.DISABLE_AUTO_CONTROL
             ): self.__command_disable_auto_control,
             str(
-                ktp_controller.messages.Command.STOP_CURRENT_SCHEDULED_EXAM_PACKAGE
-            ): self.__command_change_current_scheduled_exam_package_state,
+                ktp_controller.messages.Command.STOP_CURRENT_EXAM_PACKAGE
+            ): self.__command_change_current_exam_package_state,
             str(
-                ktp_controller.messages.Command.START_CURRENT_SCHEDULED_EXAM_PACKAGE
-            ): self.__command_change_current_scheduled_exam_package_state,
+                ktp_controller.messages.Command.START_CURRENT_EXAM_PACKAGE
+            ): self.__command_change_current_exam_package_state,
             str(
-                ktp_controller.messages.Command.ARCHIVE_CURRENT_SCHEDULED_EXAM_PACKAGE
-            ): self.__command_change_current_scheduled_exam_package_state,
+                ktp_controller.messages.Command.ARCHIVE_CURRENT_EXAM_PACKAGE
+            ): self.__command_change_current_exam_package_state,
             str(
-                ktp_controller.messages.Command.PREPARE_CURRENT_SCHEDULED_EXAM_PACKAGE
-            ): self.__command_change_current_scheduled_exam_package_state,
+                ktp_controller.messages.Command.PREPARE_CURRENT_EXAM_PACKAGE
+            ): self.__command_change_current_exam_package_state,
         }
 
     def __set_auto_control(
@@ -322,7 +322,7 @@ class Agent:
     ):
         return self.__set_auto_control(command_uuid, False)
 
-    async def __command_change_current_scheduled_exam_package_state(
+    async def __command_change_current_exam_package_state(
         self,
         command_uuid: str,
         command_data: ktp_controller.messages.CommandData,  # pylint: disable=unused-argument
@@ -332,22 +332,20 @@ class Agent:
                 command_uuid=command_uuid,
                 command_status=ktp_controller.messages.CommandStatus.ERROR,
                 error_message=(
-                    "the state of the current scheduled exam package cannot be "
+                    "the state of the current exam package cannot be "
                     "changed manually when auto control is enabled"
                 ),
             )
 
         manual_trigger = {
-            ktp_controller.messages.Command.ARCHIVE_CURRENT_SCHEDULED_EXAM_PACKAGE: Trigger.MANUAL_ARCHIVE,
-            ktp_controller.messages.Command.PREPARE_CURRENT_SCHEDULED_EXAM_PACKAGE: Trigger.MANUAL_PREPARE,
-            ktp_controller.messages.Command.START_CURRENT_SCHEDULED_EXAM_PACKAGE: Trigger.MANUAL_START,
-            ktp_controller.messages.Command.STOP_CURRENT_SCHEDULED_EXAM_PACKAGE: Trigger.MANUAL_STOP,
+            ktp_controller.messages.Command.ARCHIVE_CURRENT_EXAM_PACKAGE: Trigger.MANUAL_ARCHIVE,
+            ktp_controller.messages.Command.PREPARE_CURRENT_EXAM_PACKAGE: Trigger.MANUAL_PREPARE,
+            ktp_controller.messages.Command.START_CURRENT_EXAM_PACKAGE: Trigger.MANUAL_START,
+            ktp_controller.messages.Command.STOP_CURRENT_EXAM_PACKAGE: Trigger.MANUAL_STOP,
         }[command_data.command]
 
         try:
-            changed = await self.__work_on_current_scheduled_exam_package(
-                trigger=manual_trigger
-            )
+            changed = await self.__work_on_current_exam_package(trigger=manual_trigger)
         except _Conflict as conflict:
             return ktp_controller.messages.CommandResultData(
                 command_uuid=command_uuid,
@@ -364,9 +362,7 @@ class Agent:
             command_uuid=command_uuid, command_status=command_status
         )
 
-    async def __work_on_current_scheduled_exam_package(
-        self, *, trigger: Trigger
-    ) -> bool:
+    async def __work_on_current_exam_package(self, *, trigger: Trigger) -> bool:
         utcnow = ktp_controller.utils.utcnow()
         trigger = Trigger(trigger)  # Raises ValueError if trigger is not a Trigger.
 
@@ -378,24 +374,22 @@ class Agent:
                 "and reported by upper levels in the call stack."
             )
 
-        scheduled_exam_package = (
-            ktp_controller.api.client.get_current_scheduled_exam_package()
-        )
+        scheduled_exam_package = ktp_controller.api.client.get_current_exam_package()
 
         if scheduled_exam_package is None:
-            return False  # No current scheduled exam package
+            return False  # No current exam package
 
         if not scheduled_exam_package["locked"]:
             raise RuntimeError(
                 "Critical internal logic error! "
-                "The current scheduled exam package is not locked! "
+                "The current exam package is not locked! "
                 "It should be impossible, because the definition "
                 "of current implies locked.",
                 scheduled_exam_package,
             )
 
         _LOGGER.debug(
-            "Triggered by %s, working on the current scheduled exam package: %s",
+            "Triggered by %s, working on the current exam package: %s",
             trigger,
             scheduled_exam_package,
         )
@@ -406,7 +400,7 @@ class Agent:
             None: {
                 "valid_triggers": (Trigger.MANUAL_PREPARE, Trigger.TIME),
                 "time_condition": self.__is_auto_control_enabled,
-                "action": _prepare_current_scheduled_exam_package,
+                "action": _prepare_current_exam_package,
                 "next_state": "ready",
             },
             "ready": {
@@ -420,7 +414,7 @@ class Agent:
                         )
                     )
                 ),
-                "action": _start_current_scheduled_exam_package,
+                "action": _start_current_exam_package,
                 "next_state": "running",
             },
             "running": {
@@ -434,9 +428,7 @@ class Agent:
                         )
                     )
                 ),
-                "action": lambda *args: (
-                    _stop_current_scheduled_exam_package(*args) or True
-                ),
+                "action": lambda *args: (_stop_current_exam_package(*args) or True),
                 "next_state": "stopping",
             },
             "stopping": {
@@ -445,13 +437,13 @@ class Agent:
                 # control state, we call the stop function until it
                 # reports that everything has stopped.
                 "time_condition": True,
-                "action": _stop_current_scheduled_exam_package,
+                "action": _stop_current_exam_package,
                 "next_state": "stopped",
             },
             "stopped": {
                 "valid_triggers": (Trigger.MANUAL_ARCHIVE, Trigger.TIME),
                 "time_condition": self.__is_auto_control_enabled,
-                "action": _archive_current_scheduled_exam_package,
+                "action": _archive_current_exam_package,
                 "next_state": "archived",
             },
             "archived": {
@@ -484,7 +476,7 @@ class Agent:
 
         if changed:
             _LOGGER.debug(
-                "State of the current scheduled exam package changed from %s to %s",
+                "State of the current exam package changed from %s to %s",
                 state,
                 transition["next_state"],
             )
@@ -570,12 +562,10 @@ class Agent:
                 # sophisticated scheduling logic, but for now,
                 # ping-pong scheduling is good enough.
                 try:
-                    await self.__work_on_current_scheduled_exam_package(
-                        trigger=Trigger.TIME
-                    )
+                    await self.__work_on_current_exam_package(trigger=Trigger.TIME)
                 except _Conflict as conflict:
                     _LOGGER.error(
-                        "automatic work on the current scheduled exam package filed: %s",
+                        "automatic work on the current exam package filed: %s",
                         conflict,
                     )
                 # Ping pong is a great game!

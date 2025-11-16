@@ -19,7 +19,7 @@ __all__ = [
     "ScheduledExam",
     "ScheduledExamPackage",
     "ScheduledExamPackageState",
-    "SetCurrentScheduledExamPackageStateData",
+    "SetCurrentExamPackageStateData",
 ]
 
 
@@ -89,6 +89,6 @@ class GetScheduledExamData(ktp_controller.pydantic.BaseModel):
     external_id: pydantic.StrictStr
 
 
-class SetCurrentScheduledExamPackageStateData(ktp_controller.pydantic.BaseModel):
+class SetCurrentExamPackageStateData(ktp_controller.pydantic.BaseModel):
     external_id: pydantic.StrictStr
     state: ScheduledExamPackageState

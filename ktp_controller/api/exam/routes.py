@@ -185,65 +185,65 @@ _VALID_TRANSITIONS = {
 
 
 @router.post(
-    "/set_current_scheduled_exam_package_state",
+    "/set_current_exam_package_state",
     response_model=schemas.ScheduledExamPackageState | None,
-    summary="Set current scheduled exam package state",
+    summary="Set current exam package state",
 )
-async def _set_current_scheduled_exam_package_state(
-    data: schemas.SetCurrentScheduledExamPackageStateData,
+async def _set_current_exam_package_state(
+    data: schemas.SetCurrentExamPackageStateData,
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ):
     utcnow = ktp_controller.utils.utcnow()
 
-    db_current_scheduled_exam_package = (
+    db_current_exam_package = (
         db.query(models.ScheduledExamPackage)
         .filter_by(external_id=data.external_id, current=True)
         .one_or_none()
     )
-    if db_current_scheduled_exam_package is None:
+    if db_current_exam_package is None:
         raise fastapi.exceptions.HTTPException(
             409, detail="scheduled exam package is not current"
         )
 
     try:
-        valid_next_state = _VALID_TRANSITIONS[db_current_scheduled_exam_package.state]
+        valid_next_state = _VALID_TRANSITIONS[db_current_exam_package.state]
     except KeyError as key_error:
         raise fastapi.exceptions.HTTPException(
-            409, detail="state of the current scheduled exam package cannot be changed"
+            409, detail="state of the current exam package cannot be changed"
         ) from key_error
 
     if valid_next_state != data.state:
         raise fastapi.exceptions.HTTPException(
             409,
-            detail=f"state of the current scheduled exam package cannot be changed to {data.state}",
+            detail=f"state of the current exam package cannot be changed to {data.state}",
         )
 
-    old_state = db_current_scheduled_exam_package.state
+    old_state = db_current_exam_package.state
 
     if old_state != data.state:
-        db_current_scheduled_exam_package.state = data.state
-        db_current_scheduled_exam_package.state_changed_at = utcnow
+        db_current_exam_package.state = data.state
+        db_current_exam_package.state_changed_at = utcnow
         db.commit()
 
     return old_state
 
 
 @router.post(
-    "/get_current_scheduled_exam_package",
+    "/get_current_exam_package",
     response_model=schemas.ScheduledExamPackage | None,
-    summary="Get current scheduled exam package",
+    summary="Get current exam package",
 )
-async def _get_current_scheduled_exam_package(
+async def _get_current_exam_package(
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ):
     utcnow = ktp_controller.utils.utcnow()
 
-    db_current_scheduled_exam_package = (
+    db_current_exam_package = (
         db.query(models.ScheduledExamPackage).filter_by(current=True).one_or_none()
     )
 
-    if db_current_scheduled_exam_package is None:
-        db_current_scheduled_exam_package = (
+    if db_current_exam_package is None:
+        db_current_exam_package = (
             db.query(models.ScheduledExamPackage)
             .filter_by(locked=True)
             .filter_by(state=None)
@@ -256,35 +256,33 @@ async def _get_current_scheduled_exam_package(
             .one_or_none()
         )
 
-        if db_current_scheduled_exam_package is None:
+        if db_current_exam_package is None:
             return (
                 None  # No locked upcoming or ongoing scheduled exam packages available.
             )
 
-        db_current_scheduled_exam_package.current = True
+        db_current_exam_package.current = True
         db.commit()
 
     return {
-        "external_id": db_current_scheduled_exam_package.external_id,
-        "start_time": db_current_scheduled_exam_package.start_time.replace(
+        "external_id": db_current_exam_package.external_id,
+        "start_time": db_current_exam_package.start_time.replace(
             tzinfo=datetime.timezone.utc
         ),
-        "end_time": db_current_scheduled_exam_package.end_time.replace(
+        "end_time": db_current_exam_package.end_time.replace(
             tzinfo=datetime.timezone.utc
         ),
         "lock_time": None
-        if db_current_scheduled_exam_package.lock_time is None
-        else db_current_scheduled_exam_package.lock_time.replace(
-            tzinfo=datetime.timezone.utc
-        ),
-        "locked": db_current_scheduled_exam_package.locked,
+        if db_current_exam_package.lock_time is None
+        else db_current_exam_package.lock_time.replace(tzinfo=datetime.timezone.utc),
+        "locked": db_current_exam_package.locked,
         "scheduled_exam_external_ids": [
-            se.external_id for se in db_current_scheduled_exam_package.scheduled_exams
+            se.external_id for se in db_current_exam_package.scheduled_exams
         ],
-        "state": db_current_scheduled_exam_package.state,
+        "state": db_current_exam_package.state,
         "state_changed_at": None
-        if db_current_scheduled_exam_package.state_changed_at is None
-        else db_current_scheduled_exam_package.state_changed_at.replace(
+        if db_current_exam_package.state_changed_at is None
+        else db_current_exam_package.state_changed_at.replace(
             tzinfo=datetime.timezone.utc
         ),
     }

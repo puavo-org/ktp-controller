@@ -19,8 +19,8 @@ __all__ = [
     "get_ui_websock_url",
     # API commands:
     "async_command",
-    "get_current_scheduled_exam_package",
-    "set_current_scheduled_exam_package_state",
+    "get_current_exam_package",
+    "set_current_exam_package_state",
     "get_scheduled_exam",
     "get_scheduled_exam_packages",
     "save_exam_info",
@@ -149,19 +149,15 @@ def get_scheduled_exam_packages(
     return _post("/api/v1/exam/get_scheduled_exam_packages", timeout=timeout).json()
 
 
-def get_current_scheduled_exam_package(
-    *, timeout: int = 20
-) -> typing.Dict[str, typing.Any]:
-    return _post(
-        "/api/v1/exam/get_current_scheduled_exam_package", timeout=timeout
-    ).json()
+def get_current_exam_package(*, timeout: int = 20) -> typing.Dict[str, typing.Any]:
+    return _post("/api/v1/exam/get_current_exam_package", timeout=timeout).json()
 
 
-def set_current_scheduled_exam_package_state(
+def set_current_exam_package_state(
     external_id: str, state: str, *, timeout: int = 20
 ) -> str:
     return _post(
-        "/api/v1/exam/set_current_scheduled_exam_package_state",
+        "/api/v1/exam/set_current_exam_package_state",
         json={"external_id": external_id, "state": state},
         timeout=timeout,
     ).json()

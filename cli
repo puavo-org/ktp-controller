@@ -30,28 +30,26 @@ def _print_as_yaml(obj):
 async def _command_status(args) -> int:
     import ktp_controller.api.client  # pylint: disable=import-outside-toplevel
 
-    current_scheduled_exam_package = (
-        ktp_controller.api.client.get_current_scheduled_exam_package()
-    )
+    current_exam_package = ktp_controller.api.client.get_current_exam_package()
     last_abitti2_status_report = (
         ktp_controller.api.client.get_last_abitti2_status_report()
     )
 
-    if current_scheduled_exam_package is None:
-        print("# Current scheduled exam package: -")
+    if current_exam_package is None:
+        print("# Current exam package: -")
     else:
-        print("# Current scheduled exam package:")
-        scheduled_exam_external_ids = current_scheduled_exam_package.pop(
+        print("# Current exam package:")
+        scheduled_exam_external_ids = current_exam_package.pop(
             "scheduled_exam_external_ids"
         )
         for scheduled_exam_external_id in scheduled_exam_external_ids:
             scheduled_exam = ktp_controller.api.client.get_scheduled_exam(
                 scheduled_exam_external_id
             )
-            current_scheduled_exam_package.setdefault("scheduled_exams", []).append(
+            current_exam_package.setdefault("scheduled_exams", []).append(
                 scheduled_exam
             )
-        _print_as_yaml(current_scheduled_exam_package)
+        _print_as_yaml(current_exam_package)
     print()
     if last_abitti2_status_report is None:
         print("# Last Abitti2 status report: -")
@@ -66,10 +64,10 @@ async def _command_status(args) -> int:
 _COMMANDS = {
     "enable_auto_control": _command_api_async_command,
     "disable_auto_control": _command_api_async_command,
-    "start_current_scheduled_exam_package": _command_api_async_command,
-    "stop_current_scheduled_exam_package": _command_api_async_command,
-    "archive_current_scheduled_exam_package": _command_api_async_command,
-    "prepare_current_scheduled_exam_package": _command_api_async_command,
+    "start_current_exam_package": _command_api_async_command,
+    "stop_current_exam_package": _command_api_async_command,
+    "archive_current_exam_package": _command_api_async_command,
+    "prepare_current_exam_package": _command_api_async_command,
     "status": _command_status,
 }
 
