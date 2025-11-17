@@ -402,7 +402,9 @@ class Agent:
 
         if current_exam_package is None:
             if self.__is_auto_control_enabled and self.__current_abitti2_exams == []:
+                _LOGGER.info("Reseting Abitti2 with a dummy exam package...")
                 ktp_controller.abitti2.client.reset()
+                _LOGGER.info("Abitti2 was reset.")
             return False  # No current exam package
 
         if not current_exam_package["locked"]:
