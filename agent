@@ -211,9 +211,7 @@ def _stop_current_exam_package(
 
     is_stopped = (
         all(
-            s.get("examFinished", False)
-            or s.get("sessionStatus") == "session_ended"
-            or not s.get("authorized", False)
+            s.get("examFinished", False) or s.get("sessionStatus") == "session_ended"
             for s in abitti2_status_report["status"]["data"]["students"]
         )
         and current_exam_package["state"] == "stopping"
