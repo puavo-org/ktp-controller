@@ -145,10 +145,7 @@ def _set_scheduled_exam_package_state(scheduled_exam_package, next_state) -> boo
     return last_state != next_state
 
 
-def _prepare_current_exam_package(
-    exam_package: typing.Dict,
-    utcnow: datetime.datetime,  # pylint: disable=unused-argument
-) -> bool:
+def _prepare_current_exam_package(exam_package: typing.Dict) -> bool:
     (exam_package_filepath, decrypt_codes) = _create_exam_package_file(exam_package)
     exam_filenames = ktp_controller.abitti2.client.prepare_exam_package(
         exam_package_filepath, decrypt_codes
@@ -162,10 +159,7 @@ def _prepare_current_exam_package(
     return True
 
 
-def _start_current_exam_package(
-    exam_package,
-    utcnow,  # pylint: disable=unused-argument
-) -> bool:
+def _start_current_exam_package(exam_package) -> bool:
     ktp_controller.abitti2.client.start_decrypted_exams()
     _LOGGER.info(
         "Started current exam package %r successfully.",
@@ -175,10 +169,7 @@ def _start_current_exam_package(
     return True
 
 
-def _stop_current_exam_package(
-    exam_package,
-    utcnow,  # pylint: disable=unused-argument
-) -> bool:
+def _stop_current_exam_package(exam_package) -> bool:
     # Change the security code first to ensure students cannot enter anymore.
     ktp_controller.abitti2.client.change_single_security_code()
 
@@ -211,7 +202,6 @@ def _stop_current_exam_package(
 
 def _archive_current_exam_package(
     exam_package,  # pylint: disable=unused-argument
-    utcnow,  # pylint: disable=unused-argument
 ) -> bool:
     # TODO: download exam results from Abitti2
     # TODO: upload exam results to EOM
@@ -492,7 +482,7 @@ class Agent:
                 transition["time_condition"],
                 transition["action"],
             )
-            if transition["action"](scheduled_exam_package, utcnow):
+            if transition["action"](scheduled_exam_package):
                 changed = _set_scheduled_exam_package_state(
                     scheduled_exam_package, transition["next_state"]
                 )
