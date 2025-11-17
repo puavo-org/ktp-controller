@@ -38,6 +38,10 @@ _EXAM_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-files")
 # ~/.local/share/ktp-controller/exam-packages/FILE_UUID/COMPOUND_EXAM_FILE_SHA256
 _EXAM_PACKAGE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-packages")
 
+# All exam packages will be stored here like so:
+# ~/.local/share/ktp-controller/exam-packages/FILE_UUID/COMPOUND_EXAM_FILE_SHA256
+_ANSWERS_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/answers-files")
+
 _DUMMY_EXAM_FILE_FILEPATH = os.path.expanduser(
     "~/.local/share/ktp-controller/dummy-exam-file.mex"
 )
@@ -56,6 +60,7 @@ def _create_dummy_exam_package_file():
 
 
 class LocalFilepathType(str, enum.Enum):
+    ANSWERS_FILE = "answers-file"
     EXAM_FILE = "exam-file"
     EXAM_PACKAGE = "exam-package"
 
@@ -73,6 +78,9 @@ def _get_local_filepath(
     elif local_filepath_type == LocalFilepathType.EXAM_PACKAGE:
         basedir = _EXAM_PACKAGE_DIR
         ext = ".zip"
+    elif local_filepath_type == LocalFilepathType.ANSWERS_FILE:
+        basedir = _ANSWERS_FILE_DIR
+        ext = ".meb"
     else:
         raise ValueError("invalid local_filepath_type")
 
@@ -84,6 +92,23 @@ def _get_local_filepath(
         pass
 
     return os.path.join(dirpath, f"{local_filepath_type}_{filename_suffix}{ext}")
+
+
+def _transfer_answers(exam_package_external_id: str, *, is_final: bool = False):
+    answers_file_path = _get_local_filepath(
+        LocalFilepathType.ANSWERS_FILE,
+        exam_package_external_id,
+        ktp_controller.utils.utcnow_str() + "_final" if is_final else "",
+    )
+
+    sha256sum = ktp_controller.abitti2.client.download_answers_file(answers_file_path)
+
+    ktp_controller.examomatic.client.upload_answers_file(
+        exam_package_external_id=exam_package_external_id,
+        filepath=answers_file_path,
+        sha256sum=sha256sum,
+        is_final=is_final,
+    )
 
 
 def _create_exam_package_file(
@@ -209,14 +234,9 @@ def _stop_current_exam_package(
 
 
 def _archive_current_exam_package(
-    current_exam_package: typing.Dict[  # pylint: disable=unused-argument
-        str, typing.Any
-    ],
+    current_exam_package: typing.Dict[str, typing.Any],
 ) -> bool:
-    # TODO: download exam results from Abitti2
-    # TODO: upload exam results to EOM
-    # TODO: verify that we got all results
-
+    _transfer_answers(current_exam_package["external_id"], is_final=True)
     return True
 
 
