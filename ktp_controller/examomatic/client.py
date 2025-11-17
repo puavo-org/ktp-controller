@@ -25,6 +25,7 @@ __all__ = [
     "download_exam_file",
     "download_dummy_exam_file",
     "websock_ack",
+    "upload_answers_file",
 ]
 
 
@@ -76,7 +77,11 @@ def _get(
 
 
 def _post(
-    path: str, *, data: bytes | None = None, timeout: int = 20
+    path: str,
+    *,
+    data: bytes | None = None,
+    files: typing.Dict | None = None,
+    timeout: int = 20,
 ) -> requests.Response:
     response = requests.post(
         ktp_controller.utils.get_url(
@@ -91,6 +96,7 @@ def _post(
             "hostname": SETTINGS.hostname,
             "id": SETTINGS.id,
         },
+        files=files,
         timeout=timeout,
     )
 
@@ -200,3 +206,34 @@ async def websock_ack(websock, message):
     return await ktp_controller.utils.websock_send_json(
         websock, {"type": "ack", "id": message["id"]}
     )
+
+
+def upload_answers_file(
+    *,
+    exam_package_external_id: str,
+    filepath: str,
+    sha256sum: str | None = None,
+    is_final: bool = False,
+    timeout: int = 20,
+):
+    if sha256sum is None:
+        sha256sum = ktp_controller.utils.sha256(filepath)
+
+    filename = os.path.basename(filepath)
+
+    with open(filepath, "rb") as f:
+        file_size = f.seek(0, 2)
+        f.seek(0)
+
+        _post(
+            "/v1/answers/upload",
+            data={
+                "answers_file": filename,
+                "file_sha256": sha256sum,
+                "file_size": file_size,
+                "is_final": is_final,
+                "package_id": exam_package_external_id,
+            },
+            files={"answers_file": (filename, f, "application/zip")},
+            timeout=timeout,
+        )
