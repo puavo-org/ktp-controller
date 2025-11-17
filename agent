@@ -873,18 +873,39 @@ class Agent:
 
 
 def _load_agent_state() -> typing.Dict[str, typing.Any]:
+    _LOGGER.info("Loading agent state...")
     try:
         with open(_AGENT_STATE_FILEPATH, "r", encoding="ascii") as agent_state_file:
-            return json.load(agent_state_file)
+            agent_state = json.load(agent_state_file)
     except FileNotFoundError:
-        return {}
+        _LOGGER.debug("Agent state file %r does not exist.", _AGENT_STATE_FILEPATH)
+        agent_state = {}
+    except Exception:  # pylint: disable=broad-exception-caught
+        _LOGGER.exception(
+            "Failed to load the agent state. Proceeding with an empty state."
+        )
+        agent_state = {}
+    else:
+        _LOGGER.info(
+            "Loaded agent state successfully from '%r'.", _AGENT_STATE_FILEPATH
+        )
+
+    return agent_state
 
 
 def _save_agent_state(agent_state: typing.Dict[str, typing.Any]) -> None:
-    with ktp_controller.utils.open_atomic_write(
-        _AGENT_STATE_FILEPATH, encoding="ascii"
-    ) as agent_state_file:
-        json.dump(agent_state, agent_state_file, ensure_ascii=True)
+    _LOGGER.info("Saving agent state...")
+    dirpath = os.path.dirname(_AGENT_STATE_FILEPATH)
+    try:
+        os.makedirs(dirpath)
+    except FileExistsError:
+        _LOGGER.debug("Agent state file directory %r already exists.", dirpath)
+    finally:
+        with ktp_controller.utils.open_atomic_write(
+            _AGENT_STATE_FILEPATH, encoding="ascii"
+        ) as agent_state_file:
+            json.dump(agent_state, agent_state_file, ensure_ascii=True)
+        _LOGGER.info("Saved agent state successfully to %r.", _AGENT_STATE_FILEPATH)
 
 
 @contextlib.contextmanager
