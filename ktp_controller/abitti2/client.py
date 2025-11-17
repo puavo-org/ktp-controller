@@ -32,6 +32,7 @@ __all__ = [
     "start_decrypted_exams",
     "reset",
     "stop_exam_session",
+    "download_answers_file",
 ]
 
 
@@ -48,7 +49,7 @@ DUMMY_EXAM_PACKAGE_FILEPATH = os.path.expanduser(
 # Utils:
 
 
-def _get(path: str, *, timeout: int = 20) -> requests.Response:
+def _get(path: str, *, stream: bool = False, timeout: int = 20) -> requests.Response:
     host = ktp_controller.abitti2.naksu2.read_domain()
     url = ktp_controller.utils.get_url(host, path)
 
@@ -58,6 +59,7 @@ def _get(path: str, *, timeout: int = 20) -> requests.Response:
             _ABITTI2_USERNAME, ktp_controller.abitti2.naksu2.read_password()
         ),
         timeout=timeout,
+        stream=stream,
     )
 
     response.raise_for_status()
@@ -194,3 +196,16 @@ def reset() -> None:
 
 def stop_exam_session(session_uuid: str) -> None:
     _post("/api/end-student-session", data={"sessionUuid": session_uuid})
+
+
+def download_answers_file(dest_filepath: str) -> str:
+    sha256sum = hashlib.sha256()
+    with ktp_controller.utils.open_atomic_write(
+        dest_filepath, exclusive=True
+    ) as dest_file:
+        response = _get("/api/answers-zip/answers.meb", stream=True)
+        for chunk in response.iter_content(4096):
+            dest_file.write(chunk)
+            sha256sum.update(chunk)
+
+    return sha256sum.hexdigest()
