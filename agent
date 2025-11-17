@@ -128,48 +128,58 @@ def _create_exam_package_file(
     return exam_package_filepath, decrypt_codes
 
 
-def _set_scheduled_exam_package_state(scheduled_exam_package, next_state) -> bool:
+def _set_current_exam_package_state(
+    current_exam_package: typing.Dict[str, typing.Any], next_state: str
+) -> bool:
     last_state = ktp_controller.api.client.set_current_exam_package_state(
-        scheduled_exam_package["external_id"], next_state
+        current_exam_package["external_id"], next_state
     )
 
-    scheduled_exam_package["state"] = next_state
+    current_exam_package["state"] = next_state
 
     _LOGGER.debug(
         "Changed state from %s to %s of the current exam package: %s",
         last_state,
         next_state,
-        scheduled_exam_package,
+        current_exam_package,
     )
 
     return last_state != next_state
 
 
-def _prepare_current_exam_package(exam_package: typing.Dict) -> bool:
-    (exam_package_filepath, decrypt_codes) = _create_exam_package_file(exam_package)
+def _prepare_current_exam_package(
+    current_exam_package: typing.Dict[str, typing.Any]
+) -> bool:
+    (exam_package_filepath, decrypt_codes) = _create_exam_package_file(
+        current_exam_package
+    )
     exam_filenames = ktp_controller.abitti2.client.prepare_exam_package(
         exam_package_filepath, decrypt_codes
     )
     _LOGGER.info(
         "Prepared current exam package %r (%d exams) successfully.",
-        exam_package["external_id"],
+        current_exam_package["external_id"],
         len(exam_filenames),
     )
 
     return True
 
 
-def _start_current_exam_package(exam_package) -> bool:
+def _start_current_exam_package(
+    current_exam_package: typing.Dict[str, typing.Any]
+) -> bool:
     ktp_controller.abitti2.client.start_decrypted_exams()
     _LOGGER.info(
         "Started current exam package %r successfully.",
-        exam_package["external_id"],
+        current_exam_package["external_id"],
     )
 
     return True
 
 
-def _stop_current_exam_package(exam_package) -> bool:
+def _stop_current_exam_package(
+    current_exam_package: typing.Dict[str, typing.Any]
+) -> bool:
     # Change the security code first to ensure students cannot enter anymore.
     ktp_controller.abitti2.client.change_single_security_code()
 
@@ -182,26 +192,29 @@ def _stop_current_exam_package(exam_package) -> bool:
             s["examFinished"]
             for s in abitti2_status_report["status"]["data"]["students"]
         )
-        and exam_package["state"] == "stopping"
-        and abitti2_status_report["received_at"] > exam_package["state_changed_at"]
+        and current_exam_package["state"] == "stopping"
+        and abitti2_status_report["received_at"]
+        > current_exam_package["state_changed_at"]
     )
 
     if is_stopped:
         _LOGGER.info(
             "Stopped current exam package %r successfully.",
-            exam_package["external_id"],
+            current_exam_package["external_id"],
         )
     else:
         _LOGGER.info(
             "Stopping current exam package %r ...",
-            exam_package["external_id"],
+            current_exam_package["external_id"],
         )
 
     return is_stopped
 
 
 def _archive_current_exam_package(
-    exam_package,  # pylint: disable=unused-argument
+    current_exam_package: typing.Dict[  # pylint: disable=unused-argument
+        str, typing.Any
+    ],
 ) -> bool:
     # TODO: download exam results from Abitti2
     # TODO: upload exam results to EOM
@@ -385,26 +398,26 @@ class Agent:
                 "and reported by upper levels in the call stack."
             )
 
-        scheduled_exam_package = ktp_controller.api.client.get_current_exam_package()
+        current_exam_package = ktp_controller.api.client.get_current_exam_package()
 
-        if scheduled_exam_package is None:
+        if current_exam_package is None:
             if self.__is_auto_control_enabled and self.__current_abitti2_exams == []:
                 ktp_controller.abitti2.client.reset()
             return False  # No current exam package
 
-        if not scheduled_exam_package["locked"]:
+        if not current_exam_package["locked"]:
             raise RuntimeError(
                 "Critical internal logic error! "
                 "The current exam package is not locked! "
                 "It should be impossible, because the definition "
                 "of current implies locked.",
-                scheduled_exam_package,
+                current_exam_package,
             )
 
         _LOGGER.debug(
             "Triggered by %s, working on the current exam package: %s",
             trigger,
-            scheduled_exam_package,
+            current_exam_package,
         )
 
         changed = False
@@ -423,7 +436,7 @@ class Agent:
                     and (
                         utcnow
                         >= datetime.datetime.fromisoformat(
-                            scheduled_exam_package["start_time"]
+                            current_exam_package["start_time"]
                         )
                     )
                 ),
@@ -437,7 +450,7 @@ class Agent:
                     and (
                         utcnow
                         >= datetime.datetime.fromisoformat(
-                            scheduled_exam_package["end_time"]
+                            current_exam_package["end_time"]
                         )
                     )
                 ),
@@ -467,7 +480,7 @@ class Agent:
             },
         }
 
-        state = scheduled_exam_package["state"]
+        state = current_exam_package["state"]
         transition = state_transitions[state]
 
         if trigger not in transition["valid_triggers"]:
@@ -482,9 +495,9 @@ class Agent:
                 transition["time_condition"],
                 transition["action"],
             )
-            if transition["action"](scheduled_exam_package):
-                changed = _set_scheduled_exam_package_state(
-                    scheduled_exam_package, transition["next_state"]
+            if transition["action"](current_exam_package):
+                changed = _set_current_exam_package_state(
+                    current_exam_package, transition["next_state"]
                 )
 
         if changed:
