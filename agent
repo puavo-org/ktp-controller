@@ -247,13 +247,13 @@ class _Error(Exception):
     pass
 
 
-class _Conflict(_Error):
+class _UsageError(_Error):
     def __init__(self, error_message: str):
         super().__init__(self)
         self.__error_message: str = error_message
 
     def __str__(self) -> str:
-        return self.__error_message
+        return f"usage error: {self.__error_message}"
 
 
 class Agent:
@@ -370,11 +370,11 @@ class Agent:
 
         try:
             changed = await self.__work_on_current_exam_package(trigger=manual_trigger)
-        except _Conflict as conflict:
+        except _UsageError as usage_error:
             return ktp_controller.messages.CommandResultData(
                 command_uuid=command_uuid,
                 command_status=ktp_controller.messages.CommandStatus.ERROR,
-                error_message=str(conflict),
+                error_message=str(usage_error),
             )
 
         if changed:
@@ -394,7 +394,7 @@ class Agent:
             raise RuntimeError(
                 "Critical internal logic error!. "
                 "Auto control is enabled and manual trigger encountered. "
-                "This is an user error which should have been properly handled "
+                "This is an usage error which should have been properly handled "
                 "and reported by upper levels in the call stack."
             )
 
@@ -484,7 +484,9 @@ class Agent:
         transition = state_transitions[state]
 
         if trigger not in transition["valid_triggers"]:
-            raise _Conflict(f"invalid trigger '{trigger}' in state '{state}'")
+            raise _UsageError(
+                f"trigger '{trigger}' is not applicable for the current exam package in state '{state}'"
+            )
 
         if trigger != Trigger.TIME or transition["time_condition"]:
             _LOGGER.debug(
@@ -589,10 +591,10 @@ class Agent:
                 # ping-pong scheduling is good enough.
                 try:
                     await self.__work_on_current_exam_package(trigger=Trigger.TIME)
-                except _Conflict as conflict:
+                except _UsageError as usage_error:
                     _LOGGER.error(
                         "automatic work on the current exam package filed: %s",
-                        conflict,
+                        usage_error,
                     )
                 # Ping pong is a great game!
                 # Let's
