@@ -31,6 +31,7 @@ __all__ = [
     "get_decrypted_exams",
     "start_decrypted_exams",
     "reset",
+    "stop_exam_session",
 ]
 
 
