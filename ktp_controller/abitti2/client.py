@@ -27,7 +27,7 @@ __all__ = [
     "get_current_abitti2_version",
     "change_single_security_code",
     "decrypt_exams",
-    "load_exam_package",
+    "upload_exam_package",
     "get_decrypted_exams",
     "start_decrypted_exams",
     "reset",
@@ -116,7 +116,9 @@ def decrypt_exams(decrypt_code: str, timeout: int = 60) -> typing.Dict:
     ).json()
 
 
-def load_exam_package(exam_package_filepath, *, timeout: int = 20) -> typing.List[str]:
+def upload_exam_package(
+    exam_package_filepath, *, timeout: int = 20
+) -> typing.List[str]:
     exam_package_filename = os.path.basename(exam_package_filepath)
 
     host = ktp_controller.abitti2.naksu2.read_domain()
@@ -151,7 +153,7 @@ def prepare_exam_package(
     exam_package_filepath: str, decrypt_codes: typing.Iterable[str]
 ) -> typing.Set[str]:
     exam_filenames = set(
-        ktp_controller.abitti2.client.load_exam_package(exam_package_filepath)
+        ktp_controller.abitti2.client.upload_exam_package(exam_package_filepath)
     )
 
     decrypted_exam_filenames = set()
