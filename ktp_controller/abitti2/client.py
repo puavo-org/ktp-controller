@@ -209,3 +209,12 @@ def download_answers_file(dest_filepath: str) -> str:
             sha256sum.update(chunk)
 
     return sha256sum.hexdigest()
+
+
+def set_exam_session_permission_to_use_browsers(
+    session_uuid: str, is_allowed_to_use_browsers: bool
+):
+    _post(
+        "/api/allow-all-browsers",
+        data={"allow": is_allowed_to_use_browsers, "sessionUuid": session_uuid},
+    )
