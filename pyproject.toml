@@ -14,6 +14,7 @@ fastapi = "*"
 uvicorn = {extras = ["standard"], version = "*"}
 alembic = "*"
 pydantic-settings = "*"
+python-multipart = "*"
 requests = "*"
 supervisor = "*"
 redis = "*"
