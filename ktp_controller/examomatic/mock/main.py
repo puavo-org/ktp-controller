@@ -2,6 +2,7 @@
 import asyncio
 import contextlib
 import datetime
+import hashlib
 import logging
 import os.path
 import typing
@@ -212,6 +213,44 @@ def _send_abitti2_status_report(
     # to explicitly claim it.
     if domain != "integration.test":
         raise fastapi.HTTPException(400, detail="domain must be integration.test")
+
+
+@APP.post(
+    "/v1/answers/upload",
+    response_model=None,
+    status_code=200,
+)
+def _upload_answers_file(  # pylint: disable=too-many-arguments
+    *,
+    answers_file: typing.Annotated[fastapi.UploadFile, fastapi.File()],
+    file_sha256: typing.Annotated[str, fastapi.Form()],
+    file_size: typing.Annotated[int, fastapi.Form()],
+    package_id: typing.Annotated[str, fastapi.Form()],
+    is_final: typing.Annotated[str, fastapi.Form()],
+    domain: str,
+    hostname: str,  # pylint: disable=unused-argument
+    server_id: int = fastapi.Query(..., alias="id"),  # pylint: disable=unused-argument
+):
+    # For usability, user wanting to use this Exam-O-Matic mock needs
+    # to explicitly claim it.
+    if domain != "integration.test":
+        raise fastapi.HTTPException(400, detail="domain must be integration.test")
+
+    if answers_file.size != file_size:
+        raise fastapi.HTTPException(
+            400,
+            detail=f"incorrect file_size, expected {answers_file.size}, got {file_size}",
+        )
+
+    expected_sha256 = hashlib.sha256(answers_file.file.read()).hexdigest()
+    if expected_sha256 != file_sha256:
+        raise fastapi.HTTPException(
+            400,
+            detail=f"incorrect file_sha256, expected {expected_sha256}, got {file_sha256}",
+        )
+
+    if is_final not in ("false", "true", "unknown"):
+        raise fastapi.HTTPException(400, detail=f"incorrect is_final: {is_final!r}")
 
 
 async def _play_ping_pong_with_ktp_controller(websock: fastapi.WebSocket):
