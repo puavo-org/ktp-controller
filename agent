@@ -94,7 +94,11 @@ def _get_local_filepath(
     return os.path.join(dirpath, f"{local_filepath_type}_{filename_suffix}{ext}")
 
 
-def _transfer_answers(exam_package_external_id: str, *, is_final: bool = False):
+def _transfer_answers(
+    exam_package_external_id: str,
+    *,
+    is_final: ktp_controller.examomatic.client.IsFinal = ktp_controller.examomatic.client.IsFinal.UNKNOWN,
+):
     answers_file_path = _get_local_filepath(
         LocalFilepathType.ANSWERS_FILE,
         exam_package_external_id,
@@ -236,7 +240,10 @@ def _stop_current_exam_package(
 def _archive_current_exam_package(
     current_exam_package: typing.Dict[str, typing.Any],
 ) -> bool:
-    _transfer_answers(current_exam_package["external_id"], is_final=True)
+    _transfer_answers(
+        current_exam_package["external_id"],
+        is_final=ktp_controller.examomatic.client.IsFinal.TRUE,
+    )
     return True
 
 
