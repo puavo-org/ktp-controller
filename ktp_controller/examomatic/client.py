@@ -1,17 +1,21 @@
 # Standard library imports
+import enum
 import hashlib
 import json
+import logging
 import os.path
 import typing
 
 # Third-party imports
 import requests
 import requests.auth
+import requests.exceptions
 
 # Internal imports
 import ktp_controller.utils
 from ktp_controller.settings import SETTINGS
 
+_LOGGER = logging.getLogger(__file__)
 
 __all__ = [
     # Utils:
@@ -71,7 +75,12 @@ def _get(
         stream=stream,
     )
 
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as http_error:
+        if http_error.response.text:
+            _LOGGER.error("error content: %s", http_error.response.text)
+        raise
 
     return response
 
@@ -100,7 +109,12 @@ def _post(
         timeout=timeout,
     )
 
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as http_error:
+        if http_error.response.text:
+            _LOGGER.error("error content: %s", http_error.response.text)
+        raise
 
     return response
 
@@ -208,14 +222,25 @@ async def websock_ack(websock, message):
     )
 
 
+class IsFinal(str, enum.Enum):
+    FALSE = "false"
+    TRUE = "true"
+    UNKNOWN = "unknown"
+
+    def __str__(self) -> str:
+        return self.value
+
+
 def upload_answers_file(
     *,
     exam_package_external_id: str,
     filepath: str,
     sha256sum: str | None = None,
-    is_final: bool = False,
+    is_final: IsFinal = IsFinal.UNKNOWN,
     timeout: int = 20,
 ):
+    is_final = IsFinal(is_final)
+
     if sha256sum is None:
         sha256sum = ktp_controller.utils.sha256(filepath)
 
@@ -234,6 +259,6 @@ def upload_answers_file(
                 "is_final": is_final,
                 "package_id": exam_package_external_id,
             },
-            files={"answers_file": (filename, f, "application/zip")},
+            files={"answers_file": f},
             timeout=timeout,
         )
