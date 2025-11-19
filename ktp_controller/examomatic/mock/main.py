@@ -5,8 +5,9 @@ import datetime
 import hashlib
 import logging
 import os.path
-import typing
 import uuid
+
+from typing import Annotated, Dict, List
 
 # Third-party imports
 import fastapi  # type: ignore
@@ -90,7 +91,7 @@ class _Schedule(ktp_controller.pydantic.BaseModel):
     exam_modified_at: datetime.datetime
     schedule_modified_at: datetime.datetime
     school_name: pydantic.StrictStr
-    server_id: typing.List[pydantic.conint(strict=True, ge=1)]
+    server_id: List[pydantic.conint(strict=True, ge=1)]
     is_retake: pydantic.StrictBool
     retake_participants: pydantic.conint(strict=True, ge=0)
 
@@ -100,15 +101,15 @@ class _Package(ktp_controller.pydantic.BaseModel):
     start_time: datetime.datetime
     end_time: datetime.datetime
     lock_time: datetime.datetime
-    schedules: typing.List[pydantic.StrictStr]
+    schedules: List[pydantic.StrictStr]
     locked: pydantic.StrictBool
     server_id: pydantic.conint(strict=True, ge=1)
     estimated_total_size: pydantic.conint(strict=True, ge=0)
 
 
 class _ExamInfo(ktp_controller.pydantic.BaseModel):
-    schedules: typing.List[_Schedule]
-    packages: typing.Dict[str, _Package]
+    schedules: List[_Schedule]
+    packages: Dict[str, _Package]
     request_id: pydantic.StrictStr
 
 
@@ -195,7 +196,7 @@ class _Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
     received_at: datetime.datetime
     monitoring_passphrase: pydantic.StrictStr
     server_version: pydantic.StrictStr
-    status: typing.Dict
+    status: Dict
 
 
 @APP.post(
@@ -222,11 +223,11 @@ def _send_abitti2_status_report(
 )
 def _upload_answers_file(  # pylint: disable=too-many-arguments
     *,
-    answers_file: typing.Annotated[fastapi.UploadFile, fastapi.File()],
-    file_sha256: typing.Annotated[str, fastapi.Form()],
-    file_size: typing.Annotated[int, fastapi.Form()],
-    package_id: typing.Annotated[str, fastapi.Form()],
-    is_final: typing.Annotated[str, fastapi.Form()],
+    answers_file: Annotated[fastapi.UploadFile, fastapi.File()],
+    file_sha256: Annotated[str, fastapi.Form()],
+    file_size: Annotated[int, fastapi.Form()],
+    package_id: Annotated[str, fastapi.Form()],  # pylint: disable=unused-argument
+    is_final: Annotated[str, fastapi.Form()],
     domain: str,
     hostname: str,  # pylint: disable=unused-argument
     server_id: int = fastapi.Query(..., alias="id"),  # pylint: disable=unused-argument
