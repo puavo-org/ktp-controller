@@ -1,6 +1,7 @@
 # Standard library imports
 import getpass
 import logging
+import os
 import os.path
 import platform
 import subprocess
@@ -92,7 +93,7 @@ class PuavoSettingsSource(PydanticBaseSettingsSource):
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=os.getenv("KTP_CONTROLLER_DOTENV", ".env"),
         env_file_encoding="utf-8",
         env_prefix="KTP_CONTROLLER_",
     )
