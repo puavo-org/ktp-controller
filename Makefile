@@ -14,7 +14,7 @@ pytest:
 
 .PHONY: dev-run
 dev-run: ktp_controller/api/ktp_controller.sqlite
-	poetry run supervisord -c supervisor.conf
+	poetry run supervisord -c supervisor-dev-run.conf
 
 .PHONY: test
 test: ktp_controller/api/ktp_controller.sqlite
