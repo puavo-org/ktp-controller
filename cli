@@ -3,10 +3,10 @@
 # Standard library imports
 import argparse
 import asyncio
-import yaml
 import sys
 
 # Third-party imports
+import yaml
 
 # Internal imports
 
@@ -27,7 +27,7 @@ def _print_as_yaml(obj):
     )
 
 
-async def _command_status(args) -> int:
+async def _command_status(args) -> int:  # pylint: disable=unused-argument
     import ktp_controller.api.client  # pylint: disable=import-outside-toplevel
 
     current_exam_package = ktp_controller.api.client.get_current_exam_package()
@@ -92,7 +92,7 @@ async def _dispatch_command(args) -> int:
                 except ValueError:
                     # Most probably a programming error, API should not
                     # send invalid JSON to agents.
-                    _LOGGER.exception("API sent invalid JSON data")
+                    print(f"API sent invalid JSON data: {data!r}")
                     continue
                 if message_dict["kind"] != "command_result":
                     continue
