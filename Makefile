@@ -18,7 +18,7 @@ dev-run: ktp_controller/api/ktp_controller.sqlite
 
 .PHONY: test
 test: ktp_controller/api/ktp_controller.sqlite
-	poetry run supervisord -c supervisor-test.conf
+	poetry run supervisord -c tests/supervisor-test.conf
 	@grep -q -x ok tests/result
 
 .PHONY: dev-install
@@ -42,4 +42,4 @@ dev-migratedb:
 check-updates:
 	@poetry update --dry-run
 	@wget -q -O- https://github.com/redis/redis/releases/latest | sed -r -n 's|.*<title>Release ([0-9.]+).*$$|Redis available: \1|p'
-	@sed -r -n 's|^command=docker pull redis:(.*)$$|Redis installed: \1|p' supervisor-test.conf
+	@sed -r -n 's|^command=docker pull redis:(.*)$$|Redis installed: \1|p' tests/supervisor-test.conf
