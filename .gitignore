@@ -6,4 +6,5 @@ flycheck_*
 /supervisor/*.log
 /supervisor/*.pid
 /supervisor/proglogs/*.log
-/tests/result
+/supervisor/chain_result
+/supervisor/chain_result.tmp

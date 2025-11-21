@@ -16,16 +16,20 @@ def write_stderr(s):
     sys.stderr.flush()
 
 
-def _supervisorctl(command, *args):
+def _supervisorctl(command, conf_filename, *args):
     subprocess.check_call(
-        ["supervisorctl", "-c", "tests/supervisor-test.conf", command] + list(args),
+        ["supervisorctl", "-c", os.path.join("supervisor", conf_filename), command]
+        + list(args),
         stdout=open("/dev/null", "wb"),
     )
 
 
 def main():
+    last_processname = sys.argv[1]
+    conf_filename = sys.argv[2]
+
     try:
-        os.unlink("tests/result")
+        os.unlink("supervisor/chain_result")
     except FileNotFoundError:
         pass
     while 1:
@@ -49,16 +53,16 @@ def main():
             headers["eventname"] == "PROCESS_STATE_EXITED"
             and payload["processname"] == "docker-pull"
         ):
-            _supervisorctl("start", "redis")
+            _supervisorctl("start", conf_filename, "redis")
         elif (
             headers["eventname"] == "PROCESS_STATE_RUNNING"
             and payload["processname"] == "redis"
         ):
-            _supervisorctl("start", "test")
+            _supervisorctl("start", conf_filename, last_processname)
         elif (
             headers["eventname"]
             in ("PROCESS_STATE_EXITED", "PROCESS_STATE_STOPPED", "PROCESS_STATE_FATAL")
-            and payload["processname"] == "test"
+            and payload["processname"] == last_processname
         ):
             if headers["eventname"] == "PROCESS_STATE_EXITED" and bool(
                 payload["expected"]
@@ -66,11 +70,11 @@ def main():
                 result = "ok"
             else:
                 result = "fail"
-            with open("tests/result.tmp", "wb") as f:
+            with open("supervisor/chain_result.tmp", "wb") as f:
                 f.write(f"{result}\n".encode("ascii"))
-            os.rename("tests/result.tmp", "tests/result")
+            os.rename("supervisor/chain_result.tmp", "supervisor/chain_result")
 
-            _supervisorctl("shutdown")
+            _supervisorctl("shutdown", conf_filename)
 
         # transition from READY to ACKNOWLEDGED
         write_stdout("RESULT 2\nOK")
