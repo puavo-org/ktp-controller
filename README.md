@@ -6,16 +6,16 @@ Connection diagram:
 
 ```
                             :                   +-------+
-                   Internet : Device            |  UI   |
+                   Internet : Device            |  CLI  |
+                            :                   +-o-----+
+                            :                     | |
+                            :                  WS | | HTTP
+                            :                     | v
+                            :                   +-o-----+
+                            :                   |       |
+                            :                   |  API  |
+                            :                   |       |
                             :                   +-------+
-                            :                       |
-                            :                       | HTTP
-                            :                       v
-                            :                   +-------+                                     
-                            :                   |       |                                    
-                            :                   |  API  |                        
-                            :                   |       |                        
-                            :                   +-------+                        
 +-----------------------+   :                     o ^                      +---------+
 |      Exam-O-Matic     |<------(HTTPS)---+       | |       +--(HTTPS)---->| Abitti2 |
 +-----------------------+   :             |    WS | | HTTP  |              +---------+
@@ -25,7 +25,7 @@ Connection diagram:
                       +---------(WSS)----------o| Agent |o--------(WSS)--------+
                             :                   |       |
                             :                   +-------+
-```    
+```
 
 KTP Controller consists of two main components:
 - Agent
