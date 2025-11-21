@@ -166,7 +166,7 @@ def test_save_exam_info__real_anonymized_input(client, testdb, utcnow):
 
     for i in range(len(eom_exam_info["schedules"])):
         assert (
-            ktp_controller.api.exam.schemas.ScheduledExam.model_construct(
+            ktp_controller.api.exam.schemas.ScheduledExam(
                 **api_exam_info["scheduled_exams"][i]
             ).model_dump()
             == client.post(
