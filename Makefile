@@ -6,11 +6,11 @@ ktp_controller/api/ktp_controller.sqlite:
 
 .PHONY: check
 check:
-	poetry run pylint --verbose ktp_controller agent cli api
+	poetry run pylint --verbose ktp_controller/ bin/*
 
 .PHONY: pytest
 pytest:
-	poetry run pytest --show-capture=all --ff -x --log-level=WARNING --log-cli-level=WARNING --doctest-modules -vv tests ktp_controller
+	poetry run pytest --show-capture=all --ff -x --log-level=WARNING --log-cli-level=WARNING --doctest-modules -vv tests/ ktp_controller/
 
 .PHONY: dev-run
 dev-run: ktp_controller/api/ktp_controller.sqlite
