@@ -32,11 +32,21 @@ class PuavoSettingsSource(PydanticBaseSettingsSource):
     ) -> tuple[typing.Any, str, bool]:
         field_value = field.default
 
-        if field_name in ["hostname", "domain", "id"]:
+        if field_name in ["hostname", "domain"]:
             puavo_filepath = f"/etc/puavo/{field_name}"
             try:
                 with open(puavo_filepath, "r", encoding="utf-8") as f:
                     field_value = f.read().rstrip()
+            except FileNotFoundError:
+                pass
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                _LOGGER.warning("warning: failed to read %r: %s", puavo_filepath, e)
+
+        if field_name == "id":
+            puavo_filepath = "/etc/puavo/id"
+            try:
+                with open(puavo_filepath, "r", encoding="utf-8") as f:
+                    field_value = int(f.read().rstrip())
             except FileNotFoundError:
                 pass
             except Exception as e:  # pylint: disable=broad-exception-caught
