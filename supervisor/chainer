@@ -17,11 +17,12 @@ def write_stderr(s):
 
 
 def _supervisorctl(command, conf_filename, *args):
-    subprocess.check_call(
-        ["supervisorctl", "-c", os.path.join("supervisor", conf_filename), command]
-        + list(args),
-        stdout=open("/dev/null", "wb"),
-    )
+    with open(os.devnull, "wb") as devnull:
+        subprocess.check_call(
+            ["supervisorctl", "-c", os.path.join("supervisor", conf_filename), command]
+            + list(args),
+            stdout=devnull,
+        )
 
 
 def main():
@@ -83,6 +84,6 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         write_stderr(str(e))
         write_stdout("RESULT 4\nFAIL")

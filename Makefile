@@ -6,7 +6,7 @@ ktp_controller/api/ktp_controller.sqlite:
 
 .PHONY: check
 check:
-	poetry run pylint --verbose ktp_controller/ bin/*
+	poetry run pylint --verbose ktp_controller/ bin/* integration_tests/examomatic-mock supervisor/chainer
 
 .PHONY: pytest
 pytest:
