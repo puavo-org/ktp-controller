@@ -281,18 +281,22 @@ async def _get_current_exam_package(
         "end_time": db_current_exam_package.end_time.replace(
             tzinfo=datetime.timezone.utc
         ),
-        "lock_time": None
-        if db_current_exam_package.lock_time is None
-        else db_current_exam_package.lock_time.replace(tzinfo=datetime.timezone.utc),
+        "lock_time": (
+            None
+            if db_current_exam_package.lock_time is None
+            else db_current_exam_package.lock_time.replace(tzinfo=datetime.timezone.utc)
+        ),
         "locked": db_current_exam_package.locked,
         "scheduled_exam_external_ids": [
             se.external_id for se in db_current_exam_package.scheduled_exams
         ],
         "state": db_current_exam_package.state,
-        "state_changed_at": None
-        if db_current_exam_package.state_changed_at is None
-        else db_current_exam_package.state_changed_at.replace(
-            tzinfo=datetime.timezone.utc
+        "state_changed_at": (
+            None
+            if db_current_exam_package.state_changed_at is None
+            else db_current_exam_package.state_changed_at.replace(
+                tzinfo=datetime.timezone.utc
+            )
         ),
     }
 

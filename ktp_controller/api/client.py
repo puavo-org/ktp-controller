@@ -57,7 +57,7 @@ def _post(path: str, *, data=None, json=None, timeout: int = 5) -> requests.Resp
 
 
 def eom_exam_info_to_api_exam_info(
-    eom_exam_info: typing.Dict[str, typing.Any]
+    eom_exam_info: typing.Dict[str, typing.Any],
 ) -> typing.Dict[str, typing.Any]:
     scheduled_exams = []
     for schedule in eom_exam_info["schedules"]:

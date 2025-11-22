@@ -238,9 +238,9 @@ async def _get_exam_info(
     except KeyError as key_error:
         raise fastapi.HTTPException(404) from key_error
 
-    exam_info[
-        "request_id"
-    ] = f"{domain} {hostname} {server_id} {utcnow.isoformat()} {str(uuid.uuid4())}"
+    exam_info["request_id"] = (
+        f"{domain} {hostname} {server_id} {utcnow.isoformat()} {str(uuid.uuid4())}"
+    )
 
     return exam_info
 

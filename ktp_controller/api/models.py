@@ -126,9 +126,9 @@ class ScheduledExam(Base):  # type: ignore
         nullable=False,
     )
 
-    scheduled_exam_package: Mapped[
-        ScheduledExamPackage | None
-    ] = sqlalchemy.orm.relationship(back_populates="scheduled_exams")
+    scheduled_exam_package: Mapped[ScheduledExamPackage | None] = (
+        sqlalchemy.orm.relationship(back_populates="scheduled_exams")
+    )
     exam_file_info: Mapped[ExamFileInfo] = sqlalchemy.orm.relationship(
         back_populates="scheduled_exam"
     )
