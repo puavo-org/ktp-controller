@@ -10,7 +10,7 @@ check:
 
 .PHONY: pytest
 pytest:
-	poetry run pytest --show-capture=all --ff -x --log-level=WARNING --log-cli-level=WARNING --doctest-modules -vv tests/ ktp_controller/
+	KTP_CONTROLLER_DOTENV=tests/test.env poetry run pytest --show-capture=all --ff -x --log-level=WARNING --log-cli-level=WARNING --doctest-modules -vv tests/ ktp_controller/
 
 .PHONY: dev-run
 dev-run: ktp_controller/api/ktp_controller.sqlite
