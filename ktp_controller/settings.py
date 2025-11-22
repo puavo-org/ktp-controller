@@ -54,9 +54,11 @@ class PuavoSettingsSource(PydanticBaseSettingsSource):
 
         if field_name == "examomatic_host":
             try:
-                field_value = subprocess.check_output(
-                    ["puavo-conf", "puavo.abitti.exam_server"]
-                ).rstrip()
+                field_value = (
+                    subprocess.check_output(["puavo-conf", "puavo.abitti.exam_server"])
+                    .rstrip()
+                    .decode()
+                )
             except FileNotFoundError:
                 pass
             except Exception as e:  # pylint: disable=broad-exception-caught
