@@ -4,8 +4,16 @@ all: ktp_controller/api/ktp_controller.sqlite
 ktp_controller/api/ktp_controller.sqlite:
 	poetry run alembic upgrade head
 
+.PHONY: format
+format:
+	poetry run black .
+
+.PHONY: check-format
+check-format:
+	poetry run black --check .
+
 .PHONY: check
-check:
+check: check-format
 	poetry run pylint --verbose ktp_controller/ bin/* integration_tests/examomatic-mock supervisor/chainer
 
 .PHONY: pytest

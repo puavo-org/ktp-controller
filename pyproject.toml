@@ -25,7 +25,7 @@ pytest = "*"
 pytest-mock = "*"
 pylint = "*"
 httpx = "*"
-#black = "*"
+black = "*"
 #isort = "*"
 
 [build-system]
