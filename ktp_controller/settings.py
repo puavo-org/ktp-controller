@@ -1,5 +1,4 @@
 # Standard library imports
-import getpass
 import logging
 import os
 import os.path
@@ -8,7 +7,7 @@ import subprocess
 import typing
 
 # Third-party imports
-from pydantic import field_validator
+from pydantic import field_validator, PositiveInt, StrictBool
 from pydantic.fields import FieldInfo
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict  # type: ignore
 
@@ -32,64 +31,32 @@ class PuavoSettingsSource(PydanticBaseSettingsSource):
     ) -> tuple[typing.Any, str, bool]:
         field_value = field.default
 
+        if not os.path.exists("/etc/puavo"):
+            return (field_value, field_name, False)
+
         if field_name in ["hostname", "domain"]:
             puavo_filepath = f"/etc/puavo/{field_name}"
-            try:
-                with open(puavo_filepath, "r", encoding="utf-8") as f:
-                    field_value = f.read().rstrip()
-            except FileNotFoundError:
-                pass
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                _LOGGER.warning("warning: failed to read %r: %s", puavo_filepath, e)
+            with open(puavo_filepath, "r", encoding="utf-8") as f:
+                field_value = f.read().rstrip()
 
-        if field_name == "id":
+        elif field_name == "id":
             puavo_filepath = "/etc/puavo/id"
-            try:
-                with open(puavo_filepath, "r", encoding="utf-8") as f:
-                    field_value = int(f.read().rstrip())
-            except FileNotFoundError:
-                pass
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                _LOGGER.warning("warning: failed to read %r: %s", puavo_filepath, e)
+            with open(puavo_filepath, "r", encoding="utf-8") as f:
+                field_value = int(f.read().rstrip())
 
-        if field_name == "examomatic_host":
-            try:
-                field_value = (
-                    subprocess.check_output(["puavo-conf", "puavo.abitti.exam_server"])
-                    .rstrip()
-                    .decode()
-                )
-            except FileNotFoundError:
-                pass
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                _LOGGER.warning(
-                    "warning: failed to get puavo.abitti.exam_server: %s", e
-                )
+        elif field_name == "examomatic_host":
+            field_value = (
+                subprocess.check_output(["puavo-conf", "puavo.abitti.exam_server"])
+                .rstrip()
+                .decode()
+            )
 
-        if field_name == "examomatic_username":
-            try:
-                with open("/etc/puavo/ldap/dn", "r", encoding="utf-8") as f:
-                    field_value = f.read().rstrip()
-            except FileNotFoundError:
-                pass
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                _LOGGER.warning("warning: failed to read /etc/puavo/ldap/dn: %s", e)
+        elif field_name == "examomatic_username":
+            with open("/etc/puavo/ldap/dn", "r", encoding="utf-8") as f:
+                field_value = f.read().rstrip()
 
-        if field_name == "examomatic_password_file":
-            try:
-                puavo_ldap_password_file = "/etc/puavo/ldap/password"
-                with open(puavo_ldap_password_file, "r", encoding="utf-8") as f:
-                    if len(f.read().rstrip()) == 0:
-                        raise RuntimeError(
-                            f"{puavo_ldap_password_file!r} contains an empty password"
-                        )
-                field_value = puavo_ldap_password_file
-            except FileNotFoundError:
-                pass
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                _LOGGER.warning(
-                    "warning: failed to read %r': %s", puavo_ldap_password_file, e
-                )
+        elif field_name == "examomatic_password_file":
+            field_value = "/etc/puavo/ldap/password"
 
         return (field_value, field_name, False)
 
@@ -110,18 +77,15 @@ class Settings(BaseSettings):
         env_prefix="KTP_CONTROLLER_",
     )
 
-    # .invalid is reserved IANA TLD
-    examomatic_host: str = "koejakaja.example.invalid"
-    examomatic_username: str = getpass.getuser()
-    examomatic_password_file: str = os.path.expanduser(
-        "~/ktp-controller-examomatic-password.txt"
-    )
-    examomatic_use_tls: bool = True
-    domain: str = "example.invalid"
+    examomatic_host: str
+    examomatic_username: str
+    examomatic_password_file: str
+    examomatic_use_tls: StrictBool = True
+    domain: str
     hostname: str = platform.node()
-    id: int = 1
+    id: PositiveInt
     api_host: str = "127.0.0.1"
-    api_port: int = 8000
+    api_port: PositiveInt = 8000
     logging_level: str = "INFO"
 
     @field_validator("examomatic_use_tls", mode="before")
