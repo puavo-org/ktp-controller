@@ -126,14 +126,14 @@ class Settings(BaseSettings):
 
     @field_validator("examomatic_use_tls", mode="before")
     @classmethod
-    def _validate_examomatic_use_tls(cls, v) -> bool:
+    def _validate_examomatic_use_tls(cls, v) -> typing.Any:
         if isinstance(v, str):
             if v.lower().strip() in ["yes", "y", "true", "1"]:
                 return True
             if v.lower().strip() in ["no", "n", "false", "0"]:
                 return False
             raise ValueError("invalid examomatic_use_tls value", v)
-        return bool(v)
+        return v
 
     @classmethod
     def settings_customise_sources(  # pylint: disable=too-many-arguments,too-many-positional-arguments
