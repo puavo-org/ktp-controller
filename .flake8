@@ -1,0 +1,4 @@
+[flake8]
+max-line-length = 120
+extend-exclude=tests/,alembic/,integration_tests/
+extend-ignore=E266

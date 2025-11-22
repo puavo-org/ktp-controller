@@ -82,9 +82,9 @@ async def _get_exam_file_stream(
     domain: str,
     hostname: str,  # pylint: disable=unused-argument
     server_id: str = fastapi.Query(..., alias="id"),  # pylint: disable=unused-argument
-    sha256sum: pydantic.constr(
-        strict=True, pattern=r"^[0-9a-fA-F]{64}$"
-    ) = fastapi.Query(..., alias="hash"),
+    sha256sum: ktp_controller.pydantic.StrictSHA256String = fastapi.Query(
+        ..., alias="hash"
+    ),
 ):
     _check_domain(domain)
     return await fastapi.responses.StreamingResponse(

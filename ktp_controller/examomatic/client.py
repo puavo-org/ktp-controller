@@ -146,13 +146,13 @@ def get_examomatic_websock_url():
 def websock_validate_message(data):
     message = ktp_controller.utils.json_loads_dict(data)
 
-    if not "type" in message:
+    if "type" not in message:
         raise ValueError("message does not have 'type'")
 
     if not isinstance(message["type"], str):
         raise ValueError("message type is not a string")
 
-    if not "id" in message:
+    if "id" not in message:
         raise ValueError("message does not have 'id'")
 
     if not isinstance(message["id"], int):

@@ -10,6 +10,3 @@ logging.basicConfig(
     level=DEFAULT_LOGGING_LEVEL,
     format=DEFAULT_LOGGING_FORMAT,
 )
-
-
-from .settings import SETTINGS  # pylint: disable=wrong-import-position
