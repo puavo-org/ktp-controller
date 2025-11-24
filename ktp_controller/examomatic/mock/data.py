@@ -97,47 +97,62 @@ REAL_ANONYMIZED_EOM_EXAM_INFO_JSON = """
 """
 
 
+_EXAM_FILE_INFOS = {
+    "exam1": {
+        "exam_title": "exam1",
+        "file_name": "exam1.mex",
+        "file_size": 9294014,
+        "file_sha256": "fd3a4a6021d4b53daa4494db4b907085917ab542ee10864d426abdf01d5ccc8f",
+        "file_uuid": "12cb630c-9419-4fa8-93f7-f1b01779e470",
+        "decrypt_code": "kukka ahma reiluus sotaonni",
+    }
+}
+
+
 def get_synthetic_exam_info(
     *,
-    start_time: datetime.datetime,
+    start_time: datetime.datetime | None = None,
     utcnow: datetime.datetime | None = None,
-    duration: datetime.timedelta | None = None
+    lock_time_duration: datetime.timedelta | None = None,
+    duration: datetime.timedelta | None = None,
+    server_id: int = 2,
+    exam_title: str = "exam1",
 ):
     if utcnow is None:
         utcnow = ktp_controller.utils.utcnow()
     if duration is None:
         duration = datetime.timedelta(minutes=30)
+    if lock_time_duration is None:
+        lock_time_duration = datetime.timedelta(minutes=15)
+    if start_time is None:
+        start_time = utcnow + lock_time_duration
 
     exam_uuid = str(uuid.uuid4())
     exam_package_uuid = str(uuid.uuid4())
     end_time = start_time + duration
-    lock_time = start_time - datetime.timedelta(minutes=15)
+    lock_time = start_time - lock_time_duration
+
+    exam_schedule = {
+        "id": exam_uuid,
+        "start_time": start_time.isoformat(),
+        "end_time": end_time.isoformat(),
+        "exam_modified_at": (start_time - datetime.timedelta(hours=1)).isoformat(),
+        "schedule_modified_at": (
+            start_time - datetime.timedelta(minutes=30)
+        ).isoformat(),
+        "school_name": "school1",
+        "server_id": server_id,
+        "is_retake": False,
+        "retake_participants": 0,
+    }
+
+    exam_schedule.update(_EXAM_FILE_INFOS[exam_title])
 
     return json.loads(
         json.dumps(
             {
                 "schedules": [
-                    {
-                        "id": exam_uuid,
-                        "exam_title": "exam1",
-                        "file_name": "exam1.mex",
-                        "file_size": 9294014,
-                        "file_sha256": "fd3a4a6021d4b53daa4494db4b907085917ab542ee10864d426abdf01d5ccc8f",
-                        "file_uuid": "12cb630c-9419-4fa8-93f7-f1b01779e470",
-                        "decrypt_code": "kukka ahma reiluus sotaonni",
-                        "start_time": start_time.isoformat(),
-                        "end_time": end_time.isoformat(),
-                        "exam_modified_at": (
-                            start_time - datetime.timedelta(hours=1)
-                        ).isoformat(),
-                        "schedule_modified_at": (
-                            start_time - datetime.timedelta(minutes=30)
-                        ).isoformat(),
-                        "school_name": "school1",
-                        "server_id": 2,
-                        "is_retake": False,
-                        "retake_participants": 0,
-                    },
+                    exam_schedule,
                 ],
                 "packages": {
                     exam_package_uuid: {
@@ -147,7 +162,7 @@ def get_synthetic_exam_info(
                         "lock_time": lock_time.isoformat(),
                         "schedules": [exam_uuid],
                         "locked": utcnow >= lock_time,
-                        "server_id": 2,
+                        "server_id": server_id,
                         "estimated_total_size": 0,
                     },
                 },

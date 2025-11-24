@@ -8,9 +8,12 @@ import uuid
 from ktp_controller.api import models
 import ktp_controller.api.client
 import ktp_controller.api.exam.schemas
+from ktp_controller.examomatic.mock.data import (
+    REAL_ANONYMIZED_EOM_EXAM_INFO_JSON,
+    get_synthetic_exam_info,
+)
 
 # Relative imports
-from .data import REAL_ANONYMIZED_EOM_EXAM_INFO_JSON, get_synthetic_exam_info
 from .utils import client, testdb, db_engine, utcnow, assert_response
 
 # Each test function executes in a separate session, each session
