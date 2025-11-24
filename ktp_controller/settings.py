@@ -101,7 +101,7 @@ class Settings(BaseSettings):
         return v
 
     @classmethod
-    def settings_customise_sources(  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    def settings_customise_sources(
         cls,
         settings_cls: type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,

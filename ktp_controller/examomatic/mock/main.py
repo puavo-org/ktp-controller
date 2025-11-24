@@ -268,7 +268,7 @@ async def _send_abitti2_status_report(
     response_model=None,
     status_code=200,
 )
-def _upload_answers_file(  # pylint: disable=too-many-arguments
+def _upload_answers_file(
     *,
     answers_file: Annotated[fastapi.UploadFile, fastapi.File()],
     file_sha256: Annotated[str, fastapi.Form()],

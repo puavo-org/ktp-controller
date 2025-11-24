@@ -174,7 +174,7 @@ def _set_current_exam_package_state(
 
 
 def _prepare_current_exam_package(
-    current_exam_package: typing.Dict[str, typing.Any]
+    current_exam_package: typing.Dict[str, typing.Any],
 ) -> bool:
     (exam_package_filepath, decrypt_codes) = _create_exam_package_file(
         current_exam_package
@@ -192,7 +192,7 @@ def _prepare_current_exam_package(
 
 
 def _start_current_exam_package(
-    current_exam_package: typing.Dict[str, typing.Any]
+    current_exam_package: typing.Dict[str, typing.Any],
 ) -> bool:
     ktp_controller.abitti2.client.start_decrypted_exams()
     _LOGGER.info(
@@ -204,7 +204,7 @@ def _start_current_exam_package(
 
 
 def _stop_current_exam_package(
-    current_exam_package: typing.Dict[str, typing.Any]
+    current_exam_package: typing.Dict[str, typing.Any],
 ) -> bool:
     # Change the security code first to ensure students cannot enter anymore.
     ktp_controller.abitti2.client.change_single_security_code()
@@ -281,7 +281,7 @@ class _UsageError(_Error):
 
 
 class Agent:
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         *,
         approx_api_ping_interval_sec: int = 15,
