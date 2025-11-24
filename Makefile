@@ -14,12 +14,12 @@ check-format:
 
 .PHONY: check
 check: check-format
-	poetry run flake8 ./ktp_controller/ ./bin/* ./integration_tests/examomatic-mock ./supervisor/chainer
-	poetry run pylint --verbose ./ktp_controller/ ./bin/* ./integration_tests/examomatic-mock ./supervisor/chainer
+	poetry run flake8 ./ktp_controller/ ./bin/* ./tests/examomatic-mock ./supervisor/chainer
+	poetry run pylint --verbose ./ktp_controller/ ./bin/* ./tests/examomatic-mock ./supervisor/chainer
 
 .PHONY: pytest
 pytest:
-	KTP_CONTROLLER_DOTENV=tests/test.env poetry run pytest --show-capture=all --ff -x --log-level=WARNING --log-cli-level=WARNING --doctest-modules -vv tests/ ktp_controller/
+	KTP_CONTROLLER_DOTENV=tests/test.env poetry run pytest --ignore-glob=tests/integration_test.py --show-capture=all --ff -x --log-level=WARNING --log-cli-level=WARNING --doctest-modules -vv tests/ ktp_controller/
 
 .PHONY: dev-run
 dev-run: ktp_controller/api/ktp_controller.sqlite
