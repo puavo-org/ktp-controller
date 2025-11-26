@@ -189,8 +189,37 @@ def utcnow_str() -> str:
 
 
 def is_valid_filename(filename: str) -> bool:
+    """
+    >>> is_valid_filename('foo.json')
+    True
+    >>> is_valid_filename('/bar/foo.json')
+    False
+    >>> is_valid_filename('.')
+    False
+    >>> is_valid_filename('..')
+    False
+    >>> is_valid_filename('...')
+    True
+    >>> is_valid_filename('.' * 255)
+    True
+    >>> is_valid_filename('.' * 256)
+    False
+    >>> is_valid_filename('foo\\0')
+    False
+    >>> is_valid_filename('foo\\1')
+    True
+    >>> is_valid_filename('foo\\nbar')
+    True
+    >>> is_valid_filename('♆o_$?.! !')
+    True
+    >>> is_valid_filename('')
+    False
+    """
+
     return (
-        "\0" not in filename
+        isinstance(filename, str)
+        and len(filename) > 0
+        and "\0" not in filename
         and "/" not in filename
         and len(filename.encode("utf-8")) <= 255
         and filename not in (".", "..")
