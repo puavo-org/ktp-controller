@@ -18,7 +18,7 @@ import pydantic
 import ktp_controller.pydantic
 import ktp_controller.utils
 
-from .utils import get_exam_filepath
+from .utils import get_exam_filepath, get_synthetic_exam_info
 
 
 __all__ = [
@@ -54,12 +54,11 @@ APP = fastapi.FastAPI(lifespan=_lifespan)
 APP.state.exam_infos = {}
 APP.state.do_send_refresh_exams = False
 APP.state.is_running = False
-APP.state.status_reports = {}
-APP.state.request_counts = {}
+APP.state.status_reports = []
+APP.state.get_exam_info_request_count = 0
 APP.state.pong_count = 0
 APP.state.ack_count = 0
 APP.state.refresh_exams_count = 0
-APP.state.data = {}
 
 
 @APP.get(
@@ -117,55 +116,11 @@ class _ExamInfo(ktp_controller.pydantic.BaseModel):
     request_id: pydantic.StrictStr
 
 
-def _get_exam_info_single_exam_package(
-    domain: str, hostname: str, server_id: int, utcnow: datetime.datetime
-):
-    start_time = utcnow + datetime.timedelta(minutes=2)
-    end_time = start_time + datetime.timedelta(minutes=1)
-    lock_time = start_time - datetime.timedelta(minutes=1)
-
-    exam_uuid: str = str(uuid.uuid4())
-    package_uuid: str = str(uuid.uuid4())
-
-    return {
-        "schedules": [
-            {
-                "id": exam_uuid,
-                "exam_title": "Integraatiotestikoe1",
-                "file_name": "exam_Integraatiotestikoe1.mex",
-                "file_size": 25353142,
-                "file_sha256": "50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624",
-                "file_uuid": "c574f93a-ac4d-4441-8679-ca47e565fb7b",  # UUID from oma.abitti.fi/school/exams
-                "decrypt_code": "itarasti toutain edustava myllytys",
-                "start_time": ktp_controller.utils.strfdt(start_time),
-                "end_time": ktp_controller.utils.strfdt(end_time),
-                "exam_modified_at": ktp_controller.utils.strfdt(utcnow),
-                "schedule_modified_at": ktp_controller.utils.strfdt(utcnow),
-                "school_name": f"{domain} school",
-                "server_id": [server_id],
-                "is_retake": False,
-                "retake_participants": 0,
-            },
-        ],
-        "packages": {
-            package_uuid: {
-                "id": package_uuid,
-                "start_time": start_time,
-                "end_time": end_time,
-                "lock_time": lock_time,
-                "schedules": [exam_uuid],
-                "locked": start_time >= lock_time,
-                "server_id": server_id,
-                "estimated_total_size": 25356295,
-            },
-        },
-        "request_id": f"{domain} {hostname} {server_id} {ktp_controller.utils.strfdt(utcnow)} {str(uuid.uuid4())}",
-    }
-
-
-_TEST_DATA_FUNCTIONS = {
-    "single_exam_package": _get_exam_info_single_exam_package,
-}
+class _SetExamInfoData(ktp_controller.pydantic.BaseModel):
+    exam_title: pydantic.StrictStr
+    start_time: datetime.datetime
+    duration_seconds: pydantic.conint(strict=True, ge=1)
+    lock_time_duration_seconds: pydantic.conint(strict=True, ge=1)
 
 
 class _Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
@@ -176,19 +131,27 @@ class _Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
 
 
 @APP.post(
-    "/mock/setup_exam_info",
+    "/mock/set_exam_info",
     response_model=None,
     status_code=200,
 )
-async def _mock_setup_exam_info(
-    exam_info: _ExamInfo,
+async def _mock_set_exam_info(
+    data: _SetExamInfoData,
     domain: str,
-    hostname: str,
+    hostname: str,  # pylint: disable=unused-argument
     server_id: int = fastapi.Query(..., alias="id"),
 ):
     _check_domain(domain)
 
-    APP.state.exam_infos[(domain, hostname, server_id)] = exam_info.model_dump()
+    exam_info_dict = get_synthetic_exam_info(
+        start_time=data.start_time,
+        duration=datetime.timedelta(seconds=data.duration_seconds),
+        lock_time_duration=datetime.timedelta(seconds=data.lock_time_duration_seconds),
+        exam_title=data.exam_title,
+        server_id=server_id,
+    )
+
+    APP.state.exam_infos[data.exam_title] = exam_info_dict
     APP.state.do_send_refresh_exams = True
 
 
@@ -219,9 +182,7 @@ async def _get_exam_info(
 
     _check_domain(domain)
 
-    APP.state.request_counts.setdefault(
-        (domain, hostname, server_id), {"get_exam_info": 0}
-    )["get_exam_info"] += 1
+    APP.state.get_exam_info_request_count += 1
 
     try:
         exam_info = APP.state.exam_infos[(domain, hostname, server_id)]
@@ -248,9 +209,7 @@ async def _send_abitti2_status_report(
 ):
     _check_domain(domain)
 
-    APP.state.status_reports.setdefault((domain, hostname, server_id), []).append(
-        request.model_dump()
-    )
+    APP.state.status_reports.append(request.model_dump())
 
 
 @APP.post(

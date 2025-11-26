@@ -53,7 +53,7 @@ def get_synthetic_exam_info(
     duration: datetime.timedelta | None = None,
     server_id: int = 2,
     exam_title: str = "exam1",
-):
+) -> typing.Dict[str, typing.Any]:
     if utcnow is None:
         utcnow = ktp_controller.utils.utcnow()
     if duration is None:

@@ -21,6 +21,10 @@ check: check-format
 pytest:
 	KTP_CONTROLLER_DOTENV=tests/test.env poetry run pytest --ignore-glob=tests/integration_test.py --show-capture=all --ff -x --log-level=WARNING --log-cli-level=WARNING --doctest-modules -vv tests/ ktp_controller/
 
+.PHONY: pytest-integration
+pytest-integration:
+	KTP_CONTROLLER_DOTENV=tests/integration_test.env poetry run pytest --show-capture=all --ff -x --log-level=WARNING --log-cli-level=WARNING -vv tests/integration_test.py
+
 .PHONY: dev-run
 dev-run: ktp_controller/api/ktp_controller.sqlite
 	poetry run supervisord -c supervisor/dev-run.conf
@@ -28,6 +32,11 @@ dev-run: ktp_controller/api/ktp_controller.sqlite
 .PHONY: test
 test: ktp_controller/api/ktp_controller.sqlite
 	poetry run supervisord -c supervisor/test.conf
+	@grep -q -x ok supervisor/chain_result
+
+.PHONY: integration-test
+integration-test: ktp_controller/api/ktp_controller.sqlite
+	poetry run supervisord -c supervisor/integration-test.conf
 	@grep -q -x ok supervisor/chain_result
 
 .PHONY: dev-install

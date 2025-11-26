@@ -26,9 +26,9 @@ def _supervisorctl(command, conf_filename, *args):
 
 
 def main():
-    last_processname = sys.argv[1]
-    conf_filename = sys.argv[2]
-
+    conf_filename = sys.argv[1]
+    processnames = sys.argv[2:]
+    started_processnames = set()
     try:
         os.unlink("supervisor/chain_result")
     except FileNotFoundError:
@@ -50,20 +50,23 @@ def main():
         write_stderr(json.dumps(payload))
         write_stderr("\n")
 
-        if (
-            headers["eventname"] == "PROCESS_STATE_EXITED"
-            and payload["processname"] == "docker-pull"
-        ):
-            _supervisorctl("start", conf_filename, "redis")
-        elif (
-            headers["eventname"] == "PROCESS_STATE_RUNNING"
-            and payload["processname"] == "redis"
-        ):
-            _supervisorctl("start", conf_filename, last_processname)
-        elif (
-            headers["eventname"]
-            in ("PROCESS_STATE_EXITED", "PROCESS_STATE_STOPPED", "PROCESS_STATE_FATAL")
-            and payload["processname"] == last_processname
+        try:
+            i = processnames.index(payload["processname"])
+        except ValueError:
+            write_stdout("RESULT 2\nOK")
+            continue
+
+        is_last = i == len(processnames) - 1
+
+        if not is_last:
+            next_processname = processnames[i + 1]
+            if next_processname not in started_processnames:
+                _supervisorctl("start", conf_filename, next_processname)
+                started_processnames.add(next_processname)
+        elif headers["eventname"] in (
+            "PROCESS_STATE_EXITED",
+            "PROCESS_STATE_STOPPED",
+            "PROCESS_STATE_FATAL",
         ):
             if headers["eventname"] == "PROCESS_STATE_EXITED" and bool(
                 payload["expected"]
