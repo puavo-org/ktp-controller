@@ -186,3 +186,17 @@ def strfdt(dt: datetime.datetime) -> str:
 
 def utcnow_str() -> str:
     return strfdt(utcnow())
+
+
+def is_valid_filename(filename: str) -> bool:
+    return (
+        "\0" not in filename
+        and "/" not in filename
+        and len(filename.encode("utf-8")) <= 255
+        and filename not in (".", "..")
+    )
+
+
+def check_filename(filename: str):
+    if not is_valid_filename(filename):
+        raise ValueError("invalid filename", filename)

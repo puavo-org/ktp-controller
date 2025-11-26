@@ -8,8 +8,8 @@ import uuid
 from ktp_controller.api import models
 import ktp_controller.api.client
 import ktp_controller.api.exam.schemas
-from ktp_controller.examomatic.mock.data import (
-    REAL_ANONYMIZED_EOM_EXAM_INFO_JSON,
+from ktp_controller.examomatic.mock.utils import (
+    read_exam_info,
     get_synthetic_exam_info,
 )
 
@@ -147,7 +147,7 @@ def test_save_exam_info__valid_minimal_input_but_save_twice_but_with_different_r
 def test_save_exam_info__real_anonymized_input(client, testdb, utcnow):
     assert testdb.query(models.ExamInfo).all() == []
 
-    eom_exam_info = json.loads(REAL_ANONYMIZED_EOM_EXAM_INFO_JSON)
+    eom_exam_info = read_exam_info("REQ1.json")
 
     api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
         eom_exam_info
@@ -184,7 +184,7 @@ def test_save_exam_info__real_anonymized_input_start_time_and_end_time_switched_
 ):
     assert testdb.query(models.ExamInfo).all() == []
 
-    eom_exam_info = json.loads(REAL_ANONYMIZED_EOM_EXAM_INFO_JSON)
+    eom_exam_info = read_exam_info("REQ1.json")
 
     api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
         eom_exam_info

@@ -4,7 +4,6 @@ import contextlib
 import datetime
 import hashlib
 import logging
-import os.path
 import uuid
 
 from typing import Annotated, Dict, List, Any
@@ -18,6 +17,8 @@ import pydantic
 # Internal imports
 import ktp_controller.pydantic
 import ktp_controller.utils
+
+from .utils import get_exam_filepath
 
 
 __all__ = [
@@ -52,7 +53,6 @@ def _check_domain(domain: str):
 APP = fastapi.FastAPI(lifespan=_lifespan)
 APP.state.exam_infos = {}
 APP.state.do_send_refresh_exams = False
-APP.state.data_dir = None
 APP.state.is_running = False
 APP.state.status_reports = {}
 APP.state.request_counts = {}
@@ -63,9 +63,7 @@ APP.state.data = {}
 
 
 def _exam_file_streamer(sha256):
-    with open(
-        os.path.join(APP.state.data_dir, "exam-files", sha256.lower()), "rb"
-    ) as f:
+    with open(get_exam_filepath(sha256), "rb") as f:
         while True:
             data = f.read(4096)
             if not data:
@@ -343,12 +341,7 @@ async def _ktp_controller_websocket(
         tg.create_task(_send_refresh_exams(websock))
 
 
-def run(port: int, data_dir: str):
-    if APP.state.data_dir is None:
-        APP.state.data_dir = data_dir
-    else:
-        raise RuntimeError("APP.state.data_dir is already set")
-
+def run(port: int):
     uvicorn.run(
         "ktp_controller.examomatic.mock.main:APP",
         host="127.0.0.1",
