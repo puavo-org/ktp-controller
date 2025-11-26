@@ -62,15 +62,6 @@ APP.state.refresh_exams_count = 0
 APP.state.data = {}
 
 
-def _exam_file_streamer(sha256):
-    with open(get_exam_filepath(sha256), "rb") as f:
-        while True:
-            data = f.read(4096)
-            if not data:
-                break
-            yield data
-
-
 @APP.get(
     "/v1/exams/raw_file",
     response_model=None,
@@ -86,7 +77,8 @@ async def _get_exam_file_stream(
 ):
     _check_domain(domain)
     return await fastapi.responses.StreamingResponse(
-        _exam_file_streamer(sha256sum), media_type="application/zip"
+        ktp_controller.utils.bytes_stream(get_exam_filepath(sha256sum)),
+        media_type="application/zip",
     )
 
 

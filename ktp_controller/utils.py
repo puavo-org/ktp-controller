@@ -200,3 +200,12 @@ def is_valid_filename(filename: str) -> bool:
 def check_filename(filename: str):
     if not is_valid_filename(filename):
         raise ValueError("invalid filename", filename)
+
+
+def bytes_stream(filepath: str, chunk_size: int = 4096) -> typing.Iterator[bytes]:
+    with open(filepath, "rb") as f:
+        while True:
+            data = f.read(chunk_size)
+            if not data:
+                break
+            yield data
