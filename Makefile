@@ -14,8 +14,8 @@ check-format:
 
 .PHONY: check
 check: check-format
-	poetry run flake8 ./ktp_controller/ ./bin/* ./supervisor/chainer
-	poetry run pylint --verbose ./ktp_controller/ ./bin/* ./supervisor/chainer
+	poetry run flake8 ./ktp_controller/ ./bin/* ./supervisor/chainer tests/utils.py
+	poetry run pylint --verbose ./ktp_controller/ ./bin/* ./supervisor/chainer tests/utils.py
 
 .PHONY: pytest
 pytest:
