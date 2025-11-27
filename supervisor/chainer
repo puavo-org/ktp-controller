@@ -29,6 +29,7 @@ def main():
     conf_filename = sys.argv[1]
     processnames = sys.argv[2:]
     started_processnames = set()
+    waited_processname = ""
     try:
         os.unlink("supervisor/chain_result")
     except FileNotFoundError:
@@ -56,11 +57,27 @@ def main():
             write_stdout("RESULT 2\nOK")
             continue
 
+        if waited_processname:
+            if waited_processname == payload["processname"] and headers[
+                "eventname"
+            ] in (
+                "PROCESS_STATE_EXITED",
+                "PROCESS_STATE_STOPPED",
+                "PROCESS_STATE_FATAL",
+            ):
+                waited_processname = ""
+            else:
+                write_stdout("RESULT 2\nOK")
+                continue
+
         is_last = i == len(processnames) - 1
 
         if not is_last:
             next_processname = processnames[i + 1]
-            if next_processname not in started_processnames:
+            if next_processname == "WAIT":
+                processnames.pop(i + 1)
+                waited_processname = payload["processname"]
+            elif next_processname not in started_processnames:
                 _supervisorctl("start", conf_filename, next_processname)
                 started_processnames.add(next_processname)
         elif headers["eventname"] in (
