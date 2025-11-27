@@ -1,5 +1,56 @@
+prefix = /usr
+exec_prefix = $(prefix)
+bindir = $(exec_prefix)/bin
+datarootdir = $(prefix)/share
+sysconfdir = /etc
+
+INSTALL = install
+INSTALL_PROGRAM = $(INSTALL)
+INSTALL_DATA = $(INSTALL) -m 644
+
 .PHONY: all
 all: ktp_controller/api/ktp_controller.sqlite
+
+.PHONY: installdirs
+installdirs:
+	mkdir -p $(DESTDIR)/opt/ktp-controller
+	mkdir -p $(DESTDIR)/opt/ktp-controller/alembic
+	mkdir -p $(DESTDIR)/opt/ktp-controller/alembic/versions
+	mkdir -p $(DESTDIR)/opt/ktp-controller/ktp_controller
+	mkdir -p $(DESTDIR)/opt/ktp-controller/ktp_controller/abitti2
+	mkdir -p $(DESTDIR)/opt/ktp-controller/ktp_controller/api
+	mkdir -p $(DESTDIR)/opt/ktp-controller/ktp_controller/api/exam
+	mkdir -p $(DESTDIR)/opt/ktp-controller/ktp_controller/api/system
+	mkdir -p $(DESTDIR)/opt/ktp-controller/ktp_controller/examomatic
+	mkdir -p $(DESTDIR)/opt/ktp-controller/supervisor
+
+.PHONY: install
+install: installdirs
+	$(INSTALL_PROGRAM) -t $(DESTDIR)/opt/ktp-controller \
+		bin/agent bin/api bin/cli
+	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller \
+		alembic.ini
+	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/alembic \
+		alembic/*.py \
+		alembic/script.py.mako
+	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/alembic/versions \
+		alembic/versions/*.py
+	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/ktp_controller \
+		ktp_controller/*.py
+	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/ktp_controller/abitti2 \
+		ktp_controller/abitti2/*.py \
+		ktp_controller/abitti2/words.txt
+	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/ktp_controller/api \
+		ktp_controller/api/*.py
+	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/ktp_controller/api/exam \
+		ktp_controller/api/exam/*.py
+	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/ktp_controller/api/system \
+		ktp_controller/api/system/*.py
+	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/ktp_controller/examomatic \
+		ktp_controller/examomatic/*.py \
+		ktp_controller/examomatic/dummy-exam-file.mex
+	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/supervisor \
+		supervisor/run.conf
 
 ktp_controller/api/ktp_controller.sqlite:
 	poetry run alembic upgrade head
