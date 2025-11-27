@@ -12,8 +12,12 @@ format:
 check-format:
 	poetry run black --check .
 
+.PHONY: check-alembic
+check-alembic:
+	poetry run alembic check
+
 .PHONY: check
-check: check-format
+check: check-format check-alembic
 	poetry run flake8 ./ktp_controller/ ./bin/* ./supervisor/chainer tests/utils.py
 	poetry run pylint --verbose ./ktp_controller/ ./bin/* ./supervisor/chainer tests/utils.py
 
