@@ -77,7 +77,7 @@ def get_synthetic_exam_info(
             start_time - datetime.timedelta(minutes=30)
         ).isoformat(),
         "school_name": "school1",
-        "server_id": server_id,
+        "server_id": [server_id],
         "is_retake": False,
         "retake_participants": 0,
     }
