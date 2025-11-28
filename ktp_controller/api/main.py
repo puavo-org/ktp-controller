@@ -2,7 +2,7 @@
 import contextlib
 import logging
 import logging.config
-import os.path
+import os
 
 # Third-party imports
 import fastapi  # type: ignore
@@ -32,8 +32,9 @@ _LOGGER = logging.getLogger(__name__)
 @contextlib.asynccontextmanager
 async def _lifespan(app: fastapi.FastAPI):  # pylint: disable=unused-argument
     _LOGGER.info("Starting...")
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    database_url = f"sqlite:///{os.path.join(base_dir, 'ktp_controller.sqlite')}"
+    if not 'KTP_CONTROLLER_DB_PATH' in os.environ:
+        raise Exception('KTP_CONTROLLER_DB_PATH not set in environment')
+    database_url = 'sqlite:///%s' % os.environ['KTP_CONTROLLER_DB_PATH']
     ktp_controller.api.database.initialize(database_url)
 
     ## Alembic creates the database, this should not be needed. It's
