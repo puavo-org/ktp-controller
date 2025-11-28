@@ -89,10 +89,10 @@ class _Schedule(ktp_controller.pydantic.BaseModel):
     file_sha256: pydantic.StrictStr
     file_uuid: pydantic.StrictStr
     decrypt_code: pydantic.StrictStr
-    start_time: datetime.datetime
-    end_time: datetime.datetime
-    exam_modified_at: datetime.datetime
-    schedule_modified_at: datetime.datetime
+    start_time: ktp_controller.pydantic.DateTime
+    end_time: ktp_controller.pydantic.DateTime
+    exam_modified_at: ktp_controller.pydantic.DateTime
+    schedule_modified_at: ktp_controller.pydantic.DateTime
     school_name: pydantic.StrictStr
     server_id: List[pydantic.conint(strict=True, ge=1)]
     is_retake: pydantic.StrictBool
@@ -101,9 +101,9 @@ class _Schedule(ktp_controller.pydantic.BaseModel):
 
 class _Package(ktp_controller.pydantic.BaseModel):
     id_: pydantic.StrictStr = pydantic.Field(..., alias="id")
-    start_time: datetime.datetime
-    end_time: datetime.datetime
-    lock_time: datetime.datetime
+    start_time: ktp_controller.pydantic.DateTime
+    end_time: ktp_controller.pydantic.DateTime
+    lock_time: ktp_controller.pydantic.DateTime
     schedules: List[pydantic.StrictStr]
     locked: pydantic.StrictBool
     server_id: pydantic.conint(strict=True, ge=1)
@@ -118,13 +118,13 @@ class _ExamInfo(ktp_controller.pydantic.BaseModel):
 
 class _SetExamInfoData(ktp_controller.pydantic.BaseModel):
     exam_title: pydantic.StrictStr
-    start_time: datetime.datetime
+    start_time: ktp_controller.pydantic.DateTime
     duration_seconds: pydantic.conint(strict=True, ge=1)
     lock_time_duration_seconds: pydantic.conint(strict=True, ge=1)
 
 
 class _Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
-    received_at: datetime.datetime
+    received_at: ktp_controller.pydantic.DateTime
     monitoring_passphrase: pydantic.StrictStr
     server_version: pydantic.StrictStr
     status: Dict
@@ -178,7 +178,7 @@ async def _mock_get_state(
 async def _get_exam_info(
     domain: str, hostname: str, server_id: int = fastapi.Query(..., alias="id")
 ):
-    utcnow = datetime.datetime.utcnow()
+    utcnow = ktp_controller.utils.utcnow()
 
     _check_domain(domain)
 
