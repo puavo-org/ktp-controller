@@ -51,7 +51,7 @@ def _check_domain(domain: str):
 
 
 APP = fastapi.FastAPI(lifespan=_lifespan)
-APP.state.exam_infos = {}
+APP.state.exam_info = None
 APP.state.do_send_refresh_exams = False
 APP.state.is_running = False
 APP.state.status_reports = []
@@ -143,7 +143,7 @@ async def _mock_set_exam_info(
 ):
     _check_domain(domain)
 
-    exam_info_dict = get_synthetic_exam_info(
+    exam_info = get_synthetic_exam_info(
         start_time=data.start_time,
         duration=datetime.timedelta(seconds=data.duration_seconds),
         lock_time_duration=datetime.timedelta(seconds=data.lock_time_duration_seconds),
@@ -151,7 +151,7 @@ async def _mock_set_exam_info(
         server_id=server_id,
     )
 
-    APP.state.exam_infos[data.exam_title] = exam_info_dict
+    APP.state.exam_info = exam_info
     APP.state.do_send_refresh_exams = True
 
 
@@ -182,18 +182,14 @@ async def _get_exam_info(
 
     _check_domain(domain)
 
-    APP.state.get_exam_info_request_count += 1
+    if APP.state.exam_info is None:
+        raise fastapi.HTTPException(404)
 
-    try:
-        exam_info = APP.state.exam_infos[(domain, hostname, server_id)]
-    except KeyError as key_error:
-        raise fastapi.HTTPException(404) from key_error
-
-    exam_info["request_id"] = (
+    APP.state.exam_info["request_id"] = (
         f"{domain} {hostname} {server_id} {utcnow.isoformat()} {str(uuid.uuid4())}"
     )
 
-    return exam_info
+    return APP.state.exam_info
 
 
 @APP.post(
