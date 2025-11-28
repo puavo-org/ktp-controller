@@ -16,10 +16,11 @@ from ktp_controller.api.models import Base
 config = alembic.context.config
 
 # configure sqlalchemy.url from environment
-if not 'KTP_CONTROLLER_DB_PATH' in os.environ:
-    raise Exception('KTP_CONTROLLER_DB_PATH not set in environment')
-config.set_main_option('sqlalchemy.url',
-                       'sqlite:///%s' % os.environ['KTP_CONTROLLER_DB_PATH'])
+if not "KTP_CONTROLLER_DB_PATH" in os.environ:
+    raise Exception("KTP_CONTROLLER_DB_PATH not set in environment")
+config.set_main_option(
+    "sqlalchemy.url", "sqlite:///%s" % os.environ["KTP_CONTROLLER_DB_PATH"]
+)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
