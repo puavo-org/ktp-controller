@@ -89,6 +89,7 @@ def _post(
     path: str,
     *,
     data: bytes | None = None,
+    json: typing.Any | None = None,  # pylint: disable=redefined-outer-name
     files: typing.Dict | None = None,
     timeout: int = 20,
 ) -> requests.Response:
@@ -98,6 +99,7 @@ def _post(
             path,
             scheme="https" if SETTINGS.examomatic_use_tls else "http",
         ),
+        json=json,
         data=data,
         auth=_get_auth(),
         params={
