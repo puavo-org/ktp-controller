@@ -34,7 +34,7 @@ async def _lifespan(app: fastapi.FastAPI):  # pylint: disable=unused-argument
     _LOGGER.info("Starting...")
     if "KTP_CONTROLLER_DB_PATH" not in os.environ:
         raise Exception("KTP_CONTROLLER_DB_PATH not set in environment")
-    database_url = "sqlite:///%s" % os.environ["KTP_CONTROLLER_DB_PATH"]
+    database_url = f"sqlite:///{os.environ['KTP_CONTROLLER_DB_PATH']}"
     ktp_controller.api.database.initialize(database_url)
 
     ## Alembic creates the database, this should not be needed. It's
