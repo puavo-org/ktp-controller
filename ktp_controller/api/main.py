@@ -33,7 +33,7 @@ _LOGGER = logging.getLogger(__name__)
 async def _lifespan(app: fastapi.FastAPI):  # pylint: disable=unused-argument
     _LOGGER.info("Starting...")
     if "KTP_CONTROLLER_DB_PATH" not in os.environ:
-        raise Exception("KTP_CONTROLLER_DB_PATH not set in environment")
+        raise RuntimeError("KTP_CONTROLLER_DB_PATH not set in environment")
     database_url = f"sqlite:///{os.environ['KTP_CONTROLLER_DB_PATH']}"
     ktp_controller.api.database.initialize(database_url)
 
