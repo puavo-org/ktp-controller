@@ -713,6 +713,7 @@ class Agent:
                     status_report["reported_at"] = ktp_controller.utils.utcnow_str()
                     _LOGGER.info("sent Abitti2 status report to Exam-O-Matic")
                 finally:
+                    status_report.setdefault("reported_at", None)
                     ktp_controller.api.client.send_abitti2_status_report(status_report)
                     _LOGGER.info("sent Abitti2 status report to KTP Controller API")
             elif message_type == "exams":
