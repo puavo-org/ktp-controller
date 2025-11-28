@@ -4,6 +4,7 @@ import contextlib
 import datetime
 import hashlib
 import logging
+import urllib.parse
 import uuid
 
 from typing import Annotated, Dict, List, Any
@@ -55,10 +56,18 @@ APP.state.exam_info = None
 APP.state.do_send_refresh_exams = False
 APP.state.is_running = False
 APP.state.status_reports = []
-APP.state.get_exam_info_request_count = 0
 APP.state.pong_count = 0
 APP.state.ack_count = 0
 APP.state.refresh_exams_count = 0
+APP.state.requests = []
+
+
+@APP.middleware("http")
+async def request_counter(request: fastapi.Request, call_next):
+    path = urllib.parse.urlparse(str(request.url)).path
+    response = await call_next(request)
+    APP.state.requests.append((path, response.status_code))
+    return response
 
 
 @APP.get(
