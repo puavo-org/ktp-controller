@@ -110,5 +110,3 @@ dev-clean:
 .PHONY: check-updates
 check-updates:
 	@poetry update --dry-run
-	@wget -q -O- https://github.com/redis/redis/releases/latest | sed -r -n 's|.*<title>Release ([0-9.]+).*$$|Redis available: \1|p'
-	@sed -r -n 's|^command=docker pull redis:(.*)$$|Redis installed: \1|p' supervisor/test.conf
