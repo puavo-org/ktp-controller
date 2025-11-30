@@ -8,10 +8,8 @@ INSTALL = install
 INSTALL_PROGRAM = $(INSTALL)
 INSTALL_DATA = $(INSTALL) -m 644
 
-export KTP_CONTROLLER_DB_PATH = ./ktp_controller/api/ktp_controller.sqlite
-
 .PHONY: all
-all: ${KTP_CONTROLLER_DB_PATH}
+all:
 
 .PHONY: installdirs
 installdirs:
@@ -54,8 +52,8 @@ install: installdirs
 	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/supervisor \
 		supervisor/run.conf
 
-${KTP_CONTROLLER_DB_PATH}:
-	poetry run alembic upgrade head
+%.sqlite:
+	KTP_CONTROLLER_DB_PATH='$@' poetry run alembic upgrade head
 
 .PHONY: format
 format:
@@ -66,8 +64,8 @@ check-format:
 	poetry run black --check .
 
 .PHONY: check-alembic
-check-alembic:
-	poetry run alembic check
+check-alembic: check-alembic.sqlite
+	KTP_CONTROLLER_DB_PATH='$<' poetry run alembic check
 
 .PHONY: check
 check: check-format check-alembic
@@ -83,16 +81,16 @@ pytest-integration:
 	KTP_CONTROLLER_DOTENV=tests/integration_test.env poetry run pytest -rA --show-capture=all --ff -x --log-level=WARNING -vv tests/integration_test.py
 
 .PHONY: dev-run
-dev-run: ${KTP_CONTROLLER_DB_PATH}
-	poetry run supervisord -c supervisor/dev-run.conf
+dev-run: dev-run.sqlite
+	KTP_CONTROLLER_DB_PATH='$<' poetry run supervisord -c supervisor/dev-run.conf
 
 .PHONY: test
-test: ${KTP_CONTROLLER_DB_PATH}
+test:
 	poetry run supervisord -c supervisor/test.conf
 	@grep -q -x ok supervisor/chain_result
 
 .PHONY: integration-test
-integration-test: ktp_controller/api/ktp_controller.sqlite
+integration-test:
 	poetry run supervisord -c supervisor/integration-test.conf
 	@grep -q -x ok supervisor/chain_result
 
@@ -107,11 +105,7 @@ dev-update:
 
 .PHONY: dev-clean
 dev-clean:
-	rm -f ${KTP_CONTROLLER_DB_PATH}
-
-.PHONY: dev-migratedb
-dev-migratedb:
-	poetry run alembic upgrade head
+	git clean -fdx '*.sqlite'
 
 .PHONY: check-updates
 check-updates:
