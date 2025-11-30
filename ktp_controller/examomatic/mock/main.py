@@ -1,6 +1,7 @@
 # Standard library imports
 import asyncio
 import contextlib
+import copy
 import datetime
 import hashlib
 import logging
@@ -194,11 +195,15 @@ async def _get_exam_info(
     if APP.state.exam_info is None:
         raise fastapi.HTTPException(404)
 
-    APP.state.exam_info["request_id"] = (
+    exam_info = copy.deepcopy(APP.state.exam_info)
+
+    exam_info["request_id"] = (
         f"{domain} {hostname} {server_id} {utcnow.isoformat()} {str(uuid.uuid4())}"
     )
+    for p in exam_info["packages"].values():
+        p["locked"] = utcnow >= datetime.datetime.fromisoformat(p["lock_time"])
 
-    return APP.state.exam_info
+    return exam_info
 
 
 @APP.post(
