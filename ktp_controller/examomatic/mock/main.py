@@ -84,7 +84,7 @@ async def _get_exam_file_stream(
     ),
 ):
     _check_domain(domain)
-    return await fastapi.responses.StreamingResponse(
+    return fastapi.responses.StreamingResponse(
         ktp_controller.utils.bytes_stream(get_exam_filepath(sha256sum)),
         media_type="application/zip",
     )
