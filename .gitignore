@@ -1,4 +1,4 @@
-/ktp_controller/api/ktp_controller.sqlite
+*.sqlite
 __pycache__
 .mypy_cache
 flycheck_*
