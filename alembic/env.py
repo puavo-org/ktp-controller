@@ -1,7 +1,5 @@
 # Standard library imports
 import logging.config
-import os
-import sys
 
 # Third-party imports
 import alembic.context  # type: ignore
@@ -9,6 +7,7 @@ import sqlalchemy
 import sqlalchemy.pool
 
 # Internal imports
+from ktp_controller.settings import SETTINGS
 from ktp_controller.api.models import Base
 
 # this is the Alembic Config object, which provides
@@ -16,11 +15,7 @@ from ktp_controller.api.models import Base
 config = alembic.context.config
 
 # configure sqlalchemy.url from environment
-if not "KTP_CONTROLLER_DB_PATH" in os.environ:
-    raise Exception("KTP_CONTROLLER_DB_PATH not set in environment")
-config.set_main_option(
-    "sqlalchemy.url", "sqlite:///%s" % os.environ["KTP_CONTROLLER_DB_PATH"]
-)
+config.set_main_option("sqlalchemy.url", f"sqlite:///{SETTINGS.db_path}")
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

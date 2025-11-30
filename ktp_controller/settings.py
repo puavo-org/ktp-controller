@@ -88,6 +88,7 @@ class Settings(BaseSettings):
     api_host: str = "127.0.0.1"
     api_port: PositiveInt = 8000
     logging_level: str = "INFO"
+    db_path: str
 
     @field_validator("examomatic_use_tls", mode="before")
     @classmethod
