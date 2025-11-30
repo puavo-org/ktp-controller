@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 # Standard library imports
+import abc
 import asyncio
 import contextlib
+import dataclasses
 import datetime
 import enum
 import fcntl
@@ -16,6 +18,8 @@ import typing
 import zipfile
 
 # Third-party imports
+import pydantic
+import requests.exceptions
 import websockets
 
 # Internal imports
@@ -24,6 +28,7 @@ import ktp_controller.abitti2.naksu2
 import ktp_controller.agent
 import ktp_controller.api.client
 import ktp_controller.examomatic.client
+import ktp_controller.pydantic
 import ktp_controller.utils
 import ktp_controller.messages
 
@@ -280,6 +285,25 @@ class _UsageError(_Error):
         return f"usage error: {self.__error_message}"
 
 
+@dataclasses.dataclass
+class _ConnectionStats(abc.ABC):
+    connected_at: ktp_controller.pydantic.DateTime
+
+
+class ExamomaticConnectionStats(_ConnectionStats):
+    ping_pong_count: pydantic.NonNegativeInt = 0
+    refresh_exams_count: pydantic.NonNegativeInt = 0
+    last_message_received_at: ktp_controller.pydantic.DateTime | None = None
+
+
+class APIConnectionStats(_ConnectionStats):
+    pass
+
+
+class Abitti2ConnectionStats(_ConnectionStats):
+    pass
+
+
 class Agent:
     def __init__(
         self,
@@ -303,7 +327,7 @@ class Agent:
 
         self.__last_received_security_code = None
 
-        self.__connection_stats = {}
+        self.__connection_stats: typing.Dict[Component, _ConnectionStats] = {}
         self.__commands = {
             str(
                 ktp_controller.messages.Command.ENABLE_AUTO_CONTROL
@@ -637,22 +661,17 @@ class Agent:
                 _LOGGER.exception("received invalid data from Exam-O-Matic: %r", data)
                 continue
 
-            self.__connection_stats[Component.EXAMOMATIC][
-                "last_message_received_at"
-            ] = received_at
+            self.__connection_stats[Component.EXAMOMATIC].last_message_received_at = (
+                received_at
+            )
 
             if message["type"] == "pong":
+                self.__connection_stats[Component.EXAMOMATIC].ping_pong_count += 1
                 if (
-                    self.__connection_stats[Component.EXAMOMATIC].setdefault(
-                        "ping_pong_count", 0
-                    )
+                    self.__connection_stats[Component.EXAMOMATIC].refresh_exams_count
                     == 0
                 ):
-                    _LOGGER.info(
-                        "Very first ping-pong round has been played successfully. Starting initial exam refresh."
-                    )
-                    self.__refresh_exams()
-                self.__connection_stats[Component.EXAMOMATIC]["ping_pong_count"] += 1
+                    self.__refresh_exams(is_spontaneous=True)
                 continue
 
             if message["type"] == "change_keycode":
@@ -660,7 +679,7 @@ class Agent:
                 ktp_controller.abitti2.client.change_single_security_code()
             elif message["type"] == "refresh_exams":
                 _LOGGER.info("received refresh_exams message from Exam-O-Matic")
-                self.__refresh_exams()
+                self.__refresh_exams(is_spontaneous=False)
             else:
                 _LOGGER.error(
                     "received message of unknown type %r from Exam-O-Matic",
@@ -727,6 +746,7 @@ class Agent:
         url: str,
         asyncfuncs: typing.Awaitable,
         *,
+        connection_stats_class: type[_ConnectionStats],
         additional_headers: typing.Dict[str, str] | None = None,
     ):
         while True:
@@ -735,16 +755,21 @@ class Agent:
                     url,
                     additional_headers=additional_headers,
                 ) as websock:
-                    self.__connection_stats[name] = {
-                        "connected_at": ktp_controller.utils.utcnow()
-                    }
+                    self.__connection_stats[name] = connection_stats_class(
+                        ktp_controller.utils.utcnow()
+                    )
                     async with asyncio.TaskGroup() as tg:
                         for asyncfunc in asyncfuncs:
                             tg.create_task(asyncfunc(websock))
-            except* Exception:  # pylint: disable=broad-exception-caught
-                _LOGGER.exception("Websocket connection to %s has failed!", name)
+            except ExceptionGroup as eg:
                 _LOGGER.error(
-                    "Reconnect approximately in %d seconds...",
+                    "Websocket connection to %s has failed!",
+                    name,
+                    exc_info=eg.exceptions[0],
+                )
+                _LOGGER.error(
+                    "Reconnect to %s in approximately %d seconds...",
+                    name,
                     self.__approx_restart_timeout_sec,
                 )
                 await asyncio.sleep(self.__approx_restart_timeout_sec)
@@ -760,6 +785,7 @@ class Agent:
                 self.__send_status_reports_to_api,
                 self.__communicate_with_api,
             ],
+            connection_stats_class=APIConnectionStats,
         )
 
     async def __maintain_websocket_connection_to_examomatic(self):
@@ -770,6 +796,7 @@ class Agent:
                 self.__send_pings_to_examomatic,
                 self.__communicate_with_examomatic,
             ],
+            connection_stats_class=ExamomaticConnectionStats,
             additional_headers=ktp_controller.examomatic.client.get_basic_auth(),
         )
 
@@ -780,6 +807,7 @@ class Agent:
             [
                 self.__communicate_with_abitti2,
             ],
+            connection_stats_class=Abitti2ConnectionStats,
             additional_headers=ktp_controller.abitti2.client.get_basic_auth(),
         )
 
@@ -848,11 +876,29 @@ class Agent:
                 filepath,
             )
 
-    def __refresh_exams(self):
-        _LOGGER.info("starting to refresh exams")
+    def __refresh_exams(self, *, is_spontaneous: bool):
+        _LOGGER.info(
+            "Starting %sexam refresh...", "spontaneous " if is_spontaneous else ""
+        )
 
-        eom_exam_info = ktp_controller.examomatic.client.get_exam_info()
-        _LOGGER.debug("received exam info from Exam-O-Matic: %s:", eom_exam_info)
+        try:
+            eom_exam_info = ktp_controller.examomatic.client.get_exam_info()
+        except requests.exceptions.HTTPError as http_error:
+            if http_error.response.status_code == 404:
+                if is_spontaneous:
+                    # It's ok that there are no exam infos, because we
+                    # are doing spontaneous refresh and we had no
+                    # prior knowledge about availability exam infos.
+                    _LOGGER.info("No exam info available.")
+                else:
+                    _LOGGER.error(
+                        "No exam info available, but we have been told that there should be!"
+                    )
+            else:
+                _LOGGER.exception("Failed to refresh exams")
+            return
+
+        _LOGGER.debug("Received exam info from Exam-O-Matic: %s:", eom_exam_info)
 
         for eom_scheduled_exam in eom_exam_info["schedules"]:
             self.__ensure_exam_file_exists(eom_scheduled_exam)
