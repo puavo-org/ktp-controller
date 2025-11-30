@@ -26,9 +26,6 @@ jobs:
     - name: Install poetry and dependencies
       run: make dev-install
 
-    - name: Initialize the database
-      run: make dev-migratedb
-
     - name: Run checks
       run: make check
 
