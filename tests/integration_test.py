@@ -11,10 +11,19 @@ import ktp_controller.api.client
 import ktp_controller.examomatic.client
 
 
-def test_single_exam_package():
+## Test functions are and must be executed sequentially. In unit
+## tests, it's not a good idea to build tests which depend on each
+## other, but this is integration test scenario, and pytest is just a
+## neat way to run them too. So, each test function is a sequential
+## step in the testrun.
+
+
+def test_abitti2_reset():
     # 0. Reset Abitti2 to ensure it's in a well known state.
     ktp_controller.abitti2.client.reset()
 
+
+def test_first_examomatic_ping_pong():
     # 1. Wait until Agent has called home for the first time.
     agent_has_called_home = False
     # First ping-pong round should not take more than couple of
@@ -27,7 +36,9 @@ def test_single_exam_package():
         time.sleep(1)
     assert agent_has_called_home
 
-    # 2. Check that Agent has tried initial exam refresh.
+
+def test_initial_exam_refresh():
+    # 2. Check that Agent has tried the initial exam refresh.
     get_exam_packages_status_codes = []
     # It should happen right after the initial ping pong round.
     for i in range(5):
@@ -45,13 +56,15 @@ def test_single_exam_package():
     # send refresh_exams message to Agent.
     assert state["refresh_exams_count"] == state["ack_count"] == 0
 
+
+def test_abitti2_status_reporting():
     # 3. Check that we have received at least one status report from
     # Abitti2. It's a sign that Abitti2 is at least somewhat
     # healthy.
     status_reports = []
     # First Abitti2 status report should not take long, Abitti2 seems
     # to send them once per 5secs.
-    for i in range(5):
+    for i in range(15):
         state = ktp_controller.examomatic.client._post("/mock/get_state").json()
         status_reports = state["status_reports"]
         if len(status_reports) > 0:
@@ -60,6 +73,8 @@ def test_single_exam_package():
     # In the beginning, there were no exams running.
     assert not state["status_reports"][0]["status"]["data"]["examStatus"]["hasStarted"]
 
+
+def test_odotusaulakoe_is_running():
     # 4. Wait until Odotusaulakoe is running. (It takes some time
     # before Abitti2 gets the exam up and running after a reset.)
     odotusaulakoe_is_running = False
@@ -72,6 +87,8 @@ def test_single_exam_package():
         time.sleep(1)
     assert odotusaulakoe_is_running
 
+
+def test_first_scheduled_exam_download():
     # 5. Prime examomatic-mock with exam info (single scheduled exam,
     # time intervals are short for testing purposes: 30sec pre-lock
     # time, 30sec lock time, 30 sec run time)
@@ -91,8 +108,8 @@ def test_single_exam_package():
     # instantly since examomatic-mock sends refresh message via
     # websocket). The last exam data request is expected to be 200,
     # because an exam was just scheduled and Agent should have been
-    # notified about it via websocket and Agent should have requested
-    # downloaded the new exam data successfully.
+    # notified about it via websocket and Agent should have downloaded
+    # the new exam data successfully.
     agent_downloaded_new_exam_info = False
     for i in range(10):
         state = ktp_controller.examomatic.client._post("/mock/get_state").json()
@@ -108,7 +125,9 @@ def test_single_exam_package():
     # Now Exam-O-Matic has notified Agent and Agent has ack'd the message.
     assert state["refresh_exams_count"] == state["ack_count"] == 1
 
-    # 7. A small bonus goal: status reports are always saved by API,
+
+def test_api_has_copies_of_status_reports():
+    # 7. A small bonus goal: status reports are always stored by API,
     # so the last seen by API should also be reported to Exam-O-Matic.
     last_status_report_seen_by_api = (
         ktp_controller.api.client.get_last_abitti2_status_report()
@@ -117,40 +136,45 @@ def test_single_exam_package():
     state = ktp_controller.examomatic.client._post("/mock/get_state").json()
     assert last_status_report_seen_by_api in state["status_reports"]
 
+
+def test_scheduled_exam_gets_started():
     # Odotusaulakoe is still running.
+    state = ktp_controller.examomatic.client._post("/mock/get_state").json()
     assert state["status_reports"][-1]["status"]["data"]["examStatus"]["hasStarted"]
 
     # Wait until it's not running anymore.
-    exam_is_not_running = False
+    exam_package_is_not_running = False
     for i in range(90):
         state = ktp_controller.examomatic.client._post("/mock/get_state").json()
         status_reports = state["status_reports"]
         if not status_reports[-1]["status"]["data"]["examStatus"]["hasStarted"]:
-            exam_is_not_running = True
+            exam_package_is_not_running = True
             break
         time.sleep(1)
-    assert exam_is_not_running
+    assert exam_package_is_not_running
 
-    # And now wait until the scheduled exam is running.
-    exam_is_running = False
+    # And now wait until the scheduled exam package is running.
+    exam_package_is_running = False
     for i in range(15):
         state = ktp_controller.examomatic.client._post("/mock/get_state").json()
         status_reports = state["status_reports"]
         if status_reports[-1]["status"]["data"]["examStatus"]["hasStarted"]:
-            exam_is_running = True
+            exam_package_is_running = True
             break
         time.sleep(1)
-    assert exam_is_running
+    assert exam_package_is_running
+    assert ktp_controller.api.client.get_current_exam_package()["state"] == "running"
 
     # TODO: use exam uuids or at least titles
 
-    # 7. check status report which tells us if Abitti2 is ok (integration test exam ready)
-    # 8. wait until start time
-    # 9. check status report which tells us if Abitti2 is ok (integration test exam running)
-    # 10. wait until end time
-    # 11. check status report which tells us if Abitti2 is ok (integration test exam stopping)
-    # 12. wait until exam is stopped completely
-    # 13. check status report which tells us if Abitti2 is ok (integration test exam stopped)
-    # 14. wait
-    # 15. check status report which tells us if Abitti2 is ok (integration test exam archived)
-    # 16. are exam answers still uploaded when there were no students? (student automation not included)
+
+def test_scheduled_exam_gets_stopped():
+    # Wait until it's not running anymore.
+    exam_package_is_not_running = False
+    for i in range(90):
+        scheduled_exam_package = ktp_controller.api.client.get_current_exam_package()
+        if scheduled_exam_package["state"] == "stopped":
+            exam_package_is_not_running = True
+            break
+        time.sleep(1)
+    assert exam_package_is_not_running
