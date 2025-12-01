@@ -73,7 +73,7 @@ class PuavoSettingsSource(PydanticBaseSettingsSource):
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=os.getenv("KTP_CONTROLLER_DOTENV", ".env"),
+        env_file=os.getenv("KTP_CONTROLLER_DOTENV", "ktp_controller_dev.env"),
         env_file_encoding="utf-8",
         env_prefix="KTP_CONTROLLER_",
     )

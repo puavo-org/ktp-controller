@@ -52,8 +52,8 @@ install: installdirs
 	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/supervisor \
 		supervisor/run.conf
 
-%.sqlite:
-	KTP_CONTROLLER_DB_PATH='$@' poetry run alembic upgrade head
+ktp_controller_dev.sqlite:
+	poetry run alembic upgrade head
 
 .PHONY: format
 format:
@@ -64,8 +64,8 @@ check-format:
 	poetry run black --check .
 
 .PHONY: check-alembic
-check-alembic: check-alembic.sqlite
-	KTP_CONTROLLER_DB_PATH='$<' poetry run alembic check
+check-alembic: ktp_controller_dev.sqlite
+	poetry run alembic check
 
 .PHONY: check
 check: check-format check-alembic
@@ -81,8 +81,8 @@ pytest-integration:
 	KTP_CONTROLLER_DOTENV=tests/integration_test.env poetry run pytest -rA --show-capture=all --ff -x --log-level=WARNING -vv tests/integration_test.py
 
 .PHONY: dev-run
-dev-run: dev-run.sqlite
-	KTP_CONTROLLER_DB_PATH='$<' poetry run supervisord -c supervisor/dev-run.conf
+dev-run: ktp_controller_dev.sqlite
+	poetry run supervisord -c supervisor/dev-run.conf
 
 .PHONY: test
 test:
