@@ -184,6 +184,8 @@ def _prepare_current_exam_package(
     (exam_package_filepath, decrypt_codes) = _create_exam_package_file(
         current_exam_package
     )
+    # Change automatically when exam package is prepared.
+    ktp_controller.abitti2.client.change_single_security_code()
     exam_filenames = ktp_controller.abitti2.client.prepare_exam_package(
         exam_package_filepath, decrypt_codes
     )
