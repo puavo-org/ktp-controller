@@ -678,7 +678,13 @@ class Agent:
 
             if message["type"] == "change_keycode":
                 _LOGGER.info("received change_keycode message from Exam-O-Matic")
+                if not self.__is_auto_control_enabled:
+                    _LOGGER.error(
+                        "Keycode cannot be changed by Exam-O-Matic, because auto control is not enabled."
+                    )
+                    continue  # TODO: is ok to not ack this message because we cannot fulfil it?
                 ktp_controller.abitti2.client.change_single_security_code()
+                _LOGGER.info("Keycode changed.")
             elif message["type"] == "refresh_exams":
                 _LOGGER.info("received refresh_exams message from Exam-O-Matic")
                 self.__refresh_exams(is_spontaneous=False)
