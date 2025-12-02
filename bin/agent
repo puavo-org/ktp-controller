@@ -178,82 +178,6 @@ def _set_current_exam_package_state(
     return last_state != next_state
 
 
-def _prepare_current_exam_package(
-    current_exam_package: typing.Dict[str, typing.Any],
-) -> bool:
-    (exam_package_filepath, decrypt_codes) = _create_exam_package_file(
-        current_exam_package
-    )
-    # Change automatically when exam package is prepared.
-    ktp_controller.abitti2.client.change_single_security_code()
-    exam_filenames = ktp_controller.abitti2.client.prepare_exam_package(
-        exam_package_filepath, decrypt_codes
-    )
-    _LOGGER.info(
-        "Prepared current exam package %r (%d exams) successfully.",
-        current_exam_package["external_id"],
-        len(exam_filenames),
-    )
-
-    return True
-
-
-def _start_current_exam_package(
-    current_exam_package: typing.Dict[str, typing.Any],
-) -> bool:
-    ktp_controller.abitti2.client.start_decrypted_exams()
-    _LOGGER.info(
-        "Started current exam package %r successfully.",
-        current_exam_package["external_id"],
-    )
-
-    return True
-
-
-def _stop_current_exam_package(
-    current_exam_package: typing.Dict[str, typing.Any],
-) -> bool:
-    # Change the security code first to ensure students cannot enter anymore.
-    ktp_controller.abitti2.client.change_single_security_code()
-
-    abitti2_status_report = ktp_controller.api.client.get_last_abitti2_status_report()
-    for student in abitti2_status_report["status"]["data"]["students"]:
-        ktp_controller.abitti2.client.stop_exam_session(student["sessionUuid"])
-
-    is_stopped = (
-        all(
-            s.get("examFinished", False) or s.get("sessionStatus") == "session_ended"
-            for s in abitti2_status_report["status"]["data"]["students"]
-        )
-        and current_exam_package["state"] == "stopping"
-        and abitti2_status_report["received_at"]
-        > current_exam_package["state_changed_at"]
-    )
-
-    if is_stopped:
-        _LOGGER.info(
-            "Stopped current exam package %r successfully.",
-            current_exam_package["external_id"],
-        )
-    else:
-        _LOGGER.info(
-            "Stopping current exam package %r ...",
-            current_exam_package["external_id"],
-        )
-
-    return is_stopped
-
-
-def _archive_current_exam_package(
-    current_exam_package: typing.Dict[str, typing.Any],
-) -> bool:
-    _transfer_answers(
-        current_exam_package["external_id"],
-        is_final=ktp_controller.examomatic.client.IsFinal.TRUE,
-    )
-    return True
-
-
 class Trigger(str, enum.Enum):
     TIME = "time"
     MANUAL_PREPARE = "manual_prepare"
@@ -433,6 +357,85 @@ class Agent:
             command_uuid=command_uuid, command_status=command_status
         )
 
+    def __prepare_current_exam_package(
+        self,
+        current_exam_package: typing.Dict[str, typing.Any],
+    ) -> bool:
+        (exam_package_filepath, decrypt_codes) = _create_exam_package_file(
+            current_exam_package
+        )
+        # Change automatically when exam package is prepared.
+        ktp_controller.abitti2.client.change_single_security_code()
+        exam_filenames = ktp_controller.abitti2.client.prepare_exam_package(
+            exam_package_filepath, decrypt_codes
+        )
+        _LOGGER.info(
+            "Prepared current exam package %r (%d exams) successfully.",
+            current_exam_package["external_id"],
+            len(exam_filenames),
+        )
+
+        return True
+
+    def __start_current_exam_package(
+        self,
+        current_exam_package: typing.Dict[str, typing.Any],
+    ) -> bool:
+        ktp_controller.abitti2.client.start_decrypted_exams()
+        _LOGGER.info(
+            "Started current exam package %r successfully.",
+            current_exam_package["external_id"],
+        )
+
+        return True
+
+    def __stop_current_exam_package(
+        self,
+        current_exam_package: typing.Dict[str, typing.Any],
+    ) -> bool:
+        # Change the security code first to ensure students cannot enter anymore.
+        ktp_controller.abitti2.client.change_single_security_code()
+
+        abitti2_status_report = (
+            ktp_controller.api.client.get_last_abitti2_status_report()
+        )
+        for student in abitti2_status_report["status"]["data"]["students"]:
+            ktp_controller.abitti2.client.stop_exam_session(student["sessionUuid"])
+
+        is_stopped = (
+            all(
+                s.get("examFinished", False)
+                or s.get("sessionStatus") == "session_ended"
+                for s in abitti2_status_report["status"]["data"]["students"]
+            )
+            and current_exam_package["state"] == "stopping"
+            and abitti2_status_report["received_at"]
+            > current_exam_package["state_changed_at"]
+        )
+
+        if is_stopped:
+            _LOGGER.info(
+                "Stopped current exam package %r successfully.",
+                current_exam_package["external_id"],
+            )
+        else:
+            _LOGGER.info(
+                "Stopping current exam package %r ...",
+                current_exam_package["external_id"],
+            )
+
+        return is_stopped
+
+    def __archive_current_exam_package(
+        self,
+        current_exam_package: typing.Dict[str, typing.Any],
+    ) -> bool:
+        _transfer_answers(
+            current_exam_package["external_id"],
+            is_final=ktp_controller.examomatic.client.IsFinal.TRUE,
+        )
+        return True
+
     async def __work_on_current_exam_package(self, *, trigger: Trigger) -> bool:
         utcnow = ktp_controller.utils.utcnow()
         trigger = Trigger(trigger)  # Raises ValueError if trigger is not a Trigger.
@@ -475,7 +478,7 @@ class Agent:
             None: {
                 "valid_triggers": (Trigger.MANUAL_PREPARE, Trigger.TIME),
                 "time_condition": self.__is_auto_control_enabled,
-                "action": _prepare_current_exam_package,
+                "action": self.__prepare_current_exam_package,
                 "next_state": "ready",
             },
             "ready": {
@@ -489,7 +492,7 @@ class Agent:
                         )
                     )
                 ),
-                "action": _start_current_exam_package,
+                "action": self.__start_current_exam_package,
                 "next_state": "running",
             },
             "running": {
@@ -503,7 +506,9 @@ class Agent:
                         )
                     )
                 ),
-                "action": lambda *args: (_stop_current_exam_package(*args) or True),
+                "action": lambda *args: (
+                    self.__stop_current_exam_package(*args) or True
+                ),
                 "next_state": "stopping",
             },
             "stopping": {
@@ -512,13 +517,13 @@ class Agent:
                 # control state, we call the stop function until it
                 # reports that everything has stopped.
                 "time_condition": True,
-                "action": _stop_current_exam_package,
+                "action": self.__stop_current_exam_package,
                 "next_state": "stopped",
             },
             "stopped": {
                 "valid_triggers": (Trigger.MANUAL_ARCHIVE, Trigger.TIME),
                 "time_condition": self.__is_auto_control_enabled,
-                "action": _archive_current_exam_package,
+                "action": self.__archive_current_exam_package,
                 "next_state": "archived",
             },
             "archived": {
