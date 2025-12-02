@@ -22,7 +22,6 @@ __all__ = [
     "get_current_exam_package",
     "set_current_exam_package_state",
     "get_scheduled_exam",
-    "get_scheduled_exam_packages",
     "save_exam_info",
     "send_abitti2_status_report",
 ]
@@ -141,12 +140,6 @@ def get_last_abitti2_status_report(
     return _post(
         "/api/v1/system/get_last_abitti2_status_report", timeout=timeout
     ).json()
-
-
-def get_scheduled_exam_packages(
-    *, timeout: int = 20
-) -> typing.List[typing.Dict[str, typing.Any]]:
-    return _post("/api/v1/exam/get_scheduled_exam_packages", timeout=timeout).json()
 
 
 def get_current_exam_package(*, timeout: int = 20) -> typing.Dict[str, typing.Any]:
