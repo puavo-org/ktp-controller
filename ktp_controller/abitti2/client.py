@@ -155,14 +155,12 @@ def start_decrypted_exams() -> typing.Dict:
 def prepare_exam_package(
     exam_package_filepath: str, decrypt_codes: typing.Iterable[str]
 ) -> typing.Set[str]:
-    exam_filenames = set(
-        ktp_controller.abitti2.client.upload_exam_package(exam_package_filepath)
-    )
+    exam_filenames = set(upload_exam_package(exam_package_filepath))
 
     decrypted_exam_filenames = set()
     had_invalid_decrypt_code = False
     for decrypt_code in decrypt_codes:
-        retval = ktp_controller.abitti2.client.decrypt_exams(decrypt_code)
+        retval = decrypt_exams(decrypt_code)
         if retval["wrongPassword"]:
             # TODO: is it ok to expose the decrypt code in log files?
             _LOGGER.error(
