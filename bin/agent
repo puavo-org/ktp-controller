@@ -364,8 +364,9 @@ class Agent:
         (exam_package_filepath, decrypt_codes) = _create_exam_package_file(
             current_exam_package
         )
-        # Change automatically when exam package is prepared.
-        ktp_controller.abitti2.client.change_single_security_code()
+        if self.__is_auto_control_enabled:
+            # Change automatically when exam package is prepared.
+            ktp_controller.abitti2.client.change_single_security_code()
         exam_filenames = ktp_controller.abitti2.client.prepare_exam_package(
             exam_package_filepath, decrypt_codes
         )
@@ -393,8 +394,9 @@ class Agent:
         self,
         current_exam_package: typing.Dict[str, typing.Any],
     ) -> bool:
-        # Change the security code first to ensure students cannot enter anymore.
-        ktp_controller.abitti2.client.change_single_security_code()
+        if self.__is_auto_control_enabled:
+            # Change the security code first to ensure students cannot enter anymore.
+            ktp_controller.abitti2.client.change_single_security_code()
 
         abitti2_status_report = (
             ktp_controller.api.client.get_last_abitti2_status_report()
