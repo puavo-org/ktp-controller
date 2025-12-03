@@ -20,6 +20,7 @@ all: check test build
 
 .PHONY: installdirs
 installdirs:
+	mkdir -p $(DESTDIR)/$(prefix)/bin
 	mkdir -p $(DESTDIR)/opt/ktp-controller
 	mkdir -p $(DESTDIR)/opt/ktp-controller/alembic
 	mkdir -p $(DESTDIR)/opt/ktp-controller/alembic/versions
@@ -33,6 +34,8 @@ installdirs:
 
 .PHONY: install
 install: installdirs
+	$(INSTALL_PROGRAM) -t $(DESTDIR)/$(prefix)/bin \
+		bin/ktp-controller
 	$(INSTALL_PROGRAM) -t $(DESTDIR)/opt/ktp-controller \
 		bin/agent bin/api bin/cli
 	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller \
