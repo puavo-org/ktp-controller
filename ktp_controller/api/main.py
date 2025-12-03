@@ -49,7 +49,7 @@ APP.include_router(ktp_controller.api.exam.routes.router, prefix="/api/v1/exam")
 APP.include_router(ktp_controller.api.system.routes.router, prefix="/api/v1/system")
 
 
-def run():
+def run() -> int:
     uvicorn.run(
         "ktp_controller.api.main:APP",
         host=SETTINGS.api_host,
@@ -61,3 +61,5 @@ def run():
         #            "format": ktp_controller.DEFAULT_LOGGING_FORMAT,
         #        },
     )
+
+    return 0

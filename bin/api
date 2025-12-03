@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 
 # Standard library imports
+import sys
+
+# Internal imports
 import ktp_controller.api.main
 
-
-def main():
-    ktp_controller.api.main.run()
-
-
 if __name__ == "__main__":
-    main()
+    sys.exit(ktp_controller.api.main.run())
