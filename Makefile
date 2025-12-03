@@ -78,7 +78,7 @@ pytest:
 
 .PHONY: pytest-integration
 pytest-integration:
-	KTP_CONTROLLER_DOTENV=tests/integration_test.env poetry run pytest -rA --show-capture=all --ff -x --log-level=WARNING -vv tests/integration_test.py
+	KTP_CONTROLLER_DOTENV=tests/integration_test.env poetry run pytest -rA --show-capture=all -x --log-level=WARNING -vv tests/integration_test.py
 
 .PHONY: dev-run
 dev-run: ktp_controller_dev.sqlite
