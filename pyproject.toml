@@ -1,9 +1,24 @@
-[tool.poetry]
+[project]
 name = "ktp-controller"
 version = "0.1.0"
 description = "ktp-controller"
-authors = ["Opinsys Developers <dev@opinsys.fi>"]
-license = "GPLv2"
+authors = [
+  { name = "Opinsys Developers", email = "dev@opinsys.fi"},
+]
+maintainers = [
+  { name = "Opinsys Developers", email = "dev@opinsys.fi"},
+]
+license = "GPL-2.0-only"
+readme = "README.md"
+requires-python = ">=3.11"
+repository = "https://github.com/opinsys/ktp-controller"
+
+[project.scripts]
+ktp_controller_agent = "ktp_controller.agent.main:run"
+ktp_controller_api = "ktp_controller.api.main:run"
+ktp_controller_cli = "ktp_controller.cli.main:run"
+
+[tool.poetry]
 packages = [
   { include = "ktp_controller" },
 ]
