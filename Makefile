@@ -8,6 +8,9 @@ INSTALL = install
 INSTALL_PROGRAM = $(INSTALL)
 INSTALL_DATA = $(INSTALL) -m 644
 
+PKG = ktp-controller
+VERSION = $(shell cat VERSION)
+
 _build_formats := sdist wheel
 _build_targets := $(_build_formats:%=build-%)
 
@@ -127,3 +130,7 @@ build: $(_build_targets)
 .PHONY: clean
 clean:
 	rm -rf dist
+
+.PHONY: dist
+dist:
+	tar --exclude-vcs --exclude=./debian -czf ../$(PKG)_$(VERSION).orig.tar.gz .

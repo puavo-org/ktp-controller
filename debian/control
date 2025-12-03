@@ -1,0 +1,25 @@
+Source: ktp-controller
+Section: misc
+Priority: extra
+Maintainer: Puavo Org <dev@opinsys.fi>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.7.2.0
+Homepage: https://github.com/opinsys/ktp-controller
+
+Package: ktp-controller
+Architecture: all
+Depends: alembic,
+ python3,
+ python3-alembic,
+ python3-fastapi,
+ python3-multipart,
+ python3-pydantic,
+ python3-pydantic-settings,
+ python3-redis,
+ python3-requests,
+ python3-unicorn,
+ python3-websocket,
+ supervisor
+Description: KTP controller
+ KTP controller for automating Abitti2 servers.
+ .
