@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+
+# Standard library imports
+import argparse
+import asyncio
+
+# Third-party imports
+import yaml
+
+# Internal imports
+
+
+async def _command_api_async_command(args) -> int:
+    import ktp_controller.api.client  # pylint: disable=import-outside-toplevel
+
+    return ktp_controller.api.client.async_command(args.COMMAND)
+
+
+def _print_as_yaml(obj):
+    print(
+        yaml.dump(
+            obj,
+            default_flow_style=False,
+            sort_keys=False,
+        )
+    )
+
+
+async def _command_status(args) -> int:  # pylint: disable=unused-argument
+    import ktp_controller.api.client  # pylint: disable=import-outside-toplevel
+
+    current_exam_package = ktp_controller.api.client.get_current_exam_package()
+    last_abitti2_status_report = (
+        ktp_controller.api.client.get_last_abitti2_status_report()
+    )
+
+    if current_exam_package is None:
+        print("# Current exam package: -")
+    else:
+        print("# Current exam package:")
+        scheduled_exam_external_ids = current_exam_package.pop(
+            "scheduled_exam_external_ids"
+        )
+        for scheduled_exam_external_id in scheduled_exam_external_ids:
+            scheduled_exam = ktp_controller.api.client.get_scheduled_exam(
+                scheduled_exam_external_id
+            )
+            current_exam_package.setdefault("scheduled_exams", []).append(
+                scheduled_exam
+            )
+        _print_as_yaml(current_exam_package)
+    print()
+    if last_abitti2_status_report is None:
+        print("# Last Abitti2 status report: -")
+    else:
+        print("# Last Abitti2 status report:")
+        _print_as_yaml(last_abitti2_status_report)
+    print()
+
+    return None
+
+
+_COMMANDS = {
+    "enable_auto_control": _command_api_async_command,
+    "disable_auto_control": _command_api_async_command,
+    "start_current_exam_package": _command_api_async_command,
+    "stop_current_exam_package": _command_api_async_command,
+    "archive_current_exam_package": _command_api_async_command,
+    "prepare_current_exam_package": _command_api_async_command,
+    "status": _command_status,
+}
+
+
+async def _dispatch_command(args) -> int:
+    # Lazily imported here to avoid long start-up time of this script.
+    import websockets  # pylint: disable=import-outside-toplevel
+    import ktp_controller.api.client  # pylint: disable=import-outside-toplevel
+    import ktp_controller.utils  # pylint: disable=import-outside-toplevel
+    import ktp_controller.messages  # pylint: disable=import-outside-toplevel
+
+    command_result_data = None
+
+    async with websockets.connect(
+        ktp_controller.api.client.get_ui_websock_url()
+    ) as ui_websock:
+        command_uuid = await _COMMANDS[args.COMMAND](args)
+        if command_uuid is not None:
+            async for data in ui_websock:
+                try:
+                    message_dict = ktp_controller.utils.json_loads_dict(data)
+                except ValueError:
+                    # Most probably a programming error, API should not
+                    # send invalid JSON to agents.
+                    print(f"API sent invalid JSON data: {data!r}")
+                    continue
+                if message_dict["kind"] != "command_result":
+                    continue
+                command_result_message = (
+                    ktp_controller.messages.CommandResultMessage.model_validate(
+                        message_dict
+                    )
+                )
+                command_result_data = command_result_message.data
+                if str(command_result_data.command_uuid) != command_uuid:
+                    continue
+                break
+
+    if command_result_data is not None and not command_result_data.command_status.is_ok:
+        print(f"ERROR: {args.COMMAND} failed: {command_result_data.error_message}")
+        return 1
+
+    return 0
+
+
+def run() -> int:
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    subparsers = parser.add_subparsers(title="Commands", dest="COMMAND", required=True)
+    for command in _COMMANDS:
+        subparsers.add_parser(command)
+
+    args = parser.parse_args()
+
+    return asyncio.run(_dispatch_command(args))
