@@ -8,8 +8,12 @@ INSTALL = install
 INSTALL_PROGRAM = $(INSTALL)
 INSTALL_DATA = $(INSTALL) -m 644
 
+_build_formats := sdist wheel
+_build_targets := $(_build_formats:%=build-%)
+
+.NOTPARALLEL: all
 .PHONY: all
-all:
+all: check test build
 
 .PHONY: installdirs
 installdirs:
@@ -112,3 +116,14 @@ check-updates:
 	@poetry update --dry-run
 	@wget -q -O- https://github.com/redis/redis/releases/latest | sed -r -n 's|.*<title>Release ([0-9.]+).*$$|Redis available: \1|p'
 	@sed -r -n 's|^command=docker pull redis:(.*)$$|Redis installed: \1|p' supervisor/test.conf
+
+.PHONY: $(_build_targets)
+$(_build_targets): build-%:
+	poetry build --format='$(@:build-%=%)'
+
+.PHONY: build
+build: $(_build_targets)
+
+.PHONY: clean
+clean:
+	rm -rf dist

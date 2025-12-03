@@ -8,3 +8,4 @@ flycheck_*
 /supervisor/proglogs/*.log
 /supervisor/chain_result
 /supervisor/chain_result.tmp
+/dist
