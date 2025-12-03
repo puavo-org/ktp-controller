@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -eu
+
+if [ -z "${KTP_CONTROLLER_STATEDIR:-}" ]; then
+  KTP_CONTROLLER_STATEDIR="${HOME}/.puavo/puavo-ers/ktp-controller"
+fi
+mkdir -p "$KTP_CONTROLLER_STATEDIR" "${KTP_CONTROLLER_STATEDIR}/logs"
+
+export KTP_CONTROLLER_STATEDIR
+
+export KTP_CONTROLLER_DB_PATH="${KTP_CONTROLLER_STATEDIR}/ktp_controller.sqlite"
+
+cd /opt/ktp-controller
+if ! alembic upgrade head; then
+  echo 'error in running Alembic database migration' >&2
+  exit 1
+fi
+
+exec supervisord -c supervisor/run.conf
