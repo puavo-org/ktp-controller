@@ -1,0 +1,6 @@
+*.substvars
+*.debhelper
+*.debhelper.log
+debhelper-build-stamp
+ktp-controller
+files
