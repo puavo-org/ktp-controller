@@ -1,29 +1,10 @@
 #!/usr/bin/env python3
 
 # Standard library imports
-import argparse
-
-# Third-party imports
+import sys
 
 # Internal imports
 import ktp_controller.examomatic.mock.main
-import ktp_controller.examomatic.mock.utils
-
-# Relative imports
-
-# Constants:
-
-
-def main():
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-    parser.add_argument("--port", type=int, default=8001)
-
-    args = parser.parse_args()
-
-    ktp_controller.examomatic.mock.main.run(args.port)
-
 
 if __name__ == "__main__":
-    main()
+    sys.exit(ktp_controller.examomatic.mock.main.run())

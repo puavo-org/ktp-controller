@@ -1,4 +1,5 @@
 # Standard library imports
+import argparse
 import asyncio
 import contextlib
 import copy
@@ -302,10 +303,19 @@ async def _ktp_controller_websocket(
         tg.create_task(_send_refresh_exams(websock))
 
 
-def run(port: int):
+def run() -> int:
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument("--port", type=int, default=8001)
+
+    args = parser.parse_args()
+
     uvicorn.run(
         "ktp_controller.examomatic.mock.main:APP",
         host="127.0.0.1",
-        port=port,
+        port=args.port,
         reload=False,
     )
+
+    return 0
