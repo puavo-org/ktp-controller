@@ -1,0 +1,988 @@
+#!/usr/bin/env python3
+
+# Standard library imports
+import abc
+import asyncio
+import contextlib
+import dataclasses
+import datetime
+import enum
+import fcntl
+import errno
+import hashlib
+import json
+import logging
+import os.path
+import sys
+import typing
+import zipfile
+
+# Third-party imports
+import pydantic
+import requests.exceptions
+import websockets
+
+# Internal imports
+import ktp_controller.abitti2.client
+import ktp_controller.abitti2.naksu2
+import ktp_controller.agent.utils
+import ktp_controller.api.client
+import ktp_controller.examomatic.client
+import ktp_controller.pydantic
+import ktp_controller.utils
+import ktp_controller.messages
+
+
+_LOGGER = logging.getLogger(__file__)
+
+# All exam files will be stored here like so:
+# ~/.local/share/ktp-controller/exam-files/FILE_UUID/FILE_SHA256
+_EXAM_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-files")
+
+# All exam packages will be stored here like so:
+# ~/.local/share/ktp-controller/exam-packages/FILE_UUID/COMPOUND_EXAM_FILE_SHA256
+_EXAM_PACKAGE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-packages")
+
+# All exam packages will be stored here like so:
+# ~/.local/share/ktp-controller/exam-packages/FILE_UUID/COMPOUND_EXAM_FILE_SHA256
+_ANSWERS_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/answers-files")
+
+_DUMMY_EXAM_FILE_FILEPATH = os.path.expanduser(
+    "~/.local/share/ktp-controller/dummy-exam-file.mex"
+)
+
+
+def _create_dummy_exam_package_file():
+    ktp_controller.examomatic.client.download_dummy_exam_file(_DUMMY_EXAM_FILE_FILEPATH)
+
+    with ktp_controller.utils.open_atomic_write(
+        ktp_controller.abitti2.client.DUMMY_EXAM_PACKAGE_FILEPATH
+    ) as exam_package_file:
+        with zipfile.ZipFile(exam_package_file, "w") as exam_package_file_zip:
+            exam_package_file_zip.write(
+                _DUMMY_EXAM_FILE_FILEPATH, os.path.basename(_DUMMY_EXAM_FILE_FILEPATH)
+            )
+
+
+class LocalFilepathType(str, enum.Enum):
+    ANSWERS_FILE = "answers-file"
+    EXAM_FILE = "exam-file"
+    EXAM_PACKAGE = "exam-package"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+def _get_local_filepath(
+    local_filepath_type: LocalFilepathType, dirname: str, filename_suffix: str
+) -> str:
+    LocalFilepathType(local_filepath_type)
+    if local_filepath_type == LocalFilepathType.EXAM_FILE:
+        basedir = _EXAM_FILE_DIR
+        ext = ".mex"
+    elif local_filepath_type == LocalFilepathType.EXAM_PACKAGE:
+        basedir = _EXAM_PACKAGE_DIR
+        ext = ".zip"
+    elif local_filepath_type == LocalFilepathType.ANSWERS_FILE:
+        basedir = _ANSWERS_FILE_DIR
+        ext = ".meb"
+    else:
+        raise ValueError("invalid local_filepath_type")
+
+    dirpath = os.path.join(basedir, dirname)
+
+    try:
+        os.makedirs(dirpath)
+    except FileExistsError:
+        pass
+
+    return os.path.join(dirpath, f"{local_filepath_type}_{filename_suffix}{ext}")
+
+
+def _transfer_answers(
+    exam_package_external_id: str,
+    *,
+    is_final: ktp_controller.examomatic.client.IsFinal = ktp_controller.examomatic.client.IsFinal.UNKNOWN,
+):
+    answers_file_path = _get_local_filepath(
+        LocalFilepathType.ANSWERS_FILE,
+        exam_package_external_id,
+        ktp_controller.utils.utcnow_str() + "_final" if is_final else "",
+    )
+
+    sha256sum = ktp_controller.abitti2.client.download_answers_file(answers_file_path)
+
+    ktp_controller.examomatic.client.upload_answers_file(
+        exam_package_external_id=exam_package_external_id,
+        filepath=answers_file_path,
+        sha256sum=sha256sum,
+        is_final=is_final,
+    )
+
+
+def _create_exam_package_file(
+    api_scheduled_exam_package,
+) -> typing.Tuple[str, typing.Set[str]]:
+    exam_file_infos = []
+    for api_scheduled_exam_external_id in api_scheduled_exam_package[
+        "scheduled_exam_external_ids"
+    ]:
+        api_scheduled_exam = ktp_controller.api.client.get_scheduled_exam(
+            api_scheduled_exam_external_id
+        )
+        exam_file_infos.append(api_scheduled_exam["exam_file_info"])
+
+    decrypt_codes: typing.Set[str] = set()
+    exam_package_filepath = _get_local_filepath(
+        LocalFilepathType.EXAM_PACKAGE,
+        api_scheduled_exam_package["external_id"],
+        hashlib.sha256(
+            "".join(sorted([i["sha256"] for i in exam_file_infos])).encode("ascii")
+        ).hexdigest(),
+    )
+
+    with ktp_controller.utils.open_atomic_write(
+        exam_package_filepath
+    ) as exam_package_file:
+        with zipfile.ZipFile(exam_package_file, "w") as exam_package_file_zip:
+            for exam_file_info in exam_file_infos:
+                exam_package_file_zip.write(
+                    _get_local_filepath(
+                        LocalFilepathType.EXAM_FILE,
+                        exam_file_info["external_id"],
+                        exam_file_info["sha256"],
+                    ),
+                    ktp_controller.utils.utcnow_str() + exam_file_info["name"],
+                )
+                decrypt_codes.add(exam_file_info["decrypt_code"])
+
+    return exam_package_filepath, decrypt_codes
+
+
+def _set_current_exam_package_state(
+    current_exam_package: typing.Dict[str, typing.Any], next_state: str
+) -> bool:
+    last_state = ktp_controller.api.client.set_current_exam_package_state(
+        current_exam_package["external_id"], next_state
+    )
+
+    current_exam_package["state"] = next_state
+
+    _LOGGER.debug(
+        "Changed state from %s to %s of the current exam package: %s",
+        last_state,
+        next_state,
+        current_exam_package,
+    )
+
+    return last_state != next_state
+
+
+class Trigger(str, enum.Enum):
+    TIME = "time"
+    MANUAL_PREPARE = "manual_prepare"
+    MANUAL_START = "manual_start"
+    MANUAL_STOP = "manual_stop"
+    MANUAL_ARCHIVE = "manual_archive"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class Component(str, enum.Enum):
+    API = "API"
+    EXAMOMATIC = "Exam-O-Matic"
+    ABITTI2 = "Abitti2"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class _Error(Exception):
+    pass
+
+
+class _UsageError(_Error):
+    def __init__(self, error_message: str):
+        super().__init__(self)
+        self.__error_message: str = error_message
+
+    def __str__(self) -> str:
+        return f"usage error: {self.__error_message}"
+
+
+@dataclasses.dataclass
+class _ConnectionStats(abc.ABC):
+    connected_at: ktp_controller.pydantic.DateTime
+
+
+class ExamomaticConnectionStats(_ConnectionStats):
+    ping_pong_count: pydantic.NonNegativeInt = 0
+    refresh_exams_count: pydantic.NonNegativeInt = 0
+    last_message_received_at: ktp_controller.pydantic.DateTime | None = None
+
+
+class APIConnectionStats(_ConnectionStats):
+    pass
+
+
+class Abitti2ConnectionStats(_ConnectionStats):
+    pass
+
+
+class Agent:
+    def __init__(
+        self,
+        *,
+        approx_api_ping_interval_sec: int = 15,
+        approx_api_status_report_interval_sec: int = 30,
+        approx_examomatic_ping_interval_sec: int = 30,
+        approx_restart_timeout_sec: int = 5,
+        state: ktp_controller.agent.utils.AgentState,
+    ):
+        self.__state = state
+
+        self.__current_abitti2_exams = None
+
+        self.__approx_api_ping_interval_sec = approx_api_ping_interval_sec
+        self.__approx_api_status_report_interval_sec = (
+            approx_api_status_report_interval_sec
+        )
+        self.__approx_examomatic_ping_interval_sec = approx_examomatic_ping_interval_sec
+        self.__approx_restart_timeout_sec = approx_restart_timeout_sec
+
+        self.__last_received_security_code = None
+
+        self.__connection_stats: typing.Dict[Component, _ConnectionStats] = {}
+        self.__commands = {
+            str(
+                ktp_controller.messages.Command.ENABLE_AUTO_CONTROL
+            ): self.__command_enable_auto_control,
+            str(
+                ktp_controller.messages.Command.DISABLE_AUTO_CONTROL
+            ): self.__command_disable_auto_control,
+            str(
+                ktp_controller.messages.Command.STOP_CURRENT_EXAM_PACKAGE
+            ): self.__command_change_current_exam_package_state,
+            str(
+                ktp_controller.messages.Command.START_CURRENT_EXAM_PACKAGE
+            ): self.__command_change_current_exam_package_state,
+            str(
+                ktp_controller.messages.Command.ARCHIVE_CURRENT_EXAM_PACKAGE
+            ): self.__command_change_current_exam_package_state,
+            str(
+                ktp_controller.messages.Command.PREPARE_CURRENT_EXAM_PACKAGE
+            ): self.__command_change_current_exam_package_state,
+        }
+
+    @property
+    def __is_auto_control_enabled(self) -> bool:
+        return self.__state.is_auto_control_enabled
+
+    @__is_auto_control_enabled.setter
+    def __is_auto_control_enabled(self, value: bool) -> None:
+        self.__state.is_auto_control_enabled = value
+
+    def __set_auto_control(
+        self,
+        command_uuid: str,
+        enabled: bool,
+    ) -> ktp_controller.messages.CommandResultData:
+        changed = enabled is not self.__is_auto_control_enabled
+
+        self.__is_auto_control_enabled = enabled
+        if changed:
+            _LOGGER.info(
+                "Auto control is now %s.", "enabled" if enabled else "disabled"
+            )
+            command_status = ktp_controller.messages.CommandStatus.OK
+        else:
+            command_status = ktp_controller.messages.CommandStatus.OK_NO_CHANGE
+
+        return ktp_controller.messages.CommandResultData(
+            command_uuid=command_uuid, command_status=command_status
+        )
+
+    async def __command_enable_auto_control(
+        self,
+        command_uuid: str,
+        command_data: ktp_controller.messages.CommandData,  # pylint: disable=unused-argument
+    ) -> ktp_controller.messages.CommandResultData:
+        return self.__set_auto_control(command_uuid, True)
+
+    async def __command_disable_auto_control(
+        self,
+        command_uuid: str,
+        command_data: ktp_controller.messages.CommandData,  # pylint: disable=unused-argument
+    ):
+        return self.__set_auto_control(command_uuid, False)
+
+    async def __command_change_current_exam_package_state(
+        self,
+        command_uuid: str,
+        command_data: ktp_controller.messages.CommandData,  # pylint: disable=unused-argument
+    ) -> ktp_controller.messages.CommandResultData:
+        if self.__is_auto_control_enabled:
+            return ktp_controller.messages.CommandResultData(
+                command_uuid=command_uuid,
+                command_status=ktp_controller.messages.CommandStatus.ERROR,
+                error_message=(
+                    "the state of the current exam package cannot be "
+                    "changed manually when auto control is enabled"
+                ),
+            )
+
+        manual_trigger = {
+            ktp_controller.messages.Command.ARCHIVE_CURRENT_EXAM_PACKAGE: Trigger.MANUAL_ARCHIVE,
+            ktp_controller.messages.Command.PREPARE_CURRENT_EXAM_PACKAGE: Trigger.MANUAL_PREPARE,
+            ktp_controller.messages.Command.START_CURRENT_EXAM_PACKAGE: Trigger.MANUAL_START,
+            ktp_controller.messages.Command.STOP_CURRENT_EXAM_PACKAGE: Trigger.MANUAL_STOP,
+        }[command_data.command]
+
+        try:
+            changed = await self.__work_on_current_exam_package(trigger=manual_trigger)
+        except _UsageError as usage_error:
+            return ktp_controller.messages.CommandResultData(
+                command_uuid=command_uuid,
+                command_status=ktp_controller.messages.CommandStatus.ERROR,
+                error_message=str(usage_error),
+            )
+
+        if changed:
+            command_status = ktp_controller.messages.CommandStatus.OK
+        else:
+            command_status = ktp_controller.messages.CommandStatus.OK_NO_CHANGE
+
+        return ktp_controller.messages.CommandResultData(
+            command_uuid=command_uuid, command_status=command_status
+        )
+
+    def __prepare_current_exam_package(
+        self,
+        current_exam_package: typing.Dict[str, typing.Any],
+    ) -> bool:
+        (exam_package_filepath, decrypt_codes) = _create_exam_package_file(
+            current_exam_package
+        )
+        if self.__is_auto_control_enabled:
+            # Change automatically when exam package is prepared.
+            ktp_controller.abitti2.client.change_single_security_code()
+        exam_filenames = ktp_controller.abitti2.client.prepare_exam_package(
+            exam_package_filepath, decrypt_codes
+        )
+        _LOGGER.info(
+            "Prepared current exam package %r (%d exams) successfully.",
+            current_exam_package["external_id"],
+            len(exam_filenames),
+        )
+
+        return True
+
+    def __start_current_exam_package(
+        self,
+        current_exam_package: typing.Dict[str, typing.Any],
+    ) -> bool:
+        ktp_controller.abitti2.client.start_decrypted_exams()
+        _LOGGER.info(
+            "Started current exam package %r successfully.",
+            current_exam_package["external_id"],
+        )
+
+        return True
+
+    def __stop_current_exam_package(
+        self,
+        current_exam_package: typing.Dict[str, typing.Any],
+    ) -> bool:
+        if self.__is_auto_control_enabled:
+            # Change the security code first to ensure students cannot enter anymore.
+            ktp_controller.abitti2.client.change_single_security_code()
+
+        abitti2_status_report = (
+            ktp_controller.api.client.get_last_abitti2_status_report()
+        )
+        for student in abitti2_status_report["status"]["data"]["students"]:
+            ktp_controller.abitti2.client.stop_exam_session(student["sessionUuid"])
+
+        is_stopped = (
+            all(
+                s.get("examFinished", False)
+                or s.get("sessionStatus") == "session_ended"
+                for s in abitti2_status_report["status"]["data"]["students"]
+            )
+            and current_exam_package["state"] == "stopping"
+            and abitti2_status_report["received_at"]
+            > current_exam_package["state_changed_at"]
+        )
+
+        if is_stopped:
+            _LOGGER.info(
+                "Stopped current exam package %r successfully.",
+                current_exam_package["external_id"],
+            )
+        else:
+            _LOGGER.info(
+                "Stopping current exam package %r ...",
+                current_exam_package["external_id"],
+            )
+
+        return is_stopped
+
+    def __archive_current_exam_package(
+        self,
+        current_exam_package: typing.Dict[str, typing.Any],
+    ) -> bool:
+        _transfer_answers(
+            current_exam_package["external_id"],
+            is_final=ktp_controller.examomatic.client.IsFinal.TRUE,
+        )
+        return True
+
+    async def __work_on_current_exam_package(self, *, trigger: Trigger) -> bool:
+        utcnow = ktp_controller.utils.utcnow()
+        trigger = Trigger(trigger)  # Raises ValueError if trigger is not a Trigger.
+
+        if trigger.startswith("manual_") and self.__is_auto_control_enabled:
+            raise RuntimeError(
+                "Critical internal logic error!. "
+                "Auto control is enabled and manual trigger encountered. "
+                "This is an usage error which should have been properly handled "
+                "and reported by upper levels in the call stack."
+            )
+
+        current_exam_package = ktp_controller.api.client.get_current_exam_package()
+
+        if current_exam_package is None:
+            if self.__is_auto_control_enabled and self.__current_abitti2_exams == []:
+                _LOGGER.info("Reseting Abitti2 with a dummy exam package...")
+                ktp_controller.abitti2.client.reset()
+                _LOGGER.info("Abitti2 was reset.")
+            return False  # No current exam package
+
+        if not current_exam_package["locked"]:
+            raise RuntimeError(
+                "Critical internal logic error! "
+                "The current exam package is not locked! "
+                "It should be impossible, because the definition "
+                "of current implies locked.",
+                current_exam_package,
+            )
+
+        _LOGGER.debug(
+            "Triggered by %s, working on the current exam package: %s",
+            trigger,
+            current_exam_package,
+        )
+
+        changed = False
+
+        state_transitions = {
+            None: {
+                "valid_triggers": (Trigger.MANUAL_PREPARE, Trigger.TIME),
+                "time_condition": self.__is_auto_control_enabled,
+                "action": self.__prepare_current_exam_package,
+                "next_state": "ready",
+            },
+            "ready": {
+                "valid_triggers": (Trigger.MANUAL_START, Trigger.TIME),
+                "time_condition": (
+                    self.__is_auto_control_enabled
+                    and (
+                        utcnow
+                        >= datetime.datetime.fromisoformat(
+                            current_exam_package["start_time"]
+                        )
+                    )
+                ),
+                "action": self.__start_current_exam_package,
+                "next_state": "running",
+            },
+            "running": {
+                "valid_triggers": (Trigger.MANUAL_STOP, Trigger.TIME),
+                "time_condition": (
+                    self.__is_auto_control_enabled
+                    and (
+                        utcnow
+                        >= datetime.datetime.fromisoformat(
+                            current_exam_package["end_time"]
+                        )
+                    )
+                ),
+                "action": lambda *args: (
+                    self.__stop_current_exam_package(*args) or True
+                ),
+                "next_state": "stopping",
+            },
+            "stopping": {
+                "valid_triggers": (Trigger.MANUAL_STOP, Trigger.TIME),
+                # We already stopping, so regardless of the auto
+                # control state, we call the stop function until it
+                # reports that everything has stopped.
+                "time_condition": True,
+                "action": self.__stop_current_exam_package,
+                "next_state": "stopped",
+            },
+            "stopped": {
+                "valid_triggers": (Trigger.MANUAL_ARCHIVE, Trigger.TIME),
+                "time_condition": self.__is_auto_control_enabled,
+                "action": self.__archive_current_exam_package,
+                "next_state": "archived",
+            },
+            "archived": {
+                "valid_triggers": (Trigger.TIME,),
+                "time_condition": True,
+                "action": lambda *args: True,
+                "next_state": "archived",
+            },
+        }
+
+        state = current_exam_package["state"]
+        transition = state_transitions[state]
+
+        if trigger not in transition["valid_triggers"]:
+            raise _UsageError(
+                f"trigger '{trigger}' is not applicable for the current exam package in state '{state}'"
+            )
+
+        if trigger != Trigger.TIME or transition["time_condition"]:
+            _LOGGER.debug(
+                "Doing transition from %s to %s, triggered by %s (time_condition=%s). Calling %s",
+                state,
+                transition["next_state"],
+                trigger,
+                transition["time_condition"],
+                transition["action"],
+            )
+            if transition["action"](current_exam_package):
+                changed = _set_current_exam_package_state(
+                    current_exam_package, transition["next_state"]
+                )
+
+        if changed:
+            _LOGGER.debug(
+                "State of the current exam package changed from %s to %s",
+                state,
+                transition["next_state"],
+            )
+        return changed
+
+    async def __send_pings_to_api(self, websock):
+        while True:
+            message = ktp_controller.messages.PingMessage().model_dump_json()
+            await websock.send(message)
+            _LOGGER.debug("--> API: %s", message)
+            await asyncio.sleep(self.__approx_api_ping_interval_sec)
+
+    async def __send_status_reports_to_api(self, websock):
+        while True:
+            message = ktp_controller.messages.StatusReportMessage(
+                data=ktp_controller.messages.StatusReportData(
+                    is_auto_control_enabled=self.__is_auto_control_enabled
+                ),
+            ).model_dump_json()
+            await websock.send(message)
+            _LOGGER.debug("--> API: %s", message)
+            await asyncio.sleep(self.__approx_api_status_report_interval_sec)
+
+    async def __send_pings_to_examomatic(self, websock):
+        while True:
+            message = json.dumps(
+                {
+                    "type": "ping",
+                },
+                ensure_ascii=True,
+                separators=(",", ":"),
+            )
+            await websock.send(message)
+            _LOGGER.debug("--> Exam-O-Matic: %s", message)
+            await asyncio.sleep(self.__approx_examomatic_ping_interval_sec)
+
+    async def __communicate_with_api(self, websock):
+        async for data in websock:
+            _LOGGER.debug("<-- API: %s", data)
+            try:
+                message = ktp_controller.utils.json_loads_dict(data)
+            except ValueError:
+                # Most probably a programming error, API should not
+                # send invalid JSON to agents.
+                _LOGGER.exception("API sent invalid JSON data!")
+                continue
+
+            if message["kind"] == "command":
+                command_data = ktp_controller.messages.CommandData.model_validate(
+                    message["data"]
+                )
+                _LOGGER.info("Executing command %r...", command_data.command)
+                try:
+                    command_result = await self.__commands[command_data.command](
+                        message["uuid"], command_data
+                    )
+                except Exception:  # pylint: disable=broad-exception-caught
+                    _LOGGER.exception(
+                        "Executing command %r failed", command_data.command
+                    )
+                    command_result = ktp_controller.messages.CommandResultData(
+                        command_uuid=message["uuid"],
+                        command_status=ktp_controller.messages.CommandStatus.ERROR,
+                        error_message="critical internal error",
+                    )
+                else:
+                    _LOGGER.info(
+                        "Executed command %r successfully.", command_data.command
+                    )
+                await websock.send(
+                    ktp_controller.messages.CommandResultMessage(
+                        kind=ktp_controller.messages.MessageKind.COMMAND_RESULT,
+                        data=command_result,
+                    ).model_dump_json()
+                )
+                _LOGGER.info("Sent command result %r successfully.", command_result)
+                continue
+
+            if message["kind"] == "pong":
+                # Whenever we get ponged, it's a sign for us to do
+                # some auto control work. So, keep ping pong interval
+                # quite short. This could be replaced with more
+                # sophisticated scheduling logic, but for now,
+                # ping-pong scheduling is good enough.
+                try:
+                    await self.__work_on_current_exam_package(trigger=Trigger.TIME)
+                except _UsageError as usage_error:
+                    _LOGGER.error(
+                        "automatic work on the current exam package filed: %s",
+                        usage_error,
+                    )
+                # Ping pong is a great game!
+                # Let's
+                continue  # playing it!
+
+            _LOGGER.error("unknown API message kind: %s", message["kind"])
+
+    async def __communicate_with_examomatic(self, websock):
+        async for data in websock:
+            received_at = ktp_controller.utils.utcnow()
+            _LOGGER.debug("<-- Exam-O-Matic: %s", data)
+            try:
+                message = ktp_controller.examomatic.client.websock_validate_message(
+                    data
+                )
+            except ValueError:
+                _LOGGER.exception("received invalid data from Exam-O-Matic: %r", data)
+                continue
+
+            self.__connection_stats[Component.EXAMOMATIC].last_message_received_at = (
+                received_at
+            )
+
+            if message["type"] == "pong":
+                self.__connection_stats[Component.EXAMOMATIC].ping_pong_count += 1
+                if (
+                    self.__connection_stats[Component.EXAMOMATIC].refresh_exams_count
+                    == 0
+                ):
+                    self.__refresh_exams(is_spontaneous=True)
+                continue
+
+            if message["type"] == "change_keycode":
+                _LOGGER.info("received change_keycode message from Exam-O-Matic")
+                if not self.__is_auto_control_enabled:
+                    _LOGGER.error(
+                        "Keycode cannot be changed by Exam-O-Matic, because auto control is not enabled."
+                    )
+                    continue  # TODO: is ok to not ack this message because we cannot fulfil it?
+                ktp_controller.abitti2.client.change_single_security_code()
+                _LOGGER.info("Keycode changed.")
+            elif message["type"] == "refresh_exams":
+                _LOGGER.info("received refresh_exams message from Exam-O-Matic")
+                self.__refresh_exams(is_spontaneous=False)
+            else:
+                _LOGGER.error(
+                    "received message of unknown type %r from Exam-O-Matic",
+                    message["type"],
+                )
+                continue
+
+            await ktp_controller.examomatic.client.websock_ack(websock, message)
+
+    async def __communicate_with_abitti2(self, websock):
+        async for data in websock:
+            received_at = ktp_controller.utils.utcnow()
+
+            _LOGGER.debug("<-- Abitti2: %s", data)
+
+            if data == "ping":
+                message_type = "ping"
+            else:
+                try:
+                    message = ktp_controller.utils.json_loads_dict(data)
+                except ValueError:
+                    _LOGGER.exception("received invalid JSON from Abitti2: %r", data)
+                    continue
+                message_type = message["type"]
+
+            _LOGGER.info("received %r message from Abitti2", message_type)
+
+            if message_type == "ping":
+                await websock.send("pong")
+
+            elif message_type == "security-code":
+                try:
+                    self.__last_received_security_code = message["data"]["securityCode"]
+                except KeyError:  # Security code is not always there
+                    pass
+
+            elif message_type == "stats":
+                message["singleSecurityCode"] = self.__last_received_security_code
+                status_report = {
+                    "monitoring_passphrase": ktp_controller.abitti2.naksu2.read_password(),
+                    "server_version": ktp_controller.abitti2.client.get_current_abitti2_version(),
+                    "status": message,
+                    "received_at": ktp_controller.utils.strfdt(received_at),
+                }
+
+                try:
+                    ktp_controller.examomatic.client.send_abitti2_status_report(
+                        status_report
+                    )
+                    status_report["reported_at"] = ktp_controller.utils.utcnow_str()
+                    _LOGGER.info("sent Abitti2 status report to Exam-O-Matic")
+                finally:
+                    status_report.setdefault("reported_at", None)
+                    ktp_controller.api.client.send_abitti2_status_report(status_report)
+                    _LOGGER.info("sent Abitti2 status report to KTP Controller API")
+            elif message_type == "exams":
+                self.__current_abitti2_exams = message["data"]
+            else:
+                _LOGGER.warning("unhandled %r message from Abitti2", message_type)
+
+    async def __maintain_websocket_connection(
+        self,
+        name: str,
+        url: str,
+        asyncfuncs: typing.Awaitable,
+        *,
+        connection_stats_class: type[_ConnectionStats],
+        additional_headers: typing.Dict[str, str] | None = None,
+    ):
+        while True:
+            try:
+                async with websockets.connect(
+                    url,
+                    additional_headers=additional_headers,
+                ) as websock:
+                    self.__connection_stats[name] = connection_stats_class(
+                        ktp_controller.utils.utcnow()
+                    )
+                    async with asyncio.TaskGroup() as tg:
+                        for asyncfunc in asyncfuncs:
+                            tg.create_task(asyncfunc(websock))
+            except ExceptionGroup as eg:
+                _LOGGER.error(
+                    "Websocket connection to %s has failed!",
+                    name,
+                    exc_info=eg.exceptions[0],
+                )
+                _LOGGER.error(
+                    "Reconnect to %s in approximately %d seconds...",
+                    name,
+                    self.__approx_restart_timeout_sec,
+                )
+                await asyncio.sleep(self.__approx_restart_timeout_sec)
+            finally:
+                self.__connection_stats.pop(name, None)
+
+    async def __maintain_websocket_connection_to_api(self):
+        await self.__maintain_websocket_connection(
+            Component.API,
+            ktp_controller.api.client.get_agent_websock_url(),
+            [
+                self.__send_pings_to_api,
+                self.__send_status_reports_to_api,
+                self.__communicate_with_api,
+            ],
+            connection_stats_class=APIConnectionStats,
+        )
+
+    async def __maintain_websocket_connection_to_examomatic(self):
+        await self.__maintain_websocket_connection(
+            Component.EXAMOMATIC,
+            ktp_controller.examomatic.client.get_examomatic_websock_url(),
+            [
+                self.__send_pings_to_examomatic,
+                self.__communicate_with_examomatic,
+            ],
+            connection_stats_class=ExamomaticConnectionStats,
+            additional_headers=ktp_controller.examomatic.client.get_basic_auth(),
+        )
+
+    async def __maintain_websocket_connection_to_abitti2(self):
+        await self.__maintain_websocket_connection(
+            Component.ABITTI2,
+            ktp_controller.abitti2.client.get_abitti2_websock_url(),
+            [
+                self.__communicate_with_abitti2,
+            ],
+            connection_stats_class=Abitti2ConnectionStats,
+            additional_headers=ktp_controller.abitti2.client.get_basic_auth(),
+        )
+
+    def __ensure_exam_file_exists(self, eom_scheduled_exam):
+        _LOGGER.info(
+            "ensuring exam file %r (file_uuid=%s) exists",
+            eom_scheduled_exam["file_name"],
+            eom_scheduled_exam["file_uuid"],
+        )
+
+        utcnow = ktp_controller.utils.utcnow_str()
+
+        filepath = _get_local_filepath(
+            LocalFilepathType.EXAM_FILE,
+            eom_scheduled_exam["file_uuid"],
+            eom_scheduled_exam["file_sha256"],
+        )
+
+        do_download = False
+        if not os.path.exists(filepath):
+            do_download = True
+        elif os.path.getsize(filepath) != eom_scheduled_exam["file_size"]:
+            _LOGGER.warning(
+                "exam file %r (file_uuid=%s) is already downloaded, "
+                "but Exam-O-Matic claims it has incorrect size, re-downloading it now",
+                eom_scheduled_exam["file_name"],
+                eom_scheduled_exam["file_uuid"],
+            )
+            os.rename(
+                filepath, f"{filepath}.incorrect_size-{utcnow}"
+            )  # Saved for possible investigation.
+            do_download = True
+        elif ktp_controller.utils.sha256(filepath) != eom_scheduled_exam["file_sha256"]:
+            _LOGGER.warning(
+                "exam file %r (file_uuid=%s) is already downloaded, "
+                "but Exam-O-Matic claims it has incorrect SHA256 checksum, re-downloading it now",
+                eom_scheduled_exam["file_name"],
+                eom_scheduled_exam["file_uuid"],
+            )
+            os.rename(
+                filepath, f"{filepath}.incorrect_sha256-{utcnow}"
+            )  # Saved for possible investigation.
+            do_download = True
+
+        if do_download:
+            _LOGGER.info(
+                "starting to download exam file %r (file_uuid=%s) to %r",
+                eom_scheduled_exam["file_name"],
+                eom_scheduled_exam["file_uuid"],
+                filepath,
+            )
+            ktp_controller.examomatic.client.download_exam_file(
+                eom_scheduled_exam["file_sha256"], filepath
+            )
+            _LOGGER.info(
+                "downloaded exam file %r (file_uuid=%s) successfully to %r",
+                eom_scheduled_exam["file_name"],
+                eom_scheduled_exam["file_uuid"],
+                filepath,
+            )
+        else:
+            _LOGGER.info(
+                "exam file %r (file_uuid=%s) already exists at %r and is up to date",
+                eom_scheduled_exam["file_name"],
+                eom_scheduled_exam["file_uuid"],
+                filepath,
+            )
+
+    def __refresh_exams(self, *, is_spontaneous: bool):
+        _LOGGER.info(
+            "Starting %sexam refresh...", "spontaneous " if is_spontaneous else ""
+        )
+
+        try:
+            eom_exam_info = ktp_controller.examomatic.client.get_exam_info()
+        except requests.exceptions.HTTPError as http_error:
+            if http_error.response.status_code == 404:
+                if is_spontaneous:
+                    # It's ok that there are no exam infos, because we
+                    # are doing spontaneous refresh and we had no
+                    # prior knowledge about availability exam infos.
+                    _LOGGER.info("No exam info available.")
+                else:
+                    _LOGGER.error(
+                        "No exam info available, but we have been told that there should be!"
+                    )
+            else:
+                _LOGGER.exception("Failed to refresh exams")
+            return
+
+        _LOGGER.debug("Received exam info from Exam-O-Matic: %s:", eom_exam_info)
+
+        for eom_scheduled_exam in eom_exam_info["schedules"]:
+            self.__ensure_exam_file_exists(eom_scheduled_exam)
+
+        ktp_controller.api.client.save_exam_info(eom_exam_info)
+
+        _LOGGER.info("refreshed exams successfully")
+
+    async def forever(self):
+        while True:
+            _LOGGER.info("Start!")
+
+            try:
+                async with asyncio.TaskGroup() as tg:
+                    tg.create_task(self.__maintain_websocket_connection_to_api())
+                    tg.create_task(self.__maintain_websocket_connection_to_abitti2())
+                    tg.create_task(self.__maintain_websocket_connection_to_examomatic())
+            except* Exception:  # pylint: disable=broad-exception-caught
+                _LOGGER.exception("Operational failure")
+                _LOGGER.error(
+                    "Restart approximately in %d seconds...",
+                    self.__approx_restart_timeout_sec,
+                )
+                await asyncio.sleep(self.__approx_restart_timeout_sec)
+
+    def run(self):
+        for d in (_EXAM_FILE_DIR, _EXAM_PACKAGE_DIR):
+            try:
+                os.makedirs(d)
+            except FileExistsError:
+                pass
+
+        # ktp_controller.abitti2.client needs dummy exam package to reset Abitti2.
+        _create_dummy_exam_package_file()
+
+        asyncio.run(self.forever())
+
+    def get_state(self) -> ktp_controller.agent.utils.AgentState:
+        return self.__state.model_copy()
+
+
+@contextlib.contextmanager
+def _singleton(lock_file_path: str | None = None):
+    this_prog_path = os.path.realpath(sys.argv[0])
+    if lock_file_path is None:
+        lock_file_path = this_prog_path
+    with open(lock_file_path, "rb") as lock_file:
+        try:
+            fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as io_error:
+            if io_error.errno != errno.EAGAIN:
+                raise
+            raise RuntimeError(
+                f"program {this_prog_path!r} is already running)"
+            ) from io_error
+        yield
+
+
+def _run() -> int:
+    agent_state = ktp_controller.agent.utils.load_agent_state()
+    agent = Agent(state=agent_state)
+    try:
+        agent.run()
+    finally:
+        ktp_controller.agent.utils.save_agent_state(agent.get_state())
+
+    return 0
+
+
+def run() -> int:
+    with _singleton():
+        return _run()

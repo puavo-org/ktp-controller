@@ -15,7 +15,7 @@ import sqlalchemy.sql
 from ktp_controller.api.database import get_db
 from ktp_controller.api import models
 
-import ktp_controller.agent
+import ktp_controller.agent.utils
 import ktp_controller.messages
 import ktp_controller.redis
 import ktp_controller.pydantic
@@ -46,7 +46,7 @@ Return asynchronous message UUID as application/json body.
 """,
 )
 async def _async_command(command_data: ktp_controller.messages.CommandData):
-    return await ktp_controller.agent.send_command(command_data)
+    return await ktp_controller.agent.utils.send_command(command_data)
 
 
 @router.websocket("/ui_websocket")
@@ -169,7 +169,7 @@ async def _agent_websocket(
     await websock.accept()
 
     async with ktp_controller.redis.pubsub(
-        ktp_controller.agent.PUBSUB_CHANNEL
+        ktp_controller.agent.utils.PUBSUB_CHANNEL
     ) as pubsub:
         async with asyncio.TaskGroup() as tg:
             tg.create_task(
