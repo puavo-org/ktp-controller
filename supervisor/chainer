@@ -86,7 +86,7 @@ def main():
             "PROCESS_STATE_FATAL",
         ):
             if headers["eventname"] == "PROCESS_STATE_EXITED" and bool(
-                payload["expected"]
+                int(payload["expected"])
             ):
                 result = "ok"
             else:
