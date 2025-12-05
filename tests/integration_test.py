@@ -122,8 +122,18 @@ def test_first_scheduled_exam_download():
             break
         time.sleep(1)
     assert agent_downloaded_new_exam_info
-    # Now Exam-O-Matic has notified Agent and Agent has ack'd the message.
-    assert state["refresh_exams_count"] == state["ack_count"] == 1
+
+    # Now Exam-O-Matic has notified Agent and Agent has ack'd the
+    # message. Note that ack comes from agent AFTER it has requested
+    # exam info successfully, hence this small timeout after checking
+    # ack.
+    ackd = False
+    for i in range(2):
+        state = ktp_controller.examomatic.client._post("/mock/get_state").json()
+        if state["refresh_exams_count"] == state["ack_count"] == 1:
+            ackd = True
+        time.sleep(1)
+    assert ackd
 
 
 def test_api_has_copies_of_status_reports():
