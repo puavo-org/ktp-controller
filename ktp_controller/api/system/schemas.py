@@ -12,11 +12,20 @@ import ktp_controller.pydantic
 
 __all__ = [
     # Types:
+    "Abitti2Exam",
     "Abitti2StatusReport",
 ]
 
 
 # Types:
+
+
+class Abitti2Exam(ktp_controller.pydantic.BaseModel):
+    examUuid: pydantic.StrictStr
+    examTitle: pydantic.StrictStr
+    hasStarted: pydantic.StrictBool
+    startTime: ktp_controller.pydantic.DateTime
+    type: pydantic.StrictStr
 
 
 class Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
@@ -25,3 +34,4 @@ class Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
     monitoring_passphrase: pydantic.StrictStr
     server_version: pydantic.StrictStr
     status: typing.Dict
+    exams: typing.List[Abitti2Exam]

@@ -242,8 +242,6 @@ class Agent:
     ):
         self.__state = state
 
-        self.__current_abitti2_exams = None
-
         self.__approx_api_ping_interval_sec = approx_api_ping_interval_sec
         self.__approx_api_status_report_interval_sec = (
             approx_api_status_report_interval_sec
@@ -251,6 +249,8 @@ class Agent:
         self.__approx_examomatic_ping_interval_sec = approx_examomatic_ping_interval_sec
         self.__approx_restart_timeout_sec = approx_restart_timeout_sec
 
+        # Abitti2 reports these
+        self.__last_received_exam_list = None
         self.__last_received_security_code = None
 
         self.__connection_stats: typing.Dict[Component, _ConnectionStats] = {}
@@ -461,7 +461,7 @@ class Agent:
         current_exam_package = ktp_controller.api.client.get_current_exam_package()
 
         if current_exam_package is None:
-            if self.__is_auto_control_enabled and self.__current_abitti2_exams == []:
+            if self.__is_auto_control_enabled and self.__last_received_exam_list == []:
                 _LOGGER.info("Reseting Abitti2 with a dummy exam package...")
                 ktp_controller.abitti2.client.reset()
                 _LOGGER.info("Abitti2 was reset.")
@@ -678,9 +678,9 @@ class Agent:
                 _LOGGER.exception("received invalid data from Exam-O-Matic: %r", data)
                 continue
 
-            self.__connection_stats[
-                Component.EXAMOMATIC
-            ].last_message_received_at = received_at
+            self.__connection_stats[Component.EXAMOMATIC].last_message_received_at = (
+                received_at
+            )
 
             if message["type"] == "pong":
                 self.__connection_stats[Component.EXAMOMATIC].ping_pong_count += 1
@@ -746,6 +746,7 @@ class Agent:
                     "server_version": ktp_controller.abitti2.client.get_current_abitti2_version(),
                     "status": message,
                     "received_at": ktp_controller.utils.strfdt(received_at),
+                    "exams": self.__last_received_exam_list,
                 }
 
                 try:
@@ -759,7 +760,7 @@ class Agent:
                     ktp_controller.api.client.send_abitti2_status_report(status_report)
                     _LOGGER.info("sent Abitti2 status report to KTP Controller API")
             elif message_type == "exams":
-                self.__current_abitti2_exams = message["data"]
+                self.__last_received_exam_list = message["data"]
             else:
                 _LOGGER.warning("unhandled %r message from Abitti2", message_type)
 

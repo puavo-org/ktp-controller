@@ -134,11 +134,20 @@ class _SetExamInfoData(ktp_controller.pydantic.BaseModel):
     lock_time_duration_seconds: pydantic.conint(strict=True, ge=1)
 
 
+class _Abitti2Exam(ktp_controller.pydantic.BaseModel):
+    examUuid: pydantic.StrictStr
+    examTitle: pydantic.StrictStr
+    hasStarted: pydantic.StrictBool
+    startTime: ktp_controller.pydantic.DateTime
+    type: pydantic.StrictStr
+
+
 class _Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
     received_at: ktp_controller.pydantic.DateTime
     monitoring_passphrase: pydantic.StrictStr
     server_version: pydantic.StrictStr
     status: Dict
+    exams: List[_Abitti2Exam]
 
 
 @APP.post(

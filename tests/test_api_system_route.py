@@ -68,12 +68,28 @@ def test_send_abitti2_status_report__invalid_input(client, testdb, utcnow):
         "monitoring_passphrase": "",
         "server_version": "",
         "status": {},
+        "exams": [],
         "something_extra": True,
     }
 
     response = client.post(
         "/api/v1/system/send_abitti2_status_report",
         json=status_report_with_extra_field,
+    )
+    assert_response(response, expected_status_code=422)
+
+    status_report_with_invalid_exams = {
+        "received_at": ktp_controller.utils.strfdt(utcnow),
+        "reported_at": ktp_controller.utils.strfdt(utcnow),
+        "monitoring_passphrase": "",
+        "server_version": "",
+        "status": {},
+        "exams": [1],
+    }
+
+    response = client.post(
+        "/api/v1/system/send_abitti2_status_report",
+        json=status_report_with_invalid_exams,
     )
     assert_response(response, expected_status_code=422)
 
@@ -90,6 +106,7 @@ def test_send_abitti2_status_report__valid_minimal_input(client, testdb, utcnow)
         "monitoring_passphrase": "",
         "server_version": "",
         "status": {},
+        "exams": [],
     }
 
     response = client.post(
@@ -122,6 +139,7 @@ def test_send_abitti2_status_report__same_valid_minimal_input_twice(
         "monitoring_passphrase": "",
         "server_version": "",
         "status": {},
+        "exams": [],
     }
 
     response = client.post(
@@ -172,6 +190,15 @@ def test_send_abitti2_status_report__valid_but_highly_unlikely_abitti2_status(
             "It can be any kind of dict": [{"valid": True}, 3],
             "We always accept and save it": True,
         },
+        "exams": [
+            {
+                "examUuid": "c7390604-e359-473c-a751-9bd265ad798f",
+                "examTitle": "myexam",
+                "startTime": "2025-03-01T10:00:00.000+0000",
+                "hasStarted": True,
+                "type": "xml",
+            }
+        ],
     }
 
     response = client.post(
@@ -203,6 +230,7 @@ def test_send_abitti2_status_report__invalid_input(client, testdb, utcnow):
         "monitoring_passphrase": "",
         "server_version": "",
         "status": {},
+        "exams": [],
         "something_extra": True,
     }
 
@@ -225,6 +253,7 @@ def test_send_abitti2_status_report__valid_minimal_input(client, testdb, utcnow)
         "monitoring_passphrase": "",
         "server_version": "",
         "status": {},
+        "exams": [],
     }
 
     response = client.post(
@@ -252,6 +281,7 @@ def test_send_abitti2_status_report__same_valid_minimal_input_twice(
         "monitoring_passphrase": "",
         "server_version": "",
         "status": {},
+        "exams": [],
     }
 
     response = client.post(
@@ -302,6 +332,7 @@ def test_send_abitti2_status_report__valid_but_highly_unlikely_abitti2_status(
             "It can be any kind of dict": [{"valid": True}, 3],
             "We always accept and save it": True,
         },
+        "exams": [],
     }
 
     response = client.post(
@@ -327,6 +358,7 @@ def test_send_abitti2_status_report__two_different_reports(client, testdb, utcno
         "monitoring_passphrase": "first report",
         "server_version": "1.6.0",
         "status": {},
+        "exams": [],
     }
 
     response = client.post(
@@ -340,6 +372,7 @@ def test_send_abitti2_status_report__two_different_reports(client, testdb, utcno
         "monitoring_passphrase": "second report",
         "server_version": "1.7.0",
         "status": {},
+        "exams": [],
     }
     response = client.post(
         "/api/v1/system/send_abitti2_status_report", json=status_report2
@@ -402,6 +435,7 @@ def test_send_abitti2_status_report__multiple_reports_exactly_max_count(
             "monitoring_passphrase": "pass",
             "server_version": "1.11.0",
             "status": {},
+            "exams": [],
         }
 
         response = client.post(
@@ -457,6 +491,7 @@ def test_send_abitti2_status_report__multiple_reports_less_than_max_count(
             "monitoring_passphrase": "pass",
             "server_version": "1.11.0",
             "status": {},
+            "exams": [],
         }
 
         response = client.post(
@@ -512,6 +547,7 @@ def test_send_abitti2_status_report__multiple_reports_one_more_than_max_count(
             "monitoring_passphrase": "pass",
             "server_version": "1.11.0",
             "status": {},
+            "exams": [],
         }
 
         response = client.post(
@@ -569,6 +605,7 @@ def test_send_abitti2_status_report__multiple_reports_many_more_than_max_count(
             "monitoring_passphrase": "pass",
             "server_version": "1.11.0",
             "status": {},
+            "exams": [],
         }
 
         response = client.post(
