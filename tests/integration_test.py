@@ -18,6 +18,13 @@ import ktp_controller.examomatic.client
 # testrun.
 
 
+def _is_fresh_status_report(status_report, max_age_secs: int = 6) -> bool:
+    return (
+        ktp_controller.utils.utcnow()
+        - datetime.datetime.fromisoformat(status_report["received_at"])
+    ).total_seconds() <= max_age_secs
+
+
 def test_abitti2_reset():
     # 0. Reset Abitti2 to ensure it's in a well known state.
     ktp_controller.abitti2.client.reset()
@@ -71,10 +78,7 @@ def test_abitti2_status_reporting():
             break
         time.sleep(1)
     # Check that the last received status report is fresh.
-    assert (
-        ktp_controller.utils.utcnow()
-        - datetime.datetime.fromisoformat(status_reports[-1]["received_at"])
-    ).total_seconds() < 6
+    assert _is_fresh_status_report(status_reports[-1])
 
 
 def test_odotusaulakoe_is_running():
@@ -84,9 +88,13 @@ def test_odotusaulakoe_is_running():
     for i in range(15):
         state = ktp_controller.examomatic.client._post("/mock/get_state").json()
         status_reports = state["status_reports"]
-        if status_reports[-1]["status"]["data"]["examStatus"]["hasStarted"]:
-            odotusaulakoe_is_running = True
-            break
+        started_exam_titles = [
+            e["examTitle"] for e in status_reports[-1]["exams"] if e["hasStarted"]
+        ]
+        if len(started_exam_titles) > 0:
+            if "Odotusaulakoe" in started_exam_titles:
+                odotusaulakoe_is_running = True
+                break
         time.sleep(1)
     assert odotusaulakoe_is_running
 
@@ -152,15 +160,23 @@ def test_api_has_copies_of_status_reports():
 
 def test_scheduled_exam_gets_started():
     # Odotusaulakoe is still running.
-    state = ktp_controller.examomatic.client._post("/mock/get_state").json()
-    assert state["status_reports"][-1]["status"]["data"]["examStatus"]["hasStarted"]
+    last_status_report = ktp_controller.examomatic.client._post(
+        "/mock/get_state"
+    ).json()["status_reports"][-1]
+    assert _is_fresh_status_report(last_status_report)
+    assert "Odotusaulakoe" in [
+        e["examTitle"] for e in last_status_report["exams"] if e["hasStarted"]
+    ]
 
     # Wait until it's not running anymore.
     exam_package_is_not_running = False
     for i in range(90):
         state = ktp_controller.examomatic.client._post("/mock/get_state").json()
         status_reports = state["status_reports"]
-        if not status_reports[-1]["status"]["data"]["examStatus"]["hasStarted"]:
+        started_exam_titles = [
+            e["examTitle"] for e in status_reports[-1]["exams"] if e["hasStarted"]
+        ]
+        if "Odotusaulakoe" not in started_exam_titles:
             exam_package_is_not_running = True
             break
         time.sleep(1)
@@ -171,14 +187,15 @@ def test_scheduled_exam_gets_started():
     for i in range(15):
         state = ktp_controller.examomatic.client._post("/mock/get_state").json()
         status_reports = state["status_reports"]
-        if status_reports[-1]["status"]["data"]["examStatus"]["hasStarted"]:
+        started_exam_titles = [
+            e["examTitle"] for e in status_reports[-1]["exams"] if e["hasStarted"]
+        ]
+        if "Integraatiotestikoe1" in started_exam_titles:
             exam_package_is_running = True
             break
         time.sleep(1)
     assert exam_package_is_running
     assert ktp_controller.api.client.get_current_exam_package()["state"] == "running"
-
-    # TODO: use exam uuids or at least titles
 
 
 def test_scheduled_exam_gets_stopped():
