@@ -11,11 +11,11 @@ import ktp_controller.api.client
 import ktp_controller.examomatic.client
 
 
-## Test functions are and must be executed sequentially. In unit
-## tests, it's not a good idea to build tests which depend on each
-## other, but this is integration test scenario, and pytest is just a
-## neat way to run them too. So, each test function is a sequential
-## step in the testrun.
+# Test functions are and must be executed sequentially. In unit tests,
+# it's not a good idea to build tests which depend on each other, but
+# this is integration test scenario, and pytest is just a neat way to
+# run them too. So, each test function is a sequential step in the
+# testrun.
 
 
 def test_abitti2_reset():
@@ -70,8 +70,11 @@ def test_abitti2_status_reporting():
         if len(status_reports) > 0:
             break
         time.sleep(1)
-    # In the beginning, there were no exams running.
-    assert not state["status_reports"][0]["status"]["data"]["examStatus"]["hasStarted"]
+    # Check that the last received status report is fresh.
+    assert (
+        ktp_controller.utils.utcnow()
+        - datetime.datetime.fromisoformat(status_reports[-1]["received_at"])
+    ).total_seconds() < 6
 
 
 def test_odotusaulakoe_is_running():
