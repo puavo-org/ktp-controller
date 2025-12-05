@@ -26,9 +26,11 @@ installdirs:
 	mkdir -p $(DESTDIR)/opt/ktp-controller/alembic/versions
 	mkdir -p $(DESTDIR)/opt/ktp-controller/ktp_controller
 	mkdir -p $(DESTDIR)/opt/ktp-controller/ktp_controller/abitti2
+	mkdir -p $(DESTDIR)/opt/ktp-controller/ktp_controller/agent
 	mkdir -p $(DESTDIR)/opt/ktp-controller/ktp_controller/api
 	mkdir -p $(DESTDIR)/opt/ktp-controller/ktp_controller/api/exam
 	mkdir -p $(DESTDIR)/opt/ktp-controller/ktp_controller/api/system
+	mkdir -p $(DESTDIR)/opt/ktp-controller/ktp_controller/cli
 	mkdir -p $(DESTDIR)/opt/ktp-controller/ktp_controller/examomatic
 	mkdir -p $(DESTDIR)/opt/ktp-controller/supervisor
 
@@ -50,12 +52,16 @@ install: installdirs
 	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/ktp_controller/abitti2 \
 		ktp_controller/abitti2/*.py \
 		ktp_controller/abitti2/words.txt
+	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/ktp_controller/agent \
+		ktp_controller/agent/*.py
 	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/ktp_controller/api \
 		ktp_controller/api/*.py
 	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/ktp_controller/api/exam \
 		ktp_controller/api/exam/*.py
 	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/ktp_controller/api/system \
 		ktp_controller/api/system/*.py
+	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/ktp_controller/cli \
+		ktp_controller/cli/*.py
 	$(INSTALL_DATA) -t $(DESTDIR)/opt/ktp-controller/ktp_controller/examomatic \
 		ktp_controller/examomatic/*.py \
 		ktp_controller/examomatic/dummy-exam-file.mex
