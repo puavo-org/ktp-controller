@@ -432,6 +432,14 @@ class Agent:
         self,
         current_exam_package: typing.Dict[str, typing.Any],
     ) -> bool:
+        abitti2_status_report = (
+            ktp_controller.api.client.get_last_abitti2_status_report()
+        )
+        if abitti2_status_report["status"]["data"]["answerPaperCount"] == 0:
+            # If there are no answers, Abitti2 blocks download
+            # requests indefinitely.
+            _LOGGER.warning("There are no answers to download.")
+            return True
         _transfer_answers(
             current_exam_package["external_id"],
             is_final=ktp_controller.examomatic.client.IsFinal.TRUE,
@@ -670,9 +678,9 @@ class Agent:
                 _LOGGER.exception("received invalid data from Exam-O-Matic: %r", data)
                 continue
 
-            self.__connection_stats[Component.EXAMOMATIC].last_message_received_at = (
-                received_at
-            )
+            self.__connection_stats[
+                Component.EXAMOMATIC
+            ].last_message_received_at = received_at
 
             if message["type"] == "pong":
                 self.__connection_stats[Component.EXAMOMATIC].ping_pong_count += 1
