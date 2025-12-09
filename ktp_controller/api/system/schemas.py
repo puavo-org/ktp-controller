@@ -24,7 +24,7 @@ class Abitti2Exam(ktp_controller.pydantic.BaseModel):
     examUuid: pydantic.StrictStr
     examTitle: pydantic.StrictStr
     hasStarted: pydantic.StrictBool
-    startTime: ktp_controller.pydantic.DateTime
+    startTime: ktp_controller.pydantic.DateTime | None
     type: pydantic.StrictStr
 
 
