@@ -25,7 +25,7 @@ import websockets
 # Internal imports
 import ktp_controller.abitti2.client
 import ktp_controller.abitti2.naksu2
-import ktp_controller.agent.utils
+import ktp_controller.agent.state
 import ktp_controller.api.client
 import ktp_controller.examomatic.client
 import ktp_controller.pydantic
@@ -238,7 +238,7 @@ class Agent:
         approx_api_status_report_interval_sec: int = 30,
         approx_examomatic_ping_interval_sec: int = 30,
         approx_restart_timeout_sec: int = 5,
-        state: ktp_controller.agent.utils.AgentState,
+        state: ktp_controller.agent.state.AgentState,
     ):
         self.__state = state
 
@@ -960,7 +960,7 @@ class Agent:
 
         asyncio.run(self.forever())
 
-    def get_state(self) -> ktp_controller.agent.utils.AgentState:
+    def get_state(self) -> ktp_controller.agent.state.AgentState:
         return self.__state.model_copy()
 
 
@@ -982,12 +982,12 @@ def _singleton(lock_file_path: str | None = None):
 
 
 def _run() -> int:
-    agent_state = ktp_controller.agent.utils.load_agent_state()
+    agent_state = ktp_controller.agent.state.load_agent_state()
     agent = Agent(state=agent_state)
     try:
         agent.run()
     finally:
-        ktp_controller.agent.utils.save_agent_state(agent.get_state())
+        ktp_controller.agent.state.save_agent_state(agent.get_state())
 
     return 0
 
