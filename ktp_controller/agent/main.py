@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
 # Standard library imports
-import abc
 import asyncio
-import dataclasses
 import datetime
 import enum
 import hashlib
@@ -14,7 +12,6 @@ import typing
 import zipfile
 
 # Third-party imports
-import pydantic
 import requests.exceptions
 import websockets
 
@@ -22,6 +19,7 @@ import websockets
 import ktp_controller.abitti2.client
 import ktp_controller.abitti2.naksu2
 import ktp_controller.agent.state
+import ktp_controller.agent.stats
 import ktp_controller.api.client
 import ktp_controller.examomatic.client
 import ktp_controller.files
@@ -160,25 +158,6 @@ class _UsageError(_Error):
         return f"usage error: {self.__error_message}"
 
 
-@dataclasses.dataclass
-class _ConnectionStats(abc.ABC):
-    connected_at: ktp_controller.pydantic.DateTime
-
-
-class ExamomaticConnectionStats(_ConnectionStats):
-    ping_pong_count: pydantic.NonNegativeInt = 0
-    refresh_exams_count: pydantic.NonNegativeInt = 0
-    last_message_received_at: ktp_controller.pydantic.DateTime | None = None
-
-
-class APIConnectionStats(_ConnectionStats):
-    pass
-
-
-class Abitti2ConnectionStats(_ConnectionStats):
-    pass
-
-
 class Agent:
     def __init__(
         self,
@@ -202,7 +181,9 @@ class Agent:
         self.__last_received_exam_list = None
         self.__last_received_security_code = None
 
-        self.__connection_stats: typing.Dict[Component, _ConnectionStats] = {}
+        self.__connection_stats: typing.Dict[
+            Component, ktp_controller.agent.stats.ConnectionStats
+        ] = {}
         self.__commands = {
             str(
                 ktp_controller.messages.Command.ENABLE_AUTO_CONTROL
@@ -719,7 +700,7 @@ class Agent:
         url: str,
         asyncfuncs: typing.Awaitable,
         *,
-        connection_stats_class: type[_ConnectionStats],
+        connection_stats_class: type[ktp_controller.agent.stats.ConnectionStats],
         additional_headers: typing.Dict[str, str] | None = None,
     ):
         while True:
@@ -758,7 +739,7 @@ class Agent:
                 self.__send_status_reports_to_api,
                 self.__communicate_with_api,
             ],
-            connection_stats_class=APIConnectionStats,
+            connection_stats_class=ktp_controller.agent.stats.APIConnectionStats,
         )
 
     async def __maintain_websocket_connection_to_examomatic(self):
@@ -769,7 +750,7 @@ class Agent:
                 self.__send_pings_to_examomatic,
                 self.__communicate_with_examomatic,
             ],
-            connection_stats_class=ExamomaticConnectionStats,
+            connection_stats_class=ktp_controller.agent.stats.ExamomaticConnectionStats,
             additional_headers=ktp_controller.examomatic.client.get_basic_auth(),
         )
 
@@ -780,7 +761,7 @@ class Agent:
             [
                 self.__communicate_with_abitti2,
             ],
-            connection_stats_class=Abitti2ConnectionStats,
+            connection_stats_class=ktp_controller.agent.stats.Abitti2ConnectionStats,
             additional_headers=ktp_controller.abitti2.client.get_basic_auth(),
         )
 
