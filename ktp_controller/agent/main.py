@@ -673,6 +673,51 @@ class Agent:
                 message["singleSecurityCode"] = self.__last_received_security_code
 
                 try:
+                    students = message["data"]["students"]
+                except KeyError:
+                    _LOGGER.error(
+                        "received unexpected status message from Abitti2: %r", message
+                    )
+                    students = []
+                else:
+                    if not isinstance(students, list):
+                        _LOGGER.error(
+                            "received unexpected status message from Abitti2: %r",
+                            message,
+                        )
+                        students = []
+
+                for student in students:
+                    try:
+                        student_uuid = student["studentUuid"]
+                        session_uuid = student["sessionUuid"]
+                        student_status = student["studentStatus"]
+                    except KeyError:
+                        _LOGGER.error(
+                            "received unexpected status message from Abitti2: %r",
+                            message,
+                        )
+                    else:
+                        if self.__is_auto_control_enabled:
+                            try:
+                                if student_status == "waiting-for-auth-browser":
+                                    ktp_controller.abitti2.client.set_exam_session_permission_to_use_browsers(
+                                        session_uuid, True
+                                    )
+                            except Exception:  # pylint: disable=broad-exception-caught
+                                _LOGGER.error(
+                                    "failed to allow student %s to use browsers in session %s",
+                                    student_uuid,
+                                    session_uuid,
+                                )
+                            else:
+                                _LOGGER.info(
+                                    "allowed student %s to use browsers in session %s",
+                                    student_uuid,
+                                    session_uuid,
+                                )
+
+                try:
                     monitoring_passphrase = (
                         ktp_controller.abitti2.naksu2.read_password()
                     )
