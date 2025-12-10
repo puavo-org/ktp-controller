@@ -671,9 +671,26 @@ class Agent:
 
             elif message_type == "stats":
                 message["singleSecurityCode"] = self.__last_received_security_code
+
+                try:
+                    monitoring_passphrase = (
+                        ktp_controller.abitti2.naksu2.read_password()
+                    )
+                except Exception:  # pylint: disable=broad-exception-caught
+                    _LOGGER.exception("failed to read monitoring passphrase")
+                    monitoring_passphrase = None
+
+                try:
+                    abitti2_version = (
+                        ktp_controller.abitti2.client.get_current_abitti2_version()
+                    )
+                except Exception:  # pylint: disable=broad-exception-caught
+                    _LOGGER.exception("failed to get current Abitti2 version")
+                    abitti2_version = None
+
                 status_report = {
-                    "monitoring_passphrase": ktp_controller.abitti2.naksu2.read_password(),
-                    "server_version": ktp_controller.abitti2.client.get_current_abitti2_version(),
+                    "monitoring_passphrase": monitoring_passphrase,
+                    "server_version": abitti2_version,
                     "status": message,
                     "received_at": ktp_controller.utils.strfdt(received_at),
                     "exams": self.__last_received_exam_list,
@@ -685,10 +702,15 @@ class Agent:
                     )
                     status_report["reported_at"] = ktp_controller.utils.utcnow_str()
                     _LOGGER.info("sent Abitti2 status report to Exam-O-Matic")
-                finally:
-                    status_report.setdefault("reported_at", None)
-                    ktp_controller.api.client.send_abitti2_status_report(status_report)
-                    _LOGGER.info("sent Abitti2 status report to KTP Controller API")
+                except Exception:  # pylint: disable=broad-exception-caught
+                    _LOGGER.exception(
+                        "failed to send Abitti2 status report to Exam-O-Matic"
+                    )
+                    status_report["reported_at"] = None
+
+                ktp_controller.api.client.send_abitti2_status_report(status_report)
+                _LOGGER.info("sent Abitti2 status report to KTP Controller API")
+
             elif message_type == "exams":
                 self.__last_received_exam_list = message["data"]
             else:
