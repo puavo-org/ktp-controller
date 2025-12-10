@@ -12,7 +12,7 @@ disable=global-statement,
 ignore-patterns=^\.#,
                 ^flycheck_
 max-line-length=120
-
+max-module-lines=2000
 notes=HACK,
       FIXME,
       XXX

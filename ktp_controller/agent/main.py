@@ -125,6 +125,34 @@ def _set_current_exam_package_state(
     return last_state != next_state
 
 
+def _allow_students_to_use_browsers(students):
+    for student in students:
+        student_uuid = student["studentUuid"]
+        session_uuid = student["sessionUuid"]
+        student_status = student["studentStatus"]
+
+        if student_status != "waiting-for-auth-browser":
+            continue
+
+        try:
+            ktp_controller.abitti2.client.set_exam_session_permission_to_use_browsers(
+                session_uuid, True
+            )
+        except Exception:  # pylint: disable=broad-exception-caught
+            _LOGGER.error(
+                "failed to allow student %s to use browsers in session %s",
+                student_uuid,
+                session_uuid,
+            )
+            continue
+
+        _LOGGER.info(
+            "allowed student %s to use browsers in session %s",
+            student_uuid,
+            session_uuid,
+        )
+
+
 class Trigger(str, enum.Enum):
     TIME = "time"
     MANUAL_PREPARE = "manual_prepare"
@@ -642,124 +670,161 @@ class Agent:
 
             await ktp_controller.examomatic.client.websock_ack(websock, message)
 
+    async def __handle_abitti2_ping_message(
+        self,
+        websock: websockets.ClientConnection,
+        received_at: datetime.datetime,  # pylint: disable=unused-argument
+        message: None,  # pylint: disable=unused-argument
+    ):
+        await websock.send("pong")
+
+    async def __handle_abitti2_security_code_message(
+        self,
+        websock: websockets.ClientConnection,  # pylint: disable=unused-argument
+        received_at: datetime.datetime,  # pylint: disable=unused-argument
+        message: typing.Dict[str, typing.Any],
+    ):
+        try:
+            self.__last_received_security_code = message["data"]["securityCode"]
+        except KeyError:  # Security code is not always there
+            pass
+
+    def __validate_abitti2_stats_message(
+        self, message: typing.Dict[str, typing.Any]
+    ) -> bool:
+        # TODO: use pydantic instead
+        try:
+            students = message["data"]["students"]
+        except KeyError:
+            _LOGGER.error(
+                "received unexpected status message from Abitti2: %r", message
+            )
+            return False
+
+        if not isinstance(students, list):
+            _LOGGER.error(
+                "received unexpected status message from Abitti2: %r",
+                message,
+            )
+            return False
+
+        for student in students:
+            try:
+                _ = student["studentUuid"]
+                _ = student["sessionUuid"]
+                _ = student["studentStatus"]
+            except KeyError:
+                _LOGGER.error(
+                    "received unexpected status message from Abitti2: %r",
+                    message,
+                )
+                return False
+        return True
+
+    async def __handle_abitti2_stats_message(
+        self,
+        websock: websockets.ClientConnection,  # pylint: disable=unused-argument
+        received_at: datetime.datetime,
+        message: typing.Dict[str, typing.Any],
+    ):
+        message["singleSecurityCode"] = self.__last_received_security_code
+
+        if (
+            self.__validate_abitti2_stats_message(message)
+            and self.__is_auto_control_enabled
+        ):
+            _allow_students_to_use_browsers(message["data"]["students"])
+
+        try:
+            monitoring_passphrase = ktp_controller.abitti2.naksu2.read_password()
+        except Exception:  # pylint: disable=broad-exception-caught
+            _LOGGER.exception("failed to read monitoring passphrase")
+            monitoring_passphrase = None
+
+        try:
+            abitti2_version = (
+                ktp_controller.abitti2.client.get_current_abitti2_version()
+            )
+        except Exception:  # pylint: disable=broad-exception-caught
+            _LOGGER.exception("failed to get current Abitti2 version")
+            abitti2_version = None
+
+        status_report = {
+            "monitoring_passphrase": monitoring_passphrase,
+            "server_version": abitti2_version,
+            "status": message,
+            "received_at": ktp_controller.utils.strfdt(received_at),
+            "exams": self.__last_received_exam_list,
+        }
+
+        try:
+            ktp_controller.examomatic.client.send_abitti2_status_report(status_report)
+            status_report["reported_at"] = ktp_controller.utils.utcnow_str()
+            _LOGGER.info("sent Abitti2 status report to Exam-O-Matic")
+        except Exception:  # pylint: disable=broad-exception-caught
+            _LOGGER.exception("failed to send Abitti2 status report to Exam-O-Matic")
+            status_report["reported_at"] = None
+
+        ktp_controller.api.client.send_abitti2_status_report(status_report)
+        _LOGGER.info("sent Abitti2 status report to KTP Controller API")
+
+    async def __handle_abitti2_exams_message(
+        self,
+        websock: websockets.ClientConnection,  # pylint: disable=unused-argument
+        received_at: datetime.datetime,  # pylint: disable=unused-argument
+        message: typing.Dict[str, typing.Any],
+    ):
+        self.__last_received_exam_list = message["data"]
+
+    def __decode_abitti2_message(
+        self, data
+    ) -> typing.Tuple[str | None, typing.Dict[str, typing.Any] | None]:
+        if data == "ping":
+            return ("ping", None)
+
+        try:
+            message = ktp_controller.utils.json_loads_dict(data)
+        except ValueError:
+            _LOGGER.exception("received invalid JSON from Abitti2: %r", data)
+            return (None, None)
+
+        try:
+            return (message["type"], message)
+        except KeyError:
+            _LOGGER.exception("received invalid message from Abitti2: %r", data)
+            return (None, None)
+
     async def __communicate_with_abitti2(self, websock):
         async for data in websock:
             received_at = ktp_controller.utils.utcnow()
 
             _LOGGER.debug("<-- Abitti2: %s", data)
 
-            if data == "ping":
-                message_type = "ping"
-            else:
-                try:
-                    message = ktp_controller.utils.json_loads_dict(data)
-                except ValueError:
-                    _LOGGER.exception("received invalid JSON from Abitti2: %r", data)
-                    continue
-                message_type = message["type"]
+            message_type, message = self.__decode_abitti2_message(data)
+            if message_type is None:
+                continue
+
+            try:
+                handler = {
+                    "ping": self.__handle_abitti2_ping_message,
+                    "security-code": self.__handle_abitti2_security_code_message,
+                    "stats": self.__handle_abitti2_stats_message,
+                    "exams": self.__handle_abitti2_exams_message,
+                }[message_type]
+            except KeyError:
+                _LOGGER.warning("unhandled %r message from Abitti2", message_type)
+                continue
 
             _LOGGER.info("received %r message from Abitti2", message_type)
 
-            if message_type == "ping":
-                await websock.send("pong")
-
-            elif message_type == "security-code":
-                try:
-                    self.__last_received_security_code = message["data"]["securityCode"]
-                except KeyError:  # Security code is not always there
-                    pass
-
-            elif message_type == "stats":
-                message["singleSecurityCode"] = self.__last_received_security_code
-
-                try:
-                    students = message["data"]["students"]
-                except KeyError:
-                    _LOGGER.error(
-                        "received unexpected status message from Abitti2: %r", message
-                    )
-                    students = []
-                else:
-                    if not isinstance(students, list):
-                        _LOGGER.error(
-                            "received unexpected status message from Abitti2: %r",
-                            message,
-                        )
-                        students = []
-
-                for student in students:
-                    try:
-                        student_uuid = student["studentUuid"]
-                        session_uuid = student["sessionUuid"]
-                        student_status = student["studentStatus"]
-                    except KeyError:
-                        _LOGGER.error(
-                            "received unexpected status message from Abitti2: %r",
-                            message,
-                        )
-                    else:
-                        if self.__is_auto_control_enabled:
-                            try:
-                                if student_status == "waiting-for-auth-browser":
-                                    ktp_controller.abitti2.client.set_exam_session_permission_to_use_browsers(
-                                        session_uuid, True
-                                    )
-                            except Exception:  # pylint: disable=broad-exception-caught
-                                _LOGGER.error(
-                                    "failed to allow student %s to use browsers in session %s",
-                                    student_uuid,
-                                    session_uuid,
-                                )
-                            else:
-                                _LOGGER.info(
-                                    "allowed student %s to use browsers in session %s",
-                                    student_uuid,
-                                    session_uuid,
-                                )
-
-                try:
-                    monitoring_passphrase = (
-                        ktp_controller.abitti2.naksu2.read_password()
-                    )
-                except Exception:  # pylint: disable=broad-exception-caught
-                    _LOGGER.exception("failed to read monitoring passphrase")
-                    monitoring_passphrase = None
-
-                try:
-                    abitti2_version = (
-                        ktp_controller.abitti2.client.get_current_abitti2_version()
-                    )
-                except Exception:  # pylint: disable=broad-exception-caught
-                    _LOGGER.exception("failed to get current Abitti2 version")
-                    abitti2_version = None
-
-                status_report = {
-                    "monitoring_passphrase": monitoring_passphrase,
-                    "server_version": abitti2_version,
-                    "status": message,
-                    "received_at": ktp_controller.utils.strfdt(received_at),
-                    "exams": self.__last_received_exam_list,
-                }
-
-                try:
-                    ktp_controller.examomatic.client.send_abitti2_status_report(
-                        status_report
-                    )
-                    status_report["reported_at"] = ktp_controller.utils.utcnow_str()
-                    _LOGGER.info("sent Abitti2 status report to Exam-O-Matic")
-                except Exception:  # pylint: disable=broad-exception-caught
-                    _LOGGER.exception(
-                        "failed to send Abitti2 status report to Exam-O-Matic"
-                    )
-                    status_report["reported_at"] = None
-
-                ktp_controller.api.client.send_abitti2_status_report(status_report)
-                _LOGGER.info("sent Abitti2 status report to KTP Controller API")
-
-            elif message_type == "exams":
-                self.__last_received_exam_list = message["data"]
-            else:
-                _LOGGER.warning("unhandled %r message from Abitti2", message_type)
+            try:
+                await handler(websock, received_at, message)
+            except Exception:  # pylint: disable=broad-exception-caught
+                _LOGGER.exception(
+                    "failed to handle %r message from Abitti2: %r",
+                    message_type,
+                    message,
+                )
 
     async def __maintain_websocket_connection(
         self,
