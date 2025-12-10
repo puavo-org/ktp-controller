@@ -2,10 +2,13 @@
 import base64
 import contextlib
 import datetime
+import errno
+import fcntl
 import hashlib
 import json
 import logging
 import os
+import os.path
 import sys
 import typing
 import urllib.parse
@@ -238,3 +241,18 @@ def bytes_stream(filepath: str, chunk_size: int = 4096) -> typing.Iterator[bytes
             if not data:
                 break
             yield data
+
+
+@contextlib.contextmanager
+def singleton():
+    this_prog_path = os.path.realpath(sys.argv[0])
+    with open(this_prog_path, "rb") as lock_file:
+        try:
+            fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as io_error:
+            if io_error.errno != errno.EAGAIN:
+                raise
+            raise RuntimeError(
+                f"program {this_prog_path!r} is already running)"
+            ) from io_error
+        yield

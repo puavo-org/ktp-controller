@@ -3,17 +3,13 @@
 # Standard library imports
 import abc
 import asyncio
-import contextlib
 import dataclasses
 import datetime
 import enum
-import fcntl
-import errno
 import hashlib
 import json
 import logging
 import os.path
-import sys
 import typing
 import zipfile
 
@@ -911,23 +907,6 @@ class Agent:
         return self.__state.model_copy()
 
 
-@contextlib.contextmanager
-def _singleton(lock_file_path: str | None = None):
-    this_prog_path = os.path.realpath(sys.argv[0])
-    if lock_file_path is None:
-        lock_file_path = this_prog_path
-    with open(lock_file_path, "rb") as lock_file:
-        try:
-            fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError as io_error:
-            if io_error.errno != errno.EAGAIN:
-                raise
-            raise RuntimeError(
-                f"program {this_prog_path!r} is already running)"
-            ) from io_error
-        yield
-
-
 def _run() -> int:
     agent_state = ktp_controller.agent.state.load_agent_state()
     agent = Agent(state=agent_state)
@@ -940,5 +919,5 @@ def _run() -> int:
 
 
 def run() -> int:
-    with _singleton():
+    with ktp_controller.utils.singleton():
         return _run()
