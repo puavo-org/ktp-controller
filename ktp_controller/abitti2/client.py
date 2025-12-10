@@ -10,6 +10,7 @@ import requests
 import requests.auth
 
 # Internal imports
+import ktp_controller.files
 import ktp_controller.utils
 import ktp_controller.abitti2.naksu2
 
@@ -18,8 +19,6 @@ _LOGGER = logging.getLogger(__name__)
 
 
 __all__ = [
-    # Constants:
-    "DUMMY_EXAM_PACKAGE_FILEPATH",
     # Utils:
     "get_basic_auth",
     "get_abitti2_websock_url",
@@ -40,10 +39,6 @@ __all__ = [
 
 
 _ABITTI2_USERNAME = "valvoja"
-
-DUMMY_EXAM_PACKAGE_FILEPATH = os.path.expanduser(
-    "~/.local/share/ktp-controller/dummy-exam-package.zip"
-)
 
 
 # Utils:
@@ -188,7 +183,9 @@ def prepare_exam_package(
 
 
 def reset() -> None:
-    prepare_exam_package(DUMMY_EXAM_PACKAGE_FILEPATH, ["odotusaulakoe"])
+    prepare_exam_package(
+        ktp_controller.files.DUMMY_EXAM_PACKAGE_FILEPATH, ["odotusaulakoe"]
+    )
     start_decrypted_exams()
 
 

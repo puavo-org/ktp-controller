@@ -28,6 +28,7 @@ import ktp_controller.abitti2.naksu2
 import ktp_controller.agent.state
 import ktp_controller.api.client
 import ktp_controller.examomatic.client
+import ktp_controller.files
 import ktp_controller.pydantic
 import ktp_controller.utils
 import ktp_controller.messages
@@ -35,68 +36,20 @@ import ktp_controller.messages
 
 _LOGGER = logging.getLogger(__file__)
 
-# All exam files will be stored here like so:
-# ~/.local/share/ktp-controller/exam-files/FILE_UUID/FILE_SHA256
-_EXAM_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-files")
-
-# All exam packages will be stored here like so:
-# ~/.local/share/ktp-controller/exam-packages/FILE_UUID/COMPOUND_EXAM_FILE_SHA256
-_EXAM_PACKAGE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-packages")
-
-# All exam packages will be stored here like so:
-# ~/.local/share/ktp-controller/exam-packages/FILE_UUID/COMPOUND_EXAM_FILE_SHA256
-_ANSWERS_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/answers-files")
-
-_DUMMY_EXAM_FILE_FILEPATH = os.path.expanduser(
-    "~/.local/share/ktp-controller/dummy-exam-file.mex"
-)
-
 
 def _create_dummy_exam_package_file():
-    ktp_controller.examomatic.client.download_dummy_exam_file(_DUMMY_EXAM_FILE_FILEPATH)
+    ktp_controller.examomatic.client.download_dummy_exam_file(
+        ktp_controller.files.DUMMY_EXAM_FILE_FILEPATH
+    )
 
     with ktp_controller.utils.open_atomic_write(
-        ktp_controller.abitti2.client.DUMMY_EXAM_PACKAGE_FILEPATH
+        ktp_controller.files.DUMMY_EXAM_PACKAGE_FILEPATH
     ) as exam_package_file:
         with zipfile.ZipFile(exam_package_file, "w") as exam_package_file_zip:
             exam_package_file_zip.write(
-                _DUMMY_EXAM_FILE_FILEPATH, os.path.basename(_DUMMY_EXAM_FILE_FILEPATH)
+                ktp_controller.files.DUMMY_EXAM_FILE_FILEPATH,
+                os.path.basename(ktp_controller.files.DUMMY_EXAM_FILE_FILEPATH),
             )
-
-
-class LocalFilepathType(str, enum.Enum):
-    ANSWERS_FILE = "answers-file"
-    EXAM_FILE = "exam-file"
-    EXAM_PACKAGE = "exam-package"
-
-    def __str__(self) -> str:
-        return self.value
-
-
-def _get_local_filepath(
-    local_filepath_type: LocalFilepathType, dirname: str, filename_suffix: str
-) -> str:
-    LocalFilepathType(local_filepath_type)
-    if local_filepath_type == LocalFilepathType.EXAM_FILE:
-        basedir = _EXAM_FILE_DIR
-        ext = ".mex"
-    elif local_filepath_type == LocalFilepathType.EXAM_PACKAGE:
-        basedir = _EXAM_PACKAGE_DIR
-        ext = ".zip"
-    elif local_filepath_type == LocalFilepathType.ANSWERS_FILE:
-        basedir = _ANSWERS_FILE_DIR
-        ext = ".meb"
-    else:
-        raise ValueError("invalid local_filepath_type")
-
-    dirpath = os.path.join(basedir, dirname)
-
-    try:
-        os.makedirs(dirpath)
-    except FileExistsError:
-        pass
-
-    return os.path.join(dirpath, f"{local_filepath_type}_{filename_suffix}{ext}")
 
 
 def _transfer_answers(
@@ -104,8 +57,8 @@ def _transfer_answers(
     *,
     is_final: ktp_controller.examomatic.client.IsFinal = ktp_controller.examomatic.client.IsFinal.UNKNOWN,
 ):
-    answers_file_path = _get_local_filepath(
-        LocalFilepathType.ANSWERS_FILE,
+    answers_file_path = ktp_controller.files.get_local_filepath(
+        ktp_controller.files.LocalFilepathType.ANSWERS_FILE,
         exam_package_external_id,
         ktp_controller.utils.utcnow_str() + "_final" if is_final else "",
     )
@@ -133,8 +86,8 @@ def _create_exam_package_file(
         exam_file_infos.append(api_scheduled_exam["exam_file_info"])
 
     decrypt_codes: typing.Set[str] = set()
-    exam_package_filepath = _get_local_filepath(
-        LocalFilepathType.EXAM_PACKAGE,
+    exam_package_filepath = ktp_controller.files.get_local_filepath(
+        ktp_controller.files.LocalFilepathType.EXAM_PACKAGE,
         api_scheduled_exam_package["external_id"],
         hashlib.sha256(
             "".join(sorted([i["sha256"] for i in exam_file_infos])).encode("ascii")
@@ -147,8 +100,8 @@ def _create_exam_package_file(
         with zipfile.ZipFile(exam_package_file, "w") as exam_package_file_zip:
             for exam_file_info in exam_file_infos:
                 exam_package_file_zip.write(
-                    _get_local_filepath(
-                        LocalFilepathType.EXAM_FILE,
+                    ktp_controller.files.get_local_filepath(
+                        ktp_controller.files.LocalFilepathType.EXAM_FILE,
                         exam_file_info["external_id"],
                         exam_file_info["sha256"],
                     ),
@@ -844,8 +797,8 @@ class Agent:
 
         utcnow = ktp_controller.utils.utcnow_str()
 
-        filepath = _get_local_filepath(
-            LocalFilepathType.EXAM_FILE,
+        filepath = ktp_controller.files.get_local_filepath(
+            ktp_controller.files.LocalFilepathType.EXAM_FILE,
             eom_scheduled_exam["file_uuid"],
             eom_scheduled_exam["file_sha256"],
         )
@@ -949,12 +902,6 @@ class Agent:
                 await asyncio.sleep(self.__approx_restart_timeout_sec)
 
     def run(self):
-        for d in (_EXAM_FILE_DIR, _EXAM_PACKAGE_DIR):
-            try:
-                os.makedirs(d)
-            except FileExistsError:
-                pass
-
         # ktp_controller.abitti2.client needs dummy exam package to reset Abitti2.
         _create_dummy_exam_package_file()
 
