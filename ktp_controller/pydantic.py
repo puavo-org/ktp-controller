@@ -26,6 +26,7 @@ __all__ = [
 # Types:
 
 
+StrictNonNegativeInt = typing.Annotated[int, pydantic.Field(strict=True, ge=0)]
 StrictPositiveInt = typing.Annotated[int, pydantic.Field(strict=True, ge=1)]
 StrictSHA256String = typing.Annotated[
     str, pydantic.Field(strict=True, pattern=r"[a-f0-9]{64}")
