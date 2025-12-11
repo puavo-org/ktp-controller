@@ -18,6 +18,7 @@ import websockets
 # Internal imports
 import ktp_controller.abitti2.client
 import ktp_controller.abitti2.naksu2
+import ktp_controller.abitti2.schemas
 import ktp_controller.agent.state
 import ktp_controller.agent.stats
 import ktp_controller.api.client
@@ -692,33 +693,15 @@ class Agent:
     def __validate_abitti2_stats_message(
         self, message: typing.Dict[str, typing.Any]
     ) -> bool:
-        # TODO: use pydantic instead
+
         try:
-            students = message["data"]["students"]
-        except KeyError:
+            ktp_controller.abitti2.schemas.Abitti2StatsMessage.model_validate(message)
+        except ValueError:
             _LOGGER.error(
                 "received unexpected status message from Abitti2: %r", message
             )
             return False
 
-        if not isinstance(students, list):
-            _LOGGER.error(
-                "received unexpected status message from Abitti2: %r",
-                message,
-            )
-            return False
-
-        for student in students:
-            try:
-                _ = student["studentUuid"]
-                _ = student["sessionUuid"]
-                _ = student["studentStatus"]
-            except KeyError:
-                _LOGGER.error(
-                    "received unexpected status message from Abitti2: %r",
-                    message,
-                )
-                return False
         return True
 
     async def __handle_abitti2_stats_message(
@@ -727,13 +710,13 @@ class Agent:
         received_at: datetime.datetime,
         message: typing.Dict[str, typing.Any],
     ):
-        message["singleSecurityCode"] = self.__last_received_security_code
-
         if (
             self.__validate_abitti2_stats_message(message)
             and self.__is_auto_control_enabled
         ):
             _allow_students_to_use_browsers(message["data"]["students"])
+
+        message["singleSecurityCode"] = self.__last_received_security_code
 
         try:
             monitoring_passphrase = ktp_controller.abitti2.naksu2.read_password()
