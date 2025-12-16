@@ -648,3 +648,49 @@ def test_set_current_exam_package_state__set_state_of_current_exam_package_valid
                 get_current_exam_package_response.json()
                 == get_current_exam_package_response2.json()
             )
+
+
+def test_set_current_exam_package_state__multiple_locked_packages(
+    client, testdb, utcnow
+):
+    api_exam_infos = []
+    for i in range(4):
+        eom_exam_info = get_synthetic_exam_info(
+            start_time=utcnow + datetime.timedelta(minutes=5 * i),
+            duration=datetime.timedelta(10),
+            utcnow=utcnow,
+        )
+        api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
+            eom_exam_info
+        )
+
+        assert api_exam_info["scheduled_exam_packages"][0]["locked"]
+
+        api_exam_infos.append(api_exam_info)
+
+        response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
+        assert_response(response, expected_status_code=200)
+
+    for i in range(4):
+        response = client.post("/api/v1/exam/get_current_exam_package")
+        assert_response(response, expected_status_code=200)
+
+        assert response.json() == api_exam_infos[i]["scheduled_exam_packages"][0]
+
+        state = api_exam_infos[i]["scheduled_exam_packages"][0].pop("state")
+
+        assert state is None
+
+        for next_state in ("ready", "running", "stopping", "stopped", "archived"):
+            response = client.post(
+                "/api/v1/exam/set_current_exam_package_state",
+                json={
+                    "external_id": api_exam_infos[i]["scheduled_exam_packages"][0][
+                        "external_id"
+                    ],
+                    "state": next_state,
+                },
+            )
+            assert_response(response, expected_status_code=200)
+            assert response.json() == state
+            state = next_state
