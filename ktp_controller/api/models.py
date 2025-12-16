@@ -136,7 +136,6 @@ class ScheduledExam(Base):  # type: ignore
 
 class ScheduledExamPackage(Base):  # type: ignore
     __tablename__ = "scheduled_exam_package"
-
     dbid: Mapped[int] = mapped_column(
         sqlalchemy.Integer,
         nullable=False,
@@ -173,13 +172,10 @@ class ScheduledExamPackage(Base):  # type: ignore
         nullable=False,
     )
 
-    # Unique nullable ensure only one row can have this column set,
-    # which means that at most one scheduled exam package can be
-    # "current" at any given time.
     current: Mapped[bool] = mapped_column(
         sqlalchemy.Boolean,
-        nullable=True,
-        unique=True,
+        default=False,
+        nullable=False,
     )
 
     state: Mapped[str] = mapped_column(
@@ -193,6 +189,18 @@ class ScheduledExamPackage(Base):  # type: ignore
 
     scheduled_exams: Mapped[typing.List[ScheduledExam]] = sqlalchemy.orm.relationship(
         back_populates="scheduled_exam_package"
+    )
+    __table_args__ = (
+        sqlalchemy.CheckConstraint(
+            current.in_([0, 1]), name="ck_scheduled_exam_package_current"
+        ),
+        # There can never be more than one true value
+        sqlalchemy.Index(
+            "ix_scheduled_exam_package_current",
+            current,
+            unique=True,
+            sqlite_where=(current == 1),
+        ),
     )
 
 
