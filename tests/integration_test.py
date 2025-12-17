@@ -18,6 +18,25 @@ import ktp_controller.examomatic.client
 # testrun.
 
 
+scheduled_exam_package = None
+
+
+def _assert_odotusaulakoe_is_running(timeout: int = 15):
+    odotusaulakoe_is_running = False
+    for i in range(timeout):
+        state = ktp_controller.examomatic.client._post("/mock/get_state").json()
+        status_reports = state["status_reports"]
+        started_exam_titles = [
+            e["examTitle"] for e in status_reports[-1]["exams"] if e["hasStarted"]
+        ]
+        if len(started_exam_titles) > 0:
+            if "Odotusaulakoe" in started_exam_titles:
+                odotusaulakoe_is_running = True
+                break
+        time.sleep(1)
+    assert odotusaulakoe_is_running
+
+
 def _is_fresh_status_report(status_report, max_age_secs: int = 6) -> bool:
     return (
         ktp_controller.utils.utcnow()
@@ -84,19 +103,7 @@ def test_abitti2_status_reporting():
 def test_odotusaulakoe_is_running():
     # 4. Wait until Odotusaulakoe is running. (It takes some time
     # before Abitti2 gets the exam up and running after a reset.)
-    odotusaulakoe_is_running = False
-    for i in range(15):
-        state = ktp_controller.examomatic.client._post("/mock/get_state").json()
-        status_reports = state["status_reports"]
-        started_exam_titles = [
-            e["examTitle"] for e in status_reports[-1]["exams"] if e["hasStarted"]
-        ]
-        if len(started_exam_titles) > 0:
-            if "Odotusaulakoe" in started_exam_titles:
-                odotusaulakoe_is_running = True
-                break
-        time.sleep(1)
-    assert odotusaulakoe_is_running
+    _assert_odotusaulakoe_is_running(timeout=15)
 
 
 def test_first_scheduled_exam_download():
@@ -159,6 +166,8 @@ def test_api_has_copies_of_status_reports():
 
 
 def test_scheduled_exam_gets_started():
+    global scheduled_exam_package
+
     # Odotusaulakoe is still running.
     last_status_report = ktp_controller.examomatic.client._post(
         "/mock/get_state"
@@ -195,16 +204,47 @@ def test_scheduled_exam_gets_started():
             break
         time.sleep(1)
     assert exam_package_is_running
-    assert ktp_controller.api.client.get_current_exam_package()["state"] == "running"
+
+    scheduled_exam_package = ktp_controller.api.client.get_current_exam_package()
+
+    assert scheduled_exam_package["state"] == "running"
 
 
 def test_scheduled_exam_gets_stopped():
-    # Wait until it's not running anymore.
-    exam_package_is_not_running = False
+    global scheduled_exam_package
+
+    # Wait until it's stopped.
+    exam_package_is_stopped = False
     for i in range(90):
-        scheduled_exam_package = ktp_controller.api.client.get_current_exam_package()
+        scheduled_exam_package = ktp_controller.api.client.get_scheduled_exam_package(
+            scheduled_exam_package["external_id"]
+        )
         if scheduled_exam_package["state"] == "stopped":
-            exam_package_is_not_running = True
+            exam_package_is_stopped = True
             break
         time.sleep(1)
-    assert exam_package_is_not_running
+    assert exam_package_is_stopped
+
+
+def test_scheduled_exam_gets_archived():
+    global scheduled_exam_package
+
+    # Wait until it's archived.
+    exam_package_is_archived = False
+    for i in range(90):
+        scheduled_exam_package = ktp_controller.api.client.get_scheduled_exam_package(
+            scheduled_exam_package["external_id"]
+        )
+        if scheduled_exam_package["state"] == "archived":
+            exam_package_is_archived = True
+            break
+        time.sleep(1)
+    assert exam_package_is_archived
+
+    assert ktp_controller.api.client.get_current_exam_package() is None
+
+
+def test_odotusaulakoe_is_running_again():
+    # Wait until Odotusaulakoe is running again. (It takes some time
+    # before Abitti2 gets the exam up and running after a reset.)
+    _assert_odotusaulakoe_is_running(timeout=15)
