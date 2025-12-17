@@ -78,11 +78,11 @@ check: check-format check-alembic
 
 .PHONY: pytest
 pytest:
-	KTP_CONTROLLER_DOTENV=tests/test.env poetry run pytest -rA --ignore-glob=tests/integration_test.py --show-capture=all --ff -x --log-level=WARNING --doctest-modules -vv tests/ ktp_controller/
+	KTP_CONTROLLER_DOTENV=tests/test.env poetry run pytest -rA --ignore-glob=tests/integration_test_case*.py --show-capture=all --ff -x --log-level=WARNING --doctest-modules -vv tests/ ktp_controller/
 
 .PHONY: pytest-integration
 pytest-integration:
-	KTP_CONTROLLER_DOTENV=tests/integration_test.env poetry run pytest -rA --show-capture=all -x --log-level=WARNING -vv tests/integration_test.py
+	KTP_CONTROLLER_DOTENV=tests/integration_test.env poetry run pytest -rA --show-capture=all -x --log-level=WARNING -vv tests/integration_test_case1.py
 
 .PHONY: dev-run
 dev-run: ktp_controller_dev.sqlite
