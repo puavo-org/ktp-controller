@@ -394,15 +394,16 @@ class Agent:
         abitti2_status_report = (
             ktp_controller.api.client.get_last_abitti2_status_report()
         )
-        if abitti2_status_report["status"]["data"]["answerPaperCount"] == 0:
+        if abitti2_status_report["status"]["data"]["answerPaperCount"] > 0:
+            _transfer_answers(
+                current_exam_package["external_id"],
+                is_final=ktp_controller.examomatic.client.IsFinal.TRUE,
+            )
+        else:
             # If there are no answers, Abitti2 blocks download
             # requests indefinitely.
             _LOGGER.warning("There are no answers to download.")
-            return True
-        _transfer_answers(
-            current_exam_package["external_id"],
-            is_final=ktp_controller.examomatic.client.IsFinal.TRUE,
-        )
+        ktp_controller.abitti2.client.reset()
         return True
 
     async def __work_on_current_exam_package(self, *, trigger: Trigger) -> bool:
