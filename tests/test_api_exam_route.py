@@ -91,7 +91,7 @@ def test_save_exam_info__valid_minimal_input(client, testdb, utcnow):
     response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
     assert_response(response, expected_status_code=200)
 
-    assert response.json() == None  # save_exam_info does not return anything currently
+    assert response.json() is None  # save_exam_info does not return anything currently
 
     db_exam_info = testdb.query(models.ExamInfo).one()
 
@@ -156,7 +156,7 @@ def test_save_exam_info__real_anonymized_input(client, testdb, utcnow):
     response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
     assert_response(response, expected_status_code=200)
 
-    assert response.json() == None
+    assert response.json() is None
 
     db_exam_info = testdb.query(models.ExamInfo).one()
 
@@ -230,7 +230,7 @@ def test_get_current_exam_package__empty_database(client, testdb, utcnow):
     response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
-    assert response.json() == None
+    assert response.json() is None
 
 
 def test_get_current_exam_package__one_package_and_over_15mins_to_start_time_no_current_yet(
@@ -249,7 +249,7 @@ def test_get_current_exam_package__one_package_and_over_15mins_to_start_time_no_
     response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
-    assert response.json() == None  # Still None because start_time 30mins in future
+    assert response.json() is None  # Still None because start_time 30mins in future
 
 
 def test_get_current_exam_package__one_package_and_exactly_15mins_to_start_time_no_current_yet(
@@ -384,7 +384,7 @@ def test_get_current_exam_package__one_package_and_it_is_past_end_time_no_curren
     response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
-    assert response.json() == None
+    assert response.json() is None
 
 
 def test_get_current_exam_package__multiple_locked_packages_starting_at_same_time_no_current_yet(
@@ -609,8 +609,8 @@ def test_set_current_exam_package_state__set_state_of_current_exam_package_valid
 
     state = api_exam_info["scheduled_exam_packages"][0].pop("state")
 
-    assert state == None
-    assert api_exam_info["scheduled_exam_packages"][0].pop("state_changed_at") == None
+    assert state is None
+    assert api_exam_info["scheduled_exam_packages"][0].pop("state_changed_at") is None
 
     for next_state in ("ready", "running", "stopping", "stopped", "archived"):
         utcnow_before_state_change = ktp_controller.utils.utcnow()
@@ -634,7 +634,7 @@ def test_set_current_exam_package_state__set_state_of_current_exam_package_valid
 
         if next_state == "archived":
             # Exam package is now in the final state, so it is not current anymore
-            assert get_current_exam_package_response.json() == None
+            assert get_current_exam_package_response.json() is None
 
             assert (
                 testdb.query(models.ScheduledExamPackage)
