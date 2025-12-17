@@ -340,3 +340,51 @@ async def _get_scheduled_exam(
             tzinfo=datetime.timezone.utc
         ),
     }
+
+
+@router.post(
+    "/get_scheduled_exam_package",
+    response_model=schemas.ScheduledExamPackage | None,
+    summary="Get scheduled exam package",
+)
+async def _get_scheduled_exam_package(
+    data: schemas.GetScheduledExamPackageData,
+    db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
+):
+    db_scheduled_exam_package = (
+        db.query(models.ScheduledExamPackage)
+        .filter_by(external_id=data.external_id)
+        .one_or_none()
+    )
+
+    if db_scheduled_exam_package is None:
+        return None
+
+    return {
+        "external_id": db_scheduled_exam_package.external_id,
+        "start_time": db_scheduled_exam_package.start_time.replace(
+            tzinfo=datetime.timezone.utc
+        ),
+        "end_time": db_scheduled_exam_package.end_time.replace(
+            tzinfo=datetime.timezone.utc
+        ),
+        "lock_time": (
+            None
+            if db_scheduled_exam_package.lock_time is None
+            else db_scheduled_exam_package.lock_time.replace(
+                tzinfo=datetime.timezone.utc
+            )
+        ),
+        "locked": db_scheduled_exam_package.locked,
+        "scheduled_exam_external_ids": [
+            se.external_id for se in db_scheduled_exam_package.scheduled_exams
+        ],
+        "state": db_scheduled_exam_package.state,
+        "state_changed_at": (
+            None
+            if db_scheduled_exam_package.state_changed_at is None
+            else db_scheduled_exam_package.state_changed_at.replace(
+                tzinfo=datetime.timezone.utc
+            )
+        ),
+    }

@@ -22,6 +22,7 @@ __all__ = [
     "get_current_exam_package",
     "set_current_exam_package_state",
     "get_scheduled_exam",
+    "get_scheduled_exam_package",
     "save_exam_info",
     "send_abitti2_status_report",
 ]
@@ -178,3 +179,13 @@ def save_exam_info(
 
 def async_command(command: ktp_controller.messages.Command) -> str:
     return _post("/api/v1/system/async_command", json={"command": command}).json()
+
+
+def get_scheduled_exam_package(
+    external_id: str, *, timeout: int = 20
+) -> typing.Dict[str, typing.Any]:
+    return _post(
+        "/api/v1/exam/get_scheduled_exam_package",
+        json={"external_id": external_id},
+        timeout=timeout,
+    ).json()

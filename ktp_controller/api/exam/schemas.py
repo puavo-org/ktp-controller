@@ -92,3 +92,7 @@ class GetScheduledExamData(ktp_controller.pydantic.BaseModel):
 class SetCurrentExamPackageStateData(ktp_controller.pydantic.BaseModel):
     external_id: pydantic.StrictStr
     state: ScheduledExamPackageState
+
+
+class GetScheduledExamPackageData(ktp_controller.pydantic.BaseModel):
+    external_id: pydantic.StrictStr

@@ -272,6 +272,38 @@ def test_get_current_exam_package__one_package_and_exactly_15mins_to_start_time_
     assert response.json() == api_exam_info["scheduled_exam_packages"][0]
 
 
+def test_get_scheduled_exam_package__non_existing_and_existing_external_ids(
+    client, testdb, utcnow
+):
+    eom_exam_info = get_synthetic_exam_info(
+        start_time=utcnow + datetime.timedelta(minutes=15),
+        utcnow=utcnow,
+    )
+    api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
+        eom_exam_info
+    )
+
+    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
+    assert_response(response, expected_status_code=200)
+
+    response = client.post(
+        "/api/v1/exam/get_scheduled_exam_package", json={"external_id": "foobar"}
+    )
+    assert_response(response, expected_status_code=200)
+
+    assert response.json() is None
+
+    response = client.post(
+        "/api/v1/exam/get_scheduled_exam_package",
+        json={
+            "external_id": api_exam_info["scheduled_exam_packages"][0]["external_id"]
+        },
+    )
+    assert_response(response, expected_status_code=200)
+
+    assert response.json() == api_exam_info["scheduled_exam_packages"][0]
+
+
 def test_get_current_exam_package__one_package_and_under_15mins_to_start_time_no_current_yet(
     client, testdb, utcnow
 ):
