@@ -24,6 +24,14 @@ _EXAM_FILE_INFOS = {
         "file_uuid": "c574f93a-ac4d-4441-8679-ca47e565fb7b",  # UUID from oma.abitti.fi/school/exams
         "decrypt_code": "itarasti toutain edustava myllytys",
     },
+    "Integraatiotestikoe2": {
+        "exam_title": "Integraatiotestikoe2",
+        "file_name": "exam_Integraatiotestikoe2.mex",
+        "file_size": 15948894,
+        "file_sha256": "8bd96c658b1a749c3634e71d61ac452affb4bfe6fabb5f293b682111511d83af",
+        "file_uuid": "90d99c0a-87b2-49b3-b791-3090550f6345",  # UUID from oma.abitti.fi/school/exams
+        "decrypt_code": "kiljaus sahuri maagi edustua",
+    },
 }
 
 
