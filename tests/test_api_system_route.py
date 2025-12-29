@@ -3,6 +3,7 @@ import datetime
 
 # Third-party imports
 import fastapi
+import pytest
 
 # Internal imports
 import ktp_controller.messages
@@ -15,11 +16,14 @@ from .utils import client, testdb, db_engine, utcnow, assert_response
 # starts with an empty database.
 
 
-def test_enable_auto_control(client: fastapi.testclient.TestClient, testdb, utcnow):
+@pytest.mark.parametrize("command", ["enable_auto_control", "disable_auto_control"])
+def test_async_command_dispatching(
+    client: fastapi.testclient.TestClient, testdb, utcnow, command
+):
     with client.websocket_connect("/api/v1/system/agent_websocket") as agent_websock:
         response = client.post(
             "/api/v1/system/async_command",
-            json={"command": "enable_auto_control"},
+            json={"command": command},
         )
         assert_response(response, expected_status_code=202)
         data = agent_websock.receive_json()
@@ -29,26 +33,7 @@ def test_enable_auto_control(client: fastapi.testclient.TestClient, testdb, utcn
         assert data == {
             "kind": "command",
             "data": {
-                "command": "enable_auto_control",
-            },
-        }
-
-
-def test_disable_auto_control(client: fastapi.testclient.TestClient, testdb, utcnow):
-    with client.websocket_connect("/api/v1/system/agent_websocket") as agent_websock:
-        response = client.post(
-            "/api/v1/system/async_command",
-            json={"command": "disable_auto_control"},
-        )
-        assert_response(response, expected_status_code=202)
-        data = agent_websock.receive_json()
-        ktp_controller.messages.CommandMessage.model_validate(data)
-
-        data.pop("uuid")
-        assert data == {
-            "kind": "command",
-            "data": {
-                "command": "disable_auto_control",
+                "command": command,
             },
         }
 
