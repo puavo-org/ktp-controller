@@ -11,6 +11,8 @@ INSTALL_DATA = $(INSTALL) -m 644
 _build_formats := sdist wheel
 _build_targets := $(_build_formats:%=build-%)
 
+integration_test_case_targets := integration-test-case1 integration-test-case2
+
 .NOTPARALLEL: all
 .PHONY: all
 all: check test build
@@ -82,7 +84,8 @@ pytest:
 
 .PHONY: pytest-integration
 pytest-integration:
-	KTP_CONTROLLER_DOTENV=tests/integration_test.env poetry run pytest -rA --show-capture=all -x --log-level=WARNING -vv tests/integration_test_case2.py
+	test -n "$${KTP_CONTROLLER_INTEGRATION_TEST_CASE:-}"
+	KTP_CONTROLLER_DOTENV=tests/integration_test.env poetry run pytest -rA --show-capture=all -x --log-level=WARNING -vv "tests/integration_test_$${KTP_CONTROLLER_INTEGRATION_TEST_CASE}.py"
 
 .PHONY: dev-run
 dev-run: ktp_controller_dev.sqlite
@@ -93,10 +96,14 @@ test:
 	poetry run supervisord -c supervisor/test.conf
 	@grep -q -x ok supervisor/chain_result
 
-.PHONY: integration-test
-integration-test:
-	poetry run supervisord -c supervisor/integration-test.conf
+.PHONY: $(integration_test_case_targets)
+$(integration_test_case_targets): integration-test-%:
+	KTP_CONTROLLER_INTEGRATION_TEST_CASE='$(@:integration-test-%=%)' poetry run supervisord -c supervisor/integration-test.conf
 	@grep -q -x ok supervisor/chain_result
+
+.NOTPARALLEL: integration-test
+.PHONY: integration-test
+integration-test: $(integration_test_case_targets)
 
 .PHONY: dev-install
 dev-install:
