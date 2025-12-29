@@ -43,6 +43,7 @@ httpx = "*"
 black = "*"
 flake8 = "*"
 jedi = "*"
+selenium = "*"
 #isort = "*"
 
 [build-system]

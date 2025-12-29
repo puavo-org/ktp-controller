@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import fastapi.testclient
 import pytest
+import selenium.webdriver
 
 # Internal imports
 from ktp_controller.api.main import APP
@@ -59,3 +60,13 @@ def assert_response(response, *, expected_status_code: int):
     except AssertionError:
         print(response.content, file=sys.stderr)
         raise
+
+
+@pytest.fixture
+def browser_chrome():
+    chrome = selenium.webdriver.Chrome()
+    try:
+        chrome.maximize_window()
+        yield chrome
+    finally:
+        chrome.quit()

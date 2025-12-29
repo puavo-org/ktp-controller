@@ -11,7 +11,7 @@ INSTALL_DATA = $(INSTALL) -m 644
 _build_formats := sdist wheel
 _build_targets := $(_build_formats:%=build-%)
 
-integration_test_case_targets := integration-test-case1 integration-test-case2
+integration_test_case_targets := integration-test-case1 integration-test-case2 integration-test-case5
 
 .NOTPARALLEL: all
 .PHONY: all
