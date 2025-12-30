@@ -5,6 +5,11 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
+# Internal imports
+
+# Relative imports
+from .utils import random_artificial_hetu
+
 
 class _Base:
     def __init__(self, browser):
@@ -29,7 +34,6 @@ def _button_by_text(text):
 
 
 class Abitti2Student(_Base):
-
     def _radio_button_by_name_and_value(self, name, value):
         escaped_value = self.browser.execute_script(
             "return CSS.escape(arguments[0]);", value
@@ -72,11 +76,12 @@ class Abitti2Student(_Base):
     def start_exam(self, *, exam_uuid, exam_title, access_code):
         self.load()
         self.accept_eula()
+        hetu = random_artificial_hetu()
         self.register(
             first_name="Tester",
             last_name="Tester",
-            ssn="010107A967E",
-            email="tester.tester@test.invalid",
+            ssn=hetu,
+            email=f"tester.tester.{hetu}@test.invalid",  # RF2606 reserves .invalid
         )
         self.select_exam(exam_uuid=exam_uuid)
         self.enter_access_code(access_code=access_code)
