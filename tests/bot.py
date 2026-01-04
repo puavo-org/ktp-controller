@@ -1,4 +1,5 @@
 # Standard library imports
+import contextlib
 
 # Third-party imports
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -29,12 +30,29 @@ class _Base:
     def enter_text(self, locator, text):
         self.find(locator).send_keys(text)
 
+    @contextlib.contextmanager
+    def switch_to_iframe(self, name):
+        try:
+            self.wait.until(EC.frame_to_be_available_and_switch_to_it((By.NAME, name)))
+            yield
+        finally:
+            self.browser.switch_to.parent_frame()
+
 
 def _button_by_text(text):
     return (By.XPATH, f'//button[text()="{text}"]')
 
 
 class Abitti2Student(_Base):
+    def __init__(self, browser: WebDriver):
+        super().__init__(browser)
+        self.hetu = random_artificial_hetu()
+        self.first_name = "Tester"
+        self.last_name = "Tester"
+        self.email = (
+            f"tester.tester.{self.hetu}@test.invalid"  # RF2606 reserves .invalid
+        )
+
     def _radio_button_by_name_and_value(self, name, value):
         escaped_value = self.browser.execute_script(
             "return CSS.escape(arguments[0]);", value
@@ -51,11 +69,11 @@ class Abitti2Student(_Base):
     def accept_eula(self):
         self.click(_button_by_text("Hyväksyn käyttöehdot ja valvonnan"))
 
-    def register(self, *, first_name, last_name, ssn, email):
-        self.enter_text((By.ID, "firstNames"), first_name)
-        self.enter_text((By.ID, "lastName"), last_name)
-        self.enter_text((By.ID, "ssn"), ssn)
-        self.enter_text((By.ID, "email"), email)
+    def register(self):
+        self.enter_text((By.ID, "firstNames"), self.first_name)
+        self.enter_text((By.ID, "lastName"), self.last_name)
+        self.enter_text((By.ID, "ssn"), self.hetu)
+        self.enter_text((By.ID, "email"), self.email)
         self.click(_button_by_text("Siirry kokeen valintaan"))
 
     def select_exam(self, *, exam_uuid):
@@ -74,26 +92,29 @@ class Abitti2Student(_Base):
 
         self.find((By.CSS_SELECTOR, 'div[data-testid="wait-for-approval"]'))
 
-    def start_exam(self, *, exam_uuid, exam_title, access_code):
-        self.load()
+    def start_exam(
+        self, *, exam_uuid, exam_title, access_code, expect_exam_instructions=True
+    ):
         self.accept_eula()
-        hetu = random_artificial_hetu()
-        self.register(
-            first_name="Tester",
-            last_name="Tester",
-            ssn=hetu,
-            email=f"tester.tester.{hetu}@test.invalid",  # RF2606 reserves .invalid
-        )
+        self.register()
         self.select_exam(exam_uuid=exam_uuid)
         self.enter_access_code(access_code=access_code)
-        self.click((By.CSS_SELECTOR, 'button[data-testid="close-exam-instructions"]'))
-        try:
-            self.browser.switch_to.frame("exam")
+        if expect_exam_instructions:
+            self.click(
+                (By.CSS_SELECTOR, 'button[data-testid="close-exam-instructions"]')
+            )
+        with self.switch_to_iframe("exam"):
             self.find(
                 (
                     By.XPATH,
                     f"//h1[@id='title' and contains(text(), '{exam_title}')]",
                 )
             )
-        finally:
-            self.browser.switch_to.default_content()
+
+    def relogin(self):
+        self.click(_button_by_text("Kirjaudu uudelleen"))
+
+    def end_exam(self):
+        with self.switch_to_iframe("exam"):
+            self.click(_button_by_text("Siirry tarkastelemaan vastauksiasi"))
+            self.click(self.find((By.CSS_SELECTOR, 'button[id="endSession"]')))

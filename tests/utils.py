@@ -64,21 +64,19 @@ def assert_response(response, *, expected_status_code: int):
         raise
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def browser_chrome():
     chrome = selenium.webdriver.Chrome()
     try:
-        chrome.maximize_window()
         yield chrome
     finally:
         chrome.quit()
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def browser_firefox():
     firefox = selenium.webdriver.Firefox()
     try:
-        firefox.maximize_window()
         yield firefox
     finally:
         firefox.quit()

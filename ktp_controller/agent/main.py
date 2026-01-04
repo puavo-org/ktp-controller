@@ -323,9 +323,14 @@ class Agent:
         (exam_package_filepath, decrypt_codes) = _create_exam_package_file(
             current_exam_package
         )
-        if self.__is_auto_control_enabled:
-            # Change automatically when exam package is prepared.
-            ktp_controller.abitti2.client.change_single_security_code()
+        # TODO: Change automatically when exam package is prepared
+        # AND ensure it is changed before uploading the exam,
+        # because otherwise existing students can just relogin
+        # with the old access code. However, Abitti2 does not seem
+        # to always change the code when requested or there's
+        # really long delay.
+        #  if self.__is_auto_control_enabled:
+        # ktp_controller.abitti2.client.change_single_security_code()
         exam_filenames = ktp_controller.abitti2.client.prepare_exam_package(
             exam_package_filepath, decrypt_codes
         )
