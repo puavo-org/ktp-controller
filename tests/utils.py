@@ -3,7 +3,6 @@ import datetime
 import enum
 import random
 import sys
-import typing
 
 # Third-party imports
 from sqlalchemy import create_engine
@@ -73,6 +72,16 @@ def browser_chrome():
         yield chrome
     finally:
         chrome.quit()
+
+
+@pytest.fixture
+def browser_firefox():
+    firefox = selenium.webdriver.Firefox()
+    try:
+        firefox.maximize_window()
+        yield firefox
+    finally:
+        firefox.quit()
 
 
 class Gender(str, enum.Enum):
