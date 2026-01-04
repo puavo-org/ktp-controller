@@ -117,7 +117,7 @@ def random_artificial_hetu(gender: Gender | None = None):
 
     if birthday.year < 1800:
         raise RuntimeError("mummys cannot have hetus")
-    elif birthday.year < 1900:
+    if birthday.year < 1900:
         c = "+"  # They are all dead.
     elif birthday.year < 2000:
         c = "-"
