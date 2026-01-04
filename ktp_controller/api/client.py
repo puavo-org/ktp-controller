@@ -143,6 +143,21 @@ def get_last_abitti2_status_report(
     ).json()
 
 
+def get_access_code() -> typing.Tuple[str, str] | None:
+    last_status_report = get_last_abitti2_status_report()
+    if last_status_report is None:
+        return None
+
+    single_security_code = last_status_report["status"]["singleSecurityCode"]
+    if single_security_code is None:
+        return None
+
+    return (
+        single_security_code["keyCode"],
+        single_security_code["confirmationCode"],
+    )
+
+
 def get_current_exam_package(*, timeout: int = 20) -> typing.Dict[str, typing.Any]:
     return _post("/api/v1/exam/get_current_exam_package", timeout=timeout).json()
 
