@@ -1,6 +1,7 @@
 # Standard library imports
 
 # Third-party imports
+from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -12,9 +13,9 @@ from .utils import random_artificial_hetu
 
 
 class _Base:
-    def __init__(self, browser):
+    def __init__(self, browser: WebDriver):
         self.browser = browser
-        self.wait = WebDriverWait(browser, 10)
+        self.wait = WebDriverWait(browser, 20)
 
     def find(self, locator):
         return self.wait.until(EC.visibility_of_element_located(locator))
@@ -86,9 +87,13 @@ class Abitti2Student(_Base):
         self.select_exam(exam_uuid=exam_uuid)
         self.enter_access_code(access_code=access_code)
         self.click((By.CSS_SELECTOR, 'button[data-testid="close-exam-instructions"]'))
-        self.find(
-            (
-                By.XPATH,
-                f"//h1[@id='title' and contains(text(), '{exam_title}')]",
+        try:
+            self.browser.switch_to.frame("exam")
+            self.find(
+                (
+                    By.XPATH,
+                    f"//h1[@id='title' and contains(text(), '{exam_title}')]",
+                )
             )
-        )
+        finally:
+            self.browser.switch_to.default_content()
