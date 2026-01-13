@@ -43,7 +43,9 @@ class Abitti2StatsMessageDataStudent(_Abitti2BaseModel):
 class Abitti2StatsMessageData(_Abitti2BaseModel):
     students: typing.List[Abitti2StatsMessageDataStudent]
     answerPaperCount: ktp_controller.pydantic.StrictNonNegativeInt
+    refreshedCount: ktp_controller.pydantic.StrictNonNegativeInt
     examStatus: Abitti2StatsMessageDataExamStatus
+    audioInSomeExam: pydantic.StrictBool
 
 
 class Abitti2StatsMessage(_Abitti2BaseModel):
