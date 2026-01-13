@@ -32,6 +32,17 @@ import ktp_controller.messages
 _LOGGER = logging.getLogger(__file__)
 
 
+def _validate_security_code(security_code: typing.Dict[str, str]) -> None:
+    if not isinstance(security_code, dict):
+        raise ValueError("not dict")
+    if set(security_code.keys()) != {"keyCode", "confirmationCode"}:
+        raise ValueError("has invalid keys")
+    if not isinstance(security_code["keyCode"], str):
+        raise ValueError("keyCode is not str")
+    if not isinstance(security_code["confirmationCode"], str):
+        raise ValueError("confirmationCode is not str")
+
+
 def _create_dummy_exam_package_file():
     ktp_controller.examomatic.client.download_dummy_exam_file(
         ktp_controller.files.DUMMY_EXAM_FILE_FILEPATH
@@ -209,6 +220,7 @@ class Agent:
         # Abitti2 reports these
         self.__last_received_exam_list = None
         self.__last_received_security_code = None
+        self.__old_security_code = None
 
         self.__connection_stats: typing.Dict[
             Component, ktp_controller.agent.stats.ConnectionStats
@@ -320,17 +332,12 @@ class Agent:
         self,
         current_exam_package: typing.Dict[str, typing.Any],
     ) -> bool:
+        _LOGGER.info("Preparing exam package: %r", current_exam_package)
+
         (exam_package_filepath, decrypt_codes) = _create_exam_package_file(
             current_exam_package
         )
-        # TODO: Change automatically when exam package is prepared
-        # AND ensure it is changed before uploading the exam,
-        # because otherwise existing students can just relogin
-        # with the old access code. However, Abitti2 does not seem
-        # to always change the code when requested or there's
-        # really long delay.
-        #  if self.__is_auto_control_enabled:
-        # ktp_controller.abitti2.client.change_single_security_code()
+
         exam_filenames = ktp_controller.abitti2.client.prepare_exam_package(
             exam_package_filepath, decrypt_codes
         )
@@ -346,6 +353,39 @@ class Agent:
         self,
         current_exam_package: typing.Dict[str, typing.Any],
     ) -> bool:
+        _LOGGER.info("Starting exam package: %r", current_exam_package)
+
+        if self.__is_auto_control_enabled:
+            if self.__old_security_code is None:
+                self.__old_security_code = self.__last_received_security_code
+                _LOGGER.info(
+                    "Requesting Abitti2 to change the access code to ensure students "
+                    "cannot access new exams with the old code (%r).",
+                    self.__old_security_code,
+                )
+                ktp_controller.abitti2.client.change_single_security_code()
+                return False
+
+            if self.__old_security_code == self.__last_received_security_code:
+                _LOGGER.info(
+                    "Waiting until access code has changed to ensure students "
+                    "cannot access new exams with the old code."
+                )
+                # Waiting until the security code is changed.
+                return False
+
+            _LOGGER.info(
+                "Access code has changed (%r => %r), continue starting the exam package.",
+                self.__old_security_code,
+                self.__last_received_security_code,
+            )
+
+            _LOGGER.info(
+                "API says the access code is: %r",
+                ktp_controller.api.client.get_access_code(),
+            )
+
+        self.__old_security_code = None
         ktp_controller.abitti2.client.start_decrypted_exams()
         _LOGGER.info(
             "Started current exam package %r successfully.",
@@ -691,15 +731,37 @@ class Agent:
         received_at: datetime.datetime,  # pylint: disable=unused-argument
         message: typing.Dict[str, typing.Any],
     ):
+        message_data = message["data"]
         try:
-            self.__last_received_security_code = message["data"]["securityCode"]
-        except KeyError:  # Security code is not always there
-            pass
+            security_code = message_data["securityCode"]
+        except KeyError:
+            # Security code is not always there. When security code
+            # change is requested, Abitti2 (at least v1.18.0) seems to
+            # send four security-code messages: first two are empty
+            # and last two contain identical security codes.
+            return
+
+        try:
+            _validate_security_code(security_code)
+        except ValueError as value_error:
+            _LOGGER.error(
+                "received invalid security code from Abitti2: %s: %r",
+                value_error,
+                security_code,
+            )
+            return
+
+        self.__last_received_security_code = security_code
+
+        status_report = ktp_controller.api.client.get_last_abitti2_status_report()
+        if status_report is None:
+            return
+
+        self.__send_abitti2_status_report(received_at, status_report["status"])
 
     def __validate_abitti2_stats_message(
         self, message: typing.Dict[str, typing.Any]
     ) -> bool:
-
         try:
             ktp_controller.abitti2.schemas.Abitti2StatsMessage.model_validate(message)
         except ValueError:
@@ -722,6 +784,13 @@ class Agent:
         ):
             _allow_students_to_use_browsers(message["data"]["students"])
 
+        self.__send_abitti2_status_report(received_at, message)
+
+    def __send_abitti2_status_report(
+        self,
+        received_at: datetime.datetime,
+        message: typing.Dict[str, typing.Any],
+    ):
         message["singleSecurityCode"] = self.__last_received_security_code
 
         try:
