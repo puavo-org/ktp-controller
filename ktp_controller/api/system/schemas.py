@@ -34,4 +34,4 @@ class Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
     monitoring_passphrase: pydantic.StrictStr
     server_version: pydantic.StrictStr
     status: typing.Dict
-    exams: typing.List[Abitti2Exam]
+    exams: typing.List[Abitti2Exam] | None
