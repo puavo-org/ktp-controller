@@ -254,13 +254,13 @@ def test_scheduled_exam_gets_started():
 # TODO: Fix agent and exam package state model so that access code is
 # guaranteed to be changed BEFORE state is changed to running. Then
 # uncomment this test.
-# def test_access_code_is_changed_when_scheduled_exam_is_started():
-#     global access_code
-#     new_access_code = ktp_controller.api.client.get_access_code()
-#     assert new_access_code is not None
-#     assert new_access_code != access_code
-#     assert new_access_code != ("1234", "xx")
-#     access_code = new_access_code
+def test_access_code_is_changed_when_scheduled_exam_is_started():
+    global access_code
+    new_access_code = ktp_controller.api.client.get_access_code()
+    assert new_access_code is not None
+    assert new_access_code != access_code
+    assert new_access_code != ("1234", "xx")
+    access_code = new_access_code
 
 
 def test_student1_take_scheduled_exam(student1):
