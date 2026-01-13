@@ -31,7 +31,7 @@ class _Abitti2BaseModel(ktp_controller.pydantic.BaseModel):
 
 class Abitti2StatsMessageDataExamStatus(_Abitti2BaseModel):
     hasStarted: pydantic.StrictBool
-    startTime: pydantic.AwareDatetime
+    startTime: pydantic.AwareDatetime | None
 
 
 class Abitti2StatsMessageDataStudent(_Abitti2BaseModel):
