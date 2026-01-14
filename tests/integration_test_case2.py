@@ -95,7 +95,7 @@ def test_first_scheduled_exam_download():
     # exam info successfully, hence this small timeout after checking
     # ack.
     ackd = False
-    for i in range(2):
+    for i in range(5):
         state = ktp_controller.examomatic.client._post("/mock/get_state").json()
         if state["refresh_exams_count"] == state["ack_count"] == 1:
             ackd = True
