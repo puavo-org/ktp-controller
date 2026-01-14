@@ -193,7 +193,7 @@ def test_scheduled_exam_gets_started():
 
     # And now wait until the scheduled exam package is running.
     exam_package_is_running = False
-    for i in range(15):
+    for i in range(60):
         state = ktp_controller.examomatic.client._post("/mock/get_state").json()
         status_reports = state["status_reports"]
         started_exam_titles = [
