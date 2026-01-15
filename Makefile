@@ -75,8 +75,7 @@ check-alembic: ktp_controller_dev.sqlite
 
 .PHONY: check
 check: check-format check-alembic
-	uv run flake8 ./ktp_controller/ ./bin/* ./supervisor/chainer tests/utils.py
-	uv run pylint --verbose ./ktp_controller/ ./bin/* ./supervisor/chainer tests/utils.py
+	uv run ruff check --exclude tests/
 
 .PHONY: pytest
 pytest:

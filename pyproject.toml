@@ -29,9 +29,7 @@ ktp_controller_cli = "ktp_controller.cli.main:run"
 dev = [
     "pytest",
     "pytest-mock",
-    "pylint",
     "httpx",
-    "flake8",
     "jedi",
     "selenium",
     "ruff>=0.14.13",
