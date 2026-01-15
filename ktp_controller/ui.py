@@ -22,7 +22,7 @@ __all__ = [
 # Constants
 
 
-PUBSUB_CHANNEL = f"ktp-controller__ui_messages__{ str(uuid.uuid4()) }"
+PUBSUB_CHANNEL = f"ktp-controller__ui_messages__{str(uuid.uuid4())}"
 
 
 # Utils:

@@ -18,7 +18,7 @@ __all__ = [
 
 _LOGGER = logging.getLogger(__file__)
 
-PUBSUB_CHANNEL = f"ktp-controller__agent_messages__{ str(uuid.uuid4()) }"
+PUBSUB_CHANNEL = f"ktp-controller__agent_messages__{str(uuid.uuid4())}"
 
 
 async def send_command(command_data: ktp_controller.messages.CommandData) -> str:

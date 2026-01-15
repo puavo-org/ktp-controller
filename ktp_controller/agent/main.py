@@ -683,9 +683,9 @@ class Agent:
                 _LOGGER.exception("received invalid data from Exam-O-Matic: %r", data)
                 continue
 
-            self.__connection_stats[Component.EXAMOMATIC].last_message_received_at = (
-                received_at
-            )
+            self.__connection_stats[
+                Component.EXAMOMATIC
+            ].last_message_received_at = received_at
 
             if message["type"] == "pong":
                 self.__connection_stats[Component.EXAMOMATIC].ping_pong_count += 1

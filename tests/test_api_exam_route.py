@@ -334,9 +334,9 @@ def test_get_current_exam_package__one_package_and_lock_time_is_far_in_future_bu
     api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
         eom_exam_info
     )
-    api_exam_info["scheduled_exam_packages"][0][
-        "locked"
-    ] = True  # locked is the king, lock_time does not mean anything to us.
+    api_exam_info["scheduled_exam_packages"][0]["locked"] = (
+        True  # locked is the king, lock_time does not mean anything to us.
+    )
 
     response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
     assert_response(response, expected_status_code=200)
