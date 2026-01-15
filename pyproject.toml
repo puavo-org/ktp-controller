@@ -2,15 +2,22 @@
 name = "ktp-controller"
 version = "0.1.0"
 description = "ktp-controller"
-authors = [
-  { name = "Opinsys Developers", email = "dev@opinsys.fi"},
-]
-maintainers = [
-  { name = "Opinsys Developers", email = "dev@opinsys.fi"},
-]
-license = "GPL-2.0-only"
-readme = "README.md"
+authors = [{ name = "Opinsys Developers", email = "dev@opinsys.fi" }]
 requires-python = ">=3.11"
+readme = "README.md"
+license = "GPL-2.0-only"
+maintainers = [{ name = "Opinsys Developers", email = "dev@opinsys.fi" }]
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "alembic",
+    "pydantic-settings",
+    "python-multipart",
+    "requests",
+    "supervisor",
+    "redis",
+    "websockets",
+]
 repository = "https://github.com/opinsys/ktp-controller"
 
 [project.scripts]
@@ -18,34 +25,22 @@ ktp_controller_agent = "ktp_controller.agent.main:run"
 ktp_controller_api = "ktp_controller.api.main:run"
 ktp_controller_cli = "ktp_controller.cli.main:run"
 
-[tool.poetry]
-packages = [
-  { include = "ktp_controller" },
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-mock",
+    "pylint",
+    "httpx",
+    "black",
+    "flake8",
+    "jedi",
+    "selenium",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-fastapi = "*"
-uvicorn = {extras = ["standard"], version = "*"}
-alembic = "*"
-pydantic-settings = "*"
-python-multipart = "*"
-requests = "*"
-supervisor = "*"
-redis = "*"
-websockets = "*"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "*"
-pytest-mock = "*"
-pylint = "*"
-httpx = "*"
-black = "*"
-flake8 = "*"
-jedi = "*"
-selenium = "*"
-#isort = "*"
+[tool.uv.build-backend]
+module-root = ""
+module-name = "ktp_controller"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.9.0,<0.10.0"]
+build-backend = "uv_build"

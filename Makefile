@@ -59,46 +59,46 @@ install: installdirs
 		supervisor/run.conf
 
 ktp_controller_dev.sqlite:
-	poetry run alembic upgrade head
+	uv run alembic upgrade head
 
 .PHONY: format
 format:
-	poetry run black .
+	uv run black .
 
 .PHONY: check-format
 check-format:
-	poetry run black --check .
+	uv run black --check .
 
 .PHONY: check-alembic
 check-alembic: ktp_controller_dev.sqlite
-	poetry run alembic check
+	uv run alembic check
 
 .PHONY: check
 check: check-format check-alembic
-	poetry run flake8 ./ktp_controller/ ./bin/* ./supervisor/chainer tests/utils.py
-	poetry run pylint --verbose ./ktp_controller/ ./bin/* ./supervisor/chainer tests/utils.py
+	uv run flake8 ./ktp_controller/ ./bin/* ./supervisor/chainer tests/utils.py
+	uv run pylint --verbose ./ktp_controller/ ./bin/* ./supervisor/chainer tests/utils.py
 
 .PHONY: pytest
 pytest:
-	KTP_CONTROLLER_DOTENV=tests/test.env poetry run pytest -rA --ignore-glob=tests/integration_test_case*.py --show-capture=all --ff -x --log-level=WARNING --doctest-modules -vv tests/ ktp_controller/
+	KTP_CONTROLLER_DOTENV=tests/test.env uv run pytest -rA --ignore-glob=tests/integration_test_case*.py --show-capture=all --ff -x --log-level=WARNING --doctest-modules -vv tests/ ktp_controller/
 
 .PHONY: pytest-integration
 pytest-integration:
 	test -n "$${KTP_CONTROLLER_INTEGRATION_TEST_CASE:-}"
-	KTP_CONTROLLER_DOTENV=tests/integration_test.env poetry run pytest -rA --show-capture=all -x --log-level=WARNING -vv "tests/integration_test_$${KTP_CONTROLLER_INTEGRATION_TEST_CASE}.py"
+	KTP_CONTROLLER_DOTENV=tests/integration_test.env uv run pytest -rA --show-capture=all -x --log-level=WARNING -vv "tests/integration_test_$${KTP_CONTROLLER_INTEGRATION_TEST_CASE}.py"
 
 .PHONY: dev-run
 dev-run: ktp_controller_dev.sqlite
-	poetry run supervisord -c supervisor/dev-run.conf
+	uv run supervisord -c supervisor/dev-run.conf
 
 .PHONY: test
 test:
-	poetry run supervisord -c supervisor/test.conf
+	uv run supervisord -c supervisor/test.conf
 	@grep -q -x ok supervisor/chain_result
 
 .PHONY: $(integration_test_case_targets)
 $(integration_test_case_targets): integration-test-%:
-	KTP_CONTROLLER_INTEGRATION_TEST_CASE='$(@:integration-test-%=%)' poetry run supervisord -c supervisor/integration-test.conf
+	KTP_CONTROLLER_INTEGRATION_TEST_CASE='$(@:integration-test-%=%)' uv run supervisord -c supervisor/integration-test.conf
 	@grep -q -x ok supervisor/chain_result
 
 .NOTPARALLEL: integration-test
@@ -107,12 +107,11 @@ integration-test: $(integration_test_case_targets)
 
 .PHONY: dev-install
 dev-install:
-	pip install --user --upgrade --break-system-packages poetry
-	poetry install
+	command -v uv >/dev/null || { curl -LsSf https://astral.sh/uv/install.sh | sh; }
 
 .PHONY: dev-update
 dev-update:
-	poetry update
+	uv lock --upgrade
 
 .PHONY: dev-clean
 dev-clean:
@@ -120,13 +119,13 @@ dev-clean:
 
 .PHONY: check-updates
 check-updates:
-	@poetry update --dry-run
+	@uv lock --upgrade --dry-run
 	@wget -q -O- https://github.com/redis/redis/releases/latest | sed -r -n 's|.*<title>Release ([0-9.]+).*$$|Redis available: \1|p'
 	@sed -r -n 's|^command=docker pull redis:(.*)$$|Redis installed: \1|p' supervisor/test.conf
 
 .PHONY: $(_build_targets)
 $(_build_targets): build-%:
-	poetry build --format='$(@:build-%=%)'
+	uv build '--$(@:build-%=%)'
 
 .PHONY: build
 build: $(_build_targets)

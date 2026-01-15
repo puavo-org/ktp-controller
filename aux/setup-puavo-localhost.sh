@@ -8,10 +8,6 @@ thisdir=$(dirname "${thisscript}")
 packages=
 terminate_session=false
 
-command -v poetry || {
-  packages="${packages} python3-poetry"
-}
-
 if [ -e /dev/virtio-ports/com.redhat.spice.0 ]; then
   if ! [ -e /usr/sbin/spice-vdagentd ]; then
     packages="${packages} spice-vdagent"

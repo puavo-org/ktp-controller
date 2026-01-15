@@ -23,7 +23,7 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Install poetry and dependencies
+    - name: Install development tools
       run: make dev-install
 
     - name: Run checks

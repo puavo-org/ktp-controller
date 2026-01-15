@@ -37,7 +37,7 @@ store necessary data in a persistent database storage.
 
 The API application is built on FastAPI (https://fastapi.tiangolo.com/).
 
-Dependencies of this project are managed with Poetry (https://python-poetry.org/).
+Dependencies of this project are managed with UV (https://github.com/astral-sh/uv).
 
 The database access is abstracted with SQLAlchemy (https://www.sqlalchemy.org/).
 
@@ -47,15 +47,15 @@ Processes are launched and kept running with Supervisor (https://supervisord.org
 
 ## Development
 
-Install poetry and all dependencies from PyPI:
+Install uv:
 
 ```
-make dev-install
+make uv-install
 ```
 
-This installs poetry to `~/.local/bin` so ensure it's in your PATH.
+This installs uv to `~/.local/bin`.
 
-All other packages are installed BY poetry to a separate virtual env.
+All other packages are installed BY uv to a separate virtual env.
 
 
 ### Run in development mode
@@ -72,7 +72,7 @@ Then interactive API documentation is available at http://127.0.0.1:8000/docs
 ### Update dependencies
 
 To update the virtual environment with new releases of all
-dependencies, and to record the set of packages to `poetry.lock`, run:
+dependencies, and to record the set of packages to `uv.lock`, run:
 
 ```
 make dev-update
@@ -81,5 +81,5 @@ make dev-update
 If the set of packages is ok, remember to commit the lock file:
 
 ```
-git commit poetry.lock -m 'Update dependencies'
+git commit uv.lock -m 'Update dependencies'
 ```
