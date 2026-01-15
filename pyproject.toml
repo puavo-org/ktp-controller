@@ -31,10 +31,10 @@ dev = [
     "pytest-mock",
     "pylint",
     "httpx",
-    "black",
     "flake8",
     "jedi",
     "selenium",
+    "ruff>=0.14.13",
 ]
 
 [tool.uv.build-backend]

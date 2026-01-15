@@ -63,11 +63,11 @@ ktp_controller_dev.sqlite:
 
 .PHONY: format
 format:
-	uv run black .
+	uv run ruff format
 
 .PHONY: check-format
 check-format:
-	uv run black --check .
+	uv run ruff format --check
 
 .PHONY: check-alembic
 check-alembic: ktp_controller_dev.sqlite
