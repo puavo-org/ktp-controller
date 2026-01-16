@@ -1,6 +1,3 @@
-_build_formats := sdist wheel
-_build_targets := $(_build_formats:%=build-%)
-
 integration_test_case_targets := integration-test-case1 integration-test-case2 integration-test-case5
 
 .NOTPARALLEL: all
@@ -67,12 +64,21 @@ check-updates:
 	@wget -q -O- https://github.com/redis/redis/releases/latest | sed -r -n 's|.*<title>Release ([0-9.]+).*$$|Redis available: \1|p'
 	@sed -r -n 's|^command=docker pull redis:(.*)$$|Redis installed: \1|p' supervisor/test.conf
 
-.PHONY: $(_build_targets)
-$(_build_targets): build-%:
-	uv build '--$(@:build-%=%)'
+.PHONY: prodbundle
+prodbundle:
+	aux/create-prodbundle.sh
+
+.PHONY: build-wheel
+build-wheel:
+	uv build --wheel
+
+.PHONY: build-sdist
+build-sdist:
+	uv build --sdist
 
 .PHONY: build
-build: $(_build_targets)
+.NOTPARALLEL: build
+build: build-wheel build-sdist
 
 .PHONY: clean
 clean:
