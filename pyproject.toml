@@ -20,11 +20,6 @@ dependencies = [
 ]
 repository = "https://github.com/opinsys/ktp-controller"
 
-[project.scripts]
-ktp_controller_agent = "ktp_controller.agent.main:run"
-ktp_controller_api = "ktp_controller.api.main:run"
-ktp_controller_cli = "ktp_controller.cli.main:run"
-
 [dependency-groups]
 dev = [
     "pytest",
