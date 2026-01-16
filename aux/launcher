@@ -1,0 +1,67 @@
+#!/bin/bash
+
+set -euo pipefail
+
+THIS=$(readlink -e "$0")
+HERE=$(dirname "$THIS")
+PYTHONPATH="$HERE/lib"
+RUNCONF=
+OS=
+
+if [ -d /etc/puavo ]; then
+    OS='Puavo OS'
+fi
+
+case "$OS" in
+    '')
+        echo 'Failed to detect operating system!' >&2
+        exit 1
+        ;;
+    'Puavo OS')
+        WORKDIR="$HOME/.puavo/puavo-ers/ktp-controller"
+        RUNCONF='puavo_os-prod-run.conf'
+        ;;
+    *)
+        echo "Unsupported operating system '$OS'!" >&2
+        exit 1
+        ;;
+esac
+
+WORKDIR=$(readlink -m "${WORKDIR}")
+
+mkdir -p "${WORKDIR}"
+mkdir -p "${WORKDIR}/logs"
+
+cd "${WORKDIR}"
+
+export PYTHONPATH
+export PATH="$HERE/lib/bin:$PATH"
+
+if [ $# -eq 0 ]; then
+    exec "$HERE/lib/bin/supervisord" -c "$HERE/$RUNCONF"
+fi
+
+COMMAND=$1
+shift
+
+case "$COMMAND" in
+    agent|api)
+        exec python3 -m "ktp_controller.$COMMAND" "$@"
+        ;;
+    alembic)
+        exec "$HERE/lib/bin/alembic" "$@"
+        ;;
+    chainer)
+        exec "$HERE/chainer" "$@"
+        ;;
+    bash)
+        exec "bash" --noprofile --rcfile <(echo "PS1='KTP Controller Shell\n\u@\h $ '") -i
+        ;;
+    shutdown)
+        exec supervisorctl -c "$HERE/$RUNCONF" shutdown
+        ;;
+    *)
+        echo "ERROR: invalid command '$COMMAND'" >&2
+        exit 1
+        ;;
+esac
