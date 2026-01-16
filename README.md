@@ -57,18 +57,6 @@ This installs uv to `~/.local/bin`.
 
 All other packages are installed BY uv to a separate virtual env.
 
-
-### Run in development mode
-
-Just run:
-
-```
-make dev-run
-```
-
-Then interactive API documentation is available at http://127.0.0.1:8000/docs
-
-
 ### Update dependencies
 
 To update the virtual environment with new releases of all

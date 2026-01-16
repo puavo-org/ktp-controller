@@ -86,10 +86,6 @@ pytest-integration:
 	test -n "$${KTP_CONTROLLER_INTEGRATION_TEST_CASE:-}"
 	KTP_CONTROLLER_DOTENV=tests/integration_test.env uv run pytest -rA --show-capture=all -x --log-level=WARNING -vv "tests/integration_test_$${KTP_CONTROLLER_INTEGRATION_TEST_CASE}.py"
 
-.PHONY: dev-run
-dev-run: ktp_controller_dev.sqlite
-	uv run supervisord -c supervisor/dev-run.conf
-
 .PHONY: test
 test:
 	uv run supervisord -c supervisor/test.conf
