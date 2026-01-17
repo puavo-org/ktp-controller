@@ -92,7 +92,7 @@ class Settings(BaseSettings):
     api_host: str = "127.0.0.1"
     api_port: PositiveInt = 8000
     logging_level: str = "INFO"
-    db_path: str
+    db_path: str = "ktp_controller.sqlite"
 
     @field_validator("examomatic_use_tls", mode="before")
     @classmethod
