@@ -18,7 +18,7 @@ dependencies = [
     "redis",
     "websockets",
 ]
-repository = "https://github.com/opinsys/ktp-controller"
+repository = "https://github.com/puavo-org/ktp-controller"
 
 [dependency-groups]
 dev = [
