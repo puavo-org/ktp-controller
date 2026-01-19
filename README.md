@@ -47,20 +47,26 @@ Processes are launched and kept running with Supervisor (https://supervisord.org
 
 ## Development
 
-Install uv:
+Install development tools:
 
 ```
-make uv-install
+make dev-install
 ```
 
 This installs uv to `~/.local/bin`.
 
 All other packages are installed BY uv to a separate virtual env.
 
+Build a production bundle:
+
+```
+make prodbundle
+```
+
 ### Update dependencies
 
-To update the virtual environment with new releases of all
-dependencies, and to record the set of packages to `uv.lock`, run:
+To update the lock file with new releases of all dependencies, and to
+record the set of packages to `uv.lock`, run:
 
 ```
 make dev-update
