@@ -25,7 +25,6 @@ dev = [
     "pytest",
     "pytest-mock",
     "httpx",
-    "jedi",
     "selenium",
     "ruff>=0.14.13",
 ]
