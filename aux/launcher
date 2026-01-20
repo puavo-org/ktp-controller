@@ -38,11 +38,11 @@ export PYTHONPATH
 export PATH="$HERE/lib/bin:$PATH"
 
 if [ $# -eq 0 ]; then
-    exec "$HERE/lib/bin/supervisord" -c "$HERE/$RUNCONF"
+    COMMAND=run
+else
+    COMMAND=$1
+    shift
 fi
-
-COMMAND=$1
-shift
 
 case "$COMMAND" in
     agent|api)
@@ -59,6 +59,9 @@ case "$COMMAND" in
         ;;
     shutdown)
         exec supervisorctl -c "$HERE/$RUNCONF" shutdown
+        ;;
+    run)
+        exec "$HERE/lib/bin/supervisord" -c "$HERE/$RUNCONF"
         ;;
     *)
         echo "ERROR: invalid command '$COMMAND'" >&2
