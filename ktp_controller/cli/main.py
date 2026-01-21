@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # Standard library imports
 import argparse
 import asyncio
