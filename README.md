@@ -60,7 +60,7 @@ All other packages are installed BY uv to a separate virtual env.
 Build a production bundle:
 
 ```
-make prodbundle
+make build-prodbundle
 ```
 
 ### Update dependencies

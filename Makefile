@@ -59,9 +59,9 @@ check-updates:
 	@wget -q -O- https://github.com/redis/redis/releases/latest | sed -r -n 's|.*<title>Release ([0-9.]+).*$$|Redis available: \1|p'
 	@sed -r -n 's|^command=docker pull redis:(.*)$$|Redis installed: \1|p' supervisor/test.conf
 
-.PHONY: prodbundle
-prodbundle:
-	aux/create-prodbundle.sh
+.PHONY: build-prodbundle
+build-prodbundle:
+	aux/build-prodbundle.sh
 
 .PHONY: build-wheel
 build-wheel:
@@ -73,7 +73,7 @@ build-sdist:
 
 .PHONY: build
 .NOTPARALLEL: build
-build: build-wheel build-sdist
+build: build-prodbundle build-wheel build-sdist
 
 .PHONY: clean
 clean:

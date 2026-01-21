@@ -21,7 +21,7 @@ jobs:
         run: git clean -fdx
 
       - name: Build Portable Bundle
-        run: make prodbundle
+        run: make build-prodbundle
 
       - name: Get Version
         id: vars
