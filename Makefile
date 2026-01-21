@@ -53,10 +53,6 @@ dev-install:
 dev-update:
 	uv lock --upgrade
 
-.PHONY: dev-clean
-dev-clean:
-	git clean -fdx '*.sqlite'
-
 .PHONY: check-updates
 check-updates:
 	@uv lock --upgrade --dry-run
@@ -81,4 +77,5 @@ build: build-wheel build-sdist
 
 .PHONY: clean
 clean:
-	rm -rf dist
+	git clean -fdx dist/
+	git clean -fdx '*.sqlite'
