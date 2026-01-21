@@ -35,12 +35,12 @@ pytest-integration:
 .PHONY: test
 test:
 	uv run supervisord -c supervisor/test.conf
-	@grep -q -x ok supervisor/chain_result
+	@grep -q -x ok chain_result
 
 .PHONY: $(integration_test_case_targets)
 $(integration_test_case_targets): integration-test-%:
 	KTP_CONTROLLER_INTEGRATION_TEST_CASE='$(@:integration-test-%=%)' uv run supervisord -c supervisor/integration-test.conf
-	@grep -q -x ok supervisor/chain_result
+	@grep -q -x ok chain_result
 
 .NOTPARALLEL: integration-test
 .PHONY: integration-test

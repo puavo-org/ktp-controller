@@ -16,22 +16,22 @@ def write_stderr(s):
     sys.stderr.flush()
 
 
-def _supervisorctl(command, conf_filename, *args):
+def _supervisorctl(command, conf_filepath, *args):
     with open(os.devnull, "wb") as devnull:
         subprocess.check_call(
-            ["supervisorctl", "-c", os.path.join("supervisor", conf_filename), command]
+            ["supervisorctl", "-c", conf_filepath, command]
             + list(args),
             stdout=devnull,
         )
 
 
 def main():
-    conf_filename = sys.argv[1]
+    conf_filepath = sys.argv[1]
     processnames = sys.argv[2:]
     started_processnames = set()
     waited_processname = ""
     try:
-        os.unlink("supervisor/chain_result")
+        os.unlink("chain_result")
     except FileNotFoundError:
         pass
     while 1:
@@ -78,7 +78,7 @@ def main():
                 processnames.pop(i + 1)
                 waited_processname = payload["processname"]
             elif next_processname not in started_processnames:
-                _supervisorctl("start", conf_filename, next_processname)
+                _supervisorctl("start", conf_filepath, next_processname)
                 started_processnames.add(next_processname)
         elif headers["eventname"] in (
             "PROCESS_STATE_EXITED",
@@ -91,11 +91,11 @@ def main():
                 result = "ok"
             else:
                 result = "fail"
-            with open("supervisor/chain_result.tmp", "wb") as f:
+            with open("chain_result.tmp", "wb") as f:
                 f.write(f"{result}\n".encode("ascii"))
-            os.rename("supervisor/chain_result.tmp", "supervisor/chain_result")
+            os.rename("chain_result.tmp", "chain_result")
 
-            _supervisorctl("shutdown", conf_filename)
+            _supervisorctl("shutdown", conf_filepath)
 
         # transition from READY to ACKNOWLEDGED
         write_stdout("RESULT 2\nOK")

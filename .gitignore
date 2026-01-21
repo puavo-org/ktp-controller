@@ -3,9 +3,10 @@ __pycache__
 .mypy_cache
 flycheck_*
 /.env
-/supervisor/*.log
-/supervisor/*.pid
-/supervisor/proglogs/*.log
-/supervisor/chain_result
-/supervisor/chain_result.tmp
+/logs
 /dist
+/ktp_controller_supervisor_sock
+/supervisord.pid
+/chain_result
+/chain_result.tmp
+/dump.rdb
