@@ -45,7 +45,7 @@ else
 fi
 
 case "$COMMAND" in
-    agent|api)
+    agent|api|cli)
         exec python3 -m "ktp_controller.$COMMAND" "$@"
         ;;
     alembic)
