@@ -49,12 +49,12 @@ integration-test: $(integration_test_case_targets)
 dev-install:
 	command -v uv >/dev/null || { curl -LsSf https://astral.sh/uv/install.sh | sh; }
 
-.PHONY: dev-update
-dev-update:
+.PHONY: update-deps
+update-deps:
 	uv lock --upgrade
 
-.PHONY: check-updates
-check-updates:
+.PHONY: dry-update-deps
+dry-update-deps:
 	@uv lock --upgrade --dry-run
 	@wget -q -O- https://github.com/redis/redis/releases/latest | sed -r -n 's|.*<title>Release ([0-9.]+).*$$|Redis available: \1|p'
 	@sed -r -n 's|^command=docker pull redis:(.*)$$|Redis installed: \1|p' supervisor/test.conf

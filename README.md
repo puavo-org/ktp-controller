@@ -69,7 +69,7 @@ To update the lock file with new releases of all dependencies, and to
 record the set of packages to `uv.lock`, run:
 
 ```
-make dev-update
+make update-deps
 ```
 
 If the set of packages is ok, remember to commit the lock file:
