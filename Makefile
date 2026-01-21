@@ -26,8 +26,8 @@ check: check-format check-alembic
 pytest:
 	uv run pytest -rA --ignore-glob=tests/integration_test_case*.py --show-capture=all --ff -x --log-level=WARNING --doctest-modules -vv tests/ ktp_controller/
 
-.PHONY: pytest-integration
-pytest-integration:
+.PHONY: .pytest-integration
+.pytest-integration:
 	test -n "$${KTP_CONTROLLER_INTEGRATION_TEST_CASE:-}"
 	uv run pytest -rA --show-capture=all -x --log-level=WARNING -vv "tests/integration_test_$${KTP_CONTROLLER_INTEGRATION_TEST_CASE}.py"
 
