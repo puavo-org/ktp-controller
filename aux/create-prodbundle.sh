@@ -37,7 +37,6 @@ uv pip install \
 
 echo "🚀 Installing launchers..." >&2
 cp -v supervisor/*-prod-run.conf "$dir/ktp-controller/"
-cp -v supervisor/chainer "$dir/ktp-controller/"
 cp -v alembic.ini "$dir/ktp-controller/"
 cp -v -r alembic "$dir/ktp-controller/"
 cp -v aux/launcher "$dir/ktp-controller/ktp-controller"

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import json
 import os
 import subprocess
@@ -19,13 +18,12 @@ def write_stderr(s):
 def _supervisorctl(command, conf_filepath, *args):
     with open(os.devnull, "wb") as devnull:
         subprocess.check_call(
-            ["supervisorctl", "-c", conf_filepath, command]
-            + list(args),
+            ["supervisorctl", "-c", conf_filepath, command] + list(args),
             stdout=devnull,
         )
 
 
-def main():
+def listen_forever():
     conf_filepath = sys.argv[1]
     processnames = sys.argv[2:]
     started_processnames = set()
@@ -101,9 +99,11 @@ def main():
         write_stdout("RESULT 2\nOK")
 
 
-if __name__ == "__main__":
+def run() -> int:
     try:
-        main()
+        listen_forever()
     except Exception as e:  # pylint: disable=broad-exception-caught
         write_stderr(str(e))
         write_stdout("RESULT 4\nFAIL")
+        return 1
+    return 0

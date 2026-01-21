@@ -45,14 +45,11 @@ else
 fi
 
 case "$COMMAND" in
-    agent|api|cli)
+    agent|api|supervisor_chainer|cli)
         exec python3 -m "ktp_controller.$COMMAND" "$@"
         ;;
     alembic)
         exec alembic "$@"
-        ;;
-    chainer)
-        exec "$HERE/chainer" "$@"
         ;;
     bash)
         exec bash --noprofile --rcfile <(echo "PS1='KTP Controller Shell\n\u@\h $ '") -i
