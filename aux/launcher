@@ -49,19 +49,19 @@ case "$COMMAND" in
         exec python3 -m "ktp_controller.$COMMAND" "$@"
         ;;
     alembic)
-        exec "$HERE/lib/bin/alembic" "$@"
+        exec alembic "$@"
         ;;
     chainer)
         exec "$HERE/chainer" "$@"
         ;;
     bash)
-        exec "bash" --noprofile --rcfile <(echo "PS1='KTP Controller Shell\n\u@\h $ '") -i
+        exec bash --noprofile --rcfile <(echo "PS1='KTP Controller Shell\n\u@\h $ '") -i
         ;;
     shutdown)
         exec supervisorctl -c "$HERE/$RUNCONF" shutdown
         ;;
     run)
-        exec "$HERE/lib/bin/supervisord" -c "$HERE/$RUNCONF"
+        exec supervisord -c "$HERE/$RUNCONF"
         ;;
     *)
         echo "ERROR: invalid command '$COMMAND'" >&2
