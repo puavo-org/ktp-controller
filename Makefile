@@ -4,9 +4,6 @@ integration_test_case_targets := integration-test-case1 integration-test-case2 i
 .PHONY: all
 all: check test build
 
-ktp_controller_dev.sqlite:
-	uv run alembic upgrade head
-
 .PHONY: format
 format:
 	uv run ruff format
@@ -16,8 +13,10 @@ check-format:
 	uv run ruff format --check
 
 .PHONY: check-alembic
-check-alembic: ktp_controller_dev.sqlite
-	uv run alembic check
+check-alembic:
+	rm -f ktp_controller_alembic_check.sqlite
+	KTP_CONTROLLER_DB_PATH=ktp_controller_alembic_check.sqlite uv run alembic upgrade head
+	KTP_CONTROLLER_DB_PATH=ktp_controller_alembic_check.sqlite uv run alembic check
 
 .PHONY: check
 check: check-format check-alembic
