@@ -25,12 +25,12 @@ check: check-format check-alembic
 
 .PHONY: pytest
 pytest:
-	KTP_CONTROLLER_DOTENV=tests/test.env uv run pytest -rA --ignore-glob=tests/integration_test_case*.py --show-capture=all --ff -x --log-level=WARNING --doctest-modules -vv tests/ ktp_controller/
+	uv run pytest -rA --ignore-glob=tests/integration_test_case*.py --show-capture=all --ff -x --log-level=WARNING --doctest-modules -vv tests/ ktp_controller/
 
 .PHONY: pytest-integration
 pytest-integration:
 	test -n "$${KTP_CONTROLLER_INTEGRATION_TEST_CASE:-}"
-	KTP_CONTROLLER_DOTENV=tests/integration_test.env uv run pytest -rA --show-capture=all -x --log-level=WARNING -vv "tests/integration_test_$${KTP_CONTROLLER_INTEGRATION_TEST_CASE}.py"
+	uv run pytest -rA --show-capture=all -x --log-level=WARNING -vv "tests/integration_test_$${KTP_CONTROLLER_INTEGRATION_TEST_CASE}.py"
 
 .PHONY: test
 test:
