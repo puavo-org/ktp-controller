@@ -232,6 +232,9 @@ class IsFinal(str, enum.Enum):
     def __str__(self) -> str:
         return self.value
 
+    def __bool__(self) -> bool:
+        return self.value == self.TRUE
+
 
 def upload_answers_file(
     *,

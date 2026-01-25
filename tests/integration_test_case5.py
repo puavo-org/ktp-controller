@@ -315,13 +315,13 @@ def test_scheduled_exam_gets_archived():
     assert ktp_controller.api.client.get_current_exam_package() is None
 
 
-def test_final_answers_are_uploaded_successfully():
+def test_all_answer_uploads_are_successful():
     upload_answers_file_status_codes = []
     state = ktp_controller.examomatic.client._post("/mock/get_state").json()
     upload_answers_file_status_codes = [
         s for p, s in state["requests"] if p == "/v1/answers/upload"
     ]
-    assert upload_answers_file_status_codes == [200]
+    assert all(v == 200 for v in upload_answers_file_status_codes)
 
 
 def test_odotusaulakoe_is_running_again():

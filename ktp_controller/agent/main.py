@@ -1,5 +1,6 @@
 # Standard library imports
 import asyncio
+import contextlib
 import datetime
 import enum
 import hashlib
@@ -67,7 +68,7 @@ def _transfer_answers(
     answers_file_path = ktp_controller.files.get_local_filepath(
         ktp_controller.files.LocalFilepathType.ANSWERS_FILE,
         exam_package_external_id,
-        ktp_controller.utils.utcnow_str() + "_final" if is_final else "",
+        ktp_controller.utils.utcnow_str() + ("_final" if is_final else ""),
     )
 
     sha256sum = ktp_controller.abitti2.client.download_answers_file(answers_file_path)
@@ -215,9 +216,11 @@ class Agent:
         approx_api_status_report_interval_sec: int = 30,
         approx_examomatic_ping_interval_sec: int = 30,
         approx_restart_timeout_sec: int = 5,
+        approx_answer_transfer_interval_sec: int = 300,
         state: ktp_controller.agent.state.AgentState,
     ):
         self.__state = state
+        self.__answer_transfer_task = None
 
         self.__approx_api_ping_interval_sec = approx_api_ping_interval_sec
         self.__approx_api_status_report_interval_sec = (
@@ -225,6 +228,7 @@ class Agent:
         )
         self.__approx_examomatic_ping_interval_sec = approx_examomatic_ping_interval_sec
         self.__approx_restart_timeout_sec = approx_restart_timeout_sec
+        self.__approx_answer_transfer_interval_sec = approx_answer_transfer_interval_sec
 
         # Abitti2 reports these
         self.__last_received_exam_list = None
@@ -358,11 +362,40 @@ class Agent:
 
         return True
 
+    def __start_answer_transfer_task(
+        self, current_exam_package: typing.Dict[str, typing.Any]
+    ):
+        if self.__answer_transfer_task is None:
+            self.__answer_transfer_task = asyncio.create_task(
+                self.__transfer_non_final_answers_periodically(current_exam_package)
+            )
+            _LOGGER.info(
+                "Started to transfer exam package '%s' answer files from Abitti2 to Exam-O-Matic periodically (approx. once per %d seconds).",
+                current_exam_package["external_id"],
+                self.__approx_answer_transfer_interval_sec,
+            )
+
+    async def __stop_answer_transfer_task(
+        self, current_exam_package: typing.Dict[str, typing.Any]
+    ):
+        assert self.__answer_transfer_task is not None
+
+        self.__answer_transfer_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await self.__answer_transfer_task
+        _LOGGER.info(
+            "Stopped periodic exam package '%s' answer file transfers from Abitti2 to Exam-O-Matic.",
+            current_exam_package["external_id"],
+        )
+        self.__answer_transfer_task = None
+
     async def __start_current_exam_package(
         self,
         current_exam_package: typing.Dict[str, typing.Any],
     ) -> bool:
         _LOGGER.info("Starting exam package: %r", current_exam_package)
+
+        self.__start_answer_transfer_task(current_exam_package)
 
         if self.__is_auto_control_enabled:
             if self.__old_security_code is None:
@@ -407,7 +440,7 @@ class Agent:
         self, current_exam_package: typing.Dict[str, typing.Any]
     ) -> bool:
         await self.__stop_current_exam_package(current_exam_package)
-        return True
+        return True  # Always proceed to the next state, we have started to stop the current exam.
 
     async def __stop_current_exam_package(
         self,
@@ -451,20 +484,41 @@ class Agent:
         self,
         current_exam_package: typing.Dict[str, typing.Any],
     ) -> bool:
+        await self.__stop_answer_transfer_task(current_exam_package)
+        self.__transfer_answers(
+            current_exam_package, is_final=ktp_controller.examomatic.client.IsFinal.TRUE
+        )
+        ktp_controller.abitti2.client.reset()
+        return True
+
+    def __transfer_answers(
+        self,
+        current_exam_package: typing.Dict[str, typing.Any],
+        is_final: ktp_controller.examomatic.client.IsFinal,
+    ) -> None:
+        is_final = ktp_controller.examomatic.client.IsFinal(is_final)
         abitti2_status_report = (
             ktp_controller.api.client.get_last_abitti2_status_report()
         )
         if abitti2_status_report["status"]["data"]["answerPaperCount"] > 0:
             _transfer_answers(
                 current_exam_package["external_id"],
-                is_final=ktp_controller.examomatic.client.IsFinal.TRUE,
+                is_final=is_final,
             )
         else:
             # If there are no answers, Abitti2 blocks download
             # requests indefinitely.
-            _LOGGER.warning("There are no answers to download.")
-        ktp_controller.abitti2.client.reset()
-        return True
+            _LOGGER.warning("There are no answers to transfer.")
+
+    async def __transfer_non_final_answers_periodically(
+        self, current_exam_package: typing.Dict[str, typing.Any]
+    ):
+        while True:
+            self.__transfer_answers(
+                current_exam_package,
+                is_final=ktp_controller.examomatic.client.IsFinal.UNKNOWN,
+            )
+            await asyncio.sleep(self.__approx_answer_transfer_interval_sec)
 
     async def __work_on_current_exam_package(self, *, trigger: Trigger) -> bool:
         utcnow = ktp_controller.utils.utcnow()
