@@ -6,6 +6,7 @@ import hashlib
 import json
 import logging
 import os.path
+import time
 import typing
 import zipfile
 
@@ -61,6 +62,8 @@ def _transfer_answers(
     *,
     is_final: ktp_controller.examomatic.client.IsFinal = ktp_controller.examomatic.client.IsFinal.UNKNOWN,
 ):
+    start_time_monotonic = time.monotonic()
+
     answers_file_path = ktp_controller.files.get_local_filepath(
         ktp_controller.files.LocalFilepathType.ANSWERS_FILE,
         exam_package_external_id,
@@ -74,6 +77,14 @@ def _transfer_answers(
         filepath=answers_file_path,
         sha256sum=sha256sum,
         is_final=is_final,
+    )
+
+    duration = time.monotonic() - start_time_monotonic
+
+    _LOGGER.info(
+        "Transferred answer file '%s' from Abitti2 to Exam-O-Matic' in %.1f seconds.",
+        os.path.basename(answers_file_path),
+        duration,
     )
 
 
