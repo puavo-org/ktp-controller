@@ -780,7 +780,7 @@ class Agent:
                     _LOGGER.error(
                         "Keycode cannot be changed by Exam-O-Matic, because auto control is not enabled."
                     )
-                    continue  # TODO: is ok to not ack this message because we cannot fulfil it?
+                    continue
                 ktp_controller.abitti2.client.change_single_security_code()
                 _LOGGER.info("Keycode changed.")
             elif message["type"] == "refresh_exams":
