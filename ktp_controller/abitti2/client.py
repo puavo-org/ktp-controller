@@ -193,15 +193,25 @@ def stop_exam_session(session_uuid: str) -> None:
     _post("/api/end-student-session", data={"sessionUuid": session_uuid})
 
 
-def download_answers_file(dest_filepath: str) -> str:
+def download_answers_file(dest_filepath: str, timeout: int = 5) -> str:
     sha256sum = hashlib.sha256()
     with ktp_controller.utils.open_atomic_write(
         dest_filepath, exclusive=True
     ) as dest_file:
-        response = _get("/api/answers-zip/answers.meb", stream=True)
-        for chunk in response.iter_content(4096):
-            dest_file.write(chunk)
-            sha256sum.update(chunk)
+        try:
+            response = _get(
+                "/api/answers-zip/answers.meb", stream=True, timeout=timeout
+            )
+            for chunk in response.iter_content(4096):
+                dest_file.write(chunk)
+                sha256sum.update(chunk)
+        except requests.exceptions.ConnectionError as connection_error:
+            # iter_content raises this if underlying read times out.
+            if not str(connection_error).endswith("Read timed out."):
+                raise TimeoutError() from connection_error
+        except requests.exceptions.ReadTimeout as read_timeout:
+            # requests.get raises this if the response is not returned on time.
+            raise TimeoutError() from read_timeout
 
     return sha256sum.hexdigest()
 
