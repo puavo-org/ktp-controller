@@ -36,7 +36,7 @@ def student2(browser_chrome):
     yield Abitti2Student(browser_chrome)
 
 
-def _assert_odotusaulakoe_is_running(timeout: int = 15):
+def _assert_odotusaulakoe_is_running(timeout: int = 30):
     odotusaulakoe_is_running = False
     for i in range(timeout):
         state = ktp_controller.examomatic.client._post("/mock/get_state").json()
@@ -118,7 +118,7 @@ def test_abitti2_status_reporting():
 def test_odotusaulakoe_is_running():
     # Wait until Odotusaulakoe is running. (It takes some time
     # before Abitti2 gets the exam up and running after a reset.)
-    _assert_odotusaulakoe_is_running(timeout=15)
+    _assert_odotusaulakoe_is_running(timeout=30)
 
 
 def test_access_code_is_initially_1234_xx():
@@ -327,4 +327,4 @@ def test_final_answers_are_uploaded_successfully():
 def test_odotusaulakoe_is_running_again():
     # Wait until Odotusaulakoe is running again. (It takes some time
     # before Abitti2 gets the exam up and running after a reset.)
-    _assert_odotusaulakoe_is_running(timeout=15)
+    _assert_odotusaulakoe_is_running(timeout=30)

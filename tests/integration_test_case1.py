@@ -21,7 +21,7 @@ import ktp_controller.examomatic.client
 scheduled_exam_package = None
 
 
-def _assert_odotusaulakoe_is_running(timeout: int = 15):
+def _assert_odotusaulakoe_is_running(timeout: int = 30):
     odotusaulakoe_is_running = False
     for i in range(timeout):
         state = ktp_controller.examomatic.client._post("/mock/get_state").json()
@@ -103,7 +103,7 @@ def test_abitti2_status_reporting():
 def test_odotusaulakoe_is_running():
     # 4. Wait until Odotusaulakoe is running. (It takes some time
     # before Abitti2 gets the exam up and running after a reset.)
-    _assert_odotusaulakoe_is_running(timeout=15)
+    _assert_odotusaulakoe_is_running(timeout=30)
 
 
 def test_first_scheduled_exam_download():
@@ -247,4 +247,4 @@ def test_scheduled_exam_gets_archived():
 def test_odotusaulakoe_is_running_again():
     # Wait until Odotusaulakoe is running again. (It takes some time
     # before Abitti2 gets the exam up and running after a reset.)
-    _assert_odotusaulakoe_is_running(timeout=15)
+    _assert_odotusaulakoe_is_running(timeout=30)
