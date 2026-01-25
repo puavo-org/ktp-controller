@@ -326,7 +326,7 @@ class Agent:
             command_uuid=command_uuid, command_status=command_status
         )
 
-    def __prepare_current_exam_package(
+    async def __prepare_current_exam_package(
         self,
         current_exam_package: typing.Dict[str, typing.Any],
     ) -> bool:
@@ -347,7 +347,7 @@ class Agent:
 
         return True
 
-    def __start_current_exam_package(
+    async def __start_current_exam_package(
         self,
         current_exam_package: typing.Dict[str, typing.Any],
     ) -> bool:
@@ -392,7 +392,13 @@ class Agent:
 
         return True
 
-    def __stop_current_exam_package(
+    async def __start_stopping_current_exam_package(
+        self, current_exam_package: typing.Dict[str, typing.Any]
+    ) -> bool:
+        await self.__stop_current_exam_package(current_exam_package)
+        return True
+
+    async def __stop_current_exam_package(
         self,
         current_exam_package: typing.Dict[str, typing.Any],
     ) -> bool:
@@ -430,7 +436,7 @@ class Agent:
 
         return is_stopped
 
-    def __archive_current_exam_package(
+    async def __archive_current_exam_package(
         self,
         current_exam_package: typing.Dict[str, typing.Any],
     ) -> bool:
@@ -519,9 +525,7 @@ class Agent:
                         )
                     )
                 ),
-                "action": lambda *args: (
-                    self.__stop_current_exam_package(*args) or True
-                ),
+                "action": self.__start_stopping_current_exam_package,
                 "next_state": "stopping",
             },
             "stopping": {
@@ -542,7 +546,7 @@ class Agent:
             "archived": {
                 "valid_triggers": (Trigger.TIME,),
                 "time_condition": True,
-                "action": lambda *args: True,
+                "action": None,
                 "next_state": "archived",
             },
         }
@@ -556,15 +560,20 @@ class Agent:
             )
 
         if trigger != Trigger.TIME or transition["time_condition"]:
+            action = transition["action"]
             _LOGGER.debug(
-                "Doing transition from %s to %s, triggered by %s (time_condition=%s). Calling %s",
+                "Doing transition from %s to %s, triggered by %s (time_condition=%s). Action is %s",
                 state,
                 transition["next_state"],
                 trigger,
                 transition["time_condition"],
-                transition["action"],
+                action,
             )
-            if transition["action"](current_exam_package):
+            if action is None:
+                do_transition = True
+            else:
+                do_transition = await action(current_exam_package)
+            if do_transition:
                 changed = _set_current_exam_package_state(
                     current_exam_package, transition["next_state"]
                 )
@@ -575,6 +584,12 @@ class Agent:
                 state,
                 transition["next_state"],
             )
+        else:
+            _LOGGER.debug(
+                "State of the current exam package did not change. It is %s.",
+                state,
+            )
+
         return changed
 
     async def __send_pings_to_api(self, websock):
