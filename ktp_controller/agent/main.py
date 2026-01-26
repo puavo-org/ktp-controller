@@ -28,6 +28,7 @@ import ktp_controller.pydantic
 import ktp_controller.utils
 import ktp_controller.messages
 
+from ktp_controller.settings import SETTINGS
 
 _LOGGER = logging.getLogger(__file__)
 
@@ -214,7 +215,7 @@ class Agent:
         *,
         approx_api_ping_interval_sec: int = 15,
         approx_api_status_report_interval_sec: int = 30,
-        approx_examomatic_ping_interval_sec: int = 30,
+        approx_examomatic_ping_interval_sec: int = SETTINGS.examomatic_ping_interval_sec,
         approx_restart_timeout_sec: int = 5,
         approx_answer_transfer_interval_sec: int = 300,
         state: ktp_controller.agent.state.AgentState,

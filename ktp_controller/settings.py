@@ -86,6 +86,7 @@ class Settings(BaseSettings):
     examomatic_username: str
     examomatic_password_file: str
     examomatic_use_tls: StrictBool = True
+    examomatic_ping_interval_sec: PositiveInt = 30
     domain: str
     hostname: str = platform.node()
     id: PositiveInt
