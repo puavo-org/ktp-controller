@@ -217,7 +217,7 @@ class Agent:
         approx_api_status_report_interval_sec: int = 30,
         approx_examomatic_ping_interval_sec: int = SETTINGS.examomatic_ping_interval_sec,
         approx_restart_timeout_sec: int = 5,
-        approx_answer_transfer_interval_sec: int = 300,
+        approx_answer_transfer_interval_sec: int = SETTINGS.answer_transfer_interval_sec,
         state: ktp_controller.agent.state.AgentState,
     ):
         self.__state = state
