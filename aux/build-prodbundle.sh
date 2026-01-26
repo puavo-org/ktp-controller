@@ -41,6 +41,7 @@ cp -v alembic.ini "$dir/ktp-controller/"
 cp -v -r alembic "$dir/ktp-controller/"
 cp -v aux/launcher "$dir/ktp-controller/ktp-controller"
 cp -v LICENSE "$dir/ktp-controller/"
+cp -v CHANGELOG.md "$dir/ktp-controller/"
 find "$dir/ktp-controller/lib/bin" -type f -exec sed -i '1 s|^#!.*\(python[0-9]*\).*|#!/usr/bin/env \1|' {} \;
 
 echo "🗜️ Packing the bundle..." >&2

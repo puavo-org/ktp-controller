@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - LICENSE included in release files
+- CHANGELOG.md included in release files
 - transfer non-final answer files periodically from Abitti2 to Exam-O-Matic
 
 ### Changed
