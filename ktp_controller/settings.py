@@ -22,7 +22,6 @@ from pydantic_settings import (
 
 
 __all__ = [
-    "PuavoSettingsSource",
     "SETTINGS",
 ]
 
@@ -30,7 +29,7 @@ __all__ = [
 _LOGGER = logging.getLogger(__file__)
 
 
-class PuavoSettingsSource(PydanticBaseSettingsSource):
+class _PuavoSettingsSource(PydanticBaseSettingsSource):
     def get_field_value(
         self, field: FieldInfo, field_name: str
     ) -> tuple[typing.Any, str, bool]:
@@ -121,7 +120,7 @@ class Settings(BaseSettings):
             env_settings,
             dotenv_settings,
             file_secret_settings,
-            PuavoSettingsSource(settings_cls),
+            _PuavoSettingsSource(settings_cls),
         )
 
 
