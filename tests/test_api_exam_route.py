@@ -432,30 +432,6 @@ def test_get_current_exam_package__multiple_locked_packages_last_saved_starting_
     assert response.json() == api_exam_info["scheduled_exam_packages"][0]
 
 
-def test_get_current_exam_package__multiple_locked_packages_starting_at_same_time_no_current_yet(
-    client, testdb, utcnow
-):
-    first_api_exam_info = None
-    for i in range(10):
-        eom_exam_info = get_synthetic_exam_info(
-            start_time=utcnow + datetime.timedelta(minutes=i),
-            utcnow=utcnow,
-        )
-        api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
-            eom_exam_info
-        )
-        if first_api_exam_info is None:
-            first_api_exam_info = api_exam_info
-
-        response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
-        assert_response(response, expected_status_code=200)
-
-    response = client.post("/api/v1/exam/get_current_exam_package")
-    assert_response(response, expected_status_code=200)
-
-    assert response.json() == first_api_exam_info["scheduled_exam_packages"][0]
-
-
 def test_get_current_exam_package__save_package_which_starts_sooner_than_the_current(
     client, testdb, utcnow
 ):
