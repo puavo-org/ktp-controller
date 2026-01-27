@@ -9,7 +9,7 @@ import yaml
 
 
 async def _command_api_async_command(args) -> int:
-    import ktp_controller.api.client  # pylint: disable=import-outside-toplevel
+    import ktp_controller.api.client
 
     return ktp_controller.api.client.async_command(args.COMMAND)
 
@@ -24,8 +24,8 @@ def _print_as_yaml(obj):
     )
 
 
-async def _command_status(args) -> int:  # pylint: disable=unused-argument
-    import ktp_controller.api.client  # pylint: disable=import-outside-toplevel
+async def _command_status(args) -> int:
+    import ktp_controller.api.client
 
     current_exam_package = ktp_controller.api.client.get_current_exam_package()
     last_abitti2_status_report = (
@@ -71,10 +71,10 @@ _COMMANDS = {
 
 async def _dispatch_command(args) -> int:
     # Lazily imported here to avoid long start-up time of this script.
-    import websockets  # pylint: disable=import-outside-toplevel
-    import ktp_controller.api.client  # pylint: disable=import-outside-toplevel
-    import ktp_controller.utils  # pylint: disable=import-outside-toplevel
-    import ktp_controller.messages  # pylint: disable=import-outside-toplevel
+    import websockets
+    import ktp_controller.api.client
+    import ktp_controller.utils
+    import ktp_controller.messages
 
     command_result_data = None
 

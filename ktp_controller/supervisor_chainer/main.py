@@ -102,7 +102,7 @@ def listen_forever():
 def run() -> int:
     try:
         listen_forever()
-    except Exception as e:  # pylint: disable=broad-exception-caught
+    except Exception as e:
         write_stderr(str(e))
         write_stdout("RESULT 4\nFAIL")
         return 1

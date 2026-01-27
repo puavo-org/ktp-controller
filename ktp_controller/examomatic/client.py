@@ -91,7 +91,7 @@ def _post(
     path: str,
     *,
     data: bytes | None = None,
-    json: typing.Any | None = None,  # pylint: disable=redefined-outer-name
+    json: typing.Any | None = None,
     files: typing.Dict | None = None,
     timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
 ) -> requests.Response:
@@ -225,7 +225,7 @@ def download_exam_file(
 def download_dummy_exam_file(
     dest_filepath: str,
     *,
-    timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,  # pylint: disable=unused-argument
+    timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
 ):
     ktp_controller.utils.copy_atomic(
         os.path.join(os.path.dirname(__file__), "dummy-exam-file.mex"), dest_filepath

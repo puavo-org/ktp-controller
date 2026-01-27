@@ -28,7 +28,7 @@ def db_engine():
 
 
 @pytest.fixture(scope="function")
-def testdb(db_engine):  # pylint: disable=redefined-outer-name # Fixture usage
+def testdb(db_engine):
     connection = db_engine.connect()
     transaction = connection.begin()
     db = sessionmaker(autocommit=False, autoflush=False, bind=connection)()
@@ -39,7 +39,7 @@ def testdb(db_engine):  # pylint: disable=redefined-outer-name # Fixture usage
 
 
 @pytest.fixture
-def client(testdb):  # pylint: disable=redefined-outer-name # Fixture usage
+def client(testdb):
     def override_get_db():
         try:
             yield testdb

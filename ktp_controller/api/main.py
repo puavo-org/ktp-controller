@@ -29,7 +29,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @contextlib.asynccontextmanager
-async def _lifespan(app: fastapi.FastAPI):  # pylint: disable=unused-argument
+async def _lifespan(app: fastapi.FastAPI):
     _LOGGER.info("Starting...")
     database_url = f"sqlite:///{SETTINGS.db_path}"
     ktp_controller.api.database.initialize(database_url)

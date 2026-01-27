@@ -31,7 +31,7 @@ _LOGGER = logging.getLogger(__file__)
 
 
 class PuavoSettingsSource(PydanticBaseSettingsSource):
-    def get_field_value(  # pylint: disable=too-many-branches
+    def get_field_value(
         self, field: FieldInfo, field_name: str
     ) -> tuple[typing.Any, str, bool]:
         field_value = field.default

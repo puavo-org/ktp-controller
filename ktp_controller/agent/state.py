@@ -40,7 +40,7 @@ def load_agent_state() -> AgentState:
             _AGENT_STATE_FILEPATH,
         )
         agent_state = AgentState()
-    except Exception:  # pylint: disable=broad-exception-caught
+    except Exception:
         _LOGGER.exception(
             "Failed to load the agent state. Proceeding with an empty state."
         )

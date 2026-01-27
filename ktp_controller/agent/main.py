@@ -161,7 +161,7 @@ def _allow_students_to_use_browsers(students):
             ktp_controller.abitti2.client.set_exam_session_permission_to_use_browsers(
                 session_uuid, True
             )
-        except Exception:  # pylint: disable=broad-exception-caught
+        except Exception:
             _LOGGER.error(
                 "failed to allow student %s to use browsers in session %s",
                 student_uuid,
@@ -291,21 +291,21 @@ class Agent:
     async def __command_enable_auto_control(
         self,
         command_uuid: str,
-        command_data: ktp_controller.messages.CommandData,  # pylint: disable=unused-argument
+        command_data: ktp_controller.messages.CommandData,
     ) -> ktp_controller.messages.CommandResultData:
         return self.__set_auto_control(command_uuid, True)
 
     async def __command_disable_auto_control(
         self,
         command_uuid: str,
-        command_data: ktp_controller.messages.CommandData,  # pylint: disable=unused-argument
+        command_data: ktp_controller.messages.CommandData,
     ):
         return self.__set_auto_control(command_uuid, False)
 
     async def __command_change_current_exam_package_state(
         self,
         command_uuid: str,
-        command_data: ktp_controller.messages.CommandData,  # pylint: disable=unused-argument
+        command_data: ktp_controller.messages.CommandData,
     ) -> ktp_controller.messages.CommandResultData:
         if self.__is_auto_control_enabled:
             return ktp_controller.messages.CommandResultData(
@@ -709,7 +709,7 @@ class Agent:
                     command_result = await self.__commands[command_data.command](
                         message["uuid"], command_data
                     )
-                except Exception:  # pylint: disable=broad-exception-caught
+                except Exception:
                     _LOGGER.exception(
                         "Executing command %r failed", command_data.command
                     )
@@ -799,15 +799,15 @@ class Agent:
     async def __handle_abitti2_ping_message(
         self,
         websock: websockets.ClientConnection,
-        received_at: datetime.datetime,  # pylint: disable=unused-argument
-        message: None,  # pylint: disable=unused-argument
+        received_at: datetime.datetime,
+        message: None,
     ):
         await websock.send("pong")
 
     async def __handle_abitti2_security_code_message(
         self,
-        websock: websockets.ClientConnection,  # pylint: disable=unused-argument
-        received_at: datetime.datetime,  # pylint: disable=unused-argument
+        websock: websockets.ClientConnection,
+        received_at: datetime.datetime,
         message: typing.Dict[str, typing.Any],
     ):
         message_data = message["data"]
@@ -853,7 +853,7 @@ class Agent:
 
     async def __handle_abitti2_stats_message(
         self,
-        websock: websockets.ClientConnection,  # pylint: disable=unused-argument
+        websock: websockets.ClientConnection,
         received_at: datetime.datetime,
         message: typing.Dict[str, typing.Any],
     ):
@@ -874,7 +874,7 @@ class Agent:
 
         try:
             monitoring_passphrase = ktp_controller.abitti2.naksu2.read_password()
-        except Exception:  # pylint: disable=broad-exception-caught
+        except Exception:
             _LOGGER.exception("failed to read monitoring passphrase")
             monitoring_passphrase = None
 
@@ -882,7 +882,7 @@ class Agent:
             abitti2_version = (
                 ktp_controller.abitti2.client.get_current_abitti2_version()
             )
-        except Exception:  # pylint: disable=broad-exception-caught
+        except Exception:
             _LOGGER.exception("failed to get current Abitti2 version")
             abitti2_version = None
 
@@ -898,7 +898,7 @@ class Agent:
             ktp_controller.examomatic.client.send_abitti2_status_report(status_report)
             status_report["reported_at"] = ktp_controller.utils.utcnow_str()
             _LOGGER.info("sent Abitti2 status report to Exam-O-Matic")
-        except Exception:  # pylint: disable=broad-exception-caught
+        except Exception:
             _LOGGER.exception("failed to send Abitti2 status report to Exam-O-Matic")
             status_report["reported_at"] = None
 
@@ -907,8 +907,8 @@ class Agent:
 
     async def __handle_abitti2_exams_message(
         self,
-        websock: websockets.ClientConnection,  # pylint: disable=unused-argument
-        received_at: datetime.datetime,  # pylint: disable=unused-argument
+        websock: websockets.ClientConnection,
+        received_at: datetime.datetime,
         message: typing.Dict[str, typing.Any],
     ):
         self.__last_received_exam_list = message["data"]
@@ -956,7 +956,7 @@ class Agent:
 
             try:
                 await handler(websock, received_at, message)
-            except Exception:  # pylint: disable=broad-exception-caught
+            except Exception:
                 _LOGGER.exception(
                     "failed to handle %r message from Abitti2: %r",
                     message_type,
@@ -1139,7 +1139,7 @@ class Agent:
                     tg.create_task(self.__maintain_websocket_connection_to_api())
                     tg.create_task(self.__maintain_websocket_connection_to_abitti2())
                     tg.create_task(self.__maintain_websocket_connection_to_examomatic())
-            except* Exception:  # pylint: disable=broad-exception-caught
+            except* Exception:
                 _LOGGER.exception("Operational failure")
                 _LOGGER.error(
                     "Restart approximately in %d seconds...",

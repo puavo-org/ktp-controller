@@ -38,7 +38,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @contextlib.asynccontextmanager
-async def _lifespan(app: fastapi.FastAPI):  # pylint: disable=unused-argument
+async def _lifespan(app: fastapi.FastAPI):
     _LOGGER.info("Starting...")
     app.state.is_running = True
     yield
@@ -79,8 +79,8 @@ async def request_counter(request: fastapi.Request, call_next):
 )
 async def _get_exam_file_stream(
     domain: str,
-    hostname: str,  # pylint: disable=unused-argument
-    server_id: str = fastapi.Query(..., alias="id"),  # pylint: disable=unused-argument
+    hostname: str,
+    server_id: str = fastapi.Query(..., alias="id"),
     sha256sum: ktp_controller.pydantic.StrictSHA256String = fastapi.Query(
         ..., alias="hash"
     ),
@@ -158,7 +158,7 @@ class _Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
 async def _mock_set_exam_info(
     data: _SetExamInfoData,
     domain: str,
-    hostname: str,  # pylint: disable=unused-argument
+    hostname: str,
     server_id: int = fastapi.Query(..., alias="id"),
 ):
     _check_domain(domain)
@@ -182,12 +182,12 @@ async def _mock_set_exam_info(
 )
 async def _mock_get_state(
     domain: str,
-    hostname: str,  # pylint: disable=unused-argument
-    server_id: int = fastapi.Query(..., alias="id"),  # pylint: disable=unused-argument
+    hostname: str,
+    server_id: int = fastapi.Query(..., alias="id"),
 ):
     _check_domain(domain)
 
-    return APP.state._state  # pylint: disable=protected-access
+    return APP.state._state
 
 
 @APP.get(
@@ -222,10 +222,10 @@ async def _get_exam_info(
     status_code=200,
 )
 async def _send_abitti2_status_report(
-    request: _Abitti2StatusReport,  # pylint: disable=unused-argument
+    request: _Abitti2StatusReport,
     domain: str,
-    hostname: str,  # pylint: disable=unused-argument
-    server_id: int = fastapi.Query(..., alias="id"),  # pylint: disable=unused-argument
+    hostname: str,
+    server_id: int = fastapi.Query(..., alias="id"),
 ):
     _check_domain(domain)
 
@@ -242,11 +242,11 @@ def _upload_answers_file(
     answers_file: Annotated[fastapi.UploadFile, fastapi.File()],
     file_sha256: Annotated[str, fastapi.Form()],
     file_size: Annotated[int, fastapi.Form()],
-    package_id: Annotated[str, fastapi.Form()],  # pylint: disable=unused-argument
+    package_id: Annotated[str, fastapi.Form()],
     is_final: Annotated[str, fastapi.Form()],
     domain: str,
-    hostname: str,  # pylint: disable=unused-argument
-    server_id: int = fastapi.Query(..., alias="id"),  # pylint: disable=unused-argument
+    hostname: str,
+    server_id: int = fastapi.Query(..., alias="id"),
 ):
     _check_domain(domain)
 
@@ -296,9 +296,9 @@ async def _send_refresh_exams(websock: fastapi.WebSocket):
 @APP.websocket("/servers/ers_connection")
 async def _ktp_controller_websocket(
     websock: fastapi.WebSocket,
-    domain: str,  # pylint: disable=unused-argument
-    hostname: str,  # pylint: disable=unused-argument
-    server_id: int = fastapi.Query(..., alias="id"),  # pylint: disable=unused-argument
+    domain: str,
+    hostname: str,
+    server_id: int = fastapi.Query(..., alias="id"),
 ):
     try:
         _check_domain(domain)
