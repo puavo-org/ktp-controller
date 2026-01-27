@@ -35,6 +35,8 @@ __all__ = [
 
 # Utils:
 
+DEFAULT_REQUEST_TIMEOUT: typing.Tuple[int, int] = (60.1, 60)
+
 
 def _get_auth():
     if SETTINGS.examomatic_username and SETTINGS.examomatic_password_file:
@@ -52,7 +54,7 @@ def _get(
     *,
     extra_params: typing.Optional[typing.Dict[str, str]] = None,
     stream: bool = False,
-    timeout: int = 20,
+    timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
 ) -> requests.Response:
     if extra_params is None:
         extra_params = {}
@@ -91,7 +93,7 @@ def _post(
     data: bytes | None = None,
     json: typing.Any | None = None,  # pylint: disable=redefined-outer-name
     files: typing.Dict | None = None,
-    timeout: int = 20,
+    timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
 ) -> requests.Response:
     response = requests.post(
         ktp_controller.utils.get_url(
@@ -167,7 +169,9 @@ def websock_validate_message(data):
 
 
 def send_abitti2_status_report(
-    status_report: typing.Dict, *, timeout: int = 20
+    status_report: typing.Dict,
+    *,
+    timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
 ) -> typing.Any:
     return _post(
         "/v1/servers/status_update",
@@ -176,12 +180,17 @@ def send_abitti2_status_report(
     ).json()
 
 
-def get_exam_info(*, timeout: int = 20) -> typing.Dict:
+def get_exam_info(
+    *, timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT
+) -> typing.Dict:
     return _get("/v2/schedules/exam_packages", timeout=timeout).json()
 
 
 def get_exam_file_stream(
-    sha256sum: str, *, timeout: int = 20, stream_chunk_size=4096
+    sha256sum: str,
+    *,
+    timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
+    stream_chunk_size=4096,
 ) -> typing.Iterable[bytes]:
     response = _get(
         "/v1/exams/raw_file",
@@ -200,7 +209,12 @@ def get_exam_file_stream(
         raise RuntimeError("sha256sum mismatch of downloaded exam file")
 
 
-def download_exam_file(sha256sum: str, dest_filepath: str, *, timeout: int = 20):
+def download_exam_file(
+    sha256sum: str,
+    dest_filepath: str,
+    *,
+    timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
+):
     with ktp_controller.utils.open_atomic_write(
         dest_filepath, exclusive=True
     ) as dest_file:
@@ -211,7 +225,7 @@ def download_exam_file(sha256sum: str, dest_filepath: str, *, timeout: int = 20)
 def download_dummy_exam_file(
     dest_filepath: str,
     *,
-    timeout: int = 20,  # pylint: disable=unused-argument
+    timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,  # pylint: disable=unused-argument
 ):
     ktp_controller.utils.copy_atomic(
         os.path.join(os.path.dirname(__file__), "dummy-exam-file.mex"), dest_filepath
@@ -242,7 +256,7 @@ def upload_answers_file(
     filepath: str,
     sha256sum: str | None = None,
     is_final: IsFinal = IsFinal.UNKNOWN,
-    timeout: int = 20,
+    timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
 ):
     is_final = IsFinal(is_final)
 
