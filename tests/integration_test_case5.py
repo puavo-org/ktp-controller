@@ -1,5 +1,7 @@
 # Standard library imports
 import datetime
+import json
+import re
 import time
 
 # Third-party imports
@@ -278,6 +280,43 @@ def test_student2_take_scheduled_exam_but_do_not_end_it(student2):
         exam_title="Integraatiotestikoe1",
         access_code=access_code,
         expect_exam_instructions=False,  # Already seen in this browsing session, Abitti2 seems to show it only once.
+    )
+
+
+def test_status_reports_do_not_contain_student_names(student1, student2):
+    found_some_students = False
+    for i in range(10):
+        last_status_report_seen_by_api = (
+            ktp_controller.api.client.get_last_abitti2_status_report()
+        )
+        if len(last_status_report_seen_by_api["status"]["data"]["students"]) > 1:
+            found_some_students = True
+            break
+        time.sleep(1)
+    assert found_some_students
+
+    last_status_report_as_string = json.dumps(last_status_report_seen_by_api)
+
+    # Names of our students must not be found from the raw status
+    # reports. We do string-based testing for these fields to ensure
+    # this assertion holds even if Abitti2 decides to rename fields
+    # which convey student name information. Because internally, we do
+    # not process name fields nor check if they exist in reports sent
+    # by Abitti2. This string-based checking can be replaced with
+    # field/structure-based checking when/if Abitti2 status reports
+    # strictly checked when received. See _Abitti2BaseModel in
+    # ktp_controller/abitti2/schemas.py.
+    assert (
+        re.search(re.escape(student1.last_name), last_status_report_as_string) is None
+    )
+    assert (
+        re.search(re.escape(student1.first_name), last_status_report_as_string) is None
+    )
+    assert (
+        re.search(re.escape(student2.last_name), last_status_report_as_string) is None
+    )
+    assert (
+        re.search(re.escape(student2.first_name), last_status_report_as_string) is None
     )
 
 
