@@ -28,6 +28,10 @@ class Abitti2Exam(ktp_controller.pydantic.BaseModel):
     type: pydantic.StrictStr
 
 
+class _Abitti2Info(ktp_controller.pydantic.BaseModel):
+    domain: pydantic.StrictStr | None
+
+
 class Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
     received_at: ktp_controller.pydantic.DateTime
     reported_at: ktp_controller.pydantic.DateTime | None
@@ -35,3 +39,4 @@ class Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
     server_version: pydantic.StrictStr
     status: typing.Dict
     exams: typing.List[Abitti2Exam] | None
+    abitti2: _Abitti2Info
