@@ -9,6 +9,7 @@ import pytest
 
 # Internal imports
 import ktp_controller.abitti2.client
+import ktp_controller.abitti2.naksu2
 import ktp_controller.api.client
 import ktp_controller.examomatic.client
 
@@ -206,6 +207,19 @@ def test_api_has_copies_of_status_reports():
     assert last_status_report_seen_by_api.pop("reported_at") is not None
     state = ktp_controller.examomatic.client._post("/mock/get_state").json()
     assert last_status_report_seen_by_api in state["status_reports"]
+
+
+def test_last_status_report_has_abitti2_domain():
+    last_status_report_seen_by_api = (
+        ktp_controller.api.client.get_last_abitti2_status_report()
+    )
+    assert (
+        last_status_report_seen_by_api["abitti2"]["domain"]
+        == ktp_controller.abitti2.naksu2.read_domain()
+    )
+    assert last_status_report_seen_by_api["abitti2"]["domain"].endswith(
+        ".koe.abitti.net"
+    )
 
 
 def test_scheduled_exam_gets_started():
