@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - transfer **non-final** answer files periodically from Abitti2 to Exam-O-Matic
 - `KTP_CONTROLLER_EXAMOMATIC_PING_INTERVAL_SEC` environment variable
 - `KTP_CONTROLLER_ANSWER_TRANSFER_INTERVAL_SEC` environment variable
+- remove direct personal identifiers from all Abitti2 stats messages on receipt
 
 ### Changed
 

@@ -19,6 +19,7 @@ import websockets
 import ktp_controller.abitti2.client
 import ktp_controller.abitti2.naksu2
 import ktp_controller.abitti2.schemas
+import ktp_controller.abitti2.utils
 import ktp_controller.agent.state
 import ktp_controller.agent.stats
 import ktp_controller.api.client
@@ -857,6 +858,8 @@ class Agent:
         received_at: datetime.datetime,
         message: typing.Dict[str, typing.Any],
     ):
+        ktp_controller.abitti2.utils.sanitize_stats_message(message)
+
         if (
             self.__validate_abitti2_stats_message(message)
             and self.__is_auto_control_enabled
