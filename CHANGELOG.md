@@ -20,7 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Logging messages are improved.
 - Timeouts of HTTP requests to Exam-O-Matic are increased to make connections more resilient.
 
 
