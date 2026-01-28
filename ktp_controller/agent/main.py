@@ -882,6 +882,12 @@ class Agent:
             monitoring_passphrase = None
 
         try:
+            domain = ktp_controller.abitti2.naksu2.read_domain()
+        except Exception:
+            _LOGGER.exception("failed to read domain")
+            domain = None
+
+        try:
             abitti2_version = (
                 ktp_controller.abitti2.client.get_current_abitti2_version()
             )
@@ -895,6 +901,9 @@ class Agent:
             "status": message,
             "received_at": ktp_controller.utils.strfdt(received_at),
             "exams": self.__last_received_exam_list,
+            "abitti2": {
+                "domain": domain,
+            },
         }
 
         try:

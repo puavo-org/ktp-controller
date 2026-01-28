@@ -55,6 +55,9 @@ def test_send_abitti2_status_report__invalid_input(client, testdb, utcnow):
         "status": {},
         "exams": [],
         "something_extra": True,
+        "abitti2": {
+            "domain": "funny-server.example.invalid",
+        },
     }
 
     response = client.post(
@@ -70,6 +73,9 @@ def test_send_abitti2_status_report__invalid_input(client, testdb, utcnow):
         "server_version": "",
         "status": {},
         "exams": [1],
+        "abitti2": {
+            "domain": "funny-server.example.invalid",
+        },
     }
 
     response = client.post(
@@ -92,6 +98,9 @@ def test_send_abitti2_status_report__valid_minimal_input(client, testdb, utcnow)
         "server_version": "",
         "status": {},
         "exams": [],
+        "abitti2": {
+            "domain": None,
+        },
     }
 
     response = client.post(
@@ -125,6 +134,9 @@ def test_send_abitti2_status_report__same_valid_minimal_input_twice(
         "server_version": "",
         "status": {},
         "exams": [],
+        "abitti2": {
+            "domain": None,
+        },
     }
 
     response = client.post(
@@ -184,6 +196,9 @@ def test_send_abitti2_status_report__valid_but_highly_unlikely_abitti2_status(
                 "type": "xml",
             }
         ],
+        "abitti2": {
+            "domain": "funny-server.example.invalid",
+        },
     }
 
     response = client.post(
@@ -210,6 +225,9 @@ def test_send_abitti2_status_report__two_different_reports(client, testdb, utcno
         "server_version": "1.6.0",
         "status": {},
         "exams": [],
+        "abitti2": {
+            "domain": "funny-server.example.invalid",
+        },
     }
 
     response = client.post(
@@ -224,6 +242,9 @@ def test_send_abitti2_status_report__two_different_reports(client, testdb, utcno
         "server_version": "1.7.0",
         "status": {},
         "exams": [],
+        "abitti2": {
+            "domain": "funny-server.example.invalid",
+        },
     }
     response = client.post(
         "/api/v1/system/send_abitti2_status_report", json=status_report2
@@ -287,6 +308,9 @@ def test_send_abitti2_status_report__multiple_reports_exactly_max_count(
             "server_version": "1.11.0",
             "status": {},
             "exams": [],
+            "abitti2": {
+                "domain": "funny-server.example.invalid",
+            },
         }
 
         response = client.post(
@@ -343,6 +367,9 @@ def test_send_abitti2_status_report__multiple_reports_less_than_max_count(
             "server_version": "1.11.0",
             "status": {},
             "exams": [],
+            "abitti2": {
+                "domain": "funny-server.example.invalid",
+            },
         }
 
         response = client.post(
@@ -399,6 +426,9 @@ def test_send_abitti2_status_report__multiple_reports_one_more_than_max_count(
             "server_version": "1.11.0",
             "status": {},
             "exams": [],
+            "abitti2": {
+                "domain": "funny-server.example.invalid",
+            },
         }
 
         response = client.post(
@@ -457,6 +487,9 @@ def test_send_abitti2_status_report__multiple_reports_many_more_than_max_count(
             "server_version": "1.11.0",
             "status": {},
             "exams": [],
+            "abitti2": {
+                "domain": "funny-server.example.invalid",
+            },
         }
 
         response = client.post(

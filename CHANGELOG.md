@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Abitti2 server domain is now included in status reports sent to Exam-O-Matic.
 - Non-final answer files are periodically transferred from Abitti2 to Exam-O-Matic.
 - Direct personal identifiers are removed from all Abitti2 stats messages on receipt.
 - Services are now automatically restarted on failure.
