@@ -20,6 +20,7 @@ __all__ = [
     # API commands:
     "async_command",
     "get_current_exam_package",
+    "get_locked_exam_packages",
     "set_current_exam_package_state",
     "get_scheduled_exam",
     "get_scheduled_exam_package",
@@ -154,6 +155,12 @@ def get_student_access_code() -> typing.Tuple[str, str] | None:
         single_security_code["keyCode"],
         single_security_code["confirmationCode"],
     )
+
+
+def get_locked_exam_packages(
+    *, timeout: int = 20
+) -> typing.List[typing.Dict[str, typing.Any]]:
+    return _post("/api/v1/exam/get_locked_exam_packages", timeout=timeout).json()
 
 
 def get_current_exam_package(*, timeout: int = 20) -> typing.Dict[str, typing.Any]:
