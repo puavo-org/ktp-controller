@@ -1,7 +1,7 @@
 # Standard library imports
 import datetime
 import logging
-
+import typing
 
 # Third-party imports
 import fastapi
@@ -238,6 +238,81 @@ async def _set_current_exam_package_state(
 
 
 @router.post(
+    "/get_locked_exam_packages",
+    response_model=typing.List[schemas.ScheduledExamPackage],
+    summary="Get locked exam packages",
+)
+async def _get_locked_exam_packages(
+    db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
+):
+    utcnow = ktp_controller.utils.utcnow()
+
+    db_locked_exam_packages = []
+
+    db_current_exam_package = (
+        db.query(models.ScheduledExamPackage).filter_by(current=True).one_or_none()
+    )
+    if db_current_exam_package is not None:
+        db_locked_exam_packages.append(db_current_exam_package)
+
+    db_locked_exam_packages.extend(
+        db.query(models.ScheduledExamPackage)
+        .filter_by(locked=True)
+        .filter_by(state=None)
+        .filter_by(current=False)
+        .filter(
+            db_current_exam_package is None
+            or models.ScheduledExamPackage.dbid != db_current_exam_package.dbid
+        )
+        .filter(models.ScheduledExamPackage.end_time >= utcnow)
+        .order_by(
+            sqlalchemy.sql.asc(models.ScheduledExamPackage.start_time),
+            sqlalchemy.sql.asc(models.ScheduledExamPackage.dbid),
+        )
+        .all()
+    )
+
+    if len(db_locked_exam_packages) == 0:
+        return []  # No locked upcoming or ongoing scheduled exam packages available.
+
+    if not db_locked_exam_packages[0].current:
+        db_locked_exam_packages[0].current = True
+        db.commit()
+
+    return [
+        {
+            "external_id": db_locked_exam_package.external_id,
+            "start_time": db_locked_exam_package.start_time.replace(
+                tzinfo=datetime.timezone.utc
+            ),
+            "end_time": db_locked_exam_package.end_time.replace(
+                tzinfo=datetime.timezone.utc
+            ),
+            "lock_time": (
+                None
+                if db_locked_exam_package.lock_time is None
+                else db_locked_exam_package.lock_time.replace(
+                    tzinfo=datetime.timezone.utc
+                )
+            ),
+            "locked": db_locked_exam_package.locked,
+            "scheduled_exam_external_ids": [
+                se.external_id for se in db_locked_exam_package.scheduled_exams
+            ],
+            "state": db_locked_exam_package.state,
+            "state_changed_at": (
+                None
+                if db_locked_exam_package.state_changed_at is None
+                else db_locked_exam_package.state_changed_at.replace(
+                    tzinfo=datetime.timezone.utc
+                )
+            ),
+        }
+        for db_locked_exam_package in db_locked_exam_packages
+    ]
+
+
+@router.post(
     "/get_current_exam_package",
     response_model=schemas.ScheduledExamPackage | None,
     summary="Get current exam package",
@@ -245,60 +320,12 @@ async def _set_current_exam_package_state(
 async def _get_current_exam_package(
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ):
-    utcnow = ktp_controller.utils.utcnow()
+    db_locked_exam_packages = await _get_locked_exam_packages(db)
 
-    db_current_exam_package = (
-        db.query(models.ScheduledExamPackage).filter_by(current=True).one_or_none()
-    )
+    if len(db_locked_exam_packages) == 0:
+        return None
 
-    if db_current_exam_package is None:
-        db_current_exam_package = (
-            db.query(models.ScheduledExamPackage)
-            .filter_by(locked=True)
-            .filter_by(state=None)
-            .filter(models.ScheduledExamPackage.end_time >= utcnow)
-            .order_by(
-                sqlalchemy.sql.asc(models.ScheduledExamPackage.start_time),
-                sqlalchemy.sql.asc(models.ScheduledExamPackage.dbid),
-            )
-            .limit(1)
-            .one_or_none()
-        )
-
-        if db_current_exam_package is None:
-            return (
-                None  # No locked upcoming or ongoing scheduled exam packages available.
-            )
-
-        db_current_exam_package.current = True
-        db.commit()
-
-    return {
-        "external_id": db_current_exam_package.external_id,
-        "start_time": db_current_exam_package.start_time.replace(
-            tzinfo=datetime.timezone.utc
-        ),
-        "end_time": db_current_exam_package.end_time.replace(
-            tzinfo=datetime.timezone.utc
-        ),
-        "lock_time": (
-            None
-            if db_current_exam_package.lock_time is None
-            else db_current_exam_package.lock_time.replace(tzinfo=datetime.timezone.utc)
-        ),
-        "locked": db_current_exam_package.locked,
-        "scheduled_exam_external_ids": [
-            se.external_id for se in db_current_exam_package.scheduled_exams
-        ],
-        "state": db_current_exam_package.state,
-        "state_changed_at": (
-            None
-            if db_current_exam_package.state_changed_at is None
-            else db_current_exam_package.state_changed_at.replace(
-                tzinfo=datetime.timezone.utc
-            )
-        ),
-    }
+    return db_locked_exam_packages[0]
 
 
 @router.post(
