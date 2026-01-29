@@ -330,12 +330,25 @@ def test_status_reports_do_not_contain_student_names(student1, student2):
     )
 
 
-def test_scheduled_exam_gets_stopped():
+def test_scheduled_exam_does_not_get_stopped_until_student2_ends_exam(student2):
     global scheduled_exam_package
+    utcnow = ktp_controller.utils.utcnow()
+
+    until_scheduled_end = (
+        datetime.datetime.fromisoformat(scheduled_exam_package["end_time"]) - utcnow
+    ).total_seconds()
+    time.sleep(until_scheduled_end + 10)
+
+    scheduled_exam_package = ktp_controller.api.client.get_scheduled_exam_package(
+        scheduled_exam_package["external_id"]
+    )
+    assert scheduled_exam_package["state"] == "running"  # Still running.
+
+    student2.end_exam()
 
     # Wait until it's stopped.
     exam_package_is_stopped = False
-    for i in range(90):
+    for i in range(30):
         scheduled_exam_package = ktp_controller.api.client.get_scheduled_exam_package(
             scheduled_exam_package["external_id"]
         )

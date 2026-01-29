@@ -177,6 +177,31 @@ def _allow_students_to_use_browsers(students):
         )
 
 
+def _all_students_have_left_or_finished(
+    status_report: typing.Dict[str, typing.Any],
+) -> bool:
+    """
+    >>> _all_students_have_left_or_finished({"status": {"data": {"students": []}}})
+    True
+    >>> _all_students_have_left_or_finished({"status": {"data": {"students": [{"age": 13}]}}})
+    False
+    >>> _all_students_have_left_or_finished({"status": {"data": {"students": [{"examFinished": True}]}}})
+    True
+    >>> _all_students_have_left_or_finished({"status": {"data": {"students": [{"examFinished": True}, {"examFinished": False}]}}})
+    False
+    >>> _all_students_have_left_or_finished({"status": {"data": {"students": [{"examFinished": True}, {"sessionStatus": "session_started"}]}}})
+    False
+    >>> _all_students_have_left_or_finished({"status": {"data": {"students": [{"examFinished": True}, {"sessionStatus": "session_ended"}]}}})
+    True
+    """
+
+    return all(
+        s.get("examFinished", False)
+        or s.get("sessionStatus") in ("session_ended", "exam_finished_by_student")
+        for s in status_report["status"]["data"]["students"]
+    )
+
+
 class Trigger(str, enum.Enum):
     TIME = "time"
     MANUAL_PREPARE = "manual_prepare"
@@ -457,11 +482,7 @@ class Agent:
             ktp_controller.abitti2.client.stop_exam_session(student["sessionUuid"])
 
         is_stopped = (
-            all(
-                s.get("examFinished", False)
-                or s.get("sessionStatus") == "session_ended"
-                for s in status_report["status"]["data"]["students"]
-            )
+            _all_students_have_left_or_finished(status_report)
             and current_exam_package["state"] == "stopping"
             and status_report["received_at"] > current_exam_package["state_changed_at"]
         )
@@ -529,14 +550,16 @@ class Agent:
                 "and reported by upper levels in the call stack."
             )
 
-        current_exam_package = ktp_controller.api.client.get_current_exam_package()
+        locked_exam_packages = ktp_controller.api.client.get_locked_exam_packages()
 
-        if current_exam_package is None:
+        if len(locked_exam_packages) == 0:
             if self.__is_auto_control_enabled and self.__last_received_exam_list == []:
                 _LOGGER.info("Reseting Abitti2 with a dummy exam package...")
                 ktp_controller.abitti2.client.reset()
                 _LOGGER.info("Abitti2 was reset.")
             return False  # No current exam package
+
+        current_exam_package = locked_exam_packages[0]
 
         if not current_exam_package["locked"]:
             raise RuntimeError(
@@ -585,6 +608,12 @@ class Agent:
                         >= datetime.datetime.fromisoformat(
                             current_exam_package["end_time"]
                         )
+                    )
+                    and (
+                        _all_students_have_left_or_finished(
+                            ktp_controller.api.client.get_last_status_report()
+                        )
+                        or len(locked_exam_packages) > 1
                     )
                 ),
                 "action": self.__start_stopping_current_exam_package,
