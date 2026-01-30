@@ -11,7 +11,7 @@ import ktp_controller.abitti2.words
 __all__ = [
     "make_password",
     "read_naksu2_conf",
-    "read_password",
+    "read_supervisor_passphrase",
     "read_domain",
 ]
 
@@ -32,7 +32,7 @@ def read_naksu2_conf(*, filepath: typing.Optional[str] = None) -> typing.Dict:
         return json.load(f)
 
 
-def read_password():
+def read_supervisor_passphrase():
     naksu2_conf = read_naksu2_conf()
     return make_password(naksu2_conf["passwordSeed"])
 

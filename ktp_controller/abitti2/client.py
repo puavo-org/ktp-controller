@@ -38,7 +38,7 @@ __all__ = [
 # Constants:
 
 
-_ABITTI2_USERNAME = "valvoja"
+_ABITTI2_SUPERVISOR_USERNAME = "valvoja"
 
 
 # Utils:
@@ -51,7 +51,8 @@ def _get(path: str, *, stream: bool = False, timeout: int = 20) -> requests.Resp
     response = requests.get(
         url,
         auth=requests.auth.HTTPBasicAuth(
-            _ABITTI2_USERNAME, ktp_controller.abitti2.naksu2.read_password()
+            _ABITTI2_SUPERVISOR_USERNAME,
+            ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
         ),
         timeout=timeout,
         stream=stream,
@@ -72,7 +73,8 @@ def _post(path: str, *, data=None, timeout: int = 20) -> requests.Response:
     response = requests.post(
         url,
         auth=requests.auth.HTTPBasicAuth(
-            _ABITTI2_USERNAME, ktp_controller.abitti2.naksu2.read_password()
+            _ABITTI2_SUPERVISOR_USERNAME,
+            ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
         ),
         timeout=timeout,
         json=data,
@@ -85,7 +87,8 @@ def _post(path: str, *, data=None, timeout: int = 20) -> requests.Response:
 
 def get_basic_auth() -> typing.Dict[str, str]:
     return ktp_controller.utils.get_basic_auth(
-        _ABITTI2_USERNAME, ktp_controller.abitti2.naksu2.read_password()
+        _ABITTI2_SUPERVISOR_USERNAME,
+        ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
     )
 
 
@@ -126,7 +129,8 @@ def upload_exam_package(
         response = requests.post(
             url,
             auth=requests.auth.HTTPBasicAuth(
-                _ABITTI2_USERNAME, ktp_controller.abitti2.naksu2.read_password()
+                _ABITTI2_SUPERVISOR_USERNAME,
+                ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
             ),
             timeout=timeout,
             files={

@@ -871,10 +871,12 @@ class Agent:
         message["singleSecurityCode"] = self.__last_received_security_code
 
         try:
-            monitoring_passphrase = ktp_controller.abitti2.naksu2.read_password()
+            supervisor_passphrase = (
+                ktp_controller.abitti2.naksu2.read_supervisor_passphrase()
+            )
         except Exception:
-            _LOGGER.exception("failed to read monitoring passphrase")
-            monitoring_passphrase = None
+            _LOGGER.exception("failed to read supervisor passphrase")
+            supervisor_passphrase = None
 
         try:
             domain = ktp_controller.abitti2.naksu2.read_domain()
@@ -891,7 +893,7 @@ class Agent:
             abitti2_version = None
 
         status_report = {
-            "monitoring_passphrase": monitoring_passphrase,
+            "monitoring_passphrase": supervisor_passphrase,
             "server_version": abitti2_version,
             "status": message,
             "received_at": ktp_controller.utils.strfdt(received_at),
