@@ -18,11 +18,11 @@ import uvicorn  # type: ignore
 import pydantic
 
 # Internal imports
+import ktp_controller.examomatic.schemas
 import ktp_controller.pydantic
 import ktp_controller.utils
 
 from .utils import get_exam_filepath, get_synthetic_exam_info
-
 
 __all__ = [
     # Constants:
@@ -134,27 +134,6 @@ class _SetExamInfoData(ktp_controller.pydantic.BaseModel):
     lock_time_duration_seconds: pydantic.conint(strict=True, ge=1)
 
 
-class _Abitti2Exam(ktp_controller.pydantic.BaseModel):
-    examUuid: pydantic.StrictStr
-    examTitle: pydantic.StrictStr
-    hasStarted: pydantic.StrictBool
-    startTime: ktp_controller.pydantic.DateTime | None
-    type: pydantic.StrictStr
-
-
-class _Abitti2Info(ktp_controller.pydantic.BaseModel):
-    domain: pydantic.StrictStr | None
-
-
-class _StatusReport(ktp_controller.pydantic.BaseModel):
-    received_at: ktp_controller.pydantic.DateTime
-    monitoring_passphrase: pydantic.StrictStr
-    server_version: pydantic.StrictStr
-    status: Dict
-    exams: List[_Abitti2Exam] | None
-    abitti2: _Abitti2Info
-
-
 @APP.post(
     "/mock/set_exam_info",
     response_model=None,
@@ -227,7 +206,7 @@ async def _get_exam_info(
     status_code=200,
 )
 async def _send_status_report(
-    request: _StatusReport,
+    request: ktp_controller.examomatic.schemas.StatusReport,
     domain: str,
     hostname: str,
     server_id: int = fastapi.Query(..., alias="id"),
