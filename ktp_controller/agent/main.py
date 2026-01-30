@@ -426,7 +426,7 @@ class Agent:
 
             _LOGGER.info(
                 "API says the access code is: %r",
-                ktp_controller.api.client.get_access_code(),
+                ktp_controller.api.client.get_student_access_code(),
             )
 
         self.__old_security_code = None

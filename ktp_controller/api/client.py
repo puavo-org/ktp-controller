@@ -143,7 +143,7 @@ def get_last_abitti2_status_report(
     ).json()
 
 
-def get_access_code() -> typing.Tuple[str, str] | None:
+def get_student_access_code() -> typing.Tuple[str, str] | None:
     last_status_report = get_last_abitti2_status_report()
     if last_status_report is None:
         return None

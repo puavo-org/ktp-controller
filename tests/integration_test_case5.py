@@ -26,7 +26,7 @@ from .utils import browser_firefox
 
 
 scheduled_exam_package = None
-access_code = None
+student_access_code = None
 
 
 @pytest.fixture(scope="session")
@@ -124,11 +124,11 @@ def test_odotusaulakoe_is_running():
     _assert_odotusaulakoe_is_running(timeout=30)
 
 
-def test_access_code_is_initially_1234_xx():
-    global access_code
-    access_code = ktp_controller.api.client.get_access_code()
-    assert access_code is not None
-    assert access_code == ("1234", "xx")
+def test_student_access_code_is_initially_1234_xx():
+    global student_access_code
+    student_access_code = ktp_controller.api.client.get_student_access_code()
+    assert student_access_code is not None
+    assert student_access_code == ("1234", "xx")
 
 
 def test_student1_take_waiting_lobby_exam(student1):
@@ -136,7 +136,7 @@ def test_student1_take_waiting_lobby_exam(student1):
     student1.start_exam(
         exam_uuid="390e7988-ff0e-42b4-a2e6-d13a969e7103",
         exam_title="Odotusaulakoe",
-        access_code=access_code,
+        access_code=student_access_code,
     )
     student1.end_exam()
 
@@ -146,7 +146,7 @@ def test_student2_take_waiting_lobby_exam_but_do_not_end_it(student2):
     student2.start_exam(
         exam_uuid="390e7988-ff0e-42b4-a2e6-d13a969e7103",
         exam_title="Odotusaulakoe",
-        access_code=access_code,
+        access_code=student_access_code,
     )
 
 
@@ -267,13 +267,13 @@ def test_scheduled_exam_gets_started():
     assert scheduled_exam_package["state"] == "running"
 
 
-def test_access_code_is_changed_when_scheduled_exam_is_started():
-    global access_code
-    new_access_code = ktp_controller.api.client.get_access_code()
-    assert new_access_code is not None
-    assert new_access_code != access_code
-    assert new_access_code != ("1234", "xx")
-    access_code = new_access_code
+def test_student_access_code_is_changed_when_scheduled_exam_is_started():
+    global student_access_code
+    new_student_access_code = ktp_controller.api.client.get_student_access_code()
+    assert new_student_access_code is not None
+    assert new_student_access_code != student_access_code
+    assert new_student_access_code != ("1234", "xx")
+    student_access_code = new_student_access_code
 
 
 def test_student1_take_scheduled_exam(student1):
@@ -281,7 +281,7 @@ def test_student1_take_scheduled_exam(student1):
     student1.start_exam(
         exam_uuid="c574f93a-ac4d-4441-8679-ca47e565fb7b",
         exam_title="Integraatiotestikoe1",
-        access_code=access_code,
+        access_code=student_access_code,
         expect_exam_instructions=False,  # Already seen in this browsing session, Abitti2 seems to show it only once.
     )
     student1.end_exam()
@@ -292,7 +292,7 @@ def test_student2_take_scheduled_exam_but_do_not_end_it(student2):
     student2.start_exam(
         exam_uuid="c574f93a-ac4d-4441-8679-ca47e565fb7b",
         exam_title="Integraatiotestikoe1",
-        access_code=access_code,
+        access_code=student_access_code,
         expect_exam_instructions=False,  # Already seen in this browsing session, Abitti2 seems to show it only once.
     )
 
