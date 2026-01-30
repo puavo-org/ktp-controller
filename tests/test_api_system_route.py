@@ -38,13 +38,13 @@ def test_async_command_dispatching(
         }
 
 
-def test_send_abitti2_status_report__invalid_input(client, testdb, utcnow):
-    assert testdb.query(models.Abitti2StatusReport).all() == []
+def test_send_status_report__invalid_input(client, testdb, utcnow):
+    assert testdb.query(models.StatusReport).all() == []
 
-    response = client.post("/api/v1/system/send_abitti2_status_report", data={})
+    response = client.post("/api/v1/system/send_status_report", data={})
     assert_response(response, expected_status_code=422)
 
-    response = client.post("/api/v1/system/send_abitti2_status_report", json={})
+    response = client.post("/api/v1/system/send_status_report", json={})
     assert_response(response, expected_status_code=422)
 
     status_report_with_extra_field = {
@@ -61,7 +61,7 @@ def test_send_abitti2_status_report__invalid_input(client, testdb, utcnow):
     }
 
     response = client.post(
-        "/api/v1/system/send_abitti2_status_report",
+        "/api/v1/system/send_status_report",
         json=status_report_with_extra_field,
     )
     assert_response(response, expected_status_code=422)
@@ -79,17 +79,17 @@ def test_send_abitti2_status_report__invalid_input(client, testdb, utcnow):
     }
 
     response = client.post(
-        "/api/v1/system/send_abitti2_status_report",
+        "/api/v1/system/send_status_report",
         json=status_report_with_invalid_exams,
     )
     assert_response(response, expected_status_code=422)
 
     # And after all failed attempts to save invalid input, the database should be still empty.
-    assert testdb.query(models.Abitti2StatusReport).all() == []
+    assert testdb.query(models.StatusReport).all() == []
 
 
-def test_send_abitti2_status_report__valid_minimal_input(client, testdb, utcnow):
-    assert testdb.query(models.Abitti2StatusReport).all() == []
+def test_send_status_report__valid_minimal_input(client, testdb, utcnow):
+    assert testdb.query(models.StatusReport).all() == []
 
     status_report = {
         "received_at": ktp_controller.utils.strfdt(utcnow),
@@ -103,29 +103,24 @@ def test_send_abitti2_status_report__valid_minimal_input(client, testdb, utcnow)
         },
     }
 
-    response = client.post(
-        "/api/v1/system/send_abitti2_status_report", json=status_report
-    )
+    response = client.post("/api/v1/system/send_status_report", json=status_report)
     assert_response(response, expected_status_code=200)
 
-    db_abitti2_status_report = testdb.query(models.Abitti2StatusReport).one()
+    db_status_report = testdb.query(models.StatusReport).one()
 
     assert (
-        db_abitti2_status_report.dbrow_created_at.replace(tzinfo=datetime.timezone.utc)
-        > utcnow
+        db_status_report.dbrow_created_at.replace(tzinfo=datetime.timezone.utc) > utcnow
     )
-    assert db_abitti2_status_report.raw_data == status_report
+    assert db_status_report.raw_data == status_report
 
-    response = client.post("/api/v1/system/get_last_abitti2_status_report")
+    response = client.post("/api/v1/system/get_last_status_report")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == status_report
 
 
-def test_send_abitti2_status_report__same_valid_minimal_input_twice(
-    client, testdb, utcnow
-):
-    assert testdb.query(models.Abitti2StatusReport).all() == []
+def test_send_status_report__same_valid_minimal_input_twice(client, testdb, utcnow):
+    assert testdb.query(models.StatusReport).all() == []
 
     status_report = {
         "received_at": ktp_controller.utils.strfdt(utcnow),
@@ -139,43 +134,28 @@ def test_send_abitti2_status_report__same_valid_minimal_input_twice(
         },
     }
 
-    response = client.post(
-        "/api/v1/system/send_abitti2_status_report", json=status_report
-    )
+    response = client.post("/api/v1/system/send_status_report", json=status_report)
     assert_response(response, expected_status_code=200)
 
-    response = client.post(
-        "/api/v1/system/send_abitti2_status_report", json=status_report
-    )
+    response = client.post("/api/v1/system/send_status_report", json=status_report)
     assert_response(response, expected_status_code=200)
 
-    db_abitti2_status_report1, db_abitti2_status_report2 = (
-        testdb.query(models.Abitti2StatusReport)
-        .order_by(models.Abitti2StatusReport.dbid)
-        .all()
+    db_status_report1, db_status_report2 = (
+        testdb.query(models.StatusReport).order_by(models.StatusReport.dbid).all()
     )
 
     assert (
-        db_abitti2_status_report1.dbrow_created_at.replace(tzinfo=datetime.timezone.utc)
+        db_status_report1.dbrow_created_at.replace(tzinfo=datetime.timezone.utc)
         > utcnow
     )
 
-    assert (
-        db_abitti2_status_report1.dbrow_created_at
-        < db_abitti2_status_report2.dbrow_created_at
-    )
+    assert db_status_report1.dbrow_created_at < db_status_report2.dbrow_created_at
 
-    assert (
-        db_abitti2_status_report1.raw_data
-        == db_abitti2_status_report2.raw_data
-        == status_report
-    )
+    assert db_status_report1.raw_data == db_status_report2.raw_data == status_report
 
 
-def test_send_abitti2_status_report__valid_but_highly_unlikely_abitti2_status(
-    client, testdb, utcnow
-):
-    assert testdb.query(models.Abitti2StatusReport).all() == []
+def test_send_status_report__valid_but_highly_unlikely_status(client, testdb, utcnow):
+    assert testdb.query(models.StatusReport).all() == []
 
     status_report = {
         "received_at": ktp_controller.utils.strfdt(utcnow),
@@ -201,22 +181,19 @@ def test_send_abitti2_status_report__valid_but_highly_unlikely_abitti2_status(
         },
     }
 
-    response = client.post(
-        "/api/v1/system/send_abitti2_status_report", json=status_report
-    )
+    response = client.post("/api/v1/system/send_status_report", json=status_report)
     assert_response(response, expected_status_code=200)
 
-    db_abitti2_status_report = testdb.query(models.Abitti2StatusReport).one()
+    db_status_report = testdb.query(models.StatusReport).one()
 
     assert (
-        db_abitti2_status_report.dbrow_created_at.replace(tzinfo=datetime.timezone.utc)
-        > utcnow
+        db_status_report.dbrow_created_at.replace(tzinfo=datetime.timezone.utc) > utcnow
     )
-    assert db_abitti2_status_report.raw_data == status_report
+    assert db_status_report.raw_data == status_report
 
 
-def test_send_abitti2_status_report__two_different_reports(client, testdb, utcnow):
-    assert testdb.query(models.Abitti2StatusReport).all() == []
+def test_send_status_report__two_different_reports(client, testdb, utcnow):
+    assert testdb.query(models.StatusReport).all() == []
 
     status_report1 = {
         "received_at": "2025-01-01T10:00:00.000+0000",
@@ -230,9 +207,7 @@ def test_send_abitti2_status_report__two_different_reports(client, testdb, utcno
         },
     }
 
-    response = client.post(
-        "/api/v1/system/send_abitti2_status_report", json=status_report1
-    )
+    response = client.post("/api/v1/system/send_status_report", json=status_report1)
     assert_response(response, expected_status_code=200)
 
     status_report2 = {
@@ -246,41 +221,34 @@ def test_send_abitti2_status_report__two_different_reports(client, testdb, utcno
             "domain": "funny-server.example.invalid",
         },
     }
-    response = client.post(
-        "/api/v1/system/send_abitti2_status_report", json=status_report2
-    )
+    response = client.post("/api/v1/system/send_status_report", json=status_report2)
     assert_response(response, expected_status_code=200)
 
-    db_abitti2_status_report1, db_abitti2_status_report2 = (
-        testdb.query(models.Abitti2StatusReport)
-        .order_by(models.Abitti2StatusReport.dbid)
-        .all()
+    db_status_report1, db_status_report2 = (
+        testdb.query(models.StatusReport).order_by(models.StatusReport.dbid).all()
     )
 
     assert (
-        db_abitti2_status_report1.dbrow_created_at.replace(tzinfo=datetime.timezone.utc)
+        db_status_report1.dbrow_created_at.replace(tzinfo=datetime.timezone.utc)
         > utcnow
     )
 
-    assert (
-        db_abitti2_status_report1.dbrow_created_at
-        < db_abitti2_status_report2.dbrow_created_at
-    )
+    assert db_status_report1.dbrow_created_at < db_status_report2.dbrow_created_at
 
-    assert db_abitti2_status_report1.raw_data == status_report1
-    assert db_abitti2_status_report2.raw_data == status_report2
-    assert db_abitti2_status_report1.raw_data != db_abitti2_status_report2.raw_data
+    assert db_status_report1.raw_data == status_report1
+    assert db_status_report2.raw_data == status_report2
+    assert db_status_report1.raw_data != db_status_report2.raw_data
 
-    response = client.post("/api/v1/system/get_last_abitti2_status_report")
+    response = client.post("/api/v1/system/get_last_status_report")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == status_report2
 
 
-def test_send_abitti2_status_report__multiple_reports_exactly_max_count(
+def test_send_status_report__multiple_reports_exactly_max_count(
     client, testdb, utcnow, mocker
 ):
-    assert testdb.query(models.Abitti2StatusReport).all() == []
+    assert testdb.query(models.StatusReport).all() == []
 
     max_count = 6
     preserve_count = 3
@@ -313,32 +281,28 @@ def test_send_abitti2_status_report__multiple_reports_exactly_max_count(
             },
         }
 
-        response = client.post(
-            "/api/v1/system/send_abitti2_status_report", json=status_report
-        )
+        response = client.post("/api/v1/system/send_status_report", json=status_report)
         assert_response(response, expected_status_code=200)
         status_reports.append(status_report)
 
-    db_abitti2_status_reports = (
-        testdb.query(models.Abitti2StatusReport)
-        .order_by(models.Abitti2StatusReport.dbid)
-        .all()
+    db_status_reports = (
+        testdb.query(models.StatusReport).order_by(models.StatusReport.dbid).all()
     )
 
-    assert len(db_abitti2_status_reports) == max_count
+    assert len(db_status_reports) == max_count
 
-    assert [db_sr.raw_data for db_sr in db_abitti2_status_reports] == status_reports
+    assert [db_sr.raw_data for db_sr in db_status_reports] == status_reports
 
-    response = client.post("/api/v1/system/get_last_abitti2_status_report")
+    response = client.post("/api/v1/system/get_last_status_report")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == status_reports[-1]
 
 
-def test_send_abitti2_status_report__multiple_reports_less_than_max_count(
+def test_send_status_report__multiple_reports_less_than_max_count(
     client, testdb, utcnow, mocker
 ):
-    assert testdb.query(models.Abitti2StatusReport).all() == []
+    assert testdb.query(models.StatusReport).all() == []
 
     max_count = 6
     preserve_count = 3
@@ -372,32 +336,28 @@ def test_send_abitti2_status_report__multiple_reports_less_than_max_count(
             },
         }
 
-        response = client.post(
-            "/api/v1/system/send_abitti2_status_report", json=status_report
-        )
+        response = client.post("/api/v1/system/send_status_report", json=status_report)
         assert_response(response, expected_status_code=200)
         status_reports.append(status_report)
 
-    db_abitti2_status_reports = (
-        testdb.query(models.Abitti2StatusReport)
-        .order_by(models.Abitti2StatusReport.dbid)
-        .all()
+    db_status_reports = (
+        testdb.query(models.StatusReport).order_by(models.StatusReport.dbid).all()
     )
 
-    assert len(db_abitti2_status_reports) == send_count
+    assert len(db_status_reports) == send_count
 
-    assert [db_sr.raw_data for db_sr in db_abitti2_status_reports] == status_reports
+    assert [db_sr.raw_data for db_sr in db_status_reports] == status_reports
 
-    response = client.post("/api/v1/system/get_last_abitti2_status_report")
+    response = client.post("/api/v1/system/get_last_status_report")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == status_reports[-1]
 
 
-def test_send_abitti2_status_report__multiple_reports_one_more_than_max_count(
+def test_send_status_report__multiple_reports_one_more_than_max_count(
     client, testdb, utcnow, mocker
 ):
-    assert testdb.query(models.Abitti2StatusReport).all() == []
+    assert testdb.query(models.StatusReport).all() == []
 
     max_count = 6
     preserve_count = 3
@@ -431,34 +391,30 @@ def test_send_abitti2_status_report__multiple_reports_one_more_than_max_count(
             },
         }
 
-        response = client.post(
-            "/api/v1/system/send_abitti2_status_report", json=status_report
-        )
+        response = client.post("/api/v1/system/send_status_report", json=status_report)
         assert_response(response, expected_status_code=200)
         status_reports.append(status_report)
 
-    db_abitti2_status_reports = (
-        testdb.query(models.Abitti2StatusReport)
-        .order_by(models.Abitti2StatusReport.dbid)
-        .all()
+    db_status_reports = (
+        testdb.query(models.StatusReport).order_by(models.StatusReport.dbid).all()
     )
 
-    assert len(db_abitti2_status_reports) == preserve_count + 1
+    assert len(db_status_reports) == preserve_count + 1
 
-    assert [db_sr.raw_data for db_sr in db_abitti2_status_reports] == status_reports[
+    assert [db_sr.raw_data for db_sr in db_status_reports] == status_reports[
         -(preserve_count + 1) :
     ]
 
-    response = client.post("/api/v1/system/get_last_abitti2_status_report")
+    response = client.post("/api/v1/system/get_last_status_report")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == status_reports[-1]
 
 
-def test_send_abitti2_status_report__multiple_reports_many_more_than_max_count(
+def test_send_status_report__multiple_reports_many_more_than_max_count(
     client, testdb, utcnow, mocker
 ):
-    assert testdb.query(models.Abitti2StatusReport).all() == []
+    assert testdb.query(models.StatusReport).all() == []
 
     max_count = 6
     preserve_count = 3
@@ -492,25 +448,21 @@ def test_send_abitti2_status_report__multiple_reports_many_more_than_max_count(
             },
         }
 
-        response = client.post(
-            "/api/v1/system/send_abitti2_status_report", json=status_report
-        )
+        response = client.post("/api/v1/system/send_status_report", json=status_report)
         assert_response(response, expected_status_code=200)
         status_reports.append(status_report)
 
-    db_abitti2_status_reports = (
-        testdb.query(models.Abitti2StatusReport)
-        .order_by(models.Abitti2StatusReport.dbid)
-        .all()
+    db_status_reports = (
+        testdb.query(models.StatusReport).order_by(models.StatusReport.dbid).all()
     )
 
-    assert len(db_abitti2_status_reports) == preserve_count + 2
+    assert len(db_status_reports) == preserve_count + 2
 
-    assert [db_sr.raw_data for db_sr in db_abitti2_status_reports] == status_reports[
+    assert [db_sr.raw_data for db_sr in db_status_reports] == status_reports[
         -(preserve_count + 2) :
     ]
 
-    response = client.post("/api/v1/system/get_last_abitti2_status_report")
+    response = client.post("/api/v1/system/get_last_status_report")
     assert_response(response, expected_status_code=200)
 
     assert response.json() == status_reports[-1]

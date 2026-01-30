@@ -146,7 +146,7 @@ class _Abitti2Info(ktp_controller.pydantic.BaseModel):
     domain: pydantic.StrictStr | None
 
 
-class _Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
+class _StatusReport(ktp_controller.pydantic.BaseModel):
     received_at: ktp_controller.pydantic.DateTime
     monitoring_passphrase: pydantic.StrictStr
     server_version: pydantic.StrictStr
@@ -226,8 +226,8 @@ async def _get_exam_info(
     response_model=None,
     status_code=200,
 )
-async def _send_abitti2_status_report(
-    request: _Abitti2StatusReport,
+async def _send_status_report(
+    request: _StatusReport,
     domain: str,
     hostname: str,
     server_id: int = fastapi.Query(..., alias="id"),

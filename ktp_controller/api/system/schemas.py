@@ -13,7 +13,7 @@ import ktp_controller.pydantic
 __all__ = [
     # Types:
     "Abitti2Exam",
-    "Abitti2StatusReport",
+    "StatusReport",
 ]
 
 
@@ -32,7 +32,7 @@ class _Abitti2Info(ktp_controller.pydantic.BaseModel):
     domain: pydantic.StrictStr | None
 
 
-class Abitti2StatusReport(ktp_controller.pydantic.BaseModel):
+class StatusReport(ktp_controller.pydantic.BaseModel):
     received_at: ktp_controller.pydantic.DateTime
     reported_at: ktp_controller.pydantic.DateTime | None
     monitoring_passphrase: pydantic.StrictStr

@@ -83,27 +83,27 @@ assert 0 < _get_status_report_preserve_count() < _get_status_report_max_count()
 
 
 @router.post(
-    "/send_abitti2_status_report",
+    "/send_status_report",
     response_model=None,
     summary="Send status report",
 )
-async def _send_abitti2_status_report(
-    request: schemas.Abitti2StatusReport,
+async def _send_status_report(
+    request: schemas.StatusReport,
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ):
-    status_report_count = db.query(models.Abitti2StatusReport).count()
+    status_report_count = db.query(models.StatusReport).count()
     if status_report_count >= _get_status_report_max_count():
         delete_subquery = (
-            db.query(models.Abitti2StatusReport.dbid)
-            .order_by(sqlalchemy.asc(models.Abitti2StatusReport.dbrow_created_at))
+            db.query(models.StatusReport.dbid)
+            .order_by(sqlalchemy.asc(models.StatusReport.dbrow_created_at))
             .limit(status_report_count - _get_status_report_preserve_count())
             .subquery()
         )
-        db.query(models.Abitti2StatusReport).filter(
-            models.Abitti2StatusReport.dbid.in_(sqlalchemy.sql.select(delete_subquery))
+        db.query(models.StatusReport).filter(
+            models.StatusReport.dbid.in_(sqlalchemy.sql.select(delete_subquery))
         ).delete(synchronize_session="fetch")
 
-    db_status_report = models.Abitti2StatusReport(
+    db_status_report = models.StatusReport(
         dbid=None, raw_data=json.loads(request.model_dump_json())
     )
     db.add(db_status_report)
@@ -111,16 +111,16 @@ async def _send_abitti2_status_report(
 
 
 @router.post(
-    "/get_last_abitti2_status_report",
-    response_model=schemas.Abitti2StatusReport | None,
-    summary="Get last Abitti2 status report",
+    "/get_last_status_report",
+    response_model=schemas.StatusReport | None,
+    summary="Get last status report",
 )
-async def _get_last_abitti2_status_report(
+async def _get_last_status_report(
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ):
     db_status_report = (
-        db.query(models.Abitti2StatusReport)
-        .order_by(sqlalchemy.sql.desc(models.Abitti2StatusReport.dbrow_created_at))
+        db.query(models.StatusReport)
+        .order_by(sqlalchemy.sql.desc(models.StatusReport.dbrow_created_at))
         .limit(1)
         .one_or_none()
     )

@@ -28,9 +28,7 @@ async def _command_status(args) -> int:
     import ktp_controller.api.client
 
     current_exam_package = ktp_controller.api.client.get_current_exam_package()
-    last_abitti2_status_report = (
-        ktp_controller.api.client.get_last_abitti2_status_report()
-    )
+    last_status_report = ktp_controller.api.client.get_last_status_report()
 
     if current_exam_package is None:
         print("# Current exam package: -")
@@ -48,11 +46,11 @@ async def _command_status(args) -> int:
             )
         _print_as_yaml(current_exam_package)
     print()
-    if last_abitti2_status_report is None:
-        print("# Last Abitti2 status report: -")
+    if last_status_report is None:
+        print("# Last status report: -")
     else:
-        print("# Last Abitti2 status report:")
-        _print_as_yaml(last_abitti2_status_report)
+        print("# Last status report:")
+        _print_as_yaml(last_status_report)
     print()
 
     return None

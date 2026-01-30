@@ -17,7 +17,7 @@ __all__ = [
     "ExamInfo",
     "ScheduledExam",
     "ScheduledExamPackage",
-    "Abitti2StatusReport",
+    "StatusReport",
 ]
 
 
@@ -233,8 +233,8 @@ class ExamInfo(Base):  # type: ignore
     )
 
 
-class Abitti2StatusReport(Base):  # type: ignore
-    __tablename__ = "abitti2_status_report"
+class StatusReport(Base):  # type: ignore
+    __tablename__ = "status_report"
 
     dbid: Mapped[int] = mapped_column(
         sqlalchemy.Integer,

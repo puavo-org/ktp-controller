@@ -101,7 +101,7 @@ def test_initial_exam_refresh():
     assert state["refresh_exams_count"] == state["ack_count"] == 0
 
 
-def test_abitti2_status_reporting():
+def test_status_reporting():
     # Check that we have received at least one status report from
     # Abitti2. It's a sign that Abitti2 is at least somewhat
     # healthy.
@@ -201,18 +201,14 @@ def test_first_scheduled_exam_download():
 def test_api_has_copies_of_status_reports():
     # A small bonus goal: status reports are always stored by API,
     # so the last seen by API should also be reported to Exam-O-Matic.
-    last_status_report_seen_by_api = (
-        ktp_controller.api.client.get_last_abitti2_status_report()
-    )
+    last_status_report_seen_by_api = ktp_controller.api.client.get_last_status_report()
     assert last_status_report_seen_by_api.pop("reported_at") is not None
     state = ktp_controller.examomatic.client._post("/mock/get_state").json()
     assert last_status_report_seen_by_api in state["status_reports"]
 
 
 def test_last_status_report_has_abitti2_domain():
-    last_status_report_seen_by_api = (
-        ktp_controller.api.client.get_last_abitti2_status_report()
-    )
+    last_status_report_seen_by_api = ktp_controller.api.client.get_last_status_report()
     assert (
         last_status_report_seen_by_api["abitti2"]["domain"]
         == ktp_controller.abitti2.naksu2.read_domain()
@@ -301,7 +297,7 @@ def test_status_reports_do_not_contain_student_names(student1, student2):
     found_some_students = False
     for i in range(10):
         last_status_report_seen_by_api = (
-            ktp_controller.api.client.get_last_abitti2_status_report()
+            ktp_controller.api.client.get_last_status_report()
         )
         if len(last_status_report_seen_by_api["status"]["data"]["students"]) > 1:
             found_some_students = True

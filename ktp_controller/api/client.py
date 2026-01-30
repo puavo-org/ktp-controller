@@ -24,7 +24,7 @@ __all__ = [
     "get_scheduled_exam",
     "get_scheduled_exam_package",
     "save_exam_info",
-    "send_abitti2_status_report",
+    "send_status_report",
 ]
 
 
@@ -122,29 +122,27 @@ def get_ui_websock_url():
 # API commands:
 
 
-def send_abitti2_status_report(
-    abitti2_status_report: typing.Dict,
+def send_status_report(
+    status_report: typing.Dict,
     *,
     timeout: int = 5,
 ) -> typing.Any:
     return _post(
-        "/api/v1/system/send_abitti2_status_report",
-        json=abitti2_status_report,
+        "/api/v1/system/send_status_report",
+        json=status_report,
         timeout=timeout,
     ).json()
 
 
-def get_last_abitti2_status_report(
+def get_last_status_report(
     *,
     timeout: int = 5,
 ) -> typing.Dict[str, typing.Any] | None:
-    return _post(
-        "/api/v1/system/get_last_abitti2_status_report", timeout=timeout
-    ).json()
+    return _post("/api/v1/system/get_last_status_report", timeout=timeout).json()
 
 
 def get_student_access_code() -> typing.Tuple[str, str] | None:
-    last_status_report = get_last_abitti2_status_report()
+    last_status_report = get_last_status_report()
     if last_status_report is None:
         return None
 

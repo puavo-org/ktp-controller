@@ -23,7 +23,7 @@ __all__ = [
     "get_examomatic_websock_url",
     "websock_validate_message",
     # Exam-O-Matic API commands:
-    "send_abitti2_status_report",
+    "send_status_report",
     "get_exam_info",
     "get_exam_file_stream",
     "download_exam_file",
@@ -168,7 +168,7 @@ def websock_validate_message(data):
 # Exam-O-Matic API commands:
 
 
-def send_abitti2_status_report(
+def send_status_report(
     status_report: typing.Dict,
     *,
     timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,

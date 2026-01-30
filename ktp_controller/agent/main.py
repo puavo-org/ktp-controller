@@ -452,21 +452,18 @@ class Agent:
             # Change the security code first to ensure students cannot enter anymore.
             ktp_controller.abitti2.client.change_single_security_code()
 
-        abitti2_status_report = (
-            ktp_controller.api.client.get_last_abitti2_status_report()
-        )
-        for student in abitti2_status_report["status"]["data"]["students"]:
+        status_report = ktp_controller.api.client.get_last_status_report()
+        for student in status_report["status"]["data"]["students"]:
             ktp_controller.abitti2.client.stop_exam_session(student["sessionUuid"])
 
         is_stopped = (
             all(
                 s.get("examFinished", False)
                 or s.get("sessionStatus") == "session_ended"
-                for s in abitti2_status_report["status"]["data"]["students"]
+                for s in status_report["status"]["data"]["students"]
             )
             and current_exam_package["state"] == "stopping"
-            and abitti2_status_report["received_at"]
-            > current_exam_package["state_changed_at"]
+            and status_report["received_at"] > current_exam_package["state_changed_at"]
         )
 
         if is_stopped:
@@ -499,10 +496,8 @@ class Agent:
         is_final: ktp_controller.examomatic.client.IsFinal,
     ) -> None:
         is_final = ktp_controller.examomatic.client.IsFinal(is_final)
-        abitti2_status_report = (
-            ktp_controller.api.client.get_last_abitti2_status_report()
-        )
-        if abitti2_status_report["status"]["data"]["answerPaperCount"] > 0:
+        status_report = ktp_controller.api.client.get_last_status_report()
+        if status_report["status"]["data"]["answerPaperCount"] > 0:
             _transfer_answers(
                 current_exam_package["external_id"],
                 is_final=is_final,
@@ -833,11 +828,11 @@ class Agent:
 
         self.__last_received_security_code = security_code
 
-        status_report = ktp_controller.api.client.get_last_abitti2_status_report()
+        status_report = ktp_controller.api.client.get_last_status_report()
         if status_report is None:
             return
 
-        self.__send_abitti2_status_report(received_at, status_report["status"])
+        self.__send_status_report(received_at, status_report["status"])
 
     def __validate_abitti2_stats_message(
         self, message: typing.Dict[str, typing.Any]
@@ -866,9 +861,9 @@ class Agent:
         ):
             _allow_students_to_use_browsers(message["data"]["students"])
 
-        self.__send_abitti2_status_report(received_at, message)
+        self.__send_status_report(received_at, message)
 
-    def __send_abitti2_status_report(
+    def __send_status_report(
         self,
         received_at: datetime.datetime,
         message: typing.Dict[str, typing.Any],
@@ -907,15 +902,15 @@ class Agent:
         }
 
         try:
-            ktp_controller.examomatic.client.send_abitti2_status_report(status_report)
+            ktp_controller.examomatic.client.send_status_report(status_report)
             status_report["reported_at"] = ktp_controller.utils.utcnow_str()
-            _LOGGER.info("sent Abitti2 status report to Exam-O-Matic")
+            _LOGGER.info("sent status report to Exam-O-Matic")
         except Exception:
-            _LOGGER.exception("failed to send Abitti2 status report to Exam-O-Matic")
+            _LOGGER.exception("failed to send status report to Exam-O-Matic")
             status_report["reported_at"] = None
 
-        ktp_controller.api.client.send_abitti2_status_report(status_report)
-        _LOGGER.info("sent Abitti2 status report to KTP Controller API")
+        ktp_controller.api.client.send_status_report(status_report)
+        _LOGGER.info("sent status report to KTP Controller API")
 
     async def __handle_abitti2_exams_message(
         self,
