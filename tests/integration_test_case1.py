@@ -45,12 +45,12 @@ def _is_fresh_status_report(status_report, max_age_secs: int = 6) -> bool:
 
 
 def test_abitti2_reset():
-    # 0. Reset Abitti2 to ensure it's in a well known state.
+    # Reset Abitti2 to ensure it's in a well known state.
     ktp_controller.abitti2.client.reset()
 
 
 def test_first_examomatic_ping_pong():
-    # 1. Wait until Agent has called home for the first time.
+    # Wait until Agent has called home for the first time.
     agent_has_called_home = False
     # First ping-pong round should not take more than couple of
     # seconds.
@@ -64,7 +64,7 @@ def test_first_examomatic_ping_pong():
 
 
 def test_initial_exam_refresh():
-    # 2. Check that Agent has tried the initial exam refresh.
+    # Check that Agent has tried the initial exam refresh.
     get_exam_packages_status_codes = []
     # It should happen right after the initial ping pong round.
     for i in range(5):
@@ -84,7 +84,7 @@ def test_initial_exam_refresh():
 
 
 def test_status_reporting():
-    # 3. Check that we have received at least one status report from
+    # Check that we have received at least one status report from
     # Abitti2. It's a sign that Abitti2 is at least somewhat
     # healthy.
     status_reports = []
@@ -101,13 +101,13 @@ def test_status_reporting():
 
 
 def test_odotusaulakoe_is_running():
-    # 4. Wait until Odotusaulakoe is running. (It takes some time
+    # Wait until Odotusaulakoe is running. (It takes some time
     # before Abitti2 gets the exam up and running after a reset.)
     _assert_odotusaulakoe_is_running(timeout=30)
 
 
 def test_first_scheduled_exam_download():
-    # 5. Prime examomatic-mock with exam info (single scheduled exam,
+    # Prime examomatic-mock with exam info (single scheduled exam,
     # time intervals are short for testing purposes: 30sec pre-lock
     # time, 30sec lock time, 30 sec run time)
     utcnow = ktp_controller.utils.utcnow()
@@ -122,7 +122,7 @@ def test_first_scheduled_exam_download():
     )
     assert response.status_code == 200
 
-    # 6. Wait until Agent has refreshed exams (should happen almost
+    # Wait until Agent has refreshed exams (should happen almost
     # instantly since examomatic-mock sends refresh message via
     # websocket). The last exam data request is expected to be 200,
     # because an exam was just scheduled and Agent should have been
@@ -155,7 +155,7 @@ def test_first_scheduled_exam_download():
 
 
 def test_api_has_copies_of_status_reports():
-    # 7. A small bonus goal: status reports are always stored by API,
+    # A small bonus goal: status reports are always stored by API,
     # so the last seen by API should also be reported to Exam-O-Matic.
     last_status_report_seen_by_api = ktp_controller.api.client.get_last_status_report()
     assert last_status_report_seen_by_api.pop("reported_at") is not None

@@ -45,18 +45,18 @@ def _is_fresh_status_report(status_report, max_age_secs: int = 6) -> bool:
 
 
 def test_abitti2_reset():
-    # 0. Reset Abitti2 to ensure it's in a well known state.
+    # Reset Abitti2 to ensure it's in a well known state.
     ktp_controller.abitti2.client.reset()
 
 
 def test_odotusaulakoe_is_running():
-    # 4. Wait until Odotusaulakoe is running. (It takes some time
+    # Wait until Odotusaulakoe is running. (It takes some time
     # before Abitti2 gets the exam up and running after a reset.)
     _assert_odotusaulakoe_is_running(timeout=30)
 
 
 def test_first_scheduled_exam_download():
-    # 5. Prime examomatic-mock with exam info (single scheduled exam,
+    # Prime examomatic-mock with exam info (single scheduled exam,
     # time intervals are short for testing purposes: 30sec pre-lock
     # time, 30sec lock time, 30 sec run time)
     utcnow = ktp_controller.utils.utcnow()
@@ -71,7 +71,7 @@ def test_first_scheduled_exam_download():
     )
     assert response.status_code == 200
 
-    # 6. Wait until Agent has refreshed exams (should happen almost
+    # Wait until Agent has refreshed exams (should happen almost
     # instantly since examomatic-mock sends refresh message via
     # websocket). The last exam data request is expected to be 200,
     # because an exam was just scheduled and Agent should have been
@@ -189,7 +189,7 @@ def test_odotusaulakoe_is_running_between_exams():
 
 
 def test_second_scheduled_exam_download():
-    # 5. Prime examomatic-mock with exam info (single scheduled exam,
+    # Prime examomatic-mock with exam info (single scheduled exam,
     # time intervals are short for testing purposes: 30sec pre-lock
     # time, 30sec lock time, 30 sec run time)
     utcnow = ktp_controller.utils.utcnow()
@@ -204,7 +204,7 @@ def test_second_scheduled_exam_download():
     )
     assert response.status_code == 200
 
-    # 6. Wait until Agent has refreshed exams (should happen almost
+    # Wait until Agent has refreshed exams (should happen almost
     # instantly since examomatic-mock sends refresh message via
     # websocket). The last exam data request is expected to be 200,
     # because an exam was just scheduled and Agent should have been
