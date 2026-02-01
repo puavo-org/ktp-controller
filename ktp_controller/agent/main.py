@@ -407,7 +407,7 @@ class Agent:
                     "cannot access new exams with the old code (%r).",
                     self.__old_security_code,
                 )
-                ktp_controller.abitti2.client.change_single_security_code()
+                ktp_controller.abitti2.client.change_student_access_code()
                 return False
 
             if self.__old_security_code == self.__last_received_security_code:
@@ -450,7 +450,7 @@ class Agent:
     ) -> bool:
         if self.__is_auto_control_enabled:
             # Change the security code first to ensure students cannot enter anymore.
-            ktp_controller.abitti2.client.change_single_security_code()
+            ktp_controller.abitti2.client.change_student_access_code()
 
         status_report = ktp_controller.api.client.get_last_status_report()
         for student in status_report["status"]["data"]["students"]:
@@ -778,7 +778,7 @@ class Agent:
                         "Keycode cannot be changed by Exam-O-Matic, because auto control is not enabled."
                     )
                     continue
-                ktp_controller.abitti2.client.change_single_security_code()
+                ktp_controller.abitti2.client.change_student_access_code()
                 _LOGGER.info("Keycode changed.")
             elif message["type"] == "refresh_exams":
                 _LOGGER.info("received refresh_exams message from Exam-O-Matic")

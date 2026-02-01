@@ -24,7 +24,7 @@ __all__ = [
     "get_abitti2_websock_url",
     # Abitti2 API commands:
     "get_current_abitti2_version",
-    "change_single_security_code",
+    "change_student_access_code",
     "decrypt_exams",
     "upload_exam_package",
     "get_decrypted_exams",
@@ -107,7 +107,7 @@ def get_current_abitti2_version() -> str:
     return _get("/api/version").json()["version"]
 
 
-def change_single_security_code() -> typing.Dict:
+def change_student_access_code() -> typing.Dict:
     return _post("/api/single-security-code").json()
 
 
