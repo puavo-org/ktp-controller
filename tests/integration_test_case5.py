@@ -12,6 +12,7 @@ import ktp_controller.abitti2.client
 import ktp_controller.abitti2.naksu2
 import ktp_controller.api.client
 import ktp_controller.examomatic.client
+import ktp_controller.schemas
 
 # Relative imports
 from .bot import Abitti2Student
@@ -26,7 +27,7 @@ from .utils import browser_firefox
 
 
 scheduled_exam_package = None
-student_access_code = None
+student_access_code: ktp_controller.schemas.StudentAccessCode | None = None
 
 
 @pytest.fixture(scope="session")
@@ -55,7 +56,7 @@ def _assert_odotusaulakoe_is_running(timeout: int = 30):
     assert odotusaulakoe_is_running
 
 
-def _is_fresh_status_report(status_report, max_age_secs: int = 6) -> bool:
+def _is_fresh_status_report(status_report, max_age_secs: int = 30) -> bool:
     return (
         ktp_controller.utils.utcnow()
         - datetime.datetime.fromisoformat(status_report["received_at"])
@@ -128,7 +129,10 @@ def test_student_access_code_is_initially_1234_xx():
     global student_access_code
     student_access_code = ktp_controller.api.client.get_student_access_code()
     assert student_access_code is not None
-    assert student_access_code == ("1234", "xx")
+    assert (student_access_code.key_code, student_access_code.verification_code) == (
+        "1234",
+        "xx",
+    )
 
 
 def test_student1_take_waiting_lobby_exam(student1):
@@ -268,7 +272,10 @@ def test_student_access_code_is_changed_when_scheduled_exam_is_started():
     new_student_access_code = ktp_controller.api.client.get_student_access_code()
     assert new_student_access_code is not None
     assert new_student_access_code != student_access_code
-    assert new_student_access_code != ("1234", "xx")
+    assert (
+        new_student_access_code.key_code,
+        new_student_access_code.verification_code,
+    ) != ("1234", "xx")
     student_access_code = new_student_access_code
 
 

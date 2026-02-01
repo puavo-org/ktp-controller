@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
 # Internal imports
+import ktp_controller.schemas
 
 # Relative imports
 from .utils import random_artificial_hetu
@@ -81,19 +82,25 @@ class Abitti2Student(_Base):
         self.click(self._radio_button_by_name_and_value("exam", exam_uuid))
         self.click(_button_by_text("Vahvista koevalinta"))
 
-    def enter_access_code(self, *, access_code):
+    def enter_access_code(
+        self, *, access_code: ktp_controller.schemas.StudentAccessCode
+    ):
         self.find_not((By.CSS_SELECTOR, 'div[data-testid="wait-for-approval"]'))
 
-        keycode, authcode = access_code
-        for i, c in enumerate(keycode):
+        for i, c in enumerate(access_code.key_code):
             self.enter_text((By.ID, f"keycode-input-{i}"), c)
-        for i, c in enumerate(authcode):
+        for i, c in enumerate(access_code.verification_code):
             self.enter_text((By.ID, f"autorization-code-input-{i}"), c)  # Typo by YTL
 
         self.find((By.CSS_SELECTOR, 'div[data-testid="wait-for-approval"]'))
 
     def start_exam(
-        self, *, exam_uuid, exam_title, access_code, expect_exam_instructions=True
+        self,
+        *,
+        exam_uuid,
+        exam_title,
+        access_code: ktp_controller.schemas.StudentAccessCode,
+        expect_exam_instructions=True,
     ):
         self.accept_eula()
         self.register()

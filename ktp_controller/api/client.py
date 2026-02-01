@@ -11,6 +11,7 @@ import ktp_controller.messages
 import ktp_controller.utils
 from ktp_controller.settings import SETTINGS
 import ktp_controller.api.exam.schemas
+import ktp_controller.schemas
 
 __all__ = [
     # Utils:
@@ -141,19 +142,23 @@ def get_last_status_report(
     return _post("/api/v1/system/get_last_status_report", timeout=timeout).json()
 
 
-def get_student_access_code() -> typing.Tuple[str, str] | None:
+def get_student_access_code() -> ktp_controller.schemas.StudentAccessCode | None:
     last_status_report = get_last_status_report()
     if last_status_report is None:
         return None
 
-    single_security_code = last_status_report["status"]["singleSecurityCode"]
-    if single_security_code is None:
+    try:
+        student_access_code = last_status_report["abitti2"]["student_access_code"]
+    except KeyError:
+        # Old reports insert to DB before this commit do not have
+        # student_access_code, and it's fine. It's so volatile data
+        # afterall that we didn't write data migration for it.
         return None
 
-    return (
-        single_security_code["keyCode"],
-        single_security_code["confirmationCode"],
-    )
+    if student_access_code is None:
+        return None
+
+    return ktp_controller.schemas.StudentAccessCode.model_validate(student_access_code)
 
 
 def get_current_exam_package(*, timeout: int = 20) -> typing.Dict[str, typing.Any]:

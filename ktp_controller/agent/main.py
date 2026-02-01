@@ -28,6 +28,7 @@ import ktp_controller.files
 import ktp_controller.pydantic
 import ktp_controller.utils
 import ktp_controller.messages
+import ktp_controller.schemas
 
 from ktp_controller.settings import SETTINGS
 
@@ -43,6 +44,18 @@ def _validate_security_code(security_code: typing.Dict[str, str]) -> None:
         raise ValueError("keyCode is not str")
     if not isinstance(security_code["confirmationCode"], str):
         raise ValueError("confirmationCode is not str")
+
+
+def _security_code_to_student_access_code(
+    security_code: typing.Dict[str, str] | None,
+) -> ktp_controller.schemas.StudentAccessCode | None:
+    if security_code is None:
+        return None
+
+    return ktp_controller.schemas.StudentAccessCode(
+        key_code=security_code["keyCode"],
+        verification_code=security_code["confirmationCode"],
+    )
 
 
 def _create_dummy_exam_package_file():
@@ -868,6 +881,7 @@ class Agent:
         received_at: datetime.datetime,
         message: typing.Dict[str, typing.Any],
     ):
+        # TODO: remove when Exam-O-Matic reads this via abitti2.student_access_code
         message["singleSecurityCode"] = self.__last_received_security_code
 
         try:
@@ -900,6 +914,9 @@ class Agent:
             "exams": self.__last_received_exam_list,
             "abitti2": {
                 "domain": domain,
+                "student_access_code": _security_code_to_student_access_code(
+                    self.__last_received_security_code
+                ).model_dump(),
             },
         }
 
