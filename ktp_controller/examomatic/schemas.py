@@ -6,6 +6,12 @@ import pydantic
 
 # Internal imports
 import ktp_controller.pydantic
+import ktp_controller.schemas
+
+
+__all__ = [
+    "StatusReport",
+]
 
 
 class _Abitti2Exam(ktp_controller.pydantic.BaseModel):
@@ -18,6 +24,7 @@ class _Abitti2Exam(ktp_controller.pydantic.BaseModel):
 
 class _Abitti2Info(ktp_controller.pydantic.BaseModel):
     domain: pydantic.StrictStr | None
+    student_access_code: ktp_controller.schemas.StudentAccessCode | None
 
 
 class StatusReport(ktp_controller.pydantic.BaseModel):
