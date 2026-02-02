@@ -1,4 +1,4 @@
-integration_test_case_targets := integration-test-case1 integration-test-case2 integration-test-case5
+integration_test_case_targets := integration-test-case1 integration-test-case2 integration-test-case3 integration-test-case5
 
 .NOTPARALLEL: all
 .PHONY: all
