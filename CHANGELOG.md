@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [0.2.0] - 2026-02-03
 
 ### Added
 
@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Timeouts of HTTP requests to Exam-O-Matic are increased to make connections more resilient.
 
 
-## [0.1.2] - 2025-01-18
+## [0.1.2] - 2026-01-18
 
 This is the first real release.
 
@@ -34,7 +34,7 @@ This is the first real release.
 - version number in `pyproject.toml`
 
 
-## [0.1.1] - 2025-01-18 [YANKED]
+## [0.1.1] - 2026-01-18 [YANKED]
 
 Yanked because of invalid version number.
 
@@ -43,7 +43,7 @@ Yanked because of invalid version number.
 - shebangs in bundle
 
 
-## [0.1.0] - 2025-01-18 [YANKED]
+## [0.1.0] - 2026-01-18 [YANKED]
 
 Yanked because all scripts had broken shebangs.
 
