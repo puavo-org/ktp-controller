@@ -274,6 +274,7 @@ class Agent:
         self.__last_received_exam_list = None
         self.__last_received_security_code = None
         self.__old_security_code = None
+        self.__last_message_from_abitti2_received_at = None
 
         self.__connection_stats: typing.Dict[
             Component, ktp_controller.agent.stats.ConnectionStats
@@ -948,6 +949,7 @@ class Agent:
                 ).model_dump(),
                 "supervisor_passphrase": supervisor_passphrase,
                 "version": abitti2_version,
+                "last_message_received_at": self.__last_message_from_abitti2_received_at,
             },
         }
 
@@ -991,6 +993,7 @@ class Agent:
     async def __communicate_with_abitti2(self, websock):
         async for data in websock:
             received_at = ktp_controller.utils.utcnow()
+            self.__last_message_from_abitti2_received_at = received_at
 
             _LOGGER.debug("<-- Abitti2: %s", data)
 

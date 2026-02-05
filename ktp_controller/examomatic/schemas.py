@@ -27,6 +27,7 @@ class _Abitti2Info(ktp_controller.pydantic.BaseModel):
     student_access_code: ktp_controller.schemas.StudentAccessCode | None
     supervisor_passphrase: pydantic.StrictStr | None
     version: pydantic.StrictStr | None
+    last_message_received_at: ktp_controller.pydantic.DateTime | None
 
 
 class StatusReport(ktp_controller.pydantic.BaseModel):
