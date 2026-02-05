@@ -62,6 +62,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
                 "verification_code": "xx",
             },
             "supervisor_passphrase": "",
+            "version": "",
         },
     }
 
@@ -85,6 +86,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
                 "verification_code": "xx",
             },
             "supervisor_passphrase": "",
+            "version": "",
         },
     }
 
@@ -115,6 +117,7 @@ def test_send_status_report__valid_minimal_input(client, testdb, utcnow):
                 "verification_code": "xx",
             },
             "supervisor_passphrase": "",
+            "version": "",
         },
     }
 
@@ -151,6 +154,7 @@ def test_send_status_report__same_valid_minimal_input_twice(client, testdb, utcn
                 "verification_code": "xx",
             },
             "supervisor_passphrase": "",
+            "version": "",
         },
     }
 
@@ -203,6 +207,7 @@ def test_send_status_report__valid_but_highly_unlikely_status(client, testdb, ut
                 "verification_code": "xx",
             },
             "supervisor_passphrase": "",
+            "version": "",
         },
     }
 
@@ -234,6 +239,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
                 "verification_code": "xx",
             },
             "supervisor_passphrase": "first report",
+            "version": "1.6.0",
         },
     }
 
@@ -254,6 +260,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
                 "verification_code": "xx",
             },
             "supervisor_passphrase": "second report",
+            "version": "1.7.0",
         },
     }
     response = client.post("/api/v1/system/send_status_report", json=status_report2)
@@ -318,6 +325,7 @@ def test_send_status_report__multiple_reports_exactly_max_count(
                     "verification_code": "xx",
                 },
                 "supervisor_passphrase": "pass",
+                "version": "1.11.0",
             },
         }
 
@@ -378,6 +386,7 @@ def test_send_status_report__multiple_reports_less_than_max_count(
                     "verification_code": "xx",
                 },
                 "supervisor_passphrase": "pass",
+                "version": "1.11.0",
             },
         }
 
@@ -438,6 +447,7 @@ def test_send_status_report__multiple_reports_one_more_than_max_count(
                     "verification_code": "xx",
                 },
                 "supervisor_passphrase": "pass",
+                "version": "1.11.0",
             },
         }
 
@@ -500,6 +510,7 @@ def test_send_status_report__multiple_reports_many_more_than_max_count(
                     "verification_code": "xx",
                 },
                 "supervisor_passphrase": "pass",
+                "version": "1.11.0",
             },
         }
 
