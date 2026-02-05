@@ -947,6 +947,7 @@ class Agent:
                     self.__last_received_security_code
                 ).model_dump(),
                 "supervisor_passphrase": supervisor_passphrase,
+                "version": abitti2_version,
             },
         }
 
