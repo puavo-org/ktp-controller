@@ -941,7 +941,6 @@ class Agent:
             "server_version": abitti2_version,
             "status": message,
             "received_at": ktp_controller.utils.strfdt(received_at),
-            "exams": self.__last_received_exam_list,
             "abitti2": {
                 "domain": domain,
                 "student_access_code": _security_code_to_student_access_code(
@@ -951,6 +950,7 @@ class Agent:
                 "supervisor_passphrase": supervisor_passphrase,
                 "version": abitti2_version,
                 "last_message_received_at": self.__last_message_from_abitti2_received_at,
+                "exams": self.__last_received_exam_list,
             },
         }
 
@@ -971,7 +971,23 @@ class Agent:
         received_at: datetime.datetime,
         message: typing.Dict[str, typing.Any],
     ):
-        self.__last_received_exam_list = message["data"]
+        exam_list = []
+
+        for abitti2_exam in message["data"]:
+            start_time = datetime.datetime.fromisoformat(abitti2_exam["startTime"])
+            if start_time is None:
+                started_at = None
+            else:
+                started_at = ktp_controller.utils.strfdt(start_time)
+            exam_list.append(
+                {
+                    "uuid": abitti2_exam["examUuid"],
+                    "title": abitti2_exam["examTitle"],
+                    "started_at": started_at,
+                }
+            )
+
+        self.__last_received_exam_list = exam_list
 
     def __decode_abitti2_message(
         self, data

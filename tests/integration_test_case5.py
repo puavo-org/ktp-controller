@@ -46,7 +46,9 @@ def _assert_odotusaulakoe_is_running(timeout: int = 30):
         state = ktp_controller.examomatic.client._post("/mock/get_state").json()
         status_reports = state["status_reports"]
         started_exam_titles = [
-            e["examTitle"] for e in status_reports[-1]["exams"] if e["hasStarted"]
+            e["title"]
+            for e in status_reports[-1]["abitti2"]["exams"]
+            if e["started_at"] is not None
         ]
         if len(started_exam_titles) > 0:
             if "Odotusaulakoe" in started_exam_titles:
@@ -231,7 +233,9 @@ def test_scheduled_exam_gets_started():
     ).json()["status_reports"][-1]
     assert _is_fresh_status_report(last_status_report)
     assert "Odotusaulakoe" in [
-        e["examTitle"] for e in last_status_report["exams"] if e["hasStarted"]
+        e["title"]
+        for e in last_status_report["abitti2"]["exams"]
+        if e["started_at"] is not None
     ]
 
     # Wait until it's not running anymore.
@@ -240,7 +244,9 @@ def test_scheduled_exam_gets_started():
         state = ktp_controller.examomatic.client._post("/mock/get_state").json()
         status_reports = state["status_reports"]
         started_exam_titles = [
-            e["examTitle"] for e in status_reports[-1]["exams"] if e["hasStarted"]
+            e["title"]
+            for e in status_reports[-1]["abitti2"]["exams"]
+            if e["started_at"] is not None
         ]
         if "Odotusaulakoe" not in started_exam_titles:
             exam_package_is_not_running = True
@@ -254,7 +260,9 @@ def test_scheduled_exam_gets_started():
         state = ktp_controller.examomatic.client._post("/mock/get_state").json()
         status_reports = state["status_reports"]
         started_exam_titles = [
-            e["examTitle"] for e in status_reports[-1]["exams"] if e["hasStarted"]
+            e["title"]
+            for e in status_reports[-1]["abitti2"]["exams"]
+            if e["started_at"] is not None
         ]
         if "Integraatiotestikoe1" in started_exam_titles:
             exam_package_is_running = True
