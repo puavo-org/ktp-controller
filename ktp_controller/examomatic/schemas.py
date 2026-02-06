@@ -25,6 +25,7 @@ class _Abitti2Exam(ktp_controller.pydantic.BaseModel):
 class _Abitti2Info(ktp_controller.pydantic.BaseModel):
     domain: pydantic.StrictStr | None
     student_access_code: ktp_controller.schemas.StudentAccessCode | None
+    supervisor_username: pydantic.StrictStr
     supervisor_passphrase: pydantic.StrictStr | None
     version: pydantic.StrictStr | None
     last_message_received_at: ktp_controller.pydantic.DateTime | None
