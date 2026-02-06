@@ -15,11 +15,9 @@ __all__ = [
 
 
 class _Abitti2Exam(ktp_controller.pydantic.BaseModel):
-    examUuid: pydantic.StrictStr
-    examTitle: pydantic.StrictStr
-    hasStarted: pydantic.StrictBool
-    startTime: ktp_controller.pydantic.DateTime | None
-    type: pydantic.StrictStr
+    uuid: pydantic.StrictStr
+    title: pydantic.StrictStr
+    started_at: ktp_controller.pydantic.DateTime | None
 
 
 class _Abitti2Info(ktp_controller.pydantic.BaseModel):
@@ -29,6 +27,7 @@ class _Abitti2Info(ktp_controller.pydantic.BaseModel):
     supervisor_passphrase: pydantic.StrictStr | None
     version: pydantic.StrictStr | None
     last_message_received_at: ktp_controller.pydantic.DateTime | None
+    exams: List[_Abitti2Exam] | None
 
 
 class StatusReport(ktp_controller.pydantic.BaseModel):
@@ -38,5 +37,4 @@ class StatusReport(ktp_controller.pydantic.BaseModel):
     )  # TODO: remove when Exam-O-Matic reads abitti2.supervisor_passphrase
     server_version: pydantic.StrictStr
     status: Dict
-    exams: List[_Abitti2Exam] | None
     abitti2: _Abitti2Info

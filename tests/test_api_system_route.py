@@ -53,7 +53,6 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
         "monitoring_passphrase": "",
         "server_version": "",
         "status": {},
-        "exams": [],
         "something_extra": True,
         "abitti2": {
             "domain": "funny-server.example.invalid",
@@ -65,6 +64,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
             "supervisor_passphrase": "",
             "version": "",
             "last_message_received_at": ktp_controller.utils.strfdt(utcnow),
+            "exams": [],
         },
     }
 
@@ -80,7 +80,6 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
         "monitoring_passphrase": "",
         "server_version": "",
         "status": {},
-        "exams": [1],
         "abitti2": {
             "domain": "funny-server.example.invalid",
             "student_access_code": {
@@ -91,6 +90,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
             "supervisor_passphrase": "",
             "version": "",
             "last_message_received_at": ktp_controller.utils.strfdt(utcnow),
+            "exams": [1],
         },
     }
 
@@ -113,7 +113,6 @@ def test_send_status_report__valid_minimal_input(client, testdb, utcnow):
         "monitoring_passphrase": "",
         "server_version": "",
         "status": {},
-        "exams": [],
         "abitti2": {
             "domain": None,
             "student_access_code": {
@@ -124,6 +123,7 @@ def test_send_status_report__valid_minimal_input(client, testdb, utcnow):
             "supervisor_passphrase": "",
             "version": "",
             "last_message_received_at": ktp_controller.utils.strfdt(utcnow),
+            "exams": [],
         },
     }
 
@@ -152,7 +152,6 @@ def test_send_status_report__same_valid_minimal_input_twice(client, testdb, utcn
         "monitoring_passphrase": "",
         "server_version": "",
         "status": {},
-        "exams": [],
         "abitti2": {
             "domain": None,
             "student_access_code": {
@@ -163,6 +162,7 @@ def test_send_status_report__same_valid_minimal_input_twice(client, testdb, utcn
             "supervisor_passphrase": "",
             "version": "",
             "last_message_received_at": ktp_controller.utils.strfdt(utcnow),
+            "exams": [],
         },
     }
 
@@ -199,15 +199,6 @@ def test_send_status_report__valid_but_highly_unlikely_status(client, testdb, ut
             "It can be any kind of dict": [{"valid": True}, 3],
             "We always accept and save it": True,
         },
-        "exams": [
-            {
-                "examUuid": "c7390604-e359-473c-a751-9bd265ad798f",
-                "examTitle": "myexam",
-                "startTime": "2025-03-01T10:00:00.000+0000",
-                "hasStarted": True,
-                "type": "xml",
-            }
-        ],
         "abitti2": {
             "domain": "funny-server.example.invalid",
             "student_access_code": {
@@ -218,6 +209,13 @@ def test_send_status_report__valid_but_highly_unlikely_status(client, testdb, ut
             "supervisor_passphrase": "",
             "version": "",
             "last_message_received_at": ktp_controller.utils.strfdt(utcnow),
+            "exams": [
+                {
+                    "uuid": "c7390604-e359-473c-a751-9bd265ad798f",
+                    "title": "myexam",
+                    "started_at": "2025-03-01T10:00:00.000+0000",
+                }
+            ],
         },
     }
 
@@ -241,7 +239,6 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
         "monitoring_passphrase": "first report",
         "server_version": "1.6.0",
         "status": {},
-        "exams": [],
         "abitti2": {
             "domain": "funny-server.example.invalid",
             "student_access_code": {
@@ -252,6 +249,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
             "supervisor_passphrase": "first report",
             "version": "1.6.0",
             "last_message_received_at": "2025-01-01T10:00:00.000+0000",
+            "exams": [],
         },
     }
 
@@ -264,7 +262,6 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
         "monitoring_passphrase": "second report",
         "server_version": "1.7.0",
         "status": {},
-        "exams": [],
         "abitti2": {
             "domain": "funny-server.example.invalid",
             "student_access_code": {
@@ -275,6 +272,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
             "supervisor_passphrase": "second report",
             "version": "1.7.0",
             "last_message_received_at": "2025-01-01T10:00:00.000+0000",
+            "exams": [],
         },
     }
     response = client.post("/api/v1/system/send_status_report", json=status_report2)
@@ -331,7 +329,6 @@ def test_send_status_report__multiple_reports_exactly_max_count(
             "monitoring_passphrase": "pass",
             "server_version": "1.11.0",
             "status": {},
-            "exams": [],
             "abitti2": {
                 "domain": "funny-server.example.invalid",
                 "student_access_code": {
@@ -344,6 +341,7 @@ def test_send_status_report__multiple_reports_exactly_max_count(
                 "last_message_received_at": ktp_controller.utils.strfdt(
                     utcnow + datetime.timedelta(seconds=i * 5)
                 ),
+                "exams": [],
             },
         }
 
@@ -396,7 +394,6 @@ def test_send_status_report__multiple_reports_less_than_max_count(
             "monitoring_passphrase": "pass",
             "server_version": "1.11.0",
             "status": {},
-            "exams": [],
             "abitti2": {
                 "domain": "funny-server.example.invalid",
                 "student_access_code": {
@@ -409,6 +406,7 @@ def test_send_status_report__multiple_reports_less_than_max_count(
                 "last_message_received_at": ktp_controller.utils.strfdt(
                     utcnow + datetime.timedelta(seconds=i * 5)
                 ),
+                "exams": [],
             },
         }
 
@@ -461,7 +459,6 @@ def test_send_status_report__multiple_reports_one_more_than_max_count(
             "monitoring_passphrase": "pass",
             "server_version": "1.11.0",
             "status": {},
-            "exams": [],
             "abitti2": {
                 "domain": "funny-server.example.invalid",
                 "student_access_code": {
@@ -474,6 +471,7 @@ def test_send_status_report__multiple_reports_one_more_than_max_count(
                 "last_message_received_at": ktp_controller.utils.strfdt(
                     utcnow + datetime.timedelta(seconds=i * 5)
                 ),
+                "exams": [],
             },
         }
 
@@ -528,7 +526,6 @@ def test_send_status_report__multiple_reports_many_more_than_max_count(
             "monitoring_passphrase": "pass",
             "server_version": "1.11.0",
             "status": {},
-            "exams": [],
             "abitti2": {
                 "domain": "funny-server.example.invalid",
                 "student_access_code": {
@@ -541,6 +538,7 @@ def test_send_status_report__multiple_reports_many_more_than_max_count(
                 "last_message_received_at": ktp_controller.utils.strfdt(
                     utcnow + datetime.timedelta(seconds=i * 5)
                 ),
+                "exams": [],
             },
         }
 
