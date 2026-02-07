@@ -164,9 +164,9 @@ def _set_current_exam_package_state(
 
 def _allow_students_to_use_browsers(students):
     for student in students:
-        student_uuid = student["studentUuid"]
-        session_uuid = student["sessionUuid"]
-        student_status = student["studentStatus"]
+        student_uuid = student["uuid"]
+        session_uuid = student["session_uuid"]
+        student_status = student["status"]
 
         if student_status != "waiting-for-auth-browser":
             continue
@@ -190,29 +190,27 @@ def _allow_students_to_use_browsers(students):
         )
 
 
-def _all_students_have_left_or_finished(
+def _no_active_students(
     status_report: typing.Dict[str, typing.Any],
 ) -> bool:
     """
-    >>> _all_students_have_left_or_finished({"status": {"data": {"students": []}}})
+    >>> _no_active_students({"abitti2": {"students": []}})
     True
-    >>> _all_students_have_left_or_finished({"status": {"data": {"students": [{"age": 13}]}}})
-    False
-    >>> _all_students_have_left_or_finished({"status": {"data": {"students": [{"examFinished": True}]}}})
+    >>> _no_active_students({"abitti2": {"students": [{"age": 13}]}})
+    Traceback (most recent call last):
+    ...
+    KeyError: 'is_active'
+    >>> _no_active_students({"abitti2": {"students": [{"is_active": False}]}})
     True
-    >>> _all_students_have_left_or_finished({"status": {"data": {"students": [{"examFinished": True}, {"examFinished": False}]}}})
+    >>> _no_active_students({"abitti2": {"students": [{"is_active": True}, {"is_active": False}]}})
     False
-    >>> _all_students_have_left_or_finished({"status": {"data": {"students": [{"examFinished": True}, {"sessionStatus": "session_started"}]}}})
+    >>> _no_active_students({"abitti2": {"students": [{"is_active": True}, {"is_active": True}]}})
     False
-    >>> _all_students_have_left_or_finished({"status": {"data": {"students": [{"examFinished": True}, {"sessionStatus": "session_ended"}]}}})
+    >>> _no_active_students({"abitti2": {"students": [{"is_active": False}, {"is_active": False}]}})
     True
     """
 
-    return all(
-        s.get("examFinished", False)
-        or s.get("sessionStatus") in ("session_ended", "exam_finished_by_student")
-        for s in status_report["status"]["data"]["students"]
-    )
+    return all(not s["is_active"] for s in status_report["abitti2"]["students"])
 
 
 class Trigger(str, enum.Enum):
@@ -275,6 +273,8 @@ class Agent:
         self.__last_received_security_code = None
         self.__old_security_code = None
         self.__last_message_from_abitti2_received_at = None
+        self.__last_received_students = None
+        self.__last_received_answer_count = None
 
         self.__connection_stats: typing.Dict[
             Component, ktp_controller.agent.stats.ConnectionStats
@@ -491,14 +491,15 @@ class Agent:
             # Change the security code first to ensure students cannot enter anymore.
             ktp_controller.abitti2.client.change_student_access_code()
 
-        status_report = ktp_controller.api.client.get_last_status_report()
-        for student in status_report["status"]["data"]["students"]:
-            ktp_controller.abitti2.client.stop_exam_session(student["sessionUuid"])
+        last_status_report = ktp_controller.api.client.get_last_status_report()
+        for student in last_status_report["abitti2"]["students"]:
+            ktp_controller.abitti2.client.stop_exam_session(student["session_uuid"])
 
         is_stopped = (
-            _all_students_have_left_or_finished(status_report)
+            _no_active_students(last_status_report)
             and current_exam_package["state"] == "stopping"
-            and status_report["received_at"] > current_exam_package["state_changed_at"]
+            and last_status_report["created_at"]
+            > current_exam_package["state_changed_at"]
         )
 
         if is_stopped:
@@ -532,7 +533,7 @@ class Agent:
     ) -> None:
         is_final = ktp_controller.examomatic.client.IsFinal(is_final)
         status_report = ktp_controller.api.client.get_last_status_report()
-        if status_report["status"]["data"]["answerPaperCount"] > 0:
+        if status_report["abitti2"]["answer_count"] > 0:
             _transfer_answers(
                 current_exam_package["external_id"],
                 is_final=is_final,
@@ -624,7 +625,7 @@ class Agent:
                         )
                     )
                     and (
-                        _all_students_have_left_or_finished(
+                        _no_active_students(
                             ktp_controller.api.client.get_last_status_report()
                         )
                         or len(locked_exam_packages) > 1
@@ -875,7 +876,7 @@ class Agent:
         if status_report is None:
             return
 
-        self.__send_status_report(received_at, status_report["status"])
+        self.__send_status_report()
 
     def __validate_abitti2_stats_message(
         self, message: typing.Dict[str, typing.Any]
@@ -898,19 +899,21 @@ class Agent:
     ):
         ktp_controller.abitti2.utils.sanitize_stats_message(message)
 
-        if (
-            self.__validate_abitti2_stats_message(message)
-            and self.__is_auto_control_enabled
-        ):
-            _allow_students_to_use_browsers(message["data"]["students"])
+        try:
+            self.__last_received_students = ktp_controller.abitti2.utils.parse_students(
+                message
+            )
+        except ValueError:
+            self.__last_received_students = None
+        else:
+            if self.__is_auto_control_enabled:
+                _allow_students_to_use_browsers(self.__last_received_students)
 
-        self.__send_status_report(received_at, message)
+        self.__last_received_answer_count = message["data"]["answerPaperCount"]
 
-    def __send_status_report(
-        self,
-        received_at: datetime.datetime,
-        message: typing.Dict[str, typing.Any],
-    ):
+        self.__send_status_report()
+
+    def __send_status_report(self):
         try:
             supervisor_passphrase = (
                 ktp_controller.abitti2.naksu2.read_supervisor_passphrase()
@@ -934,9 +937,9 @@ class Agent:
             abitti2_version = None
 
         status_report = {
-            "status": message,
-            "received_at": ktp_controller.utils.strfdt(received_at),
+            "created_at": ktp_controller.utils.utcnow(),
             "abitti2": {
+                "answer_count": self.__last_received_answer_count,
                 "domain": domain,
                 "student_access_code": _security_code_to_student_access_code(
                     self.__last_received_security_code
@@ -946,6 +949,7 @@ class Agent:
                 "version": abitti2_version,
                 "last_message_received_at": self.__last_message_from_abitti2_received_at,
                 "exams": self.__last_received_exam_list,
+                "students": self.__last_received_students,
             },
         }
 
@@ -969,11 +973,12 @@ class Agent:
         exam_list = []
 
         for abitti2_exam in message["data"]:
-            start_time = datetime.datetime.fromisoformat(abitti2_exam["startTime"])
-            if start_time is None:
+            if abitti2_exam["startTime"] is None:
                 started_at = None
             else:
-                started_at = ktp_controller.utils.strfdt(start_time)
+                started_at = ktp_controller.utils.strfdt(
+                    datetime.datetime.fromisoformat(abitti2_exam["startTime"])
+                )
             exam_list.append(
                 {
                     "uuid": abitti2_exam["examUuid"],

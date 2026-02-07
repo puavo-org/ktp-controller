@@ -61,7 +61,7 @@ def _assert_odotusaulakoe_is_running(timeout: int = 30):
 def _is_fresh_status_report(status_report, max_age_secs: int = 30) -> bool:
     return (
         ktp_controller.utils.utcnow()
-        - datetime.datetime.fromisoformat(status_report["received_at"])
+        - datetime.datetime.fromisoformat(status_report["created_at"])
     ).total_seconds() <= max_age_secs
 
 
@@ -314,7 +314,7 @@ def test_status_reports_do_not_contain_student_names(student1, student2):
         last_status_report_seen_by_api = (
             ktp_controller.api.client.get_last_status_report()
         )
-        if len(last_status_report_seen_by_api["status"]["data"]["students"]) > 1:
+        if len(last_status_report_seen_by_api["abitti2"]["students"]) > 1:
             found_some_students = True
             break
         time.sleep(1)

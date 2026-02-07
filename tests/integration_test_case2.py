@@ -42,7 +42,7 @@ def _assert_odotusaulakoe_is_running(timeout: int = 30):
 def _is_fresh_status_report(status_report, max_age_secs: int = 6) -> bool:
     return (
         ktp_controller.utils.utcnow()
-        - datetime.datetime.fromisoformat(status_report["received_at"])
+        - datetime.datetime.fromisoformat(status_report["created_at"])
     ).total_seconds() <= max_age_secs
 
 
