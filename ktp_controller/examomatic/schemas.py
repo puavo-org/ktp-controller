@@ -32,8 +32,5 @@ class _Abitti2Info(ktp_controller.pydantic.BaseModel):
 
 class StatusReport(ktp_controller.pydantic.BaseModel):
     received_at: ktp_controller.pydantic.DateTime
-    monitoring_passphrase: (
-        pydantic.StrictStr
-    )  # TODO: remove when Exam-O-Matic reads abitti2.supervisor_passphrase
     status: Dict
     abitti2: _Abitti2Info
