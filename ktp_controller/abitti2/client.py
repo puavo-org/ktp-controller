@@ -3,6 +3,7 @@ import hashlib
 import logging
 import os
 import os.path
+import re
 import typing
 
 # Third-party imports
@@ -104,7 +105,11 @@ def get_abitti2_websock_url():
 
 
 def get_current_abitti2_version() -> str:
-    return _get("/api/version").json()["version"]
+    version = _get("/api/version").json()["version"]
+    version_match = re.match(r"^SERVER-v((\d+)\.(\d+)\.(\d+))$", version)
+    if not version_match:
+        raise RuntimeError("Abitti2 reported version in unexpected format", version)
+    return version_match.group(1)
 
 
 def change_student_access_code() -> typing.Dict:
