@@ -11,6 +11,7 @@ import ktp_controller.messages
 import ktp_controller.utils
 from ktp_controller.settings import SETTINGS
 import ktp_controller.api.exam.schemas
+import ktp_controller.api.system.schemas
 import ktp_controller.schemas
 
 __all__ = [
@@ -129,9 +130,15 @@ def send_status_report(
     *,
     timeout: int = 5,
 ) -> typing.Any:
+    data = (
+        ktp_controller.api.system.schemas.StatusReport.model_validate(status_report)
+        .json()
+        .encode("ascii")
+    )
+
     return _post(
         "/api/v1/system/send_status_report",
-        json=status_report,
+        data=data,
         timeout=timeout,
     ).json()
 
