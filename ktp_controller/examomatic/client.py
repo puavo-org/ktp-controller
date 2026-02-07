@@ -1,7 +1,6 @@
 # Standard library imports
 import enum
 import hashlib
-import json
 import logging
 import os.path
 import typing
@@ -12,6 +11,7 @@ import requests.auth
 import requests.exceptions
 
 # Internal imports
+import ktp_controller.examomatic.schemas
 import ktp_controller.utils
 from ktp_controller.settings import SETTINGS
 
@@ -173,9 +173,15 @@ def send_status_report(
     *,
     timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
 ) -> typing.Any:
+    data = (
+        ktp_controller.examomatic.schemas.StatusReport.model_validate(status_report)
+        .json()
+        .encode("ascii")
+    )
+
     return _post(
         "/v1/servers/status_update",
-        data=json.dumps(status_report).encode("ascii"),
+        data=data,
         timeout=timeout,
     ).json()
 

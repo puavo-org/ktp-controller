@@ -966,7 +966,7 @@ class Agent:
                 "domain": domain,
                 "student_access_code": _security_code_to_student_access_code(
                     self.__last_received_security_code
-                ).model_dump(),
+                ),
             },
         }
 
