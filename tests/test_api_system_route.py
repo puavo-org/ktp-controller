@@ -48,6 +48,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
     assert_response(response, expected_status_code=422)
 
     status_report_with_extra_field = {
+        "v": 1,
         "created_at": ktp_controller.utils.strfdt(utcnow),
         "reported_at": ktp_controller.utils.strfdt(utcnow),
         "something_extra": True,
@@ -74,6 +75,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
     assert_response(response, expected_status_code=422)
 
     status_report_with_invalid_exams = {
+        "v": 1,
         "created_at": ktp_controller.utils.strfdt(utcnow),
         "reported_at": ktp_controller.utils.strfdt(utcnow),
         "abitti2": {
@@ -106,6 +108,7 @@ def test_send_status_report__valid_minimal_input(client, testdb, utcnow):
     assert testdb.query(models.StatusReport).all() == []
 
     status_report = {
+        "v": 1,
         "created_at": ktp_controller.utils.strfdt(utcnow),
         "reported_at": ktp_controller.utils.strfdt(utcnow),
         "abitti2": {
@@ -144,6 +147,7 @@ def test_send_status_report__same_valid_minimal_input_twice(client, testdb, utcn
     assert testdb.query(models.StatusReport).all() == []
 
     status_report = {
+        "v": 1,
         "created_at": ktp_controller.utils.strfdt(utcnow),
         "reported_at": ktp_controller.utils.strfdt(utcnow),
         "abitti2": {
@@ -186,6 +190,7 @@ def test_send_status_report__valid_but_highly_unlikely_status(client, testdb, ut
     assert testdb.query(models.StatusReport).all() == []
 
     status_report = {
+        "v": 1,
         "created_at": ktp_controller.utils.strfdt(utcnow),
         "reported_at": ktp_controller.utils.strfdt(utcnow),
         "abitti2": {
@@ -225,6 +230,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
     assert testdb.query(models.StatusReport).all() == []
 
     status_report1 = {
+        "v": 1,
         "created_at": "2025-01-01T10:00:00.000+0000",
         "reported_at": "2025-01-01T10:00:05.000+0000",
         "abitti2": {
@@ -247,6 +253,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
     assert_response(response, expected_status_code=200)
 
     status_report2 = {
+        "v": 1,
         "created_at": "2024-01-01T10:00:00.000+0000",  # For the sake of testing, agent's clock goes backward between reports
         "reported_at": "2024-01-01T10:00:05.000+0000",
         "abitti2": {
@@ -309,6 +316,7 @@ def test_send_status_report__multiple_reports_exactly_max_count(
     status_reports = []
     for i in range(max_count):
         status_report = {
+            "v": 1,
             "created_at": ktp_controller.utils.strfdt(
                 utcnow + datetime.timedelta(seconds=i * 5)
             ),
@@ -373,6 +381,7 @@ def test_send_status_report__multiple_reports_less_than_max_count(
     status_reports = []
     for i in range(send_count):
         status_report = {
+            "v": 1,
             "created_at": ktp_controller.utils.strfdt(
                 utcnow + datetime.timedelta(seconds=i * 5)
             ),
@@ -437,6 +446,7 @@ def test_send_status_report__multiple_reports_one_more_than_max_count(
     status_reports = []
     for i in range(send_count):
         status_report = {
+            "v": 1,
             "created_at": ktp_controller.utils.strfdt(
                 utcnow + datetime.timedelta(seconds=i * 5)
             ),
@@ -503,6 +513,7 @@ def test_send_status_report__multiple_reports_many_more_than_max_count(
     status_reports = []
     for i in range(send_count):
         status_report = {
+            "v": 1,
             "created_at": ktp_controller.utils.strfdt(
                 utcnow + datetime.timedelta(seconds=i * 5)
             ),
