@@ -938,7 +938,6 @@ class Agent:
 
         status_report = {
             "monitoring_passphrase": supervisor_passphrase,
-            "server_version": abitti2_version,
             "status": message,
             "received_at": ktp_controller.utils.strfdt(received_at),
             "abitti2": {
