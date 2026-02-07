@@ -911,9 +911,6 @@ class Agent:
         received_at: datetime.datetime,
         message: typing.Dict[str, typing.Any],
     ):
-        # TODO: remove when Exam-O-Matic reads this via abitti2.student_access_code
-        message["singleSecurityCode"] = self.__last_received_security_code
-
         try:
             supervisor_passphrase = (
                 ktp_controller.abitti2.naksu2.read_supervisor_passphrase()
