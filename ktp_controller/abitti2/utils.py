@@ -56,3 +56,29 @@ def sanitize_stats_message(stats_message: typing.Dict[str, typing.Any]) -> bool:
             changed = True
 
     return changed
+
+
+def parse_students(
+    sanitized_stats_message: typing.Dict[str, typing.Any],
+) -> typing.List[typing.Dict[str, typing.Any]]:
+    students = []
+
+    for student in sanitized_stats_message["data"]["students"]:
+        students.append(
+            {
+                "uuid": student["studentUuid"],
+                "session_uuid": student["sessionUuid"],
+                "status": student["studentStatus"],
+                "is_active": (
+                    not (
+                        student.get("examFinished", False)
+                        or (
+                            student["sessionStatus"]
+                            in ("session_ended", "exam_finished_by_student")
+                        )
+                    )
+                ),
+            }
+        )
+
+    return students
