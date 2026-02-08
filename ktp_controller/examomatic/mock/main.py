@@ -18,6 +18,7 @@ import uvicorn  # type: ignore
 import pydantic
 
 # Internal imports
+from ktp_controller import VERSION
 import ktp_controller.examomatic.schemas
 import ktp_controller.pydantic
 import ktp_controller.utils
@@ -300,6 +301,7 @@ def run() -> int:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
+    parser.add_argument("--version", action="version", version=VERSION)
     parser.add_argument("--port", type=int, default=8001)
 
     args = parser.parse_args()

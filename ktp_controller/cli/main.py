@@ -6,6 +6,7 @@ import asyncio
 import yaml
 
 # Internal imports
+from ktp_controller import VERSION
 
 
 async def _command_api_async_command(args) -> int:
@@ -112,6 +113,7 @@ def run() -> int:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
+    parser.add_argument("--version", action="version", version=VERSION)
     subparsers = parser.add_subparsers(title="Commands", dest="COMMAND", required=True)
     for command in _COMMANDS:
         subparsers.add_parser(command)
