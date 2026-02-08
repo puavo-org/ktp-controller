@@ -1,0 +1,52 @@
+{
+  "v": 1,
+  "created_at": "2026-02-08T20:45:17.225+0000",
+  "abitti2": {
+    "answer_count": 0,
+    "domain": "asiasana-vahinko.koe.abitti.net",
+    "student_access_code": {
+      "key_code": "1234",
+      "verification_code": "xx"
+    },
+    "supervisor_username": "valvoja",
+    "supervisor_passphrase": "opiaatti workshop knesset tynnyri",
+    "version": "1.20.0",
+    "last_message_received_at": "2026-02-08T20:45:17.184+0000",
+    "exams": [
+      {
+        "uuid": "390e7988-ff0e-42b4-a2e6-d13a969e7103",
+        "title": "Odotusaulakoe",
+        "started_at": "2026-02-08T20:45:13.420+0000"
+      }
+    ],
+    "students": []
+  },
+  "ktp_controller": {
+    "version": "0.3.0a1",
+    "started_at": "2026-02-08T20:41:05.931+0000",
+    "is_auto_control_enabled": true,
+    "cached_files": {
+      "exams": [
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
+          "size": 25353142,
+          "modified_at": "2026-02-08T20:17:55.432+0000"
+        }
+      ],
+      "exam_packages": [
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/d9a72be1-eaac-4cec-8844-c8a21edffbcd/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-02-08T20:17:55.432+0000"
+        }
+      ],
+      "answers": [
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/d9a72be1-eaac-4cec-8844-c8a21edffbcd/answers-file_2026-02-08T20:45:06.270+0000_final.meb",
+          "size": 1132685,
+          "modified_at": "2026-02-08T20:17:55.432+0000"
+        }
+      ]
+    }
+  }
+}
