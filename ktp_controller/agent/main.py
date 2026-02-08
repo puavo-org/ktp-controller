@@ -955,6 +955,7 @@ class Agent:
             },
             "ktp_controller": {
                 "started_at": self.__started_at,
+                "is_auto_control_enabled": self.__is_auto_control_enabled,
             },
         }
 
