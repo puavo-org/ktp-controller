@@ -42,6 +42,7 @@ class _Abitti2(ktp_controller.pydantic.BaseModel):
 
 class _KTPController(ktp_controller.pydantic.BaseModel):
     version: Literal[VERSION] = VERSION
+    started_at: ktp_controller.pydantic.DateTime
 
 
 class StatusReport(ktp_controller.pydantic.BaseModel):

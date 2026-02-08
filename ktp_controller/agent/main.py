@@ -20,6 +20,7 @@ import ktp_controller.abitti2.client
 import ktp_controller.abitti2.naksu2
 import ktp_controller.abitti2.schemas
 import ktp_controller.abitti2.utils
+import ktp_controller.agent
 import ktp_controller.agent.state
 import ktp_controller.agent.stats
 import ktp_controller.api.client
@@ -257,6 +258,7 @@ class Agent:
         approx_answer_transfer_interval_sec: int = SETTINGS.answer_transfer_interval_sec,
         state: ktp_controller.agent.state.AgentState,
     ):
+        self.__started_at = None
         self.__state = state
         self.__answer_transfer_task = None
 
@@ -951,6 +953,9 @@ class Agent:
                 "exams": self.__last_received_exam_list,
                 "students": self.__last_received_students,
             },
+            "ktp_controller": {
+                "started_at": self.__started_at,
+            },
         }
 
         try:
@@ -1225,6 +1230,8 @@ class Agent:
                 await asyncio.sleep(self.__approx_restart_timeout_sec)
 
     def run(self):
+        self.__started_at = ktp_controller.utils.utcnow()
+
         # ktp_controller.abitti2.client needs dummy exam package to reset Abitti2.
         _create_dummy_exam_package_file()
 
