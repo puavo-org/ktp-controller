@@ -69,6 +69,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
         },
         "ktp_controller": {
             "version": VERSION,
+            "started_at": "1970-01-01T01:01:01.010+0000",
         },
     }
 
@@ -98,6 +99,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
         },
         "ktp_controller": {
             "version": VERSION,
+            "started_at": "1970-01-01T01:01:01.010+0000",
         },
     }
 
@@ -134,6 +136,7 @@ def test_send_status_report__valid_minimal_input(client, testdb, utcnow):
         },
         "ktp_controller": {
             "version": VERSION,
+            "started_at": "1970-01-01T01:01:01.010+0000",
         },
     }
 
@@ -176,6 +179,7 @@ def test_send_status_report__same_valid_minimal_input_twice(client, testdb, utcn
         },
         "ktp_controller": {
             "version": VERSION,
+            "started_at": "1970-01-01T01:01:01.010+0000",
         },
     }
 
@@ -228,6 +232,7 @@ def test_send_status_report__valid_but_highly_unlikely_status(client, testdb, ut
         },
         "ktp_controller": {
             "version": VERSION,
+            "started_at": "1970-01-01T01:01:01.010+0000",
         },
     }
 
@@ -265,6 +270,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
         },
         "ktp_controller": {
             "version": VERSION,
+            "started_at": "1970-01-01T01:01:01.010+0000",
         },
     }
 
@@ -291,6 +297,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
         },
         "ktp_controller": {
             "version": VERSION,
+            "started_at": "1970-01-01T01:01:01.010+0000",
         },
     }
     response = client.post("/api/v1/system/send_status_report", json=status_report2)
@@ -363,6 +370,7 @@ def test_send_status_report__multiple_reports_exactly_max_count(
             },
             "ktp_controller": {
                 "version": VERSION,
+                "started_at": "1970-01-01T01:01:01.010+0000",
             },
         }
 
@@ -431,6 +439,7 @@ def test_send_status_report__multiple_reports_less_than_max_count(
             },
             "ktp_controller": {
                 "version": VERSION,
+                "started_at": "1970-01-01T01:01:01.010+0000",
             },
         }
 
@@ -499,6 +508,7 @@ def test_send_status_report__multiple_reports_one_more_than_max_count(
             },
             "ktp_controller": {
                 "version": VERSION,
+                "started_at": "1970-01-01T01:01:01.010+0000",
             },
         }
 
@@ -569,6 +579,7 @@ def test_send_status_report__multiple_reports_many_more_than_max_count(
             },
             "ktp_controller": {
                 "version": VERSION,
+                "started_at": "1970-01-01T01:01:01.010+0000",
             },
         }
 
