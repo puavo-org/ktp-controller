@@ -44,6 +44,7 @@ class _KTPController(ktp_controller.pydantic.BaseModel):
     version: Literal[VERSION] = VERSION
     started_at: ktp_controller.pydantic.DateTime
     is_auto_control_enabled: pydantic.StrictBool
+    cached_files: ktp_controller.schemas.FileStats
 
 
 class StatusReport(ktp_controller.pydantic.BaseModel):
