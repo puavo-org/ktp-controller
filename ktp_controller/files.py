@@ -11,11 +11,11 @@ import os.path
 _EXAM_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-files")
 
 # All exam packages will be stored here like so:
-# ~/.local/share/ktp-controller/exam-packages/FILE_UUID/COMPOUND_EXAM_FILE_SHA256
+# ~/.local/share/ktp-controller/exam-packages/EXAM_PACKAGE_UUID/COMPOUND_EXAM_FILE_SHA256
 _EXAM_PACKAGE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-packages")
 
-# All exam packages will be stored here like so:
-# ~/.local/share/ktp-controller/exam-packages/FILE_UUID/COMPOUND_EXAM_FILE_SHA256
+# All answer files will be stored here like so:
+# ~/.local/share/ktp-controller/answer-files/EXAM_PACKAGE_UUID/ANSWER_FILE_SHA256
 _ANSWERS_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/answers-files")
 
 DUMMY_EXAM_FILE_FILEPATH = os.path.expanduser(
