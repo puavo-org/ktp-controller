@@ -1,10 +1,11 @@
 # Standard library imports
-from typing import List
+from typing import List, Literal
 
 # Third-party imports
 import pydantic
 
 # Internal imports
+from ktp_controller import VERSION
 import ktp_controller.pydantic
 import ktp_controller.schemas
 
@@ -39,7 +40,12 @@ class _Abitti2(ktp_controller.pydantic.BaseModel):
     students: List[_Student] | None
 
 
+class _KTPController(ktp_controller.pydantic.BaseModel):
+    version: Literal[VERSION] = VERSION
+
+
 class StatusReport(ktp_controller.pydantic.BaseModel):
     v: pydantic.conint(strict=True, ge=1, le=1) = 1
     created_at: ktp_controller.pydantic.DateTime
     abitti2: _Abitti2
+    ktp_controller: _KTPController

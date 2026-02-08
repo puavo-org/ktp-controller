@@ -6,6 +6,7 @@ import fastapi
 import pytest
 
 # Internal imports
+from ktp_controller import VERSION
 import ktp_controller.messages
 from ktp_controller.api import models
 
@@ -66,6 +67,9 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
             "exams": [],
             "students": [],
         },
+        "ktp_controller": {
+            "version": VERSION,
+        },
     }
 
     response = client.post(
@@ -91,6 +95,9 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
             "last_message_received_at": ktp_controller.utils.strfdt(utcnow),
             "exams": [1],
             "students": [],
+        },
+        "ktp_controller": {
+            "version": VERSION,
         },
     }
 
@@ -124,6 +131,9 @@ def test_send_status_report__valid_minimal_input(client, testdb, utcnow):
             "last_message_received_at": ktp_controller.utils.strfdt(utcnow),
             "exams": [],
             "students": [],
+        },
+        "ktp_controller": {
+            "version": VERSION,
         },
     }
 
@@ -163,6 +173,9 @@ def test_send_status_report__same_valid_minimal_input_twice(client, testdb, utcn
             "last_message_received_at": ktp_controller.utils.strfdt(utcnow),
             "exams": [],
             "students": [],
+        },
+        "ktp_controller": {
+            "version": VERSION,
         },
     }
 
@@ -213,6 +226,9 @@ def test_send_status_report__valid_but_highly_unlikely_status(client, testdb, ut
             ],
             "students": [],
         },
+        "ktp_controller": {
+            "version": VERSION,
+        },
     }
 
     response = client.post("/api/v1/system/send_status_report", json=status_report)
@@ -247,6 +263,9 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
             "exams": [],
             "students": [],
         },
+        "ktp_controller": {
+            "version": VERSION,
+        },
     }
 
     response = client.post("/api/v1/system/send_status_report", json=status_report1)
@@ -269,6 +288,9 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
             "last_message_received_at": "2025-01-01T10:00:00.000+0000",
             "exams": [],
             "students": [],
+        },
+        "ktp_controller": {
+            "version": VERSION,
         },
     }
     response = client.post("/api/v1/system/send_status_report", json=status_report2)
@@ -339,6 +361,9 @@ def test_send_status_report__multiple_reports_exactly_max_count(
                 "exams": [],
                 "students": [],
             },
+            "ktp_controller": {
+                "version": VERSION,
+            },
         }
 
         response = client.post("/api/v1/system/send_status_report", json=status_report)
@@ -404,6 +429,9 @@ def test_send_status_report__multiple_reports_less_than_max_count(
                 "exams": [],
                 "students": [],
             },
+            "ktp_controller": {
+                "version": VERSION,
+            },
         }
 
         response = client.post("/api/v1/system/send_status_report", json=status_report)
@@ -468,6 +496,9 @@ def test_send_status_report__multiple_reports_one_more_than_max_count(
                 ),
                 "exams": [],
                 "students": [],
+            },
+            "ktp_controller": {
+                "version": VERSION,
             },
         }
 
@@ -535,6 +566,9 @@ def test_send_status_report__multiple_reports_many_more_than_max_count(
                 ),
                 "exams": [],
                 "students": [],
+            },
+            "ktp_controller": {
+                "version": VERSION,
             },
         }
 
