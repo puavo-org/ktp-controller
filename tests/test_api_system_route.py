@@ -71,6 +71,29 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": True,
+            "cached_files": {
+                "exams": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
+                        "size": 25353142,
+                        "modified_at": "2025-11-05T15:22:26.379+0000",
+                    }
+                ],
+                "exam_packages": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+                        "size": 25353354,
+                        "modified_at": "2026-01-07T17:32:27.423+0000",
+                    }
+                ],
+                "answers": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
+                        "size": 223604,
+                        "modified_at": "2026-01-07T17:34:42.968+0000",
+                    }
+                ],
+            },
         },
     }
 
@@ -102,6 +125,29 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": True,
+            "cached_files": {
+                "exams": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
+                        "size": 25353142,
+                        "modified_at": "2025-11-05T15:22:26.379+0000",
+                    }
+                ],
+                "exam_packages": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+                        "size": 25353354,
+                        "modified_at": "2026-01-07T17:32:27.423+0000",
+                    }
+                ],
+                "answers": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
+                        "size": 223604,
+                        "modified_at": "2026-01-07T17:34:42.968+0000",
+                    }
+                ],
+            },
         },
     }
 
@@ -140,6 +186,29 @@ def test_send_status_report__valid_minimal_input(client, testdb, utcnow):
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": True,
+            "cached_files": {
+                "exams": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
+                        "size": 25353142,
+                        "modified_at": "2025-11-05T15:22:26.379+0000",
+                    }
+                ],
+                "exam_packages": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+                        "size": 25353354,
+                        "modified_at": "2026-01-07T17:32:27.423+0000",
+                    }
+                ],
+                "answers": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
+                        "size": 223604,
+                        "modified_at": "2026-01-07T17:34:42.968+0000",
+                    }
+                ],
+            },
         },
     }
 
@@ -184,6 +253,29 @@ def test_send_status_report__same_valid_minimal_input_twice(client, testdb, utcn
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": True,
+            "cached_files": {
+                "exams": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
+                        "size": 25353142,
+                        "modified_at": "2025-11-05T15:22:26.379+0000",
+                    }
+                ],
+                "exam_packages": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+                        "size": 25353354,
+                        "modified_at": "2026-01-07T17:32:27.423+0000",
+                    }
+                ],
+                "answers": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
+                        "size": 223604,
+                        "modified_at": "2026-01-07T17:34:42.968+0000",
+                    }
+                ],
+            },
         },
     }
 
@@ -238,6 +330,29 @@ def test_send_status_report__valid_but_highly_unlikely_status(client, testdb, ut
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": False,
+            "cached_files": {
+                "exams": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
+                        "size": 25353142,
+                        "modified_at": "2025-11-05T15:22:26.379+0000",
+                    }
+                ],
+                "exam_packages": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+                        "size": 25353354,
+                        "modified_at": "2026-01-07T17:32:27.423+0000",
+                    }
+                ],
+                "answers": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
+                        "size": 223604,
+                        "modified_at": "2026-01-07T17:34:42.968+0000",
+                    }
+                ],
+            },
         },
     }
 
@@ -277,6 +392,29 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": False,
+            "cached_files": {
+                "exams": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
+                        "size": 25353142,
+                        "modified_at": "2025-11-05T15:22:26.379+0000",
+                    }
+                ],
+                "exam_packages": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+                        "size": 25353354,
+                        "modified_at": "2026-01-07T17:32:27.423+0000",
+                    }
+                ],
+                "answers": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
+                        "size": 223604,
+                        "modified_at": "2026-01-07T17:34:42.968+0000",
+                    }
+                ],
+            },
         },
     }
 
@@ -305,6 +443,29 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": False,
+            "cached_files": {
+                "exams": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
+                        "size": 25353142,
+                        "modified_at": "2025-11-05T15:22:26.379+0000",
+                    }
+                ],
+                "exam_packages": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+                        "size": 25353354,
+                        "modified_at": "2026-01-07T17:32:27.423+0000",
+                    }
+                ],
+                "answers": [
+                    {
+                        "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
+                        "size": 223604,
+                        "modified_at": "2026-01-07T17:34:42.968+0000",
+                    }
+                ],
+            },
         },
     }
     response = client.post("/api/v1/system/send_status_report", json=status_report2)
@@ -379,6 +540,29 @@ def test_send_status_report__multiple_reports_exactly_max_count(
                 "version": VERSION,
                 "started_at": "1970-01-01T01:01:01.010+0000",
                 "is_auto_control_enabled": False,
+                "cached_files": {
+                    "exams": [
+                        {
+                            "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
+                            "size": 25353142,
+                            "modified_at": "2025-11-05T15:22:26.379+0000",
+                        }
+                    ],
+                    "exam_packages": [
+                        {
+                            "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+                            "size": 25353354,
+                            "modified_at": "2026-01-07T17:32:27.423+0000",
+                        }
+                    ],
+                    "answers": [
+                        {
+                            "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
+                            "size": 223604,
+                            "modified_at": "2026-01-07T17:34:42.968+0000",
+                        }
+                    ],
+                },
             },
         }
 
@@ -449,6 +633,29 @@ def test_send_status_report__multiple_reports_less_than_max_count(
                 "version": VERSION,
                 "started_at": "1970-01-01T01:01:01.010+0000",
                 "is_auto_control_enabled": False,
+                "cached_files": {
+                    "exams": [
+                        {
+                            "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
+                            "size": 25353142,
+                            "modified_at": "2025-11-05T15:22:26.379+0000",
+                        }
+                    ],
+                    "exam_packages": [
+                        {
+                            "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+                            "size": 25353354,
+                            "modified_at": "2026-01-07T17:32:27.423+0000",
+                        }
+                    ],
+                    "answers": [
+                        {
+                            "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
+                            "size": 223604,
+                            "modified_at": "2026-01-07T17:34:42.968+0000",
+                        }
+                    ],
+                },
             },
         }
 
@@ -519,6 +726,29 @@ def test_send_status_report__multiple_reports_one_more_than_max_count(
                 "version": VERSION,
                 "started_at": "1970-01-01T01:01:01.010+0000",
                 "is_auto_control_enabled": False,
+                "cached_files": {
+                    "exams": [
+                        {
+                            "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
+                            "size": 25353142,
+                            "modified_at": "2025-11-05T15:22:26.379+0000",
+                        }
+                    ],
+                    "exam_packages": [
+                        {
+                            "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+                            "size": 25353354,
+                            "modified_at": "2026-01-07T17:32:27.423+0000",
+                        }
+                    ],
+                    "answers": [
+                        {
+                            "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
+                            "size": 223604,
+                            "modified_at": "2026-01-07T17:34:42.968+0000",
+                        }
+                    ],
+                },
             },
         }
 
@@ -591,6 +821,11 @@ def test_send_status_report__multiple_reports_many_more_than_max_count(
                 "version": VERSION,
                 "started_at": "1970-01-01T01:01:01.010+0000",
                 "is_auto_control_enabled": False,
+                "cached_files": {
+                    "exams": [],
+                    "exam_packages": [],
+                    "answers": [],
+                },
             },
         }
 

@@ -1,10 +1,12 @@
 # Standard library imports
+import datetime
 import enum
 import os.path
 
 # Third-party imports
 
 # Internal imports
+import ktp_controller.schemas
 
 # All exam files will be stored here like so:
 # ~/.local/share/ktp-controller/exam-files/FILE_UUID/FILE_SHA256
@@ -60,3 +62,27 @@ def get_local_filepath(
         pass
 
     return os.path.join(dirpath, f"{local_filepath_type}_{filename_suffix}{ext}")
+
+
+def get_stats() -> ktp_controller.schemas.FileStats:
+    data = {}
+
+    for key, dirpath in zip(
+        ["exams", "exam_packages", "answers"],
+        [_EXAM_FILE_DIR, _EXAM_PACKAGE_DIR, _ANSWERS_FILE_DIR],
+    ):
+        items = data.setdefault(key, [])
+        for path, dirnames, filenames in os.walk(dirpath):
+            for filename in filenames:
+                filepath = os.path.join(path, filename)
+                items.append(
+                    {
+                        "path": filepath,
+                        "modified_at": datetime.datetime.fromtimestamp(
+                            os.path.getmtime("Makefile"), datetime.timezone.utc
+                        ),
+                        "size": os.path.getsize(filepath),
+                    }
+                )
+
+    return ktp_controller.schemas.FileStats.model_validate(data)
