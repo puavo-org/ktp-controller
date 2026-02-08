@@ -1,5 +1,8 @@
+# Standard library imports
+import importlib.metadata
 import logging
 
+VERSION = importlib.metadata.version("ktp-controller")
 
 DEFAULT_LOGGING_LEVEL = logging.INFO
 DEFAULT_LOGGING_FORMAT = (
