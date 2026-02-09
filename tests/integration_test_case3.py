@@ -164,7 +164,7 @@ def test_first_scheduled_exam_download():
     response = ktp_controller.examomatic.client._post(
         "/mock/set_exam_info",
         json={
-            "exam_title": "Integraatiotestikoe1",
+            "exam_title": "Ääkköskoe välilyönneillä integraatiotestaukseen",
             "start_time": (utcnow + datetime.timedelta(seconds=60)).isoformat(),
             "duration_seconds": 60,
             "lock_time_duration_seconds": 30,
@@ -264,7 +264,7 @@ def test_first_scheduled_exam_gets_started():
             for e in status_reports[-1]["abitti2"]["exams"]
             if e["started_at"] is not None
         ]
-        if "Integraatiotestikoe1" in started_exam_titles:
+        if "Ääkköskoe välilyönneillä integraatiotestaukseen" in started_exam_titles:
             exam_package_is_running = True
             break
         time.sleep(1)
@@ -290,8 +290,8 @@ def test_student_access_code_is_changed_when_scheduled_exam_is_started():
 def test_student1_take_scheduled_exam(student1):
     student1.relogin()  # Exam has changed, relogin is needed.
     student1.start_exam(
-        exam_uuid="c574f93a-ac4d-4441-8679-ca47e565fb7b",
-        exam_title="Integraatiotestikoe1",
+        exam_uuid="53d3594c-cde8-43af-ae00-403ed134eba3",
+        exam_title="Ääkköskoe välilyönneillä integraatiotestaukseen",
         access_code=student_access_code,
         expect_exam_instructions=False,  # Already seen in this browsing session, Abitti2 seems to show it only once.
     )
@@ -301,8 +301,8 @@ def test_student1_take_scheduled_exam(student1):
 def test_student2_take_scheduled_exam_but_do_not_end_it(student2):
     student2.relogin()  # Exam has changed, relogin is needed.
     student2.start_exam(
-        exam_uuid="c574f93a-ac4d-4441-8679-ca47e565fb7b",
-        exam_title="Integraatiotestikoe1",
+        exam_uuid="53d3594c-cde8-43af-ae00-403ed134eba3",
+        exam_title="Ääkköskoe välilyönneillä integraatiotestaukseen",
         access_code=student_access_code,
         expect_exam_instructions=False,  # Already seen in this browsing session, Abitti2 seems to show it only once.
     )
@@ -368,7 +368,7 @@ def test_first_scheduled_exam_does_not_get_stopped_until_second_exam_is_locked(
     response = ktp_controller.examomatic.client._post(
         "/mock/set_exam_info",
         json={
-            "exam_title": "Integraatiotestikoe2",
+            "exam_title": "Integraatiotestikoe1",
             "start_time": (utcnow + datetime.timedelta(seconds=30)).isoformat(),
             "duration_seconds": 30,
             "lock_time_duration_seconds": 30,
