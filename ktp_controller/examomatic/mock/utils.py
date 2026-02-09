@@ -32,6 +32,14 @@ _EXAM_FILE_INFOS = {
         "file_uuid": "90d99c0a-87b2-49b3-b791-3090550f6345",  # UUID from oma.abitti.fi/school/exams
         "decrypt_code": "kiljaus sahuri maagi edustua",
     },
+    "Ääkköskoe välilyönneillä integraatiotestaukseen": {
+        "exam_title": "Ääkköskoe välilyönneillä integraatiotestaukseen",
+        "file_name": "exam_kk_skoe_v_lily_nneill_integraatiotestaukseen.mex",
+        "file_size": 15949279,
+        "file_sha256": "d4563210b1b0aaf14a33858bc50fd9a78d8c3ba26ab804d0940b695a697f2223",
+        "file_uuid": "53d3594c-cde8-43af-ae00-403ed134eba3",  # UUID from oma.abitti.fi/school/exams
+        "decrypt_code": "sanelin hurskaus sermi dokaus",
+    },
 }
 
 
