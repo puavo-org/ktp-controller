@@ -175,7 +175,7 @@ def send_status_report(
 ) -> typing.Any:
     data = (
         ktp_controller.examomatic.schemas.StatusReport.model_validate(status_report)
-        .json()
+        .model_dump_json(ensure_ascii=True)
         .encode("ascii")
     )
 
