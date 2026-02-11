@@ -402,7 +402,7 @@ class Agent:
 
         return True
 
-    def __start_answer_transfer_task(
+    def __ensure_answer_transfer_task_is_running(
         self, current_exam_package: typing.Dict[str, typing.Any]
     ):
         if self.__answer_transfer_task is None:
@@ -434,8 +434,6 @@ class Agent:
         current_exam_package: typing.Dict[str, typing.Any],
     ) -> bool:
         _LOGGER.info("Starting exam package: %r", current_exam_package)
-
-        self.__start_answer_transfer_task(current_exam_package)
 
         if self.__is_auto_control_enabled:
             if self.__old_security_code is None:
@@ -656,6 +654,9 @@ class Agent:
         }
 
         state = current_exam_package["state"]
+        if state == 'running':
+            self.__ensure_answer_transfer_task_is_running(current_exam_package)
+
         transition = state_transitions[state]
 
         if trigger not in transition["valid_triggers"]:
