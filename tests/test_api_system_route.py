@@ -11,7 +11,7 @@ import ktp_controller.messages
 from ktp_controller.api import models
 
 # Relative imports
-from .utils import client, testdb, db_engine, utcnow, assert_response
+from .utils import assert_response
 
 # Each test function executes in a separate session, each session
 # starts with an empty database.
