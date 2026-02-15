@@ -20,7 +20,7 @@ check-alembic:
 
 .PHONY: check
 check: check-format check-alembic
-	uv run ruff check --exclude tests/
+	uv run ruff check
 
 .PHONY: pytest
 pytest:
