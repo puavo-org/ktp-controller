@@ -10,6 +10,8 @@ import ktp_controller.abitti2.client
 import ktp_controller.api.client
 import ktp_controller.examomatic.client
 
+# Relative imports
+from .utils import assert_odotusaulakoe_is_running, assert_status_report_is_fresh
 
 # Test functions are and must be executed sequentially. In unit tests,
 # it's not a good idea to build tests which depend on each other, but
@@ -19,31 +21,6 @@ import ktp_controller.examomatic.client
 
 
 scheduled_exam_package = None
-
-
-def _assert_odotusaulakoe_is_running(timeout: int = 30):
-    odotusaulakoe_is_running = False
-    for i in range(timeout):
-        state = ktp_controller.examomatic.client._post("/mock/get_state").json()
-        status_reports = state["status_reports"]
-        started_exam_titles = [
-            e["title"]
-            for e in status_reports[-1]["abitti2"]["exams"]
-            if e["started_at"] is not None
-        ]
-        if len(started_exam_titles) > 0:
-            if "Odotusaulakoe" in started_exam_titles:
-                odotusaulakoe_is_running = True
-                break
-        time.sleep(1)
-    assert odotusaulakoe_is_running
-
-
-def _is_fresh_status_report(status_report, max_age_secs: int = 6) -> bool:
-    return (
-        ktp_controller.utils.utcnow()
-        - datetime.datetime.fromisoformat(status_report["created_at"])
-    ).total_seconds() <= max_age_secs
 
 
 def test_abitti2_reset():
@@ -99,13 +76,13 @@ def test_status_reporting():
             break
         time.sleep(1)
     # Check that the last received status report is fresh.
-    assert _is_fresh_status_report(status_reports[-1])
+    assert_status_report_is_fresh(status_reports[-1])
 
 
 def test_odotusaulakoe_is_running():
     # Wait until Odotusaulakoe is running. (It takes some time
     # before Abitti2 gets the exam up and running after a reset.)
-    _assert_odotusaulakoe_is_running(timeout=30)
+    assert_odotusaulakoe_is_running(timeout=30)
 
 
 def test_first_scheduled_exam_download():
@@ -172,7 +149,7 @@ def test_scheduled_exam_gets_started():
     last_status_report = ktp_controller.examomatic.client._post(
         "/mock/get_state"
     ).json()["status_reports"][-1]
-    assert _is_fresh_status_report(last_status_report)
+    assert_status_report_is_fresh(last_status_report)
     assert "Odotusaulakoe" in [
         e["title"]
         for e in last_status_report["abitti2"]["exams"]
@@ -253,4 +230,4 @@ def test_scheduled_exam_gets_archived():
 def test_odotusaulakoe_is_running_again():
     # Wait until Odotusaulakoe is running again. (It takes some time
     # before Abitti2 gets the exam up and running after a reset.)
-    _assert_odotusaulakoe_is_running(timeout=30)
+    assert_odotusaulakoe_is_running(timeout=30)

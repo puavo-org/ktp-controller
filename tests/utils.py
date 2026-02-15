@@ -3,6 +3,7 @@ import datetime
 import enum
 import random
 import sys
+import time
 
 # Third-party imports
 from sqlalchemy import create_engine
@@ -15,6 +16,8 @@ import selenium.webdriver
 from ktp_controller.api.main import APP
 from ktp_controller.api.database import get_db
 from ktp_controller.api.models import Base
+import ktp_controller.examomatic.client
+import ktp_controller.utils
 
 
 @pytest.fixture(scope="session")
@@ -129,3 +132,28 @@ def random_artificial_hetu(gender: Gender | None = None):
     q = HETU_CHECK_CHARS[int(f"{ddmmyy}{zzz}") % 31]
 
     return f"{ddmmyy}{c}{zzz}{q}"
+
+
+def assert_odotusaulakoe_is_running(timeout: int = 30):
+    odotusaulakoe_is_running = False
+    for i in range(timeout):
+        state = ktp_controller.examomatic.client._post("/mock/get_state").json()
+        status_reports = state["status_reports"]
+        started_exam_titles = [
+            e["title"]
+            for e in status_reports[-1]["abitti2"]["exams"]
+            if e["started_at"] is not None
+        ]
+        if len(started_exam_titles) > 0:
+            if "Odotusaulakoe" in started_exam_titles:
+                odotusaulakoe_is_running = True
+                break
+        time.sleep(1)
+    assert odotusaulakoe_is_running
+
+
+def assert_status_report_is_fresh(status_report, max_age_secs: int = 30) -> bool:
+    return (
+        ktp_controller.utils.utcnow()
+        - datetime.datetime.fromisoformat(status_report["created_at"])
+    ).total_seconds() <= max_age_secs
