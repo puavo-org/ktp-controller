@@ -5,7 +5,6 @@ import re
 import time
 
 # Third-party imports
-import pytest
 
 # Internal imports
 import ktp_controller.abitti2.client
@@ -15,9 +14,6 @@ import ktp_controller.examomatic.client
 import ktp_controller.schemas
 
 # Relative imports
-from .bot import Abitti2Student
-from .utils import browser_chrome
-from .utils import browser_firefox
 
 # Test functions are and must be executed sequentially. In unit tests,
 # it's not a good idea to build tests which depend on each other, but
@@ -28,16 +24,6 @@ from .utils import browser_firefox
 
 scheduled_exam_package = None
 student_access_code: ktp_controller.schemas.StudentAccessCode | None = None
-
-
-@pytest.fixture(scope="session")
-def student1(browser_firefox):
-    yield Abitti2Student(browser_firefox)
-
-
-@pytest.fixture(scope="session")
-def student2(browser_chrome):
-    yield Abitti2Student(browser_chrome)
 
 
 def _assert_odotusaulakoe_is_running(timeout: int = 30):
