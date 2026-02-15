@@ -20,9 +20,6 @@ from .utils import assert_odotusaulakoe_is_running, assert_status_report_is_fres
 # testrun.
 
 
-scheduled_exam_package = None
-
-
 def test_abitti2_reset():
     # Reset Abitti2 to ensure it's in a well known state.
     ktp_controller.abitti2.client.reset()
@@ -142,9 +139,7 @@ def test_api_has_copies_of_status_reports():
     assert last_status_report_seen_by_api in state["status_reports"]
 
 
-def test_scheduled_exam_gets_started():
-    global scheduled_exam_package
-
+def test_scheduled_exam_gets_started(testrunstate):
     # Odotusaulakoe is still running.
     last_status_report = ktp_controller.examomatic.client._post(
         "/mock/get_state"
@@ -188,37 +183,39 @@ def test_scheduled_exam_gets_started():
         time.sleep(1)
     assert exam_package_is_running
 
-    scheduled_exam_package = ktp_controller.api.client.get_current_exam_package()
+    testrunstate.scheduled_exam_package1 = (
+        ktp_controller.api.client.get_current_exam_package()
+    )
 
-    assert scheduled_exam_package["state"] == "running"
+    assert testrunstate.scheduled_exam_package1["state"] == "running"
 
 
-def test_scheduled_exam_gets_stopped():
-    global scheduled_exam_package
-
+def test_scheduled_exam_gets_stopped(testrunstate):
     # Wait until it's stopped.
     exam_package_is_stopped = False
     for i in range(90):
-        scheduled_exam_package = ktp_controller.api.client.get_scheduled_exam_package(
-            scheduled_exam_package["external_id"]
+        testrunstate.scheduled_exam_package1 = (
+            ktp_controller.api.client.get_scheduled_exam_package(
+                testrunstate.scheduled_exam_package1["external_id"]
+            )
         )
-        if scheduled_exam_package["state"] == "stopped":
+        if testrunstate.scheduled_exam_package1["state"] == "stopped":
             exam_package_is_stopped = True
             break
         time.sleep(1)
     assert exam_package_is_stopped
 
 
-def test_scheduled_exam_gets_archived():
-    global scheduled_exam_package
-
+def test_scheduled_exam_gets_archived(testrunstate):
     # Wait until it's archived.
     exam_package_is_archived = False
     for i in range(90):
-        scheduled_exam_package = ktp_controller.api.client.get_scheduled_exam_package(
-            scheduled_exam_package["external_id"]
+        testrunstate.scheduled_exam_package1 = (
+            ktp_controller.api.client.get_scheduled_exam_package(
+                testrunstate.scheduled_exam_package1["external_id"]
+            )
         )
-        if scheduled_exam_package["state"] == "archived":
+        if testrunstate.scheduled_exam_package1["state"] == "archived":
             exam_package_is_archived = True
             break
         time.sleep(1)

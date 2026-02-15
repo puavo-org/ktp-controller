@@ -23,10 +23,6 @@ from .utils import assert_odotusaulakoe_is_running, assert_status_report_is_fres
 # testrun.
 
 
-scheduled_exam_package = None
-student_access_code: ktp_controller.schemas.StudentAccessCode | None = None
-
-
 def test_abitti2_reset():
     # Reset Abitti2 to ensure it's in a well known state.
     ktp_controller.abitti2.client.reset()
@@ -89,32 +85,36 @@ def test_odotusaulakoe_is_running():
     assert_odotusaulakoe_is_running(timeout=30)
 
 
-def test_student_access_code_is_initially_1234_xx():
-    global student_access_code
-    student_access_code = ktp_controller.api.client.get_student_access_code()
-    assert student_access_code is not None
-    assert (student_access_code.key_code, student_access_code.verification_code) == (
+def test_student_access_code_is_initially_1234_xx(testrunstate):
+    testrunstate.student_access_code = (
+        ktp_controller.api.client.get_student_access_code()
+    )
+    assert testrunstate.student_access_code is not None
+    assert (
+        testrunstate.student_access_code.key_code,
+        testrunstate.student_access_code.verification_code,
+    ) == (
         "1234",
         "xx",
     )
 
 
-def test_student1_take_waiting_lobby_exam(student1):
+def test_student1_take_waiting_lobby_exam(student1, testrunstate):
     student1.load()
     student1.start_exam(
         exam_uuid="390e7988-ff0e-42b4-a2e6-d13a969e7103",
         exam_title="Odotusaulakoe",
-        access_code=student_access_code,
+        access_code=testrunstate.student_access_code,
     )
     student1.end_exam()
 
 
-def test_student2_take_waiting_lobby_exam_but_do_not_end_it(student2):
+def test_student2_take_waiting_lobby_exam_but_do_not_end_it(student2, testrunstate):
     student2.load()
     student2.start_exam(
         exam_uuid="390e7988-ff0e-42b4-a2e6-d13a969e7103",
         exam_title="Odotusaulakoe",
-        access_code=student_access_code,
+        access_code=testrunstate.student_access_code,
     )
 
 
@@ -186,9 +186,7 @@ def test_last_status_report_has_abitti2_domain():
     )
 
 
-def test_scheduled_exam_gets_started():
-    global scheduled_exam_package
-
+def test_scheduled_exam_gets_started(testrunstate):
     # Odotusaulakoe is still running.
     last_status_report = ktp_controller.examomatic.client._post(
         "/mock/get_state"
@@ -232,40 +230,41 @@ def test_scheduled_exam_gets_started():
         time.sleep(1)
     assert exam_package_is_running
 
-    scheduled_exam_package = ktp_controller.api.client.get_current_exam_package()
+    testrunstate.scheduled_exam_package1 = (
+        ktp_controller.api.client.get_current_exam_package()
+    )
 
-    assert scheduled_exam_package["state"] == "running"
+    assert testrunstate.scheduled_exam_package1["state"] == "running"
 
 
-def test_student_access_code_is_changed_when_scheduled_exam_is_started():
-    global student_access_code
+def test_student_access_code_is_changed_when_scheduled_exam_is_started(testrunstate):
     new_student_access_code = ktp_controller.api.client.get_student_access_code()
     assert new_student_access_code is not None
-    assert new_student_access_code != student_access_code
+    assert new_student_access_code != testrunstate.student_access_code
     assert (
         new_student_access_code.key_code,
         new_student_access_code.verification_code,
     ) != ("1234", "xx")
-    student_access_code = new_student_access_code
+    testrunstate.student_access_code = new_student_access_code
 
 
-def test_student1_take_scheduled_exam(student1):
+def test_student1_take_scheduled_exam(student1, testrunstate):
     student1.relogin()  # Exam has changed, relogin is needed.
     student1.start_exam(
         exam_uuid="c574f93a-ac4d-4441-8679-ca47e565fb7b",
         exam_title="Integraatiotestikoe1",
-        access_code=student_access_code,
+        access_code=testrunstate.student_access_code,
         expect_exam_instructions=False,  # Already seen in this browsing session, Abitti2 seems to show it only once.
     )
     student1.end_exam()
 
 
-def test_student2_take_scheduled_exam_but_do_not_end_it(student2):
+def test_student2_take_scheduled_exam_but_do_not_end_it(student2, testrunstate):
     student2.relogin()  # Exam has changed, relogin is needed.
     student2.start_exam(
         exam_uuid="c574f93a-ac4d-4441-8679-ca47e565fb7b",
         exam_title="Integraatiotestikoe1",
-        access_code=student_access_code,
+        access_code=testrunstate.student_access_code,
         expect_exam_instructions=False,  # Already seen in this browsing session, Abitti2 seems to show it only once.
     )
 
@@ -307,45 +306,53 @@ def test_status_reports_do_not_contain_student_names(student1, student2):
     )
 
 
-def test_scheduled_exam_does_not_get_stopped_until_student2_ends_exam(student2):
-    global scheduled_exam_package
+def test_scheduled_exam_does_not_get_stopped_until_student2_ends_exam(
+    student2, testrunstate
+):
     utcnow = ktp_controller.utils.utcnow()
 
     until_scheduled_end = (
-        datetime.datetime.fromisoformat(scheduled_exam_package["end_time"]) - utcnow
+        datetime.datetime.fromisoformat(
+            testrunstate.scheduled_exam_package1["end_time"]
+        )
+        - utcnow
     ).total_seconds()
     time.sleep(until_scheduled_end + 10)
 
-    scheduled_exam_package = ktp_controller.api.client.get_scheduled_exam_package(
-        scheduled_exam_package["external_id"]
+    testrunstate.scheduled_exam_package1 = (
+        ktp_controller.api.client.get_scheduled_exam_package(
+            testrunstate.scheduled_exam_package1["external_id"]
+        )
     )
-    assert scheduled_exam_package["state"] == "running"  # Still running.
+    assert testrunstate.scheduled_exam_package1["state"] == "running"  # Still running.
 
     student2.end_exam()
 
     # Wait until it's stopped.
     exam_package_is_stopped = False
     for i in range(30):
-        scheduled_exam_package = ktp_controller.api.client.get_scheduled_exam_package(
-            scheduled_exam_package["external_id"]
+        testrunstate.scheduled_exam_package1 = (
+            ktp_controller.api.client.get_scheduled_exam_package(
+                testrunstate.scheduled_exam_package1["external_id"]
+            )
         )
-        if scheduled_exam_package["state"] == "stopped":
+        if testrunstate.scheduled_exam_package1["state"] == "stopped":
             exam_package_is_stopped = True
             break
         time.sleep(1)
     assert exam_package_is_stopped
 
 
-def test_scheduled_exam_gets_archived():
-    global scheduled_exam_package
-
+def test_scheduled_exam_gets_archived(testrunstate):
     # Wait until it's archived.
     exam_package_is_archived = False
     for i in range(90):
-        scheduled_exam_package = ktp_controller.api.client.get_scheduled_exam_package(
-            scheduled_exam_package["external_id"]
+        testrunstate.scheduled_exam_package1 = (
+            ktp_controller.api.client.get_scheduled_exam_package(
+                testrunstate.scheduled_exam_package1["external_id"]
+            )
         )
-        if scheduled_exam_package["state"] == "archived":
+        if testrunstate.scheduled_exam_package1["state"] == "archived":
             exam_package_is_archived = True
             break
         time.sleep(1)
