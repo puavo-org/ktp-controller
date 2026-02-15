@@ -53,7 +53,7 @@ def client(testdb):
     APP.dependency_overrides.clear()
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def utcnow():
     yield datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
 
