@@ -64,6 +64,7 @@ _COMMANDS = {
     "stop_current_exam_package": _command_api_async_command,
     "archive_current_exam_package": _command_api_async_command,
     "prepare_current_exam_package": _command_api_async_command,
+    "restart": _command_api_async_command,
     "status": _command_status,
 }
 

@@ -43,6 +43,7 @@ class Command(str, enum.Enum):
     START_CURRENT_EXAM_PACKAGE = "start_current_exam_package"
     ARCHIVE_CURRENT_EXAM_PACKAGE = "archive_current_exam_package"
     PREPARE_CURRENT_EXAM_PACKAGE = "prepare_current_exam_package"
+    CRASH_AGENT = "crash_agent"
 
     def __str__(self) -> str:
         return self.value

@@ -1,4 +1,5 @@
 # Standard library imports
+import argparse
 import asyncio
 import contextlib
 import datetime
@@ -7,6 +8,7 @@ import hashlib
 import json
 import logging
 import os.path
+import sys
 import time
 import typing
 import zipfile
@@ -16,6 +18,7 @@ import requests.exceptions
 import websockets
 
 # Internal imports
+from ktp_controller import VERSION
 import ktp_controller.abitti2.client
 import ktp_controller.abitti2.naksu2
 import ktp_controller.abitti2.schemas
@@ -257,7 +260,10 @@ class Agent:
         approx_restart_timeout_sec: int = 5,
         approx_answer_transfer_interval_sec: int = SETTINGS.answer_transfer_interval_sec,
         state: ktp_controller.agent.state.AgentState,
+        is_testbed_mode: bool = False,
     ):
+        self.__is_testbed_mode = is_testbed_mode
+        self.__do_crash = False
         self.__started_at = None
         self.__state = state
         self.__answer_transfer_task = None
@@ -300,6 +306,7 @@ class Agent:
             str(
                 ktp_controller.messages.Command.PREPARE_CURRENT_EXAM_PACKAGE
             ): self.__command_change_current_exam_package_state,
+            str(ktp_controller.messages.Command.CRASH_AGENT): self.__command_crash,
         }
 
     @property
@@ -329,6 +336,24 @@ class Agent:
         return ktp_controller.messages.CommandResultData(
             command_uuid=command_uuid, command_status=command_status
         )
+
+    async def __command_crash(
+        self,
+        command_uuid: str,
+        command_data: ktp_controller.messages.CommandData,
+    ) -> ktp_controller.messages.CommandResultData:
+        if self.__is_testbed_mode:
+            self.__do_crash = True
+            return ktp_controller.messages.CommandResultData(
+                command_uuid=command_uuid,
+                command_status=ktp_controller.messages.CommandStatus.OK,
+            )
+        else:
+            return ktp_controller.messages.CommandResultData(
+                command_uuid=command_uuid,
+                command_status=ktp_controller.messages.CommandStatus.ERROR,
+                error_message="agent is not running in testbed mode",
+            )
 
     async def __command_enable_auto_control(
         self,
@@ -556,6 +581,11 @@ class Agent:
     async def __work_on_current_exam_package(self, *, trigger: Trigger) -> bool:
         utcnow = ktp_controller.utils.utcnow()
         trigger = Trigger(trigger)  # Raises ValueError if trigger is not a Trigger.
+
+        if self.__do_crash:
+            print("CRASH!", file=sys.stderr)
+            _LOGGER.fatal("CRASH!")
+            sys.exit(1)
 
         if trigger.startswith("manual_") and self.__is_auto_control_enabled:
             raise RuntimeError(
@@ -1226,13 +1256,14 @@ class Agent:
                     tg.create_task(self.__maintain_websocket_connection_to_examomatic())
             except* Exception:
                 _LOGGER.exception("Operational failure")
-                _LOGGER.error(
+                _LOGGER.info(
                     "Restart approximately in %d seconds...",
                     self.__approx_restart_timeout_sec,
                 )
                 await asyncio.sleep(self.__approx_restart_timeout_sec)
 
     def run(self):
+        _LOGGER.info("Start!")
         self.__started_at = ktp_controller.utils.utcnow()
 
         # ktp_controller.abitti2.client needs dummy exam package to reset Abitti2.
@@ -1244,9 +1275,9 @@ class Agent:
         return self.__state.model_copy()
 
 
-def _run() -> int:
+def _run(args) -> int:
     agent_state = ktp_controller.agent.state.load_agent_state()
-    agent = Agent(state=agent_state)
+    agent = Agent(state=agent_state, is_testbed_mode=args.testbed_mode)
     try:
         agent.run()
     finally:
@@ -1256,5 +1287,13 @@ def _run() -> int:
 
 
 def run() -> int:
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument("--version", action="version", version=VERSION)
+    parser.add_argument("--testbed-mode", action="store_true", default=False)
+
+    args = parser.parse_args()
+
     with ktp_controller.utils.singleton():
-        return _run()
+        return _run(args)
