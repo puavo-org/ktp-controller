@@ -7,12 +7,13 @@ import yaml
 
 # Internal imports
 from ktp_controller import VERSION
+import ktp_controller.messages
 
 
-async def _command_api_async_command(args) -> int:
+async def _command_api_async_command(command: ktp_controller.messages.Command) -> int:
     import ktp_controller.api.client
 
-    return ktp_controller.api.client.async_command(args.COMMAND)
+    return ktp_controller.api.client.async_command(command)
 
 
 def _print_as_yaml(obj):
@@ -25,7 +26,7 @@ def _print_as_yaml(obj):
     )
 
 
-async def _command_status(args) -> int:
+async def _command_status(command: ktp_controller.messages.Command) -> int:
     import ktp_controller.api.client
 
     current_exam_package = ktp_controller.api.client.get_current_exam_package()
@@ -64,12 +65,12 @@ _COMMANDS = {
     "stop_current_exam_package": _command_api_async_command,
     "archive_current_exam_package": _command_api_async_command,
     "prepare_current_exam_package": _command_api_async_command,
-    "restart": _command_api_async_command,
+    "crash_agent": _command_api_async_command,
     "status": _command_status,
 }
 
 
-async def _dispatch_command(args) -> int:
+async def _dispatch_command(command: ktp_controller.messages.Command) -> int:
     # Lazily imported here to avoid long start-up time of this script.
     import websockets
     import ktp_controller.api.client
@@ -81,7 +82,7 @@ async def _dispatch_command(args) -> int:
     async with websockets.connect(
         ktp_controller.api.client.get_ui_websock_url()
     ) as ui_websock:
-        command_uuid = await _COMMANDS[args.COMMAND](args)
+        command_uuid = await _COMMANDS[command](command)
         if command_uuid is not None:
             async for data in ui_websock:
                 try:
@@ -104,10 +105,14 @@ async def _dispatch_command(args) -> int:
                 break
 
     if command_result_data is not None and not command_result_data.command_status.is_ok:
-        print(f"ERROR: {args.COMMAND} failed: {command_result_data.error_message}")
+        print(f"ERROR: {command} failed: {command_result_data.error_message}")
         return 1
 
     return 0
+
+
+def run_command(command: ktp_controller.messages.Command) -> int:
+    return asyncio.run(_dispatch_command(command))
 
 
 def run() -> int:
@@ -121,4 +126,4 @@ def run() -> int:
 
     args = parser.parse_args()
 
-    return asyncio.run(_dispatch_command(args))
+    return run_command(args.COMMAND)
