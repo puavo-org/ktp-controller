@@ -257,7 +257,7 @@ class Agent:
         approx_api_ping_interval_sec: int = 5,
         approx_api_status_report_interval_sec: int = 30,
         approx_examomatic_ping_interval_sec: int = SETTINGS.examomatic_ping_interval_sec,
-        approx_restart_timeout_sec: int = 5,
+        approx_reconnect_timeout_sec: int = 5,
         approx_answer_transfer_interval_sec: int = SETTINGS.answer_transfer_interval_sec,
         state: ktp_controller.agent.state.AgentState,
         is_testbed_mode: bool = False,
@@ -273,7 +273,7 @@ class Agent:
             approx_api_status_report_interval_sec
         )
         self.__approx_examomatic_ping_interval_sec = approx_examomatic_ping_interval_sec
-        self.__approx_restart_timeout_sec = approx_restart_timeout_sec
+        self.__approx_reconnect_timeout_sec = approx_reconnect_timeout_sec
         self.__approx_answer_transfer_interval_sec = approx_answer_transfer_interval_sec
 
         # Abitti2 reports these
@@ -1110,9 +1110,9 @@ class Agent:
                 _LOGGER.error(
                     "Reconnect to %s in approximately %d seconds...",
                     name,
-                    self.__approx_restart_timeout_sec,
+                    self.__approx_reconnect_timeout_sec,
                 )
-                await asyncio.sleep(self.__approx_restart_timeout_sec)
+                await asyncio.sleep(self.__approx_reconnect_timeout_sec)
             finally:
                 self.__connection_stats.pop(name, None)
 
@@ -1248,21 +1248,10 @@ class Agent:
         _LOGGER.info("refreshed exams successfully")
 
     async def forever(self):
-        while True:
-            _LOGGER.info("Start!")
-
-            try:
-                async with asyncio.TaskGroup() as tg:
-                    tg.create_task(self.__maintain_websocket_connection_to_api())
-                    tg.create_task(self.__maintain_websocket_connection_to_abitti2())
-                    tg.create_task(self.__maintain_websocket_connection_to_examomatic())
-            except* Exception:
-                _LOGGER.exception("Operational failure")
-                _LOGGER.info(
-                    "Restart approximately in %d seconds...",
-                    self.__approx_restart_timeout_sec,
-                )
-                await asyncio.sleep(self.__approx_restart_timeout_sec)
+        async with asyncio.TaskGroup() as tg:
+            tg.create_task(self.__maintain_websocket_connection_to_api())
+            tg.create_task(self.__maintain_websocket_connection_to_abitti2())
+            tg.create_task(self.__maintain_websocket_connection_to_examomatic())
 
     def run(self):
         _LOGGER.info("Start!")
