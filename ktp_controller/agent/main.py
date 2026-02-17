@@ -994,13 +994,13 @@ class Agent:
         try:
             ktp_controller.examomatic.client.send_status_report(status_report)
             status_report["reported_at"] = ktp_controller.utils.utcnow_str()
-            _LOGGER.info("sent status report to Exam-O-Matic")
+            _LOGGER.debug("sent status report to Exam-O-Matic")
         except Exception:
             _LOGGER.exception("failed to send status report to Exam-O-Matic")
             status_report["reported_at"] = None
 
         ktp_controller.api.client.send_status_report(status_report)
-        _LOGGER.info("sent status report to KTP Controller API")
+        _LOGGER.debug("sent status report to KTP Controller API")
 
     async def __handle_abitti2_exams_message(
         self,
@@ -1067,7 +1067,7 @@ class Agent:
                 _LOGGER.warning("unhandled %r message from Abitti2", message_type)
                 continue
 
-            _LOGGER.info("received %r message from Abitti2", message_type)
+            _LOGGER.debug("received %r message from Abitti2", message_type)
 
             try:
                 await handler(websock, received_at, message)
