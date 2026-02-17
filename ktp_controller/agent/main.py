@@ -1062,6 +1062,7 @@ class Agent:
                     "security-code": self.__handle_abitti2_security_code_message,
                     "stats": self.__handle_abitti2_stats_message,
                     "exams": self.__handle_abitti2_exams_message,
+                    "servers": None,  # Simply ignored for now
                 }[message_type]
             except KeyError:
                 _LOGGER.warning("unhandled %r message from Abitti2", message_type)
@@ -1069,14 +1070,15 @@ class Agent:
 
             _LOGGER.debug("received %r message from Abitti2", message_type)
 
-            try:
-                await handler(websock, received_at, message)
-            except Exception:
-                _LOGGER.exception(
-                    "failed to handle %r message from Abitti2: %r",
-                    message_type,
-                    message,
-                )
+            if handler is not None:
+                try:
+                    await handler(websock, received_at, message)
+                except Exception:
+                    _LOGGER.exception(
+                        "failed to handle %r message from Abitti2: %r",
+                        message_type,
+                        message,
+                    )
 
     async def __maintain_websocket_connection(
         self,
