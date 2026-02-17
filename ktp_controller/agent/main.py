@@ -254,7 +254,7 @@ class Agent:
     def __init__(
         self,
         *,
-        approx_api_ping_interval_sec: int = 15,
+        approx_api_ping_interval_sec: int = 5,
         approx_api_status_report_interval_sec: int = 30,
         approx_examomatic_ping_interval_sec: int = SETTINGS.examomatic_ping_interval_sec,
         approx_restart_timeout_sec: int = 5,
