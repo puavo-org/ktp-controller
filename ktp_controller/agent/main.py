@@ -561,6 +561,13 @@ class Agent:
     ) -> None:
         is_final = ktp_controller.examomatic.client.IsFinal(is_final)
         status_report = ktp_controller.api.client.get_last_status_report()
+        if status_report["abitti2"]["answer_count"] is None:
+            _LOGGER.warning(
+                "I don't know yet if there are answers to transfer, "
+                "but I won't take the risk of trying to download them from Abitti2, "
+                "because Abitti2 can block indefinitely if there are no answers."
+            )
+            return
         if status_report["abitti2"]["answer_count"] > 0:
             _transfer_answers(
                 current_exam_package["external_id"],

@@ -29,7 +29,7 @@ class _Student(ktp_controller.pydantic.BaseModel):
 
 
 class _Abitti2(ktp_controller.pydantic.BaseModel):
-    answer_count: ktp_controller.pydantic.StrictNonNegativeInt
+    answer_count: ktp_controller.pydantic.StrictNonNegativeInt | None
     domain: pydantic.StrictStr | None
     student_access_code: ktp_controller.schemas.StudentAccessCode | None
     supervisor_username: pydantic.StrictStr
