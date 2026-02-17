@@ -8,6 +8,7 @@ import hashlib
 import json
 import logging
 import os.path
+import signal
 import sys
 import time
 import typing
@@ -37,6 +38,8 @@ import ktp_controller.schemas
 from ktp_controller.settings import SETTINGS
 
 _LOGGER = logging.getLogger(__file__)
+
+_SHUTDOWN_EVENT = asyncio.Event()
 
 
 def _validate_security_code(security_code: typing.Dict[str, str]) -> None:
@@ -571,7 +574,7 @@ class Agent:
     async def __transfer_non_final_answers_periodically(
         self, current_exam_package: typing.Dict[str, typing.Any]
     ):
-        while True:
+        while not _SHUTDOWN_EVENT.is_set():
             self.__transfer_answers(
                 current_exam_package,
                 is_final=ktp_controller.examomatic.client.IsFinal.UNKNOWN,
@@ -731,14 +734,14 @@ class Agent:
         return changed
 
     async def __send_pings_to_api(self, websock):
-        while True:
+        while not _SHUTDOWN_EVENT.is_set():
             message = ktp_controller.messages.PingMessage().model_dump_json()
             await websock.send(message)
             _LOGGER.debug("--> API: %s", message)
             await asyncio.sleep(self.__approx_api_ping_interval_sec)
 
     async def __send_status_reports_to_api(self, websock):
-        while True:
+        while not _SHUTDOWN_EVENT.is_set():
             message = ktp_controller.messages.StatusReportMessage(
                 data=ktp_controller.messages.StatusReportData(
                     is_auto_control_enabled=self.__is_auto_control_enabled
@@ -749,7 +752,7 @@ class Agent:
             await asyncio.sleep(self.__approx_api_status_report_interval_sec)
 
     async def __send_pings_to_examomatic(self, websock):
-        while True:
+        while not _SHUTDOWN_EVENT.is_set():
             message = json.dumps(
                 {
                     "type": "ping",
@@ -1088,7 +1091,7 @@ class Agent:
         connection_stats_class: type[ktp_controller.agent.stats.ConnectionStats],
         additional_headers: typing.Dict[str, str] | None = None,
     ):
-        while True:
+        while not _SHUTDOWN_EVENT.is_set():
             try:
                 async with websockets.connect(
                     url,
@@ -1247,19 +1250,56 @@ class Agent:
         _LOGGER.info("refreshed exams successfully")
 
     async def forever(self):
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(self.__maintain_websocket_connection_to_api())
-            tg.create_task(self.__maintain_websocket_connection_to_abitti2())
-            tg.create_task(self.__maintain_websocket_connection_to_examomatic())
+        _LOGGER.info("Started.")
+        loop = asyncio.get_running_loop()
+        main_task = asyncio.current_task()
+
+        def trigger_shutdown(signum):
+            _LOGGER.info("Received signal %r, stopping...", signum)
+            _SHUTDOWN_EVENT.set()
+            main_task.cancel()
+
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            loop.add_signal_handler(sig, trigger_shutdown, sig)
+
+        try:
+            async with asyncio.TaskGroup() as tg:
+                tg.create_task(self.__maintain_websocket_connection_to_api())
+                tg.create_task(self.__maintain_websocket_connection_to_abitti2())
+                tg.create_task(self.__maintain_websocket_connection_to_examomatic())
+
+                # Keep the main task alive while workers run
+                await asyncio.Event().wait()
+        except* asyncio.CancelledError:
+            _LOGGER.info("Stopping all tasks...")
+            try:
+                # Give the tasks 5 seconds to run their 'finally' blocks
+                await asyncio.wait_for(self.__cancel_all_tasks(), timeout=5.0)
+            except asyncio.TimeoutError:
+                _LOGGER.error("Task cleanup exceeded timeout! Forcefully exiting.")
+            _LOGGER.info("All tasks have been stopped.")
+        except* Exception:
+            _LOGGER.exception("Operational error!")
+        finally:
+            _LOGGER.info("Stopped.")
+
+    async def __cancel_all_tasks(self):
+        """Logic to ensure all pending tasks are accounted for."""
+        tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+        for task in tasks:
+            task.cancel()
+
+        # Wait for all tasks to acknowledge cancellation
+        await asyncio.gather(*tasks, return_exceptions=True)
 
     def run(self):
-        _LOGGER.info("Start!")
         self.__started_at = ktp_controller.utils.utcnow()
 
         # ktp_controller.abitti2.client needs dummy exam package to reset Abitti2.
         _create_dummy_exam_package_file()
 
-        asyncio.run(self.forever())
+        with contextlib.suppress(asyncio.CancelledError):
+            asyncio.run(self.forever())
 
     def get_state(self) -> ktp_controller.agent.state.AgentState:
         return self.__state.model_copy()
@@ -1285,5 +1325,9 @@ def run() -> int:
 
     args = parser.parse_args()
 
-    with ktp_controller.utils.singleton():
-        return _run(args)
+    _LOGGER.info("KTP Controller Agent v%s", VERSION)
+    try:
+        with ktp_controller.utils.singleton():
+            return _run(args)
+    finally:
+        _LOGGER.info("Bye.")
