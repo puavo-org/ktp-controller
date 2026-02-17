@@ -583,7 +583,6 @@ class Agent:
         trigger = Trigger(trigger)  # Raises ValueError if trigger is not a Trigger.
 
         if self.__do_crash:
-            print("CRASH!", file=sys.stderr)
             _LOGGER.fatal("CRASH!")
             sys.exit(1)
 
