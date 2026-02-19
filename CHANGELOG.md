@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- [New status report format](ktp_controller/examomatic/schemas.py)
+- [New status report format](ktp_controller/examomatic/schemas.py#L50)
   - [Example1](docs/status_report_v1_example1.json)
   - [Example2](docs/status_report_v1_example2.json)
   - [Example3](docs/status_report_v1_example3.json)
