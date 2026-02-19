@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Validation of status reports before sending
 - Signal handling and robust asynchronous task cleanup
 - `--version` option to all command line programs
-- Added new environment variable `KTP_CONTROLLER_ABITTI2_ALLOW_STUDENTS_TO_USE_BROWSERS` to allow overriding default (True) behavior
+- Added new environment variable `KTP_CONTROLLER_ABITTI2_ALLOW_STUDENTS_TO_USE_BROWSERS` to allow overriding default (False) behavior
 
 ### Removed
 
@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Less verbose logging by default
 - Faster reaction time to Abitti2 state changes
+- By default, do not allow students to use browsers
 
 ## [0.2.1] - 2026-02-11
 

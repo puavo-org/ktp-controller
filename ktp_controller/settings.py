@@ -94,7 +94,7 @@ class Settings(BaseSettings):
     api_port: PositiveInt = 8000
     logging_level: str = "INFO"
     db_path: str = "ktp_controller.sqlite"
-    abitti2_allow_students_to_use_browsers: StrictBool = True
+    abitti2_allow_students_to_use_browsers: StrictBool = False
 
     @field_validator("examomatic_use_tls", mode="before")
     @classmethod
