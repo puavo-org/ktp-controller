@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [UNRELEASED]
+
+### Added
+
+- New status report format
+- Validation of status reports before sending
+- Signal handling and robust asynchronous task cleanup
+- `--version` option to all command line programs
+
+### Removed
+
+- Support for legacy status report format
+
+## Changed
+
+- Less verbose logging by default
+- Faster reaction time to Abitti2 state changes
+
 ## [0.2.1] - 2026-02-11
 
 ### Fixed
