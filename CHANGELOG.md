@@ -6,11 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [UNRELEASED]
+## [0.3.0a1] - 2026-02-19
 
 ### Added
 
-- New status report format
+- [New status report format](ktp_controller/examomatic/schemas.py)
+  - [Example1](docs/status_report_v1_example1.json)
+  - [Example2](docs/status_report_v1_example2.json)
+  - [Example3](docs/status_report_v1_example3.json)
 - Validation of status reports before sending
 - Signal handling and robust asynchronous task cleanup
 - `--version` option to all command line programs
