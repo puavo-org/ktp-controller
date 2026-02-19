@@ -94,6 +94,7 @@ class Settings(BaseSettings):
     api_port: PositiveInt = 8000
     logging_level: str = "INFO"
     db_path: str = "ktp_controller.sqlite"
+    abitti2_allow_students_to_use_browsers: StrictBool = True
 
     @field_validator("examomatic_use_tls", mode="before")
     @classmethod
@@ -104,6 +105,17 @@ class Settings(BaseSettings):
             if v.lower().strip() in ["no", "n", "false", "0"]:
                 return False
             raise ValueError("invalid examomatic_use_tls value", v)
+        return v
+
+    @field_validator("abitti2_allow_students_to_use_browsers", mode="before")
+    @classmethod
+    def _validate_abitti2_allow_students_to_use_browsers(cls, v) -> typing.Any:
+        if isinstance(v, str):
+            if v.lower().strip() in ["yes", "y", "true", "1"]:
+                return True
+            if v.lower().strip() in ["no", "n", "false", "0"]:
+                return False
+            raise ValueError("invalid abitti2_allow_students_to_use_browsers value", v)
         return v
 
     @classmethod

@@ -948,7 +948,10 @@ class Agent:
         except ValueError:
             self.__last_received_students = None
         else:
-            if self.__is_auto_control_enabled:
+            if (
+                self.__is_auto_control_enabled
+                and SETTINGS.abitti2_allow_students_to_use_browsers
+            ):
                 _allow_students_to_use_browsers(self.__last_received_students)
 
         self.__last_received_answer_count = message["data"]["answerPaperCount"]
