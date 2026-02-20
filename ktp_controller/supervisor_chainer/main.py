@@ -15,12 +15,16 @@ def write_stderr(s):
     sys.stderr.flush()
 
 
-def _supervisorctl(command, conf_filepath, *args):
+def _supervisorctl(command, conf_filepath, *args) -> bool:
     with open(os.devnull, "wb") as devnull:
-        subprocess.check_call(
-            ["supervisorctl", "-c", conf_filepath, command] + list(args),
-            stdout=devnull,
-        )
+        try:
+            subprocess.check_call(
+                ["supervisorctl", "-c", conf_filepath, command] + list(args),
+                stdout=devnull,
+            )
+        except subprocess.CalledProcessError:
+            return False
+        return True
 
 
 def listen_forever():
@@ -76,8 +80,8 @@ def listen_forever():
                 processnames.pop(i + 1)
                 waited_processname = payload["processname"]
             elif next_processname not in started_processnames:
-                _supervisorctl("start", conf_filepath, next_processname)
-                started_processnames.add(next_processname)
+                if _supervisorctl("start", conf_filepath, next_processname):
+                    started_processnames.add(next_processname)
         elif headers["eventname"] in (
             "PROCESS_STATE_EXITED",
             "PROCESS_STATE_STOPPED",
