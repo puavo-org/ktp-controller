@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.3.0a1] - 2026-02-19
+## [UNRELEASED]
 
 ### Added
 
@@ -18,16 +18,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Signal handling and robust asynchronous task cleanup
 - `--version` option to all command line programs
 - Added new environment variable `KTP_CONTROLLER_ABITTI2_ALLOW_STUDENTS_TO_USE_BROWSERS` to allow overriding default (`False`) behavior
+- Puavo OS: `puavo-ers-naksu2` and `puavo-ers-abitti2server` are now part of the supervised run
 
 ### Removed
 
 - Support for legacy status report format
 
-## Changed
+### Changed
 
 - Less verbose logging by default
+- Log files are preserved from every run.
 - Faster reaction time to Abitti2 state changes
 - By default, do not allow students to use browsers
+
+### Fixed
+
+- Sub-component supervision, i.e. agent and API are guaranteed to get
+  restarted should they crash for any reason.
+
 
 ## [0.2.1] - 2026-02-11
 
