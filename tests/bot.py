@@ -88,8 +88,10 @@ class Abitti2Student(_Base):
         self.find_not((By.CSS_SELECTOR, 'div[data-testid="wait-for-approval"]'))
 
         for i, c in enumerate(access_code.key_code):
+            self.click((By.ID, f"keycode-input-{i}"))
             self.enter_text((By.ID, f"keycode-input-{i}"), c)
         for i, c in enumerate(access_code.verification_code):
+            self.click((By.ID, f"autorization-code-input-{i}"))
             self.enter_text((By.ID, f"autorization-code-input-{i}"), c)  # Typo by YTL
 
         self.find((By.CSS_SELECTOR, 'div[data-testid="wait-for-approval"]'))
