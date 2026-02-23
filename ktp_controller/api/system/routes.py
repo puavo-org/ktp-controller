@@ -125,7 +125,19 @@ async def _get_last_status_report(
         .one_or_none()
     )
 
-    return None if db_status_report is None else db_status_report.raw_data
+    if db_status_report is None:
+        return None
+
+    try:
+        return schemas.StatusReport.model_validate(db_status_report.raw_data)
+    except pydantic.ValidationError:
+        # StatusReport table contains temporary volatile data, doing
+        # data migrations is not worth it. Hence, we might have
+        # "invalid" old data there if the system just restarted after
+        # an upgrade. If the latest data is invalid, caller just needs
+        # to be more patient, wait couple of seconds, and we should
+        # have a fresh valid status report available.
+        return None
 
 
 async def _communicate_with_agent(websock: fastapi.WebSocket):
