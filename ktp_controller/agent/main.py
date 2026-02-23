@@ -491,6 +491,8 @@ class Agent:
             ktp_controller.abitti2.client.change_student_access_code()
 
         status_report = ktp_controller.api.client.get_last_status_report()
+        if status_report is None:
+            return False
         for student in status_report["status"]["data"]["students"]:
             ktp_controller.abitti2.client.stop_exam_session(student["sessionUuid"])
 
@@ -531,6 +533,16 @@ class Agent:
     ) -> None:
         is_final = ktp_controller.examomatic.client.IsFinal(is_final)
         status_report = ktp_controller.api.client.get_last_status_report()
+        if (
+            status_report is None
+            or status_report["status"]["data"]["answerPaperCount"] is None
+        ):
+            _LOGGER.warning(
+                "I don't know yet if there are answers to transfer, "
+                "but I won't take the risk of trying to download them from Abitti2, "
+                "because Abitti2 can block indefinitely if there are no answers."
+            )
+            return
         if status_report["status"]["data"]["answerPaperCount"] > 0:
             _transfer_answers(
                 current_exam_package["external_id"],
@@ -562,6 +574,14 @@ class Agent:
                 "This is an usage error which should have been properly handled "
                 "and reported by upper levels in the call stack."
             )
+
+        status_report = ktp_controller.api.client.get_last_status_report()
+        if status_report is None:
+            _LOGGER.warning(
+                "Status of the whole system is still partially unknown, not processing"
+                " exam packages until a complete view of the current status is formed."
+            )
+            return False
 
         locked_exam_packages = ktp_controller.api.client.get_locked_exam_packages()
 
@@ -623,9 +643,7 @@ class Agent:
                         )
                     )
                     and (
-                        _all_students_have_left_or_finished(
-                            ktp_controller.api.client.get_last_status_report()
-                        )
+                        _all_students_have_left_or_finished(status_report)
                         or len(locked_exam_packages) > 1
                     )
                 ),
