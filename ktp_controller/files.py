@@ -79,7 +79,7 @@ def get_stats() -> ktp_controller.schemas.FileStats:
                     {
                         "path": filepath,
                         "modified_at": datetime.datetime.fromtimestamp(
-                            os.path.getmtime("Makefile"), datetime.timezone.utc
+                            os.path.getmtime(filepath), datetime.timezone.utc
                         ),
                         "size": os.path.getsize(filepath),
                     }
