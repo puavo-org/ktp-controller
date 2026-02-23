@@ -520,6 +520,9 @@ class Agent:
             ktp_controller.abitti2.client.change_student_access_code()
 
         last_status_report = ktp_controller.api.client.get_last_status_report()
+        if last_status_report is None:
+            return False
+
         for student in last_status_report["abitti2"]["students"]:
             ktp_controller.abitti2.client.stop_exam_session(student["session_uuid"])
 
@@ -561,7 +564,7 @@ class Agent:
     ) -> None:
         is_final = ktp_controller.examomatic.client.IsFinal(is_final)
         status_report = ktp_controller.api.client.get_last_status_report()
-        if status_report["abitti2"]["answer_count"] is None:
+        if status_report is None or status_report["abitti2"]["answer_count"] is None:
             _LOGGER.warning(
                 "I don't know yet if there are answers to transfer, "
                 "but I won't take the risk of trying to download them from Abitti2, "
@@ -603,6 +606,14 @@ class Agent:
                 "This is an usage error which should have been properly handled "
                 "and reported by upper levels in the call stack."
             )
+
+        status_report = ktp_controller.api.client.get_last_status_report()
+        if status_report is None:
+            _LOGGER.warning(
+                "Status of the whole system is still partially unknown, not processing"
+                " exam packages until a complete view of the current status is formed."
+            )
+            return False
 
         locked_exam_packages = ktp_controller.api.client.get_locked_exam_packages()
 
@@ -664,9 +675,7 @@ class Agent:
                         )
                     )
                     and (
-                        _no_active_students(
-                            ktp_controller.api.client.get_last_status_report()
-                        )
+                        _no_active_students(status_report)
                         or len(locked_exam_packages) > 1
                     )
                 ),
