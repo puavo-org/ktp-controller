@@ -1278,7 +1278,7 @@ class Agent:
             _SHUTDOWN_EVENT.set()
             main_task.cancel()
 
-        for sig in (signal.SIGINT, signal.SIGTERM):
+        for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP, signal.SIGQUIT):
             loop.add_signal_handler(sig, trigger_shutdown, sig)
 
         try:
