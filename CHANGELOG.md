@@ -14,27 +14,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [Example1](docs/status_report_v1_example1.json)
   - [Example2](docs/status_report_v1_example2.json)
   - [Example3](docs/status_report_v1_example3.json)
-- Validation of status reports before sending
+- All status reports are validated before sending.
+- Asynchronous tasks are cleaned up properly.
 - Signal handling and robust asynchronous task cleanup
-- `--version` option to all command line programs
-- Added new environment variable `KTP_CONTROLLER_ABITTI2_ALLOW_STUDENTS_TO_USE_BROWSERS` to allow overriding default (`False`) behavior
-- Puavo OS: `puavo-ers-naksu2` and `puavo-ers-abitti2server` are now part of the supervised run
+- All command line programs have now `--version` option.
+- Added new environment variable `KTP_CONTROLLER_ABITTI2_ALLOW_STUDENTS_TO_USE_BROWSERS` to allow overriding the default behavior.
+- Puavo OS: `puavo-ers-naksu2` and `puavo-ers-abitti2server` are now part of the supervised run.
 
 ### Removed
 
-- Support for legacy status report format
+- Support for legacy status report format is removed.
 
 ### Changed
 
-- Less verbose logging by default
+- Logging verbosity is reduced.
 - Log files are preserved from every run.
-- Faster reaction time to Abitti2 state changes
-- By default, do not allow students to use browsers
+- React faster to Abitti2 state changes.
+- By default, do not allow students to use browsers.
 
 ### Fixed
 
-- Sub-component supervision, i.e. agent and API are guaranteed to get
-  restarted should they crash for any reason.
+- Agent and API sub-components are guaranteed to get restarted should they crash for any reason.
 
 
 ## [0.2.1] - 2026-02-11
