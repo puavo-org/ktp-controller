@@ -449,7 +449,9 @@ class Agent:
     async def __stop_answer_transfer_task(
         self, current_exam_package: typing.Dict[str, typing.Any]
     ):
-        assert self.__answer_transfer_task is not None
+        if self.__answer_transfer_task is None:
+            _LOGGER.error("Cannot stop answer transfer task, because it's not running!")
+            return
 
         self.__answer_transfer_task.cancel()
         with contextlib.suppress(asyncio.CancelledError):
