@@ -575,14 +575,6 @@ class Agent:
                 "and reported by upper levels in the call stack."
             )
 
-        status_report = ktp_controller.api.client.get_last_status_report()
-        if status_report is None:
-            _LOGGER.warning(
-                "Status of the whole system is still partially unknown, not processing"
-                " exam packages until a complete view of the current status is formed."
-            )
-            return False
-
         locked_exam_packages = ktp_controller.api.client.get_locked_exam_packages()
 
         if len(locked_exam_packages) == 0:
@@ -602,6 +594,14 @@ class Agent:
                 "of current implies locked.",
                 current_exam_package,
             )
+
+        status_report = ktp_controller.api.client.get_last_status_report()
+        if status_report is None:
+            _LOGGER.warning(
+                "Status of the whole system is still partially unknown, not processing"
+                " exam packages until a complete view of the current status is formed."
+            )
+            return False
 
         _LOGGER.debug(
             "Triggered by %s, working on the current exam package: %s",
