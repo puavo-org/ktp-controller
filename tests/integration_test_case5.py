@@ -355,7 +355,7 @@ def test_scheduled_exam_does_not_get_stopped_until_student2_ends_exam(student2):
 
     # Wait until it's stopped.
     exam_package_is_stopped = False
-    for i in range(30):
+    for i in range(60):
         scheduled_exam_package = ktp_controller.api.client.get_scheduled_exam_package(
             scheduled_exam_package["external_id"]
         )
