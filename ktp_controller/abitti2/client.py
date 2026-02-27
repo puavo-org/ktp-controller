@@ -172,6 +172,7 @@ def prepare_exam_package(
                 hashlib.sha1(decrypt_code.encode("ascii")).hexdigest(),
             )
             had_invalid_decrypt_code = True
+            continue
         decrypted_exam_filenames.update(retval["mebs"])
 
     still_encrypted_exam_filenames = exam_filenames - decrypted_exam_filenames
