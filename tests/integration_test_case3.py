@@ -129,7 +129,10 @@ def test_student_access_code_is_initially_1234_xx():
     global student_access_code
     student_access_code = ktp_controller.api.client.get_student_access_code()
     assert student_access_code is not None
-    assert student_access_code == ("1234", "xx")
+    assert (student_access_code.key_code, student_access_code.verification_code) == (
+        "1234",
+        "xx",
+    )
 
 
 def test_student1_take_waiting_lobby_exam(student1):
@@ -269,7 +272,13 @@ def test_student_access_code_is_changed_when_scheduled_exam_is_started():
     new_student_access_code = ktp_controller.api.client.get_student_access_code()
     assert new_student_access_code is not None
     assert new_student_access_code != student_access_code
-    assert new_student_access_code != ("1234", "xx")
+    assert (
+        new_student_access_code.key_code,
+        new_student_access_code.verification_code,
+    ) != (
+        "1234",
+        "xx",
+    )
     student_access_code = new_student_access_code
 
 
