@@ -76,19 +76,32 @@ def _create_dummy_exam_package_file():
 
 
 def _transfer_answers(
-    exam_package_external_id: str,
     *,
+    exam_package_external_id: str | None,
     is_final: ktp_controller.examomatic.client.IsFinal = ktp_controller.examomatic.client.IsFinal.UNKNOWN,
 ):
     start_time_monotonic = time.monotonic()
 
-    answers_file_path = ktp_controller.files.get_local_filepath(
-        ktp_controller.files.LocalFilepathType.ANSWERS_FILE,
-        exam_package_external_id,
-        ktp_controller.utils.utcnow_str() + ("_final" if is_final else ""),
-    )
+    suffix = ktp_controller.utils.utcnow_str() + ("_final" if is_final else "")
+
+    if exam_package_external_id is None:
+        answers_file_path = ktp_controller.files.get_local_filepath(
+            ktp_controller.files.LocalFilepathType.ORPHAN_ANSWERS_FILE,
+            "unknown",
+            suffix,
+        )
+    else:
+        answers_file_path = ktp_controller.files.get_local_filepath(
+            ktp_controller.files.LocalFilepathType.ANSWERS_FILE,
+            exam_package_external_id,
+            suffix,
+        )
 
     sha256sum = ktp_controller.abitti2.client.download_answers_file(answers_file_path)
+
+    if exam_package_external_id is None:
+        _LOGGER.warning("Orphan answers file cannot be uploaded: %r", answers_file_path)
+        return
 
     ktp_controller.examomatic.client.upload_answers_file(
         exam_package_external_id=exam_package_external_id,
@@ -555,7 +568,7 @@ class Agent:
             return
         if status_report["status"]["data"]["answerPaperCount"] > 0:
             _transfer_answers(
-                current_exam_package["external_id"],
+                exam_package_external_id=current_exam_package["external_id"],
                 is_final=is_final,
             )
         else:
@@ -588,10 +601,40 @@ class Agent:
         locked_exam_packages = ktp_controller.api.client.get_locked_exam_packages()
 
         if len(locked_exam_packages) == 0:
-            if self.__is_auto_control_enabled and self.__last_received_exam_list == []:
-                _LOGGER.info("Reseting Abitti2 with a dummy exam package...")
-                ktp_controller.abitti2.client.reset()
-                _LOGGER.info("Abitti2 was reset.")
+            if self.__is_auto_control_enabled:
+                if (
+                    self.__last_received_exam_list is not None
+                    and self.__last_received_exam_list != []
+                    and self.__last_received_answer_count is not None
+                    and self.__last_received_answer_count > 0
+                ):
+                    # This is unlikely but worrisome situation:
+                    # according to Exam-O-Matic, there are no locked
+                    # exam packages and hence nothing SHOULD be
+                    # running in Abitti2. But Abitti2 is reporting it
+                    # has some running exams
+                    # nevertheless. Furthermore, those exams have some
+                    # answers too! And because we are in the auto
+                    # control mode, Abitti2 can be reset any time
+                    # soon, when a new exam package gets locked, and
+                    # then all answers would be lost. So, we try to
+                    # save them locally as orphan answer files (orphan
+                    # because we don't know which exam package, if
+                    # any, they are related to). Note that we cannot
+                    # upload them to Exam-O-Matic, because
+                    # Exam-O-Matic expects all uploaded files to be
+                    # bound to some known exam package, but at least
+                    # they are saved locally.
+                    #
+                    # This situation has arised most probably due to
+                    # some conflicting actions taken by uninformed
+                    # human beings.
+                    #
+                    _transfer_answers(exam_package_external_id=None)
+                elif self.__last_received_exam_list == []:
+                    _LOGGER.info("Reseting Abitti2 with a dummy exam package...")
+                    ktp_controller.abitti2.client.reset()
+                    _LOGGER.info("Abitti2 was reset.")
             return False  # No current exam package
 
         current_exam_package = locked_exam_packages[0]
