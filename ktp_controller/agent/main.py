@@ -7,6 +7,7 @@ import hashlib
 import json
 import logging
 import os.path
+import pathlib
 import time
 import typing
 import zipfile
@@ -95,6 +96,14 @@ def _transfer_answers(
         sha256sum=sha256sum,
         is_final=is_final,
     )
+
+    sentinel_file_path = f"{answers_file_path}.archived"
+    try:
+        pathlib.Path(sentinel_file_path).touch(mode=0o644, exist_ok=True)
+    except Exception as exception:
+        _LOGGER.warning(
+            "Failed to create sentinel file %r: %s", sentinel_file_path, exception
+        )
 
     duration = time.monotonic() - start_time_monotonic
 
