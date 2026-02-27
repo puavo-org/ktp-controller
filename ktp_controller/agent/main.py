@@ -365,11 +365,11 @@ class Agent:
 
         try:
             changed = await self.__work_on_current_exam_package(trigger=manual_trigger)
-        except _UsageError as usage_error:
+        except Exception as exception:
             return ktp_controller.messages.CommandResultData(
                 command_uuid=command_uuid,
                 command_status=ktp_controller.messages.CommandStatus.ERROR,
-                error_message=str(usage_error),
+                error_message=str(exception),
             )
 
         if changed:
