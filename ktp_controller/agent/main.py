@@ -832,10 +832,9 @@ class Agent:
                 # ping-pong scheduling is good enough.
                 try:
                     await self.__work_on_current_exam_package(trigger=Trigger.TIME)
-                except _UsageError as usage_error:
-                    _LOGGER.error(
-                        "automatic work on the current exam package filed: %s",
-                        usage_error,
+                except Exception:
+                    _LOGGER.exception(
+                        "automatic work on the current exam package failed"
                     )
                 # Ping pong is a great game!
                 # Let's
