@@ -846,8 +846,11 @@ class Agent:
                     self.__connection_stats[Component.EXAMOMATIC].refresh_exams_count
                     == 0
                 ):
-                    self.__refresh_exams(is_spontaneous=True)
-                continue
+                    try:
+                        self.__refresh_exams(is_spontaneous=True)
+                    except Exception:
+                        _LOGGER.exception("Failed to refresh exams")
+                continue  # pongs are not acked
 
             if message["type"] == "change_keycode":
                 _LOGGER.info("received change_keycode message from Exam-O-Matic")
@@ -856,17 +859,25 @@ class Agent:
                         "Keycode cannot be changed by Exam-O-Matic, because auto control is not enabled."
                     )
                     continue
-                ktp_controller.abitti2.client.change_student_access_code()
+                try:
+                    ktp_controller.abitti2.client.change_student_access_code()
+                except Exception:
+                    _LOGGER.exception("Failed to changed student access code")
+                    continue  # Failed requests are not acked
                 _LOGGER.info("Keycode changed.")
             elif message["type"] == "refresh_exams":
                 _LOGGER.info("received refresh_exams message from Exam-O-Matic")
-                self.__refresh_exams(is_spontaneous=False)
+                try:
+                    self.__refresh_exams(is_spontaneous=False)
+                except Exception:
+                    _LOGGER.exception("Failed to refresh exams")
+                    continue  # Failed requests are not acked
             else:
                 _LOGGER.error(
                     "received message of unknown type %r from Exam-O-Matic",
                     message["type"],
                 )
-                continue
+                continue  # Unknown requests are not acked
 
             await ktp_controller.examomatic.client.websock_ack(websock, message)
 
