@@ -12,6 +12,7 @@ import typing
 import zipfile
 
 # Third-party imports
+import pydantic
 import requests.exceptions
 import websockets
 
@@ -759,28 +760,43 @@ class Agent:
                 _LOGGER.exception("API sent invalid JSON data!")
                 continue
 
-            if message["kind"] == "command":
-                command_data = ktp_controller.messages.CommandData.model_validate(
-                    message["data"]
-                )
-                _LOGGER.info("Executing command %r...", command_data.command)
+            try:
+                message_kind = message["kind"]
+            except KeyError:
+                _LOGGER.exception("API sent invalid message")
+                continue
+
+            if message_kind == "command":
                 try:
-                    command_result = await self.__commands[command_data.command](
-                        message["uuid"], command_data
+                    command_data = ktp_controller.messages.CommandData.model_validate(
+                        message["data"]
                     )
-                except Exception:
-                    _LOGGER.exception(
-                        "Executing command %r failed", command_data.command
-                    )
+                except pydantic.ValidationError:
+                    _LOGGER.exception("API sent invalid command data")
                     command_result = ktp_controller.messages.CommandResultData(
                         command_uuid=message["uuid"],
                         command_status=ktp_controller.messages.CommandStatus.ERROR,
                         error_message="critical internal error",
                     )
                 else:
-                    _LOGGER.info(
-                        "Executed command %r successfully.", command_data.command
-                    )
+                    _LOGGER.info("Executing command %r...", command_data.command)
+                    try:
+                        command_result = await self.__commands[command_data.command](
+                            message["uuid"], command_data
+                        )
+                    except Exception:
+                        _LOGGER.exception(
+                            "Executing command %r failed", command_data.command
+                        )
+                        command_result = ktp_controller.messages.CommandResultData(
+                            command_uuid=message["uuid"],
+                            command_status=ktp_controller.messages.CommandStatus.ERROR,
+                            error_message="critical internal error",
+                        )
+                    else:
+                        _LOGGER.info(
+                            "Executed command %r successfully.", command_data.command
+                        )
                 await websock.send(
                     ktp_controller.messages.CommandResultMessage(
                         kind=ktp_controller.messages.MessageKind.COMMAND_RESULT,
@@ -790,7 +806,7 @@ class Agent:
                 _LOGGER.info("Sent command result %r successfully.", command_result)
                 continue
 
-            if message["kind"] == "pong":
+            if message_kind == "pong":
                 # Whenever we get ponged, it's a sign for us to do
                 # some auto control work. So, keep ping pong interval
                 # quite short. This could be replaced with more
@@ -806,7 +822,7 @@ class Agent:
                 # Let's
                 continue  # playing it!
 
-            _LOGGER.error("unknown API message kind: %s", message["kind"])
+            _LOGGER.error("unknown API message kind: %s", message_kind)
 
     async def __communicate_with_examomatic(self, websock):
         async for data in websock:
