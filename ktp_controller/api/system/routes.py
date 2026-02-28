@@ -24,6 +24,7 @@ import ktp_controller.ui
 
 # Relative imports
 from . import schemas
+from .. import main
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,6 +34,40 @@ __all__ = [
 ]
 
 router = fastapi.APIRouter(tags=["system"])
+
+
+async def _keep_silent_websocket_alive(websock: fastapi.WebSocket):
+    while True:
+        try:
+            data = await asyncio.wait_for(websock.receive_json(), timeout=2)
+        except fastapi.WebSocketDisconnect:
+            _LOGGER.info("Websocket %r disconnected.", websock.client)
+            break
+        except TimeoutError:
+            continue
+        except json.decoder.JSONDecodeError:
+            _LOGGER.warning(
+                "Got invalid json from silent websocket %r!. Disconnecting.",
+                websock.client,
+            )
+            break
+        else:
+            _LOGGER.warning(
+                "Got %r from silent websocket %r! Disconnecting.", data, websock.client
+            )
+            break
+
+
+async def _handle_websocket(*asyncfuncs, websock: fastapi.WebSocket, channel: str):
+    await websock.accept()
+    try:
+        await main.APP.state.pubsub_broadcaster.register_websocket(websock, channel)
+        async with asyncio.TaskGroup() as tg:
+            for asyncfunc in asyncfuncs:
+                tg.create_task(asyncfunc(websock))
+
+    finally:
+        await main.APP.state.pubsub_broadcaster.unregister_websocket(websock, channel)
 
 
 @router.post(
@@ -51,15 +86,11 @@ async def _async_command(command_data: ktp_controller.messages.CommandData):
 
 @router.websocket("/ui_websocket")
 async def _ui_websocket(websock: fastapi.WebSocket):
-    await websock.accept()
-
-    async with ktp_controller.redis.pubsub(ktp_controller.ui.PUBSUB_CHANNEL) as pubsub:
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(
-                ktp_controller.api.utils.deliver_pubsub_messages_to_websock(
-                    pubsub, websock
-                )
-            )
+    await _handle_websocket(
+        _keep_silent_websocket_alive,
+        websock=websock,
+        channel=ktp_controller.ui.PUBSUB_CHANNEL,
+    )
 
 
 # How many status reports will ever get stored at most. If this limit
@@ -178,15 +209,8 @@ async def _communicate_with_agent(websock: fastapi.WebSocket):
 async def _agent_websocket(
     websock: fastapi.WebSocket,
 ):
-    await websock.accept()
-
-    async with ktp_controller.redis.pubsub(
-        ktp_controller.agent.utils.PUBSUB_CHANNEL
-    ) as pubsub:
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(
-                ktp_controller.api.utils.deliver_pubsub_messages_to_websock(
-                    pubsub, websock
-                )
-            )
-            tg.create_task(_communicate_with_agent(websock))
+    await _handle_websocket(
+        _communicate_with_agent,
+        websock=websock,
+        channel=ktp_controller.agent.utils.PUBSUB_CHANNEL,
+    )
