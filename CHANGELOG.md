@@ -6,13 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.2.3] - 2026-02-24
+
+### Fixed
+
+- API does not run out of open files anymore (previously leaked Redis client sockets in some error conditions).
+
+### Changed
+
+- Self-heal wounds caused by Redis connection failures, i.e. try reconnecting until Redis is back online and preserve subscribed websockets.
+- Use single Redis client connection for all websocket connections (agent and UI).
+- Orphan answer files are rescued, i.e. in auto-control mode, if Abitti2 is running an unknown exam (not launched by KTP Controller), save answers locally before proceeding.
+- Mark all uploaded answers with `.archived` sentinel file.
+- More robust error handling.
+
+
 ## [0.2.2] - 2026-02-24
 
 ### Fixed
 
 - Guarantee that continuous non-final answer transfer task is always
   running when exam package is `stopping` or `stopped`. Fix in the
-  version 0.2.1 was not enough, because it only ensure the task was
+  version 0.2.1 was not enough, because it only ensured the task was
   running when exam package was `running`.
 
 - Reduce noise from logs.
