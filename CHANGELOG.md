@@ -20,6 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All command line programs have now `--version` option.
 - Added new environment variable `KTP_CONTROLLER_ABITTI2_ALLOW_STUDENTS_TO_USE_BROWSERS` to allow overriding the default behavior.
 - Puavo OS: `puavo-ers-naksu2` and `puavo-ers-abitti2server` are now part of the supervised run.
+- Self-healing capabilities if Redis connection fails, i.e. try reconnecting until Redis is back online.
+- Single Redis client connection for all websocket connections (agent and UI).
+- Orphan answer files are rescued, i.e. in auto-control mode, if Abitti2 is running an unknown exam (not launched by KTP Controller), save answers locally before proceeding.
+- Mark all uploaded answers with `.archived` sentinel file.
+- More robust error handling.
 
 ### Removed
 
@@ -35,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Agent and API sub-components are guaranteed to get restarted should they crash for any reason.
+- API does not run out of open files anymore (previously leaked Redis client sockets in some error conditions).
 
 
 ## [0.2.1] - 2026-02-11
