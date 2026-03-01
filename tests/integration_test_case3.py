@@ -129,7 +129,7 @@ def test_first_exam_package_does_not_get_stopped_until_second_exam_package_is_lo
     # time, 30sec lock time, 30 sec run time)
     assert_exam_scheduling_and_download(
         exam_title="Integraatiotestikoe1",
-        seconds_until_start=30,
+        seconds_until_start=60,
         duration_seconds=30,
         lock_time_duration_seconds=30,
         expected_ack_count=2,
