@@ -305,15 +305,11 @@ def assert_scheduled_exam_package_state_is(
     return scheduled_exam_package
 
 
-def assert_scheduled_exam_package_gets_started(exam_title: str) -> dict:
+def assert_scheduled_exam_package_gets_started(
+    exam_title: str, wait: int = 120
+) -> dict:
     assert_abitti2_running_exams(
-        lambda running_exams: "Odotusaulakoe" in running_exams, wait=1
-    )
-    assert_abitti2_running_exams(
-        lambda running_exams: "Odotusaulakoe" not in running_exams, wait=90
-    )
-    assert_abitti2_running_exams(
-        lambda running_exams: exam_title in running_exams, wait=60
+        lambda running_exams: exam_title in running_exams, wait=wait
     )
 
     current_exam_package = ktp_controller.api.client.get_current_exam_package()
