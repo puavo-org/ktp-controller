@@ -193,10 +193,12 @@ def prepare_exam_package(
 
 
 def reset() -> None:
+    _LOGGER.info("Reseting Abitti2 with a dummy exam package...")
     prepare_exam_package(
         ktp_controller.files.DUMMY_EXAM_PACKAGE_FILEPATH, ["odotusaulakoe"]
     )
     start_decrypted_exams()
+    _LOGGER.info("Abitti2 was reset.")
 
 
 def stop_exam_session(session_uuid: str) -> None:

@@ -533,6 +533,10 @@ class Agent:
     async def __start_stopping_current_exam_package(
         self, current_exam_package: typing.Dict[str, typing.Any]
     ) -> bool:
+        _LOGGER.info(
+            "Stopping current exam package %r...",
+            current_exam_package["external_id"],
+        )
         await self.__stop_current_exam_package(current_exam_package)
         return True  # Always proceed to the next state, we have started to stop the current exam.
 
@@ -575,11 +579,19 @@ class Agent:
         self,
         current_exam_package: typing.Dict[str, typing.Any],
     ) -> bool:
+        _LOGGER.info(
+            "Archiving current exam package %r...",
+            current_exam_package["external_id"],
+        )
         await self.__stop_answer_transfer_task(current_exam_package)
         self.__transfer_answers(
             current_exam_package, is_final=ktp_controller.examomatic.client.IsFinal.TRUE
         )
         ktp_controller.abitti2.client.reset()
+        _LOGGER.info(
+            "Archived current exam package %r successfully.",
+            current_exam_package["external_id"],
+        )
         return True
 
     def __transfer_answers(
@@ -666,9 +678,7 @@ class Agent:
                     #
                     _transfer_answers(exam_package_external_id=None)
                 elif self.__last_received_exam_list == []:
-                    _LOGGER.info("Reseting Abitti2 with a dummy exam package...")
                     ktp_controller.abitti2.client.reset()
-                    _LOGGER.info("Abitti2 was reset.")
             return False  # No current exam package
 
         current_exam_package = locked_exam_packages[0]
@@ -791,7 +801,7 @@ class Agent:
                 )
 
         if changed:
-            _LOGGER.debug(
+            _LOGGER.info(
                 "State of the current exam package changed from %s to %s",
                 state,
                 transition["next_state"],
