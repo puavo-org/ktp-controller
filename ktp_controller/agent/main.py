@@ -297,6 +297,7 @@ class Agent:
         self.__last_received_exam_list = None
         self.__last_received_security_code = None
         self.__old_security_code = None
+        self.__last_received_answer_count = None
 
         self.__connection_stats: typing.Dict[
             Component, ktp_controller.agent.stats.ConnectionStats
