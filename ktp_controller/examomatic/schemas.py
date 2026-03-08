@@ -38,6 +38,7 @@ class _Student(ktp_controller.pydantic.BaseModel):
     session_uuid: pydantic.StrictStr
     is_active: pydantic.StrictBool
     status: pydantic.StrictStr
+    exam_title: pydantic.StrictStr | None
 
 
 class _Abitti2(ktp_controller.pydantic.BaseModel):

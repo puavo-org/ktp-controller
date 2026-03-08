@@ -96,6 +96,7 @@ def parse_students(
                 "session_uuid": student["sessionUuid"],
                 "status": student["studentStatus"],
                 "is_active": is_active,
+                "exam_title": student.get("examTitle", None),
             }
         )
 
