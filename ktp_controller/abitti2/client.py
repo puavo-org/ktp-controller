@@ -156,7 +156,7 @@ def start_decrypted_exams() -> typing.Dict:
     return _post("/api/start-exam").json()
 
 
-def prepare_exam_package(
+def start_exam_package(
     exam_package_filepath: str, decrypt_codes: typing.Iterable[str]
 ) -> typing.Set[str]:
     exam_filenames = set(upload_exam_package(exam_package_filepath))
@@ -194,7 +194,7 @@ def prepare_exam_package(
 
 def reset() -> None:
     _LOGGER.info("Reseting Abitti2 with a dummy exam package...")
-    prepare_exam_package(
+    start_exam_package(
         ktp_controller.files.DUMMY_EXAM_PACKAGE_FILEPATH, ["odotusaulakoe"]
     )
     start_decrypted_exams()
