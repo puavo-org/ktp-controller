@@ -169,7 +169,7 @@ def start_exam_package(
             # TODO: is it ok to expose the decrypt code in log files?
             _LOGGER.error(
                 "invalid decrypt code (sha1 hash: %r)",
-                hashlib.sha1(decrypt_code.encode("ascii")).hexdigest(),
+                hashlib.sha1(decrypt_code.encode("utf-8")).hexdigest(),
             )
             had_invalid_decrypt_code = True
             continue

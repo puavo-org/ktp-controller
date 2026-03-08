@@ -159,7 +159,7 @@ def get_url(
 
 
 def get_basic_auth(username: str, password: str) -> typing.Dict[str, str]:
-    auth = base64.b64encode(f"{username}:{password}".encode("ascii")).decode("ascii")
+    auth = base64.b64encode(f"{username}:{password}".encode("utf-8")).decode("ascii")
     return {"Authorization": f"Basic {auth}"}
 
 

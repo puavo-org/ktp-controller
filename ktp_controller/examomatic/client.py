@@ -43,7 +43,7 @@ def _get_auth():
         return requests.auth.HTTPBasicAuth(
             SETTINGS.examomatic_username,
             ktp_controller.utils.readfirstline(
-                SETTINGS.examomatic_password_file, encoding="ascii"
+                SETTINGS.examomatic_password_file, encoding="utf-8"
             ),
         )
     return None
@@ -128,7 +128,7 @@ def get_basic_auth() -> typing.Dict[str, str]:
         return ktp_controller.utils.get_basic_auth(
             SETTINGS.examomatic_username,
             ktp_controller.utils.readfirstline(
-                SETTINGS.examomatic_password_file, encoding="ascii"
+                SETTINGS.examomatic_password_file, encoding="utf-8"
             ),
         )
     return {}
