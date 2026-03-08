@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
 # Internal imports
+import ktp_controller.abitti2.naksu2
 import ktp_controller.schemas
 
 # Relative imports
@@ -65,7 +66,8 @@ class Abitti2Student(_Base):
         )
 
     def load(self):
-        self.browser.get("https://asiasana-vahinko.koe.abitti.net:8010/")
+        abitti2_domain = ktp_controller.abitti2.naksu2.read_domain()
+        self.browser.get(f"https://{abitti2_domain}:8010/")
 
     def accept_eula(self):
         self.click(_button_by_text("Hyväksyn käyttöehdot ja valvonnan"))
