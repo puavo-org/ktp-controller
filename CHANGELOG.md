@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [UNRELEASED]
+## [0.3.0] - 2026-03-08
 
 ### Added
 
@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [Example1](docs/status_report_v1_example1.json)
   - [Example2](docs/status_report_v1_example2.json)
   - [Example3](docs/status_report_v1_example3.json)
+  - [Example4](docs/status_report_v1_example4.json)
+  - [Example5](docs/status_report_v1_example5.json)
+  - [Example6](docs/status_report_v1_example6.json)
+  - [Example7](docs/status_report_v1_example7.json)
 - All status reports are validated before sending.
 - Asynchronous tasks are cleaned up properly.
 - Signal handling and robust asynchronous task cleanup
@@ -25,6 +29,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Orphan answer files are rescued, i.e. in auto-control mode, if Abitti2 is running an unknown exam (not launched by KTP Controller), save answers locally before proceeding.
 - Mark all uploaded answers with `.archived` sentinel file.
 - More robust error handling.
+- The definition of "active" student is revised:
+  - If student.isConnected is False, then the student is inactive
+  - If student.updateTime is older than 30mins, then the student is inactive
+  - If student.examFinished, then the student is inactive
+  - If student.sessionStatus is 'session_ended', then the student is inactive
+  - If student.sessionStatus starts with 'exam_finished_by_', then student is inactive
+  - Otherwise student is active
 
 ### Removed
 
@@ -41,6 +52,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Agent and API sub-components are guaranteed to get restarted should they crash for any reason.
 - API does not run out of open files anymore (previously leaked Redis client sockets in some error conditions).
+- Abitti2 is asked to encrypt exams when exam package is started, not when exam package is locked.
+  - This ensures students cannot access exams with old codes.
+
+
+## [0.2.3] - 2026-02-24
+
+### Fixed
+
+- API does not run out of open files anymore (previously leaked Redis client sockets in some error conditions).
+
+### Changed
+
+- Self-heal wounds caused by Redis connection failures, i.e. try reconnecting until Redis is back online and preserve subscribed websockets.
+- Use single Redis client connection for all websocket connections (agent and UI).
+- Orphan answer files are rescued, i.e. in auto-control mode, if Abitti2 is running an unknown exam (not launched by KTP Controller), save answers locally before proceeding.
+- Mark all uploaded answers with `.archived` sentinel file.
+- More robust error handling.
+
+
+## [0.2.2] - 2026-02-24
+
+### Fixed
+
+- Guarantee that continuous non-final answer transfer task is always
+  running when exam package is `stopping` or `stopped`. Fix in the
+  version 0.2.1 was not enough, because it only ensured the task was
+  running when exam package was `running`.
+
+- Reduce noise from logs.
+
+- Deal with situations where the very first status report is not yet
+  produced.
 
 
 ## [0.2.1] - 2026-02-11
@@ -48,6 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Guarantee that continuous non-final answer transfer task is always running when exam package is running.
+
 
 ## [0.2.0] - 2026-02-03
 
