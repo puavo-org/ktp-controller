@@ -215,6 +215,8 @@ def test_save_exam_info__real_anonymized_input_start_time_and_end_time_switched_
                     ],
                     "state": None,
                     "state_changed_at": None,
+                    "started_at": None,
+                    "archived_at": None,
                 },
                 "ctx": {"error": {}},
             }
@@ -585,6 +587,8 @@ def test_set_current_exam_package_state__set_state_of_current_exam_package_valid
 
     assert state is None
     assert api_exam_info["scheduled_exam_packages"][0].pop("state_changed_at") is None
+    assert api_exam_info["scheduled_exam_packages"][0].pop("started_at") is None
+    assert api_exam_info["scheduled_exam_packages"][0].pop("archived_at") is None
 
     for next_state in ("ready", "running", "stopping", "stopped", "archived"):
         utcnow_before_state_change = ktp_controller.utils.utcnow()
@@ -610,7 +614,7 @@ def test_set_current_exam_package_state__set_state_of_current_exam_package_valid
             # Exam package is now in the final state, so it is not current anymore
             assert get_current_exam_package_response.json() is None
 
-            assert (
+            db_scheduled_exam_package = (
                 testdb.query(models.ScheduledExamPackage)
                 .filter_by(
                     external_id=api_exam_info["scheduled_exam_packages"][0][
@@ -618,8 +622,17 @@ def test_set_current_exam_package_state__set_state_of_current_exam_package_valid
                     ]
                 )
                 .one()
-                .state
-                == "archived"
+            )
+
+            assert db_scheduled_exam_package.state == "archived"
+
+            assert (
+                db_scheduled_exam_package.archived_at.replace(tzinfo=datetime.UTC)
+                > utcnow_before_state_change
+            )
+            assert (
+                db_scheduled_exam_package.archived_at
+                == db_scheduled_exam_package.state_changed_at
             )
         else:
             current_exam_package = get_current_exam_package_response.json()
@@ -628,6 +641,12 @@ def test_set_current_exam_package_state__set_state_of_current_exam_package_valid
             )
             assert current_exam_package.pop("state") == next_state
             assert state_changed_at > utcnow_before_state_change
+
+            started_at = current_exam_package.pop("started_at")
+            if next_state == "running":
+                assert datetime.datetime.fromisoformat(started_at) == state_changed_at
+
+            current_exam_package.pop("archived_at")
 
             assert current_exam_package == api_exam_info["scheduled_exam_packages"][0]
 

@@ -183,8 +183,6 @@ _VALID_TRANSITIONS = {
     "stopped": "archived",
 }
 
-_END_STATES = {"archived"}
-
 
 @router.post(
     "/set_current_exam_package_state",
@@ -230,7 +228,10 @@ async def _set_current_exam_package_state(
     if old_state != data.state:
         db_current_exam_package.state = data.state
         db_current_exam_package.state_changed_at = utcnow
-        if data.state in _END_STATES:
+        if data.state == "running":
+            db_current_exam_package.started_at = utcnow
+        elif data.state == "archived":
+            db_current_exam_package.archived_at = utcnow
             db_current_exam_package.current = False
         db.commit()
 
@@ -304,6 +305,20 @@ async def _get_locked_exam_packages(
                 None
                 if db_locked_exam_package.state_changed_at is None
                 else db_locked_exam_package.state_changed_at.replace(
+                    tzinfo=datetime.timezone.utc
+                )
+            ),
+            "started_at": (
+                None
+                if db_locked_exam_package.started_at is None
+                else db_locked_exam_package.started_at.replace(
+                    tzinfo=datetime.timezone.utc
+                )
+            ),
+            "archived_at": (
+                None
+                if db_locked_exam_package.archived_at is None
+                else db_locked_exam_package.archived_at.replace(
                     tzinfo=datetime.timezone.utc
                 )
             ),
@@ -411,6 +426,20 @@ async def _get_scheduled_exam_package(
             None
             if db_scheduled_exam_package.state_changed_at is None
             else db_scheduled_exam_package.state_changed_at.replace(
+                tzinfo=datetime.timezone.utc
+            )
+        ),
+        "started_at": (
+            None
+            if db_scheduled_exam_package.started_at is None
+            else db_scheduled_exam_package.started_at.replace(
+                tzinfo=datetime.timezone.utc
+            )
+        ),
+        "archived_at": (
+            None
+            if db_scheduled_exam_package.archived_at is None
+            else db_scheduled_exam_package.archived_at.replace(
                 tzinfo=datetime.timezone.utc
             )
         ),

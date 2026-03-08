@@ -1098,6 +1098,26 @@ class Agent:
             _LOGGER.exception("failed to get current Abitti2 version")
             abitti2_version = None
 
+        try:
+            current_exam_package = ktp_controller.api.client.get_current_exam_package()
+        except Exception:
+            _LOGGER.exception("failed to get current exam package")
+            current_exam_package = None
+
+        if current_exam_package is not None:
+            # Internal representation of the exam package is more
+            # complex, here it's simplified for the status report.
+            current_exam_package = {
+                "uuid": current_exam_package["external_id"],
+                "scheduled_lock_time": current_exam_package["lock_time"],
+                "scheduled_start_time": current_exam_package["start_time"],
+                "scheduled_end_time": current_exam_package["end_time"],
+                "state": current_exam_package["state"],
+                "state_changed_at": current_exam_package["state_changed_at"],
+                "started_at": current_exam_package["started_at"],
+                "archived_at": current_exam_package["archived_at"],
+            }
+
         status_report = {
             "created_at": ktp_controller.utils.utcnow(),
             "abitti2": {
@@ -1117,6 +1137,7 @@ class Agent:
                 "started_at": self.__started_at,
                 "is_auto_control_enabled": self.__is_auto_control_enabled,
                 "cached_files": ktp_controller.files.get_stats(),
+                "current_exam_package": current_exam_package,
             },
         }
 

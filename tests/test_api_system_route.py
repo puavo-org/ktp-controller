@@ -72,6 +72,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": True,
+            "current_exam_package": None,
             "cached_files": {
                 "exams": [
                     {
@@ -126,6 +127,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": True,
+            "current_exam_package": None,
             "cached_files": {
                 "exams": [
                     {
@@ -187,6 +189,7 @@ def test_send_status_report__valid_minimal_input(client, testdb, utcnow):
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": True,
+            "current_exam_package": None,
             "cached_files": {
                 "exams": [
                     {
@@ -254,6 +257,7 @@ def test_send_status_report__same_valid_minimal_input_twice(client, testdb, utcn
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": True,
+            "current_exam_package": None,
             "cached_files": {
                 "exams": [
                     {
@@ -331,6 +335,7 @@ def test_send_status_report__valid_but_highly_unlikely_status(client, testdb, ut
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": False,
+            "current_exam_package": None,
             "cached_files": {
                 "exams": [
                     {
@@ -393,6 +398,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": False,
+            "current_exam_package": None,
             "cached_files": {
                 "exams": [
                     {
@@ -444,6 +450,16 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": False,
+            "current_exam_package": {
+                "uuid": "eff706bd-245b-4f45-ae2a-1e7ae760142e",
+                "scheduled_start_time": "1970-01-01T02:00:00.000+0000",
+                "scheduled_end_time": "2970-01-01T01:01:01.010+0000",
+                "scheduled_lock_time": "1970-01-01T01:01:01.010+0000",
+                "state": "running",
+                "state_changed_at": "1970-01-01T02:01:01.010+0000",
+                "started_at": "1970-01-01T02:01:01.010+0000",
+                "archived_at": None,
+            },
             "cached_files": {
                 "exams": [
                     {
@@ -541,6 +557,7 @@ def test_send_status_report__multiple_reports_exactly_max_count(
                 "version": VERSION,
                 "started_at": "1970-01-01T01:01:01.010+0000",
                 "is_auto_control_enabled": False,
+                "current_exam_package": None,
                 "cached_files": {
                     "exams": [
                         {
@@ -634,6 +651,7 @@ def test_send_status_report__multiple_reports_less_than_max_count(
                 "version": VERSION,
                 "started_at": "1970-01-01T01:01:01.010+0000",
                 "is_auto_control_enabled": False,
+                "current_exam_package": None,
                 "cached_files": {
                     "exams": [
                         {
@@ -727,6 +745,7 @@ def test_send_status_report__multiple_reports_one_more_than_max_count(
                 "version": VERSION,
                 "started_at": "1970-01-01T01:01:01.010+0000",
                 "is_auto_control_enabled": False,
+                "current_exam_package": None,
                 "cached_files": {
                     "exams": [
                         {
@@ -822,6 +841,7 @@ def test_send_status_report__multiple_reports_many_more_than_max_count(
                 "version": VERSION,
                 "started_at": "1970-01-01T01:01:01.010+0000",
                 "is_auto_control_enabled": False,
+                "current_exam_package": None,
                 "cached_files": {
                     "exams": [],
                     "exam_packages": [],

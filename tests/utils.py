@@ -306,14 +306,32 @@ def assert_scheduled_exam_package_state_is(
 
 
 def assert_scheduled_exam_package_gets_started(
-    exam_title: str, wait: int = 120
+    exam_title: str, wait: int = 120, utcnow: datetime.datetime | None = None
 ) -> dict:
+    if utcnow is None:
+        utcnow = ktp_controller.utils.utcnow()
+
     assert_abitti2_running_exams(
         lambda running_exams: exam_title in running_exams, wait=wait
     )
 
     current_exam_package = ktp_controller.api.client.get_current_exam_package()
     assert current_exam_package["state"] == "running"
+
+    last_status_report_seen_by_api = ktp_controller.api.client.get_last_status_report()
+    assert last_status_report_seen_by_api.pop("reported_at") is not None
+    current_exam_package_from_status_report = last_status_report_seen_by_api[
+        "ktp_controller"
+    ].get("current_exam_package")
+    assert current_exam_package_from_status_report is not None
+    assert current_exam_package_from_status_report["state"] == "running"
+    assert current_exam_package_from_status_report["archived_at"] is None
+    assert (
+        datetime.datetime.fromisoformat(
+            current_exam_package_from_status_report["started_at"]
+        )
+        > utcnow
+    )
 
     return current_exam_package
 

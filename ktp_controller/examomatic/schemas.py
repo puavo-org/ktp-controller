@@ -6,6 +6,7 @@ import pydantic
 
 # Internal imports
 from ktp_controller import VERSION
+import ktp_controller.api.exam.schemas
 import ktp_controller.pydantic
 import ktp_controller.schemas
 
@@ -13,6 +14,17 @@ import ktp_controller.schemas
 __all__ = [
     "StatusReport",
 ]
+
+
+class _ExamPackage(ktp_controller.pydantic.BaseModel):
+    uuid: pydantic.StrictStr
+    state: ktp_controller.api.exam.schemas.ScheduledExamPackageState | None
+    state_changed_at: ktp_controller.pydantic.DateTime | None
+    started_at: ktp_controller.pydantic.DateTime | None
+    archived_at: ktp_controller.pydantic.DateTime | None
+    scheduled_start_time: ktp_controller.pydantic.DateTime
+    scheduled_end_time: ktp_controller.pydantic.DateTime
+    scheduled_lock_time: ktp_controller.pydantic.DateTime
 
 
 class _Exam(ktp_controller.pydantic.BaseModel):
@@ -45,6 +57,7 @@ class _KTPController(ktp_controller.pydantic.BaseModel):
     started_at: ktp_controller.pydantic.DateTime
     is_auto_control_enabled: pydantic.StrictBool
     cached_files: ktp_controller.schemas.FileStats
+    current_exam_package: _ExamPackage | None
 
 
 class StatusReport(ktp_controller.pydantic.BaseModel):

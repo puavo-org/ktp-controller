@@ -70,6 +70,8 @@ class ScheduledExamPackage(ktp_controller.pydantic.BaseModel):
     scheduled_exam_external_ids: typing.List[pydantic.StrictStr]
     state: ScheduledExamPackageState | None
     state_changed_at: ktp_controller.pydantic.DateTime | None
+    started_at: ktp_controller.pydantic.DateTime | None
+    archived_at: ktp_controller.pydantic.DateTime | None
 
     @pydantic.model_validator(mode="after")
     def check_times(self) -> Self:
