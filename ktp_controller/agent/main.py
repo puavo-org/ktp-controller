@@ -1060,7 +1060,7 @@ class Agent:
 
         try:
             self.__last_received_students = ktp_controller.abitti2.utils.parse_students(
-                message
+                message, utcnow=received_at
             )
         except ValueError:
             self.__last_received_students = None

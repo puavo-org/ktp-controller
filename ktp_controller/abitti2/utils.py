@@ -1,6 +1,10 @@
 # Standard library imports
+import datetime
 import logging
 import typing
+
+# Internal imports
+import ktp_controller.utils
 
 _LOGGER = logging.getLogger(__file__)
 
@@ -60,24 +64,38 @@ def sanitize_stats_message(stats_message: typing.Dict[str, typing.Any]) -> bool:
 
 def parse_students(
     sanitized_stats_message: typing.Dict[str, typing.Any],
+    *,
+    utcnow: datetime.datetime | None = None,
 ) -> typing.List[typing.Dict[str, typing.Any]]:
+    if utcnow is None:
+        utcnow = ktp_controller.utils.utcnow()
+
     students = []
 
     for student in sanitized_stats_message["data"]["students"]:
+        is_connected = student.get("isConnected", True)
+
+        is_idle = False
+        update_time = student.get("updateTime", None)
+        if update_time is not None:
+            is_idle = (
+                utcnow - datetime.datetime.fromisoformat(update_time)
+            ).total_seconds() >= 30 * 60
+
+        is_finished = (
+            student.get("examFinished", False) is True
+            or student["sessionStatus"] == "session_ended"
+            or student["sessionStatus"].startswith("exam_finished_by_")
+        )
+
+        is_active = is_connected and not is_idle and not is_finished
+
         students.append(
             {
                 "uuid": student["studentUuid"],
                 "session_uuid": student["sessionUuid"],
                 "status": student["studentStatus"],
-                "is_active": (
-                    not (
-                        student.get("examFinished", False)
-                        or (
-                            student["sessionStatus"]
-                            in ("session_ended", "exam_finished_by_student")
-                        )
-                    )
-                ),
+                "is_active": is_active,
             }
         )
 
