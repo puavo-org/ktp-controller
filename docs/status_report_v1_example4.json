@@ -1,40 +1,25 @@
 {
   "v": 1,
-  "created_at": "2026-03-08T21:31:29.275+0000",
+  "created_at": "2026-03-08T21:31:59.281+0000",
   "abitti2": {
-    "answer_count": 2,
+    "answer_count": 0,
     "domain": "pukari-kivisyys.koe.abitti.net",
     "student_access_code": {
-      "key_code": "1234",
-      "verification_code": "xx"
+      "key_code": "9721",
+      "verification_code": "pr"
     },
     "supervisor_username": "valvoja",
     "supervisor_passphrase": "jogurtti lihota vaivutus vigilia",
     "version": "1.24.0",
-    "last_message_received_at": "2026-03-08T21:31:29.193+0000",
+    "last_message_received_at": "2026-03-08T21:31:59.194+0000",
     "exams": [
       {
-        "uuid": "390e7988-ff0e-42b4-a2e6-d13a969e7103",
-        "title": "Odotusaulakoe",
-        "started_at": "2026-03-08T21:29:54.921+0000"
+        "uuid": "c574f93a-ac4d-4441-8679-ca47e565fb7b",
+        "title": "Integraatiotestikoe1",
+        "started_at": "2026-03-08T21:31:58.178+0000"
       }
     ],
-    "students": [
-      {
-        "uuid": "f8c1ba9b-353d-4f52-abf6-0b7654b9518a",
-        "session_uuid": "5396dc11-0896-47f8-b13b-5114f362491e",
-        "is_active": false,
-        "status": "exam-finished-by-student",
-        "exam_title": "Odotusaulakoe"
-      },
-      {
-        "uuid": "345b59c4-7cf6-47e0-87df-27a65849fe11",
-        "session_uuid": "6ce70f14-f187-4142-810e-b3a47f34fe98",
-        "is_active": true,
-        "status": "in-exam-browser",
-        "exam_title": "Odotusaulakoe"
-      }
-    ]
+    "students": []
   },
   "ktp_controller": {
     "version": "0.3.0rc3",
@@ -59,14 +44,14 @@
     },
     "current_exam_package": {
       "uuid": "043586e7-3d96-49b1-a011-2aad68537c88",
-      "state": "ready",
-      "state_changed_at": "2026-03-08T21:31:26.991+0000",
-      "started_at": null,
+      "state": "running",
+      "state_changed_at": "2026-03-08T21:31:58.220+0000",
+      "started_at": "2026-03-08T21:31:58.220+0000",
       "archived_at": null,
       "scheduled_start_time": "2026-03-08T21:31:43.853+0000",
       "scheduled_end_time": "2026-03-08T21:33:13.853+0000",
       "scheduled_lock_time": "2026-03-08T21:31:13.853+0000"
     }
   },
-  "reported_at": "2026-03-08T21:31:29.286+0000"
+  "reported_at": "2026-03-08T21:31:59.286+0000"
 }

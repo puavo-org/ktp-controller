@@ -1,65 +1,57 @@
 {
   "v": 1,
-  "created_at": "2026-02-08T20:45:13.620+0000",
+  "created_at": "2026-03-08T21:27:39.270+0000",
   "abitti2": {
     "answer_count": 2,
-    "domain": "asiasana-vahinko.koe.abitti.net",
+    "domain": "pukari-kivisyys.koe.abitti.net",
     "student_access_code": {
-      "key_code": "7579",
-      "verification_code": "uv"
+      "key_code": "1234",
+      "verification_code": "xx"
     },
     "supervisor_username": "valvoja",
-    "supervisor_passphrase": "opiaatti workshop knesset tynnyri",
-    "version": "1.20.0",
-    "last_message_received_at": "2026-02-08T20:45:13.454+0000",
+    "supervisor_passphrase": "jogurtti lihota vaivutus vigilia",
+    "version": "1.24.0",
+    "last_message_received_at": "2026-03-08T21:27:39.121+0000",
     "exams": [
       {
-        "uuid": "c574f93a-ac4d-4441-8679-ca47e565fb7b",
-        "title": "Integraatiotestikoe1",
-        "started_at": "2026-02-08T20:43:06.357+0000"
+        "uuid": "390e7988-ff0e-42b4-a2e6-d13a969e7103",
+        "title": "Odotusaulakoe",
+        "started_at": "2026-03-08T21:26:43.225+0000"
       }
     ],
     "students": [
       {
-        "uuid": "c44047aa-2cf2-4b8f-8841-ccf891750e39",
-        "session_uuid": "873c25f9-a65d-4931-9e73-21b0248f38bc",
+        "uuid": "3bc2aed4-c405-4518-871b-daf415ffd7a7",
+        "session_uuid": "3590346e-8e71-4f18-bfe0-12659115f27a",
         "is_active": false,
-        "status": "session-ended"
+        "status": "exam-finished-by-student",
+        "exam_title": "Odotusaulakoe"
       },
       {
-        "uuid": "937276b1-3478-4e92-af02-4f8f0935be04",
-        "session_uuid": "fedeebe6-0d3a-4c22-a23a-c18fe971ad61",
+        "uuid": "c95388ac-d541-4551-bdb7-e40bec28b9c3",
+        "session_uuid": "efd6933f-02bb-4b33-88d4-1ca7e81035ab",
         "is_active": false,
-        "status": "session-ended"
+        "status": "disconnected",
+        "exam_title": "Odotusaulakoe"
       }
     ]
   },
   "ktp_controller": {
-    "version": "0.3.0a1",
-    "started_at": "2026-02-08T20:41:05.931+0000",
+    "version": "0.3.0rc3",
+    "started_at": "2026-03-08T21:26:09.450+0000",
     "is_auto_control_enabled": true,
     "cached_files": {
       "exams": [
         {
           "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
           "size": 25353142,
-          "modified_at": "2026-02-08T20:17:55.432+0000"
+          "modified_at": "2026-03-08T21:27:31.651+0000"
         }
       ],
-      "exam_packages": [
-        {
-          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/d9a72be1-eaac-4cec-8844-c8a21edffbcd/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
-          "size": 25353354,
-          "modified_at": "2026-02-08T20:17:55.432+0000"
-        }
-      ],
-      "answers": [
-        {
-          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/d9a72be1-eaac-4cec-8844-c8a21edffbcd/answers-file_2026-02-08T20:45:06.270+0000_final.meb",
-          "size": 1132685,
-          "modified_at": "2026-02-08T20:17:55.432+0000"
-        }
-      ]
-    }
-  }
+      "exam_packages": [],
+      "answers": []
+    },
+    "current_exam_package": null
+  },
+  "reported_at": null
 }
