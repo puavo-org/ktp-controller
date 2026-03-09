@@ -1454,12 +1454,22 @@ class Agent:
 
 
 def _run(args) -> int:
+    utcnow = ktp_controller.utils.utcnow()
     agent_state = ktp_controller.agent.state.load_agent_state()
+    if agent_state.finished_at is not None:
+        seconds_since_last_finished = max(
+            0, (utcnow - agent_state.finished_at).total_seconds()
+        )
+        if seconds_since_last_finished < 3:
+            _LOGGER.warning("Respawning too fast, slow down a bit.")
+            time.sleep(3 - seconds_since_last_finished)
     agent = Agent(state=agent_state, is_testbed_mode=args.testbed_mode)
     try:
         agent.run()
     finally:
-        ktp_controller.agent.state.save_agent_state(agent.get_state())
+        final_agent_state = agent.get_state()
+        final_agent_state.finished_at = ktp_controller.utils.utcnow()
+        ktp_controller.agent.state.save_agent_state(final_agent_state)
 
     return 0
 

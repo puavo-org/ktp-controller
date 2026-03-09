@@ -27,6 +27,7 @@ _AGENT_STATE_FILEPATH = os.path.expanduser(
 
 class AgentState(ktp_controller.pydantic.BaseModel):
     is_auto_control_enabled: pydantic.StrictBool = True
+    finished_at: ktp_controller.pydantic.DateTime | None = None
 
 
 def load_agent_state() -> AgentState:
