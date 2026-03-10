@@ -163,26 +163,40 @@ class PubSubBroadcaster:
     ):
         try:
             await asyncio.wait_for(websock.send_text(data), timeout=timeout)
-        except asyncio.TimeoutError:
-            _LOGGER.warning(
-                "Sending data to websocket %r, registered to channel %r, timeouted. "
-                "Closing the connection.",
+        except Exception as e:
+            _LOGGER.error(
+                "Failed to send data to websocket %r on channel %r: %s",
                 websock,
                 channel,
+                e,
             )
-            await websock.close(code=1000)
+            _LOGGER.error("Closing the websocket %r.", websock)
+            try:
+                await websock.close(code=1000)
+            except Exception as e:
+                _LOGGER.error(
+                    "Could not close websocket %r properly "
+                    "(perhaps the connection was already broken): %s",
+                    e,
+                )
 
     async def __broadcast(self, message):
         data, channel = message["data"], message["channel"]
 
-        errors = []
         tasks = []
         for websock in self.__registrations.get(channel, []).copy():
             tasks.append(self.__unicast(websock, data, channel))
-        errors = await asyncio.gather(*tasks, return_exceptions=True)
+
+        if not tasks:
+            return
+
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        errors = [res for res in results if isinstance(res, Exception)]
         if errors:
-            raise ExceptionGroup(
-                "Failed to broadcast message %s to some of the subscribed websockets.",
+            _LOGGER.error(
+                "Broadcast to channel %r encountered %d errors: %s",
+                channel,
+                len(errors),
                 errors,
             )
 
