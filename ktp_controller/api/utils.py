@@ -166,7 +166,7 @@ class PubSubBroadcaster:
         except asyncio.TimeoutError:
             _LOGGER.warning(
                 "Sending data to websocket %r, registered to channel %r, timeouted. "
-                "Unregistering and closing the connection.",
+                "Closing the connection.",
                 websock,
                 channel,
             )
