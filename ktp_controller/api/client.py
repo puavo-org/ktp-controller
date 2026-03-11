@@ -40,7 +40,14 @@ _LOGGER = logging.getLogger(__name__)
 # Utils:
 
 
-def _post(path: str, *, data=None, json=None, timeout: int = 5) -> requests.Response:
+def _post(
+    path: str,
+    *,
+    data=None,
+    json=None,
+    timeout: int = 5,
+    headers: typing.Dict[str, str] | None = None,
+) -> requests.Response:
     if data is None:
         data = {}
     response = requests.post(
@@ -50,6 +57,7 @@ def _post(path: str, *, data=None, json=None, timeout: int = 5) -> requests.Resp
         data=data,
         json=json,
         timeout=timeout,
+        headers=headers,
     )
     try:
         response.raise_for_status()
@@ -141,6 +149,7 @@ def send_status_report(
     return _post(
         "/api/v1/system/send_status_report",
         data=data,
+        headers={"Content-Type": "application/json"},
         timeout=timeout,
     ).json()
 
