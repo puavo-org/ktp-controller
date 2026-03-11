@@ -94,6 +94,7 @@ def _post(
     json: typing.Any | None = None,
     files: typing.Dict | None = None,
     timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
+    headers: typing.Dict[str, str] | None = None,
 ) -> requests.Response:
     response = requests.post(
         ktp_controller.utils.get_url(
@@ -111,6 +112,7 @@ def _post(
         },
         files=files,
         timeout=timeout,
+        headers=headers,
     )
 
     try:
@@ -182,6 +184,7 @@ def send_status_report(
     return _post(
         "/v1/servers/status_update",
         data=data,
+        headers={"Content-Type": "application/json"},
         timeout=timeout,
     ).json()
 
