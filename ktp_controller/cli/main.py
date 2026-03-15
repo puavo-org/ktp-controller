@@ -7,13 +7,12 @@ import yaml
 
 # Internal imports
 from ktp_controller import VERSION
-import ktp_controller.messages
 
 
-async def _command_api_async_command(command: ktp_controller.messages.Command) -> int:
+async def _command_api_async_command(args: argparse.Namespace) -> str:
     import ktp_controller.api.client
 
-    return ktp_controller.api.client.async_command(command)
+    return ktp_controller.api.client.async_command(args.COMMAND)
 
 
 def _print_as_yaml(obj):
@@ -26,7 +25,7 @@ def _print_as_yaml(obj):
     )
 
 
-async def _command_status(command: ktp_controller.messages.Command) -> int:
+async def _command_status(args: argparse.Namespace) -> None:
     import ktp_controller.api.client
 
     current_exam_package = ktp_controller.api.client.get_current_exam_package()
@@ -52,6 +51,8 @@ async def _command_status(command: ktp_controller.messages.Command) -> int:
         print("# Last status report: -")
     else:
         print("# Last status report:")
+        if not args.show_cached_files:
+            last_status_report["ktp_controller"].pop("cached_files")
         _print_as_yaml(last_status_report)
     print()
 
@@ -69,8 +70,15 @@ _COMMANDS = {
     "status": _command_status,
 }
 
+_COMMAND_ARGUMENTS = {
+    "status": (
+        ("--show-cached-files",),
+        {"help": "show cached files", "action": "store_true", "default": False},
+    ),
+}
 
-async def _dispatch_command(command: ktp_controller.messages.Command) -> int:
+
+async def _dispatch_command(args: argparse.Namespace) -> int:
     # Lazily imported here to avoid long start-up time of this script.
     import websockets
     import ktp_controller.api.client
@@ -82,7 +90,7 @@ async def _dispatch_command(command: ktp_controller.messages.Command) -> int:
     async with websockets.connect(
         ktp_controller.api.client.get_ui_websock_url()
     ) as ui_websock:
-        command_uuid = await _COMMANDS[command](command)
+        command_uuid: str | None = await _COMMANDS[args.COMMAND](args)
         if command_uuid is not None:
             async for data in ui_websock:
                 try:
@@ -105,14 +113,14 @@ async def _dispatch_command(command: ktp_controller.messages.Command) -> int:
                 break
 
     if command_result_data is not None and not command_result_data.command_status.is_ok:
-        print(f"ERROR: {command} failed: {command_result_data.error_message}")
+        print(f"ERROR: {args.COMMAND} failed: {command_result_data.error_message}")
         return 1
 
     return 0
 
 
-def run_command(command: ktp_controller.messages.Command) -> int:
-    return asyncio.run(_dispatch_command(command))
+def run_command(args: argparse.Namespace) -> int:
+    return asyncio.run(_dispatch_command(args))
 
 
 def run() -> int:
@@ -122,8 +130,14 @@ def run() -> int:
     parser.add_argument("--version", action="version", version=VERSION)
     subparsers = parser.add_subparsers(title="Commands", dest="COMMAND", required=True)
     for command in _COMMANDS:
-        subparsers.add_parser(command)
+        subparser = subparsers.add_parser(command)
+        try:
+            args, kwargs = _COMMAND_ARGUMENTS[command]
+        except KeyError:
+            pass
+        else:
+            subparser.add_argument(*args, **kwargs)
 
     args = parser.parse_args()
 
-    return run_command(args.COMMAND)
+    return run_command(args)
