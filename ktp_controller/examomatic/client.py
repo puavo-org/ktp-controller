@@ -13,7 +13,7 @@ import requests.exceptions
 # Internal imports
 import ktp_controller.examomatic.schemas
 import ktp_controller.utils
-from ktp_controller.settings import SETTINGS
+from ktp_controller import SETTINGS
 
 _LOGGER = logging.getLogger(__file__)
 

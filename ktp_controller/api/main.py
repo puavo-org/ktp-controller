@@ -11,7 +11,7 @@ import uvicorn  # type: ignore
 import ktp_controller.api.database
 import ktp_controller.api.exam.routes
 import ktp_controller.api.system.routes
-from ktp_controller.settings import SETTINGS
+from ktp_controller import SETTINGS
 
 
 __all__ = [

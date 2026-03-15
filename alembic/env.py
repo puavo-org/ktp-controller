@@ -7,7 +7,7 @@ import sqlalchemy
 import sqlalchemy.pool
 
 # Internal imports
-from ktp_controller.settings import SETTINGS
+from ktp_controller import SETTINGS
 from ktp_controller.api.models import Base
 
 # this is the Alembic Config object, which provides

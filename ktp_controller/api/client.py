@@ -9,7 +9,7 @@ import requests.exceptions
 # Internal imports
 import ktp_controller.messages
 import ktp_controller.utils
-from ktp_controller.settings import SETTINGS
+from ktp_controller import SETTINGS
 import ktp_controller.api.exam.schemas
 import ktp_controller.api.system.schemas
 import ktp_controller.schemas

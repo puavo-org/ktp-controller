@@ -21,7 +21,7 @@ import requests.exceptions
 import websockets
 
 # Internal imports
-from ktp_controller import VERSION
+from ktp_controller import SETTINGS, VERSION
 import ktp_controller.abitti2.client
 import ktp_controller.abitti2.naksu2
 import ktp_controller.abitti2.schemas
@@ -36,8 +36,6 @@ import ktp_controller.pydantic
 import ktp_controller.utils
 import ktp_controller.messages
 import ktp_controller.schemas
-
-from ktp_controller.settings import SETTINGS
 
 _LOGGER = logging.getLogger(__file__)
 

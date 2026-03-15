@@ -1,11 +1,9 @@
 # Standard library imports
-import logging
 import os
 import os.path
 import platform
 import subprocess
 import typing
-
 
 # Third-party imports
 from pydantic import field_validator, PositiveInt, StrictBool
@@ -17,13 +15,12 @@ from pydantic_settings import (
 )  # type: ignore
 
 # Internal imports
-import ktp_controller
 
-# Relative imports
-
+# Do NOT import ktp_controller. This module is imported by
+# ktp_controller, no thanks for cyclic dependencies.
 
 __all__ = [
-    "SETTINGS",
+    "Settings",
 ]
 
 
@@ -132,15 +129,3 @@ class Settings(BaseSettings):
             file_secret_settings,
             _PuavoSettingsSource(settings_cls),
         )
-
-
-SETTINGS = Settings()
-# We need to reset logging configuration after SETTINGS have been
-# read, because there's a setting which affects logging.
-logging.basicConfig(
-    level=logging.getLevelNamesMapping()[SETTINGS.logging_level.upper()],
-    format=ktp_controller.DEFAULT_LOGGING_FORMAT,
-    force=True,
-)
-_LOGGER = logging.getLogger(__name__)
-_LOGGER.info("Using following settings: %s", SETTINGS)

@@ -45,8 +45,11 @@ else
 fi
 
 case "$COMMAND" in
-    agent|api|supervisor_chainer|cli)
+    agent|api|supervisor_chainer)
         exec python3 -m "ktp_controller.$COMMAND" "$@"
+        ;;
+    cli)
+        KTP_CONTROLLER_LOGGING_LEVEL=WARNING exec python3 -m "ktp_controller.$COMMAND" "$@"
         ;;
     alembic)
         exec alembic "$@"
