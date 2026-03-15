@@ -25,6 +25,43 @@ def _print_as_yaml(obj):
     )
 
 
+def _agofy(last_status_report):
+    import ktp_controller.utils
+
+    if last_status_report["reported_at"] is not None:
+        reported_at_ago = ktp_controller.utils.ago(last_status_report["reported_at"])
+        last_status_report["reported_at"] += f" ({reported_at_ago})"
+
+    created_at_ago = ktp_controller.utils.ago(last_status_report["created_at"])
+    last_status_report["created_at"] += f" ({created_at_ago})"
+
+    ktp_controller_started_at_ago = ktp_controller.utils.ago(
+        last_status_report["ktp_controller"]["started_at"]
+    )
+    last_status_report["ktp_controller"]["started_at"] += (
+        f" ({ktp_controller_started_at_ago})"
+    )
+
+    ep = last_status_report["ktp_controller"]["current_exam_package"]
+    if ep is not None:
+        for f in ("state_changed_at", "started_at", "archived_at"):
+            if ep[f] is not None:
+                ep[f] += f" ({ktp_controller.utils.ago(ep[f])})"
+
+    for ex in last_status_report["abitti2"]["exams"] or []:
+        for f in ("started_at",):
+            if ex[f] is not None:
+                ex[f] += f" ({ktp_controller.utils.ago(ex[f])})"
+
+    if last_status_report["abitti2"]["last_message_received_at"] is not None:
+        abitti2_last_message_received_at_ago = ktp_controller.utils.ago(
+            last_status_report["abitti2"]["last_message_received_at"]
+        )
+        last_status_report["abitti2"]["last_message_received_at"] += (
+            f" ({abitti2_last_message_received_at_ago})"
+        )
+
+
 async def _command_status(args: argparse.Namespace) -> None:
     import ktp_controller.api.client
 
@@ -51,6 +88,8 @@ async def _command_status(args: argparse.Namespace) -> None:
         print("# Last status report: -")
     else:
         print("# Last status report:")
+
+        _agofy(last_status_report)
         if not args.show_cached_files:
             last_status_report["ktp_controller"].pop("cached_files")
         _print_as_yaml(last_status_report)
