@@ -17,6 +17,7 @@ from pydantic_settings import (
 )  # type: ignore
 
 # Internal imports
+import ktp_controller
 
 # Relative imports
 
@@ -24,9 +25,6 @@ from pydantic_settings import (
 __all__ = [
     "SETTINGS",
 ]
-
-
-_LOGGER = logging.getLogger(__file__)
 
 
 class _PuavoSettingsSource(PydanticBaseSettingsSource):
@@ -137,7 +135,12 @@ class Settings(BaseSettings):
 
 
 SETTINGS = Settings()
-logging.getLogger().setLevel(
-    logging.getLevelNamesMapping()[SETTINGS.logging_level.upper()]
+# We need to reset logging configuration after SETTINGS have been
+# read, because there's a setting which affects logging.
+logging.basicConfig(
+    level=logging.getLevelNamesMapping()[SETTINGS.logging_level.upper()],
+    format=ktp_controller.DEFAULT_LOGGING_FORMAT,
+    force=True,
 )
+_LOGGER = logging.getLogger(__name__)
 _LOGGER.info("Using following settings: %s", SETTINGS)
