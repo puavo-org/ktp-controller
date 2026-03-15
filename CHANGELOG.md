@@ -8,11 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- `cli status` does not show cached files anymore, by default. Use `--show-cached-files` to include them in the output.
+- The logging level of `cli` is now WARNING by default.
+- All `*_at` timestamps in `cli status` output have also human-friendly ago postpositions / suffixes, e.g. (1h 34m 2s ago)
+
 ### Fixed
 
 - api: error handling in websocket pubsub broadcasting
   - error in a single websocket does not bring the whole broadcaster down anymore
-	
 
 
 ## [0.3.1] - 2026-03-09
