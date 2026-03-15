@@ -258,12 +258,12 @@ def singleton():
         yield
 
 
-def ago(dt: datetime.datetime, *, now: datetime.datetime | None = None) -> str:
+def ago(dt: str | datetime.datetime, *, now: datetime.datetime | None = None) -> str:
     """
     >>> ago(datetime.datetime(1970, 1, 1, 10, 0, 0), now=datetime.datetime(1970, 1, 1, 11, 5, 3))
     '1h 5m 3s ago'
 
-    >>> ago(datetime.datetime(1970, 1, 1, 10, 0, 0), now=datetime.datetime(1970, 1, 1, 10, 0, 0))
+    >>> ago("1970-01-01T10:00:00", now=datetime.datetime(1970, 1, 1, 10, 0, 0))
     'now'
 
     >>> ago(datetime.datetime(1970, 1, 1, 10, 0, 0), now=datetime.datetime(1970, 2, 3, 11, 5, 3))
@@ -272,7 +272,7 @@ def ago(dt: datetime.datetime, *, now: datetime.datetime | None = None) -> str:
     >>> ago(datetime.datetime(1970, 1, 1, 10, 0, 0, tzinfo=datetime.UTC), now=datetime.datetime(1970, 2, 3, 11, 5, 3, tzinfo=datetime.UTC))
     '33d 1h 5m 3s ago'
 
-    >>> ago(datetime.datetime(1970, 1, 1, 10, 0, 0, tzinfo=datetime.UTC), now=datetime.datetime(1970, 2, 3, 11, 5, 3, tzinfo=datetime.timezone(datetime.timedelta(seconds=7200), 'EET')))
+    >>> ago("1970-01-01T10:00:00Z", now=datetime.datetime(1970, 2, 3, 11, 5, 3, tzinfo=datetime.timezone(datetime.timedelta(seconds=7200), 'EET')))
     '32d 23h 5m 3s ago'
 
     >>> ago(datetime.datetime(1970, 1, 1, 10, 0, 0), now=datetime.datetime(1970, 2, 3, 11, 5, 3, tzinfo=datetime.UTC))
@@ -280,7 +280,7 @@ def ago(dt: datetime.datetime, *, now: datetime.datetime | None = None) -> str:
     ...
     ValueError: dt and now must both be naive or have have time zone information
 
-    >>> ago(datetime.datetime(1970, 1, 1, 10, 0, 0, tzinfo=datetime.UTC), now=datetime.datetime(1970, 2, 3, 11, 5, 3))
+    >>> ago(datetime.datetime(1970, 1, 1, 10, 0, 0, tzinfo=datetime.UTC), now="1970-02-03T11:05:03")
     Traceback (most recent call last):
     ...
     ValueError: dt and now must both be naive or have have time zone information
@@ -291,7 +291,12 @@ def ago(dt: datetime.datetime, *, now: datetime.datetime | None = None) -> str:
     ValueError: dt is in future
     """
     if now is None:
-        now = utcnow()
+        now: datetime.datetime = utcnow()
+    elif isinstance(now, str):
+        now: datetime.datetime = datetime.datetime.fromisoformat(now)
+
+    if isinstance(dt, str):
+        dt: datetime.datetime = datetime.datetime.fromisoformat(dt)
 
     dt_is_naive = False
     if dt.tzinfo is None:
