@@ -304,6 +304,7 @@ class Agent:
         self.__last_received_exam_list = None
         self.__last_received_security_code = None
         self.__old_security_code = None
+        self.__uploaded = False
         self.__last_message_from_abitti2_received_at = None
         self.__last_received_students = None
         self.__last_received_answer_count = None
@@ -439,17 +440,57 @@ class Agent:
     ) -> bool:
         _LOGGER.info("Preparing exam package: %r", current_exam_package)
 
-        (exam_package_filepath, decrypt_codes) = _create_exam_package_file(
-            current_exam_package
-        )
+        if not self.__uploaded:
+            (exam_package_filepath, decrypt_codes) = _create_exam_package_file(
+                current_exam_package
+            )
 
-        exam_filenames = ktp_controller.abitti2.client.prepare_exam_package(
-            exam_package_filepath, decrypt_codes
-        )
+            exam_filenames = ktp_controller.abitti2.client.prepare_exam_package(
+                exam_package_filepath, decrypt_codes
+            )
+
+            _LOGGER.info(
+                "Uploaded and decrypted %d exams from current exam package %r.",
+                current_exam_package["external_id"],
+                len(exam_filenames),
+            )
+        self.__uploaded = True
+
+        if self.__is_auto_control_enabled:
+            if self.__old_security_code is None:
+                self.__old_security_code = self.__last_received_security_code
+                _LOGGER.info(
+                    "Requesting Abitti2 to change the access code to ensure students "
+                    "cannot access new exams with the old code (%r).",
+                    self.__old_security_code,
+                )
+                ktp_controller.abitti2.client.change_student_access_code()
+                return False
+
+            if self.__old_security_code == self.__last_received_security_code:
+                _LOGGER.info(
+                    "Waiting until access code has changed to ensure students "
+                    "cannot access new exams with the old code."
+                )
+                # Waiting until the security code is changed.
+                return False
+
+            _LOGGER.info(
+                "Access code has changed (%r => %r), continue starting the exam package.",
+                self.__old_security_code,
+                self.__last_received_security_code,
+            )
+
+            _LOGGER.info(
+                "API says the access code is: %r",
+                ktp_controller.api.client.get_student_access_code(),
+            )
+
+        self.__old_security_code = None
+
         _LOGGER.info(
-            "Prepared current exam package %r (%d exams) successfully.",
+            "Prepared current exam package %r successfully.",
             current_exam_package["external_id"],
-            len(exam_filenames),
         )
 
         return True
@@ -488,38 +529,6 @@ class Agent:
         current_exam_package: typing.Dict[str, typing.Any],
     ) -> bool:
         _LOGGER.info("Starting exam package: %r", current_exam_package)
-
-        if self.__is_auto_control_enabled:
-            if self.__old_security_code is None:
-                self.__old_security_code = self.__last_received_security_code
-                _LOGGER.info(
-                    "Requesting Abitti2 to change the access code to ensure students "
-                    "cannot access new exams with the old code (%r).",
-                    self.__old_security_code,
-                )
-                ktp_controller.abitti2.client.change_student_access_code()
-                return False
-
-            if self.__old_security_code == self.__last_received_security_code:
-                _LOGGER.info(
-                    "Waiting until access code has changed to ensure students "
-                    "cannot access new exams with the old code."
-                )
-                # Waiting until the security code is changed.
-                return False
-
-            _LOGGER.info(
-                "Access code has changed (%r => %r), continue starting the exam package.",
-                self.__old_security_code,
-                self.__last_received_security_code,
-            )
-
-            _LOGGER.info(
-                "API says the access code is: %r",
-                ktp_controller.api.client.get_student_access_code(),
-            )
-
-        self.__old_security_code = None
         ktp_controller.abitti2.client.start_decrypted_exams()
         _LOGGER.info(
             "Started current exam package %r successfully.",
