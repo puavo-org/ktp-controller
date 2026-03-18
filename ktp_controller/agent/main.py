@@ -451,8 +451,8 @@ class Agent:
 
             _LOGGER.info(
                 "Uploaded and decrypted %d exams from current exam package %r.",
-                current_exam_package["external_id"],
                 len(exam_filenames),
+                current_exam_package["external_id"],
             )
         self.__uploaded = True
 
