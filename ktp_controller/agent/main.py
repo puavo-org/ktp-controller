@@ -134,7 +134,7 @@ def _transfer_answers(
 
 def _create_exam_package_file(
     api_scheduled_exam_package,
-) -> typing.Tuple[str, typing.Set[str], int]:
+) -> typing.Tuple[str, typing.Set[str]]:
     exam_file_infos = []
     for api_scheduled_exam_external_id in api_scheduled_exam_package[
         "scheduled_exam_external_ids"
@@ -153,8 +153,6 @@ def _create_exam_package_file(
         ).hexdigest(),
     )
 
-    exam_file_count = 0
-
     with ktp_controller.utils.open_atomic_write(
         exam_package_filepath
     ) as exam_package_file:
@@ -168,10 +166,9 @@ def _create_exam_package_file(
                     ),
                     ktp_controller.utils.utcnow_str() + exam_file_info["name"],
                 )
-                exam_file_count += 1
                 decrypt_codes.add(exam_file_info["decrypt_code"])
 
-    return exam_package_filepath, decrypt_codes, exam_file_count
+    return exam_package_filepath, decrypt_codes
 
 
 def _set_current_exam_package_state(
@@ -302,8 +299,6 @@ class Agent:
         self.__approx_examomatic_ping_interval_sec = approx_examomatic_ping_interval_sec
         self.__approx_reconnect_timeout_sec = approx_reconnect_timeout_sec
         self.__approx_answer_transfer_interval_sec = approx_answer_transfer_interval_sec
-
-        self.__prepared_exam_package_info = None
 
         # Abitti2 reports these
         self.__last_received_exam_list = None
@@ -444,20 +439,17 @@ class Agent:
     ) -> bool:
         _LOGGER.info("Preparing exam package: %r", current_exam_package)
 
-        (exam_package_filepath, decrypt_codes, exam_file_count) = (
-            _create_exam_package_file(current_exam_package)
+        (exam_package_filepath, decrypt_codes) = _create_exam_package_file(
+            current_exam_package
         )
 
-        self.__prepared_exam_package_info = {
-            "filepath": exam_package_filepath,
-            "decrypt_codes": decrypt_codes,
-            "exam_file_count": exam_file_count,
-        }
-
+        exam_filenames = ktp_controller.abitti2.client.prepare_exam_package(
+            exam_package_filepath, decrypt_codes
+        )
         _LOGGER.info(
             "Prepared current exam package %r (%d exams) successfully.",
             current_exam_package["external_id"],
-            exam_file_count,
+            len(exam_filenames),
         )
 
         return True
@@ -496,16 +488,6 @@ class Agent:
         current_exam_package: typing.Dict[str, typing.Any],
     ) -> bool:
         _LOGGER.info("Starting exam package: %r", current_exam_package)
-
-        if self.__prepared_exam_package_info is not None:
-            exam_filenames = ktp_controller.abitti2.client.start_exam_package(
-                self.__prepared_exam_package_info["filepath"],
-                self.__prepared_exam_package_info["decrypt_codes"],
-            )
-            _LOGGER.info(
-                "Abitti2 started %d exams: %s", len(exam_filenames), exam_filenames
-            )
-            self.__prepared_exam_package_info = None
 
         if self.__is_auto_control_enabled:
             if self.__old_security_code is None:
