@@ -661,6 +661,12 @@ class Agent:
                 if (
                     self.__last_received_exam_list is not None
                     and self.__last_received_exam_list != []
+                    and (
+                        [e["uuid"] for e in self.__last_received_exam_list]
+                        != [
+                            "390e7988-ff0e-42b4-a2e6-d13a969e7103"
+                        ]  # This is waiting lobby exam, do not save orphan answers.
+                    )
                     and self.__last_received_answer_count is not None
                     and self.__last_received_answer_count > 0
                 ):
