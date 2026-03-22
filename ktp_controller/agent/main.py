@@ -308,6 +308,7 @@ class Agent:
         self.__last_message_from_abitti2_received_at = None
         self.__last_received_students = None
         self.__last_received_answer_count = None
+        self.__last_cold_reset_time: datetime.datetime | None = None
 
         self.__connection_stats: typing.Dict[
             Component, ktp_controller.agent.stats.ConnectionStats
@@ -687,7 +688,20 @@ class Agent:
                     #
                     _transfer_answers(exam_package_external_id=None)
                 elif self.__last_received_exam_list == []:
-                    ktp_controller.abitti2.client.reset()
+                    # Cold reset: Abitti2 is not reporting it has any
+                    # exams running, which means it has just
+                    # started. So, we always want to have at least
+                    # waiting lobby exam running there. But sometimes
+                    # Abitti2 is really slow to get it up and running,
+                    # so, we have a short 15 waiting period here to
+                    # not flood Abitti2 with consecutive reset
+                    # requests.
+                    if (
+                        self.__last_cold_reset_time is None
+                        or (utcnow - self.__last_cold_reset_time).total_seconds() >= 15
+                    ):
+                        ktp_controller.abitti2.client.reset()
+                        self.__last_cold_reset_time = utcnow
             return False  # No current exam package
 
         current_exam_package = locked_exam_packages[0]
