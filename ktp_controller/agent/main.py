@@ -493,6 +493,8 @@ class Agent:
             current_exam_package["external_id"],
         )
 
+        self.__uploaded = False
+
         return True
 
     def __ensure_answer_transfer_task_is_running(
