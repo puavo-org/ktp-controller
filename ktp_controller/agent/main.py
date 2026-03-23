@@ -116,6 +116,7 @@ def _transfer_answers(
         filepath=answers_file_path,
         sha256sum=sha256sum,
         is_final=is_final,
+        timeout=(60.1, 600),
     )
 
     sentinel_file_path = f"{answers_file_path}.archived"
