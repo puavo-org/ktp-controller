@@ -205,7 +205,10 @@ def stop_exam_session(session_uuid: str) -> None:
     _post("/api/end-student-session", data={"sessionUuid": session_uuid})
 
 
-def download_answers_file(dest_filepath: str, timeout: int = 5) -> str:
+def download_answers_file(
+    dest_filepath: str,
+    timeout: int | typing.Tuple[int, int] = (3.1, 20),
+) -> str:
     sha256sum = hashlib.sha256()
     with ktp_controller.utils.open_atomic_write(
         dest_filepath, exclusive=True
@@ -217,13 +220,16 @@ def download_answers_file(dest_filepath: str, timeout: int = 5) -> str:
             for chunk in response.iter_content(4096):
                 dest_file.write(chunk)
                 sha256sum.update(chunk)
+        except requests.exceptions.ConnectTimeout as connect_timeout:
+            raise TimeoutError("Connect timed out.") from connect_timeout
         except requests.exceptions.ConnectionError as connection_error:
             # iter_content raises this if underlying read times out.
-            if not str(connection_error).endswith("Read timed out."):
-                raise TimeoutError() from connection_error
+            if str(connection_error).endswith("Read timed out."):
+                raise TimeoutError("Read timed out.") from connection_error
+            raise connection_error
         except requests.exceptions.ReadTimeout as read_timeout:
             # requests.get raises this if the response is not returned on time.
-            raise TimeoutError() from read_timeout
+            raise TimeoutError("Read timed out.") from read_timeout
 
     return sha256sum.hexdigest()
 
