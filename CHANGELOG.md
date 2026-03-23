@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.6] - 2026-03-23
+
+### Changed
+
+- Answers file download timeout (from Abitti2) increased from 5sec to 200secs (connect timeout 6.1sec)
+- Answers file upload timeout (to Exam-O-Matic) increased from 60secs to 600secs (connect timeout 6.1sec)
+- Exam package upload timeout (to Abitti2) increased from 20secs to 60secs (connect timeout 6.1sec)
+
 
 ## [0.3.5] - 2026-03-22
 
