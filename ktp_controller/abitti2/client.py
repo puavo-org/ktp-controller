@@ -123,7 +123,9 @@ def decrypt_exams(decrypt_code: str, timeout: int = 60) -> typing.Dict:
 
 
 def upload_exam_package(
-    exam_package_filepath, *, timeout: int = 20
+    exam_package_filepath,
+    *,
+    timeout: int | typing.Tuple[int, int] = (6.1, 60),
 ) -> typing.List[str]:
     exam_package_filename = os.path.basename(exam_package_filepath)
 
