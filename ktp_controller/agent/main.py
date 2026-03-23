@@ -102,7 +102,10 @@ def _transfer_answers(
             suffix,
         )
 
-    sha256sum = ktp_controller.abitti2.client.download_answers_file(answers_file_path)
+    sha256sum = ktp_controller.abitti2.client.download_answers_file(
+        answers_file_path,
+        timeout=(6.1, 200),
+    )
 
     if exam_package_external_id is None:
         _LOGGER.warning("Orphan answers file cannot be uploaded: %r", answers_file_path)
