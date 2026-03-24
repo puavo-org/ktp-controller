@@ -523,13 +523,19 @@ class Agent:
             return
 
         self.__answer_transfer_task.cancel()
-        with contextlib.suppress(asyncio.CancelledError):
-            await self.__answer_transfer_task
-        _LOGGER.info(
-            "Stopped periodic exam package '%s' answer file transfers from Abitti2 to Exam-O-Matic.",
-            current_exam_package["external_id"],
-        )
-        self.__answer_transfer_task = None
+        try:
+            with contextlib.suppress(asyncio.CancelledError):
+                await self.__answer_transfer_task
+        except Exception:
+            _LOGGER.exception(
+                "Periodic answer transfer from Abitti2 to Exam-O-Matic failed: %s"
+            )
+        finally:
+            _LOGGER.info(
+                "Stopped periodic exam package '%s' answer file transfers from Abitti2 to Exam-O-Matic.",
+                current_exam_package["external_id"],
+            )
+            self.__answer_transfer_task = None
 
     async def __start_current_exam_package(
         self,
@@ -636,10 +642,15 @@ class Agent:
         self, current_exam_package: typing.Dict[str, typing.Any]
     ):
         while not _SHUTDOWN_EVENT.is_set():
-            self.__transfer_answers(
-                current_exam_package,
-                is_final=ktp_controller.examomatic.client.IsFinal.UNKNOWN,
-            )
+            try:
+                self.__transfer_answers(
+                    current_exam_package,
+                    is_final=ktp_controller.examomatic.client.IsFinal.UNKNOWN,
+                )
+            except Exception:
+                _LOGGER.exception(
+                    "Failed to transfer non-final answers from Abitti2 to Exam-O-Matic."
+                )
             await asyncio.sleep(self.__approx_answer_transfer_interval_sec)
 
     async def __work_on_current_exam_package(self, *, trigger: Trigger) -> bool:
