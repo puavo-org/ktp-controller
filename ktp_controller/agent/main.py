@@ -804,7 +804,7 @@ class Agent:
         }
 
         state = current_exam_package["state"]
-        if state in ("running", "stopping", "stopped"):
+        if state in ("running", "stopping"):
             self.__ensure_answer_transfer_task_is_running(current_exam_package)
 
         transition = state_transitions[state]
