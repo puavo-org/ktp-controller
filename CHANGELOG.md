@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.7] - 2026-03-24
+
+### Fixed
+
+- Agent now logs errors occured during periodic answer transfers.
+
+- Periodic answer transfer task is not re-started anymore when the
+  scheduled exam package is stopped. This caused issues when periodic
+  answer transfer itself was failing (for any reason). Final archival
+  process will take care of transfering final answers from Abitti2 to
+  Exam-O-Matic when the exam package has been stopped.
+
+
 ## [0.3.6] - 2026-03-23
 
 ### Changed
