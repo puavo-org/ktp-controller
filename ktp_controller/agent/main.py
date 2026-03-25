@@ -604,7 +604,7 @@ class Agent:
             current_exam_package["external_id"],
         )
         await self.__stop_answer_transfer_task(current_exam_package)
-        self.__transfer_answers(
+        await self.__transfer_answers(
             current_exam_package, is_final=ktp_controller.examomatic.client.IsFinal.TRUE
         )
         ktp_controller.abitti2.client.reset()
@@ -614,7 +614,7 @@ class Agent:
         )
         return True
 
-    def __transfer_answers(
+    async def __transfer_answers(
         self,
         current_exam_package: typing.Dict[str, typing.Any],
         is_final: ktp_controller.examomatic.client.IsFinal,
@@ -629,7 +629,8 @@ class Agent:
             )
             return
         if status_report["abitti2"]["answer_count"] > 0:
-            _transfer_answers(
+            await asyncio.to_thread(
+                _transfer_answers,
                 exam_package_external_id=current_exam_package["external_id"],
                 is_final=is_final,
             )
@@ -643,7 +644,7 @@ class Agent:
     ):
         while not _SHUTDOWN_EVENT.is_set():
             try:
-                self.__transfer_answers(
+                await self.__transfer_answers(
                     current_exam_package,
                     is_final=ktp_controller.examomatic.client.IsFinal.UNKNOWN,
                 )
@@ -707,7 +708,9 @@ class Agent:
                     # some conflicting actions taken by uninformed
                     # human beings.
                     #
-                    _transfer_answers(exam_package_external_id=None)
+                    await asyncio.to_thread(
+                        _transfer_answers, exam_package_external_id=None
+                    )
                 elif self.__last_received_exam_list == []:
                     # Cold reset: Abitti2 is not reporting it has any
                     # exams running, which means it has just
