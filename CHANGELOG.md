@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.8] - 2026-03-25
+
+### Fixed
+
+- Offload possibly long running answer transfers to background
+  threads. This avoids blocking the main loop for extended periods of
+  time. Which in turn means that websockets can keep playing their
+  keepalive ping-pong game behind the scenes.
+
+### Changed
+
+- Periodic answer transfer task is now running only when exam package
+  is `running`. Previously, it was running also when exam packages
+  were `stopping`, but that does not make much sense; the final answer
+  transfer is about to get started anyways, when the exam package is
+  completely `stopped`.
+
+
 ## [0.3.7] - 2026-03-24
 
 ### Fixed
