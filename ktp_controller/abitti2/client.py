@@ -105,7 +105,14 @@ def get_abitti2_websock_url():
 
 
 def get_current_abitti2_version() -> str:
-    version = _get("/api/version").json()["version"]
+    try:
+        # Pre Abitti2 1.26.0
+        version = _get("/api/version", timeout=5).json()["version"]
+    except requests.exceptions.HTTPError as http_error:
+        if http_error.response.status_code != 404:
+            raise
+        # Abitti2 1.26.0+
+        version = _get("/api/server-info", timeout=5).json()["version"]
     version_match = re.match(r"^SERVER-v((\d+)\.(\d+)\.(\d+))$", version)
     if not version_match:
         raise RuntimeError("Abitti2 reported version in unexpected format", version)
