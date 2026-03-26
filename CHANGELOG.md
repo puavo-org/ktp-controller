@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.9rc1]
 
+### Fixed
+
+- Fix version inspection of Abitti2 v1.26.0+
+
 
 ## [0.3.8] - 2026-03-25
 
