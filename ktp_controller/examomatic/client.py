@@ -6,12 +6,11 @@ import os.path
 import typing
 
 # Third-party imports
-import requests
-import requests.auth
-import requests.exceptions
+import httpx
 
 # Internal imports
 import ktp_controller.examomatic.schemas
+import ktp_controller.httpx
 import ktp_controller.utils
 from ktp_controller import SETTINGS
 
@@ -33,14 +32,12 @@ __all__ = [
 ]
 
 
-# Utils:
-
-DEFAULT_REQUEST_TIMEOUT: typing.Tuple[int, int] = (60.1, 60)
+DEFAULT_REQUEST_TIMEOUT = (60.1, 60)
 
 
-def _get_auth():
+def _get_auth() -> typing.Optional[typing.Tuple[str, str]]:
     if SETTINGS.examomatic_username and SETTINGS.examomatic_password_file:
-        return requests.auth.HTTPBasicAuth(
+        return (
             SETTINGS.examomatic_username,
             ktp_controller.utils.readfirstline(
                 SETTINGS.examomatic_password_file, encoding="utf-8"
@@ -49,80 +46,59 @@ def _get_auth():
     return None
 
 
-def _get(
+async def _get(
     path: str,
     *,
-    extra_params: typing.Optional[typing.Dict[str, str]] = None,
-    stream: bool = False,
-    timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
-) -> requests.Response:
-    if extra_params is None:
-        extra_params = {}
+    timeout=DEFAULT_REQUEST_TIMEOUT,
+) -> httpx.Response:
     params = {
         "domain": SETTINGS.domain,
         "hostname": SETTINGS.hostname,
         "id": SETTINGS.id,
     }
-    params.update(extra_params)
 
-    response = requests.get(
-        ktp_controller.utils.get_url(
-            SETTINGS.examomatic_host,
-            path,
-            scheme="https" if SETTINGS.examomatic_use_tls else "http",
-        ),
-        auth=_get_auth(),
+    url = ktp_controller.utils.get_url(
+        SETTINGS.examomatic_host,
+        path,
         params=params,
-        timeout=timeout,
-        stream=stream,
+        scheme="https" if SETTINGS.examomatic_use_tls else "http",
     )
 
-    try:
-        response.raise_for_status()
-    except requests.exceptions.HTTPError as http_error:
-        if http_error.response.text:
-            _LOGGER.error("error content: %s", http_error.response.text)
-        raise
-
-    return response
+    return await ktp_controller.httpx.get(url, auth=_get_auth(), timeout=timeout)
 
 
-def _post(
+async def _post(
     path: str,
     *,
-    data: bytes | None = None,
+    data: typing.Any | None = None,
+    content: bytes | None = None,
     json: typing.Any | None = None,
     files: typing.Dict | None = None,
-    timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
+    timeout=DEFAULT_REQUEST_TIMEOUT,
     headers: typing.Dict[str, str] | None = None,
-) -> requests.Response:
-    response = requests.post(
-        ktp_controller.utils.get_url(
-            SETTINGS.examomatic_host,
-            path,
-            scheme="https" if SETTINGS.examomatic_use_tls else "http",
-        ),
-        json=json,
+) -> httpx.Response:
+    url = ktp_controller.utils.get_url(
+        SETTINGS.examomatic_host,
+        path,
+        scheme="https" if SETTINGS.examomatic_use_tls else "http",
+    )
+
+    params = {
+        "domain": SETTINGS.domain,
+        "hostname": SETTINGS.hostname,
+        "id": SETTINGS.id,
+    }
+
+    return await ktp_controller.httpx.post(
+        url,
+        params=params,
         data=data,
-        auth=_get_auth(),
-        params={
-            "domain": SETTINGS.domain,
-            "hostname": SETTINGS.hostname,
-            "id": SETTINGS.id,
-        },
+        content=content,
+        json=json,
         files=files,
         timeout=timeout,
         headers=headers,
     )
-
-    try:
-        response.raise_for_status()
-    except requests.exceptions.HTTPError as http_error:
-        if http_error.response.text:
-            _LOGGER.error("error content: %s", http_error.response.text)
-        raise
-
-    return response
 
 
 def get_basic_auth() -> typing.Dict[str, str]:
@@ -170,72 +146,91 @@ def websock_validate_message(data):
 # Exam-O-Matic API commands:
 
 
-def send_status_report(
+async def send_status_report(
     status_report: typing.Dict,
     *,
-    timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
+    timeout=DEFAULT_REQUEST_TIMEOUT,
 ) -> typing.Any:
-    data = (
+    content = (
         ktp_controller.examomatic.schemas.StatusReport.model_validate(status_report)
         .model_dump_json(ensure_ascii=True)
         .encode("ascii")
     )
 
-    return _post(
+    response = await _post(
         "/v1/servers/status_update",
-        data=data,
+        content=content,
         headers={"Content-Type": "application/json"},
         timeout=timeout,
-    ).json()
+    )
+    return response.json()
 
 
-def get_exam_info(
-    *, timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT
-) -> typing.Dict:
-    return _get("/v2/schedules/exam_packages", timeout=timeout).json()
+async def get_exam_info(*, timeout=DEFAULT_REQUEST_TIMEOUT) -> typing.Dict:
+    response = await _get("/v2/schedules/exam_packages", timeout=timeout)
+    return response.json()
 
 
-def get_exam_file_stream(
+async def get_exam_file_stream(
     sha256sum: str,
     *,
-    timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
+    timeout=DEFAULT_REQUEST_TIMEOUT,
     stream_chunk_size=4096,
-) -> typing.Iterable[bytes]:
-    response = _get(
+) -> typing.AsyncIterable[bytes]:
+    url = ktp_controller.utils.get_url(
+        SETTINGS.examomatic_host,
         "/v1/exams/raw_file",
-        extra_params={"hash": sha256sum},
-        stream=True,
-        timeout=timeout,
+        scheme="https" if SETTINGS.examomatic_use_tls else "http",
     )
+
+    params = {
+        "domain": SETTINGS.domain,
+        "hostname": SETTINGS.hostname,
+        "id": SETTINGS.id,
+        "hash": sha256sum,
+    }
 
     sha256sum_of_downloaded_file = hashlib.sha256()
 
-    for chunk in response.iter_content(chunk_size=stream_chunk_size):
-        sha256sum_of_downloaded_file.update(chunk)
-        yield chunk
+    async with httpx.AsyncClient() as client:
+        async with client.stream(
+            "GET", url, auth=_get_auth(), params=params, timeout=timeout
+        ) as response:
+            try:
+                response.raise_for_status()
+            except httpx.HTTPStatusError:
+                await response.aread()
+                if response.text:
+                    _LOGGER.error("error content: %s", response.text)
+                raise
+
+            async for chunk in response.aiter_bytes(chunk_size=stream_chunk_size):
+                sha256sum_of_downloaded_file.update(chunk)
+                yield chunk
 
     if sha256sum_of_downloaded_file.hexdigest() != sha256sum:
         raise RuntimeError("sha256sum mismatch of downloaded exam file")
 
 
-def download_exam_file(
+async def download_exam_file(
     sha256sum: str,
     dest_filepath: str,
     *,
-    timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
+    timeout=DEFAULT_REQUEST_TIMEOUT,
 ):
     with ktp_controller.utils.open_atomic_write(
         dest_filepath, exclusive=True
     ) as dest_file:
-        for chunk in get_exam_file_stream(sha256sum, timeout=timeout):
+        async for chunk in get_exam_file_stream(sha256sum, timeout=timeout):
             dest_file.write(chunk)
 
 
 def download_dummy_exam_file(
     dest_filepath: str,
     *,
-    timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
+    timeout=DEFAULT_REQUEST_TIMEOUT,
 ):
+    # This remains sync as it is doing a local file copy operation
     ktp_controller.utils.copy_atomic(
         os.path.join(os.path.dirname(__file__), "dummy-exam-file.mex"), dest_filepath
     )
@@ -259,13 +254,13 @@ class IsFinal(str, enum.Enum):
         return self.value == self.TRUE
 
 
-def upload_answers_file(
+async def upload_answers_file(
     *,
     exam_package_external_id: str,
     filepath: str,
     sha256sum: str | None = None,
     is_final: IsFinal = IsFinal.UNKNOWN,
-    timeout: int | typing.Tuple[int, int] = DEFAULT_REQUEST_TIMEOUT,
+    timeout=DEFAULT_REQUEST_TIMEOUT,
 ):
     is_final = IsFinal(is_final)
 
@@ -278,13 +273,13 @@ def upload_answers_file(
         file_size = f.seek(0, 2)
         f.seek(0)
 
-        _post(
+        await _post(
             "/v1/answers/upload",
             data={
                 "answers_file": filename,
                 "file_sha256": sha256sum,
-                "file_size": file_size,
-                "is_final": is_final,
+                "file_size": str(file_size),
+                "is_final": is_final.value,
                 "package_id": exam_package_external_id,
             },
             files={"answers_file": f},
