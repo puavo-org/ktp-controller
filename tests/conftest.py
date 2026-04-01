@@ -1,6 +1,8 @@
 # Standard library imports
 import dataclasses
 import datetime
+import os.path
+import shutil
 
 # Third-party imports
 from sqlalchemy import create_engine
@@ -96,3 +98,11 @@ class _TestRunState:
 @pytest.fixture(scope="session")
 def testrunstate():
     yield _TestRunState()
+
+
+@pytest.fixture(scope="function")
+def testdir():
+    dirpath = os.path.join(os.path.dirname(__file__), "testdir")
+    os.makedirs(dirpath)
+    yield dirpath
+    shutil.rmtree(dirpath)
