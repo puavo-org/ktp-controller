@@ -17,7 +17,7 @@ import zipfile
 
 # Third-party imports
 import pydantic
-import requests.exceptions
+import httpx
 import websockets
 
 # Internal imports
@@ -101,7 +101,7 @@ def _mark_file_archived(filepath: str | pathlib.Path):
     _write_archive_file(f"{filepath}.archived")
 
 
-def _transfer_answers(
+async def _transfer_answers(
     *,
     exam_package_external_id: str | None,
     is_final: ktp_controller.examomatic.client.IsFinal = ktp_controller.examomatic.client.IsFinal.UNKNOWN,
@@ -144,7 +144,7 @@ def _transfer_answers(
 
     _LOGGER.info("Deleted %d old exam packages", len(deleted_exam_package_external_ids))
 
-    sha256sum = ktp_controller.abitti2.client.download_answers_file(
+    sha256sum = await ktp_controller.abitti2.client.download_answers_file(
         answers_file_path,
         timeout=(6.1, 200),
     )
@@ -153,7 +153,7 @@ def _transfer_answers(
         _LOGGER.warning("Orphan answers file cannot be uploaded: %r", answers_file_path)
         return
 
-    ktp_controller.examomatic.client.upload_answers_file(
+    await ktp_controller.examomatic.client.upload_answers_file(
         exam_package_external_id=exam_package_external_id,
         filepath=answers_file_path,
         sha256sum=sha256sum,
@@ -248,7 +248,7 @@ def _set_current_exam_package_state(
     return last_state != next_state
 
 
-def _allow_students_to_use_browsers(students):
+async def _allow_students_to_use_browsers(students):
     for student in students:
         student_uuid = student["uuid"]
         session_uuid = student["session_uuid"]
@@ -258,7 +258,7 @@ def _allow_students_to_use_browsers(students):
             continue
 
         try:
-            ktp_controller.abitti2.client.set_exam_session_permission_to_use_browsers(
+            await ktp_controller.abitti2.client.set_exam_session_permission_to_use_browsers(
                 session_uuid, True
             )
         except Exception:
@@ -504,7 +504,7 @@ class Agent:
                 current_exam_package
             )
 
-            exam_filenames = ktp_controller.abitti2.client.prepare_exam_package(
+            exam_filenames = await ktp_controller.abitti2.client.prepare_exam_package(
                 exam_package_filepath, decrypt_codes
             )
 
@@ -523,7 +523,7 @@ class Agent:
                     "cannot access new exams with the old code (%r).",
                     self.__old_security_code,
                 )
-                ktp_controller.abitti2.client.change_student_access_code()
+                await ktp_controller.abitti2.client.change_student_access_code()
                 return False
 
             if self.__old_security_code == self.__last_received_security_code:
@@ -596,7 +596,7 @@ class Agent:
         current_exam_package: typing.Dict[str, typing.Any],
     ) -> bool:
         _LOGGER.info("Starting exam package: %r", current_exam_package)
-        ktp_controller.abitti2.client.start_decrypted_exams()
+        await ktp_controller.abitti2.client.start_decrypted_exams()
         _LOGGER.info(
             "Started current exam package %r successfully.",
             current_exam_package["external_id"],
@@ -620,14 +620,16 @@ class Agent:
     ) -> bool:
         if self.__is_auto_control_enabled:
             # Change the security code first to ensure students cannot enter anymore.
-            ktp_controller.abitti2.client.change_student_access_code()
+            await ktp_controller.abitti2.client.change_student_access_code()
 
         last_status_report = ktp_controller.api.client.get_last_status_report()
         if last_status_report is None:
             return False
 
         for student in last_status_report["abitti2"]["students"]:
-            ktp_controller.abitti2.client.stop_exam_session(student["session_uuid"])
+            await ktp_controller.abitti2.client.stop_exam_session(
+                student["session_uuid"]
+            )
 
         is_stopped = (
             _no_active_students(last_status_report)
@@ -661,7 +663,7 @@ class Agent:
         await self.__transfer_answers(
             current_exam_package, is_final=ktp_controller.examomatic.client.IsFinal.TRUE
         )
-        ktp_controller.abitti2.client.reset()
+        await ktp_controller.abitti2.client.reset()
         _LOGGER.info(
             "Archived current exam package %r successfully.",
             current_exam_package["external_id"],
@@ -683,8 +685,7 @@ class Agent:
             )
             return
         if status_report["abitti2"]["answer_count"] > 0:
-            await asyncio.to_thread(
-                _transfer_answers,
+            await _transfer_answers(
                 exam_package_external_id=current_exam_package["external_id"],
                 is_final=is_final,
             )
@@ -762,9 +763,7 @@ class Agent:
                     # some conflicting actions taken by uninformed
                     # human beings.
                     #
-                    await asyncio.to_thread(
-                        _transfer_answers, exam_package_external_id=None
-                    )
+                    await _transfer_answers(exam_package_external_id=None)
                 elif self.__last_received_exam_list == []:
                     # Cold reset: Abitti2 is not reporting it has any
                     # exams running, which means it has just
@@ -778,7 +777,7 @@ class Agent:
                         self.__last_cold_reset_time is None
                         or (utcnow - self.__last_cold_reset_time).total_seconds() >= 15
                     ):
-                        ktp_controller.abitti2.client.reset()
+                        await ktp_controller.abitti2.client.reset()
                         self.__last_cold_reset_time = utcnow
             return False  # No current exam package
 
@@ -1044,7 +1043,7 @@ class Agent:
                     == 0
                 ):
                     try:
-                        self.__refresh_exams(is_spontaneous=True)
+                        await self.__refresh_exams(is_spontaneous=True)
                     except Exception:
                         _LOGGER.exception("Failed to refresh exams")
                 continue  # pongs are not acked
@@ -1057,7 +1056,7 @@ class Agent:
                     )
                     continue
                 try:
-                    ktp_controller.abitti2.client.change_student_access_code()
+                    await ktp_controller.abitti2.client.change_student_access_code()
                 except Exception:
                     _LOGGER.exception("Failed to changed student access code")
                     continue  # Failed requests are not acked
@@ -1065,7 +1064,7 @@ class Agent:
             elif message["type"] == "refresh_exams":
                 _LOGGER.info("received refresh_exams message from Exam-O-Matic")
                 try:
-                    self.__refresh_exams(is_spontaneous=False)
+                    await self.__refresh_exams(is_spontaneous=False)
                 except Exception:
                     _LOGGER.exception("Failed to refresh exams")
                     continue  # Failed requests are not acked
@@ -1118,7 +1117,7 @@ class Agent:
         if status_report is None:
             return
 
-        self.__send_status_report()
+        await self.__send_status_report()
 
     def __validate_abitti2_stats_message(
         self, message: typing.Dict[str, typing.Any]
@@ -1152,13 +1151,13 @@ class Agent:
                 self.__is_auto_control_enabled
                 and SETTINGS.abitti2_allow_students_to_use_browsers
             ):
-                _allow_students_to_use_browsers(self.__last_received_students)
+                await _allow_students_to_use_browsers(self.__last_received_students)
 
         self.__last_received_answer_count = message["data"]["answerPaperCount"]
 
-        self.__send_status_report()
+        await self.__send_status_report()
 
-    def __send_status_report(self):
+    async def __send_status_report(self):
         try:
             supervisor_passphrase = (
                 ktp_controller.abitti2.naksu2.read_supervisor_passphrase()
@@ -1175,7 +1174,7 @@ class Agent:
 
         try:
             abitti2_version = (
-                ktp_controller.abitti2.client.get_current_abitti2_version()
+                await ktp_controller.abitti2.client.get_current_abitti2_version()
             )
         except Exception:
             _LOGGER.exception("failed to get current Abitti2 version")
@@ -1225,7 +1224,7 @@ class Agent:
         }
 
         try:
-            ktp_controller.examomatic.client.send_status_report(status_report)
+            await ktp_controller.examomatic.client.send_status_report(status_report)
             status_report["reported_at"] = ktp_controller.utils.utcnow_str()
             _LOGGER.debug("sent status report to Exam-O-Matic")
         except Exception:
@@ -1384,7 +1383,7 @@ class Agent:
             additional_headers=ktp_controller.abitti2.client.get_basic_auth(),
         )
 
-    def __ensure_exam_file_exists(self, eom_scheduled_exam):
+    async def __ensure_exam_file_exists(self, eom_scheduled_exam):
         _LOGGER.info(
             "ensuring exam file %r (file_uuid=%s) exists",
             eom_scheduled_exam["file_name"],
@@ -1432,7 +1431,7 @@ class Agent:
                 eom_scheduled_exam["file_uuid"],
                 filepath,
             )
-            ktp_controller.examomatic.client.download_exam_file(
+            await ktp_controller.examomatic.client.download_exam_file(
                 eom_scheduled_exam["file_sha256"], filepath
             )
             _LOGGER.info(
@@ -1449,14 +1448,14 @@ class Agent:
                 filepath,
             )
 
-    def __refresh_exams(self, *, is_spontaneous: bool):
+    async def __refresh_exams(self, *, is_spontaneous: bool):
         _LOGGER.info(
             "Starting %sexam refresh...", "spontaneous " if is_spontaneous else ""
         )
 
         try:
-            eom_exam_info = ktp_controller.examomatic.client.get_exam_info()
-        except requests.exceptions.HTTPError as http_error:
+            eom_exam_info = await ktp_controller.examomatic.client.get_exam_info()
+        except httpx.HTTPStatusError as http_error:
             if http_error.response.status_code == 404:
                 if is_spontaneous:
                     # It's ok that there are no exam infos, because we
@@ -1470,11 +1469,14 @@ class Agent:
             else:
                 _LOGGER.exception("Failed to refresh exams")
             return
+        except Exception:
+            _LOGGER.exception("Failed to refresh exams")
+            return
 
         _LOGGER.debug("Received exam info from Exam-O-Matic: %s:", eom_exam_info)
 
         for eom_scheduled_exam in eom_exam_info["schedules"]:
-            self.__ensure_exam_file_exists(eom_scheduled_exam)
+            await self.__ensure_exam_file_exists(eom_scheduled_exam)
 
         ktp_controller.api.client.save_exam_info(eom_exam_info)
 
