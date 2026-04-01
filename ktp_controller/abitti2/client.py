@@ -7,11 +7,11 @@ import re
 import typing
 
 # Third-party imports
-import requests
-import requests.auth
+import httpx
 
 # Internal imports
 import ktp_controller.files
+import ktp_controller.httpx
 import ktp_controller.utils
 import ktp_controller.abitti2.naksu2
 
@@ -42,48 +42,38 @@ __all__ = [
 ABITTI2_SUPERVISOR_USERNAME = "valvoja"
 
 
-# Utils:
-
-
-def _get(path: str, *, stream: bool = False, timeout: int = 20) -> requests.Response:
+async def _get(path: str, *, timeout=20) -> httpx.Response:
     host = ktp_controller.abitti2.naksu2.read_domain()
     url = ktp_controller.utils.get_url(host, path)
 
-    response = requests.get(
+    return await ktp_controller.httpx.get(
         url,
-        auth=requests.auth.HTTPBasicAuth(
+        auth=(
             ABITTI2_SUPERVISOR_USERNAME,
             ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
         ),
         timeout=timeout,
-        stream=stream,
     )
 
-    response.raise_for_status()
 
-    return response
-
-
-def _post(path: str, *, data=None, timeout: int = 20) -> requests.Response:
-    if data is None:
-        data = {}
+async def _post(
+    path: str, *, json: typing.Any | None = None, timeout=20
+) -> httpx.Response:
+    if json is None:
+        json = {}
 
     host = ktp_controller.abitti2.naksu2.read_domain()
     url = ktp_controller.utils.get_url(host, path)
 
-    response = requests.post(
+    return await ktp_controller.httpx.post(
         url,
-        auth=requests.auth.HTTPBasicAuth(
+        json=json,
+        timeout=timeout,
+        auth=(
             ABITTI2_SUPERVISOR_USERNAME,
             ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
         ),
-        timeout=timeout,
-        json=data,
     )
-
-    response.raise_for_status()
-
-    return response
 
 
 def get_basic_auth() -> typing.Dict[str, str]:
@@ -104,35 +94,40 @@ def get_abitti2_websock_url():
 # Abitti2 API commands:
 
 
-def get_current_abitti2_version() -> str:
+async def get_current_abitti2_version() -> str:
     try:
         # Pre Abitti2 1.26.0
-        version = _get("/api/version", timeout=5).json()["version"]
-    except requests.exceptions.HTTPError as http_error:
+        response = await _get("/api/version", timeout=5)
+        version = response.json()["version"]
+    except httpx.HTTPStatusError as http_error:
         if http_error.response.status_code != 404:
             raise
         # Abitti2 1.26.0+
-        version = _get("/api/server-info", timeout=5).json()["version"]
+        response = await _get("/api/server-info", timeout=5)
+        version = response.json()["version"]
+
     version_match = re.match(r"^SERVER-v((\d+)\.(\d+)\.(\d+))$", version)
     if not version_match:
         raise RuntimeError("Abitti2 reported version in unexpected format", version)
     return version_match.group(1)
 
 
-def change_student_access_code() -> typing.Dict:
-    return _post("/api/single-security-code").json()
+async def change_student_access_code() -> typing.Dict:
+    response = await _post("/api/single-security-code")
+    return response.json()
 
 
-def decrypt_exams(decrypt_code: str, timeout: int = 60) -> typing.Dict:
-    return _post(
-        "/api/decrypt-exam", data={"decryptPassword": decrypt_code}, timeout=timeout
-    ).json()
+async def decrypt_exams(decrypt_code: str, timeout=60) -> typing.Dict:
+    response = await _post(
+        "/api/decrypt-exam", json={"decryptPassword": decrypt_code}, timeout=timeout
+    )
+    return response.json()
 
 
-def upload_exam_package(
+async def upload_exam_package(
     exam_package_filepath,
     *,
-    timeout: int | typing.Tuple[int, int] = (6.1, 60),
+    timeout=(6.1, 60),
 ) -> typing.List[str]:
     exam_package_filename = os.path.basename(exam_package_filepath)
 
@@ -140,40 +135,45 @@ def upload_exam_package(
     url = ktp_controller.utils.get_url(host, "/api/load-exam")
 
     with open(exam_package_filepath, "rb") as exam_package_file:
-        response = requests.post(
+        response = await ktp_controller.httpx.post(
             url,
-            auth=requests.auth.HTTPBasicAuth(
+            auth=(
                 ABITTI2_SUPERVISOR_USERNAME,
                 ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
             ),
             timeout=timeout,
             files={
-                "examZip": (exam_package_filename, exam_package_file, "application/zip")
+                "examZip": (
+                    exam_package_filename,
+                    exam_package_file,
+                    "application/zip",
+                )
             },
         )
-
-        response.raise_for_status()
-
         return response.json()
 
 
-def get_decrypted_exams() -> typing.Dict:
-    return _get("/api/exams").json()
+async def get_decrypted_exams() -> typing.Dict:
+    response = await _get("/api/exams")
+    return response.json()
 
 
-def start_decrypted_exams() -> typing.Dict:
-    return _post("/api/start-exam").json()
+async def start_decrypted_exams() -> typing.Dict:
+    response = await _post("/api/start-exam")
+    return response.json()
 
 
-def prepare_exam_package(
+async def prepare_exam_package(
     exam_package_filepath: str, decrypt_codes: typing.Iterable[str]
 ) -> typing.Set[str]:
-    exam_filenames = set(upload_exam_package(exam_package_filepath))
+    upload_result = await upload_exam_package(exam_package_filepath)
+    exam_filenames = set(upload_result)
 
     decrypted_exam_filenames = set()
     had_invalid_decrypt_code = False
+
     for decrypt_code in decrypt_codes:
-        retval = decrypt_exams(decrypt_code)
+        retval = await decrypt_exams(decrypt_code)
         if retval["wrongPassword"]:
             # TODO: is it ok to expose the decrypt code in log files?
             _LOGGER.error(
@@ -201,52 +201,55 @@ def prepare_exam_package(
     return exam_filenames
 
 
-def reset() -> None:
+async def reset() -> None:
     _LOGGER.info("Reseting Abitti2 with a dummy exam package...")
-    prepare_exam_package(
+    await prepare_exam_package(
         ktp_controller.files.DUMMY_EXAM_PACKAGE_FILEPATH, ["odotusaulakoe"]
     )
-    start_decrypted_exams()
+    await start_decrypted_exams()
     _LOGGER.info("Abitti2 was reset.")
 
 
-def stop_exam_session(session_uuid: str) -> None:
-    _post("/api/end-student-session", data={"sessionUuid": session_uuid})
+async def stop_exam_session(session_uuid: str) -> None:
+    await _post("/api/end-student-session", json={"sessionUuid": session_uuid})
 
 
-def download_answers_file(
+async def download_answers_file(
     dest_filepath: str,
-    timeout: int | typing.Tuple[int, int] = (3.1, 20),
+    timeout=(3.1, 20),
 ) -> str:
     sha256sum = hashlib.sha256()
+    host = ktp_controller.abitti2.naksu2.read_domain()
+    url = ktp_controller.utils.get_url(host, "/api/answers-zip/answers.meb")
+
     with ktp_controller.utils.open_atomic_write(
         dest_filepath, exclusive=True
     ) as dest_file:
         try:
-            response = _get(
-                "/api/answers-zip/answers.meb", stream=True, timeout=timeout
-            )
-            for chunk in response.iter_content(4096):
+            async for chunk in ktp_controller.httpx.stream_read(
+                url,
+                auth=(
+                    ABITTI2_SUPERVISOR_USERNAME,
+                    ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
+                ),
+                timeout=timeout,
+                chunk_size=4096,
+            ):
                 dest_file.write(chunk)
                 sha256sum.update(chunk)
-        except requests.exceptions.ConnectTimeout as connect_timeout:
+
+        except httpx.ConnectTimeout as connect_timeout:
             raise TimeoutError("Connect timed out.") from connect_timeout
-        except requests.exceptions.ConnectionError as connection_error:
-            # iter_content raises this if underlying read times out.
-            if str(connection_error).endswith("Read timed out."):
-                raise TimeoutError("Read timed out.") from connection_error
-            raise connection_error
-        except requests.exceptions.ReadTimeout as read_timeout:
-            # requests.get raises this if the response is not returned on time.
-            raise TimeoutError("Read timed out.") from read_timeout
+        except (httpx.ReadTimeout, httpx.ReadError) as read_error:
+            raise TimeoutError("Read timed out.") from read_error
 
     return sha256sum.hexdigest()
 
 
-def set_exam_session_permission_to_use_browsers(
+async def set_exam_session_permission_to_use_browsers(
     session_uuid: str, is_allowed_to_use_browsers: bool
 ):
-    _post(
+    await _post(
         "/api/allow-all-browsers",
-        data={"allow": is_allowed_to_use_browsers, "sessionUuid": session_uuid},
+        json={"allow": is_allowed_to_use_browsers, "sessionUuid": session_uuid},
     )
