@@ -1,4 +1,5 @@
 # Standard library imports
+import asyncio
 import datetime
 import dataclasses
 import enum
@@ -108,7 +109,9 @@ def assert_agent_has_called_home(*, gt: int = 0, wait: int = 5):
         raise ValueError("invalid wait, must be >= 0", wait)
 
     for try_ in tries(wait + 1):
-        state = ktp_controller.examomatic.client._post("/mock/get_state").json()
+        state = asyncio.run(
+            ktp_controller.examomatic.client._post("/mock/get_state")
+        ).json()
         if state["pong_count"] > gt:
             try_.done = True
 
@@ -123,7 +126,9 @@ def assert_agent_has_reported_status(*, gt: int = 0, wait: int = 15):
     # the agent. It's a sign that Abitti2 is at least somewhat
     # healthy.
     for try_ in tries(wait + 1):
-        state = ktp_controller.examomatic.client._post("/mock/get_state").json()
+        state = asyncio.run(
+            ktp_controller.examomatic.client._post("/mock/get_state")
+        ).json()
         status_reports = state["status_reports"]
         if len(status_reports) > 0:
             try_.done = True
@@ -137,7 +142,9 @@ def assert_agent_has_done_initial_spontaneous_exam_refresh(
         raise ValueError("invalid wait, must be >= 0", wait)
 
     for try_ in tries(wait + 1):
-        state = ktp_controller.examomatic.client._post("/mock/get_state").json()
+        state = asyncio.run(
+            ktp_controller.examomatic.client._post("/mock/get_state")
+        ).json()
         get_exam_packages_status_codes = [
             s for p, s in state["requests"] if p == "/v2/schedules/exam_packages"
         ]
@@ -187,7 +194,9 @@ def assert_abitti2_running_exams(cond: Callable[[list[str]], bool], *, wait: int
         raise ValueError("invalid wait, must be >= 0", wait)
 
     for try_ in tries(wait + 1):
-        state = ktp_controller.examomatic.client._post("/mock/get_state").json()
+        state = asyncio.run(
+            ktp_controller.examomatic.client._post("/mock/get_state")
+        ).json()
         status_reports = state["status_reports"]
         started_exam_titles = [
             e["title"]
@@ -199,7 +208,7 @@ def assert_abitti2_running_exams(cond: Callable[[list[str]], bool], *, wait: int
 
 
 def assert_clean_start() -> ktp_controller.schemas.StudentAccessCode:
-    ktp_controller.abitti2.client.reset()
+    asyncio.run(ktp_controller.abitti2.client.reset())
     assert_agent_has_called_home()
     assert_agent_has_done_initial_spontaneous_exam_refresh()
     assert_agent_has_reported_status()
@@ -213,7 +222,9 @@ def assert_clean_start() -> ktp_controller.schemas.StudentAccessCode:
 def assert_api_has_copy_of_last_status_report():
     last_status_report_seen_by_api = ktp_controller.api.client.get_last_status_report()
     assert last_status_report_seen_by_api.pop("reported_at") is not None
-    state = ktp_controller.examomatic.client._post("/mock/get_state").json()
+    state = asyncio.run(
+        ktp_controller.examomatic.client._post("/mock/get_state")
+    ).json()
     assert last_status_report_seen_by_api in state["status_reports"]
 
 
@@ -239,16 +250,18 @@ def assert_exam_scheduling_and_download(
 ):
     if utcnow is None:
         utcnow = ktp_controller.utils.utcnow()
-    response = ktp_controller.examomatic.client._post(
-        "/mock/set_exam_info",
-        json={
-            "exam_title": exam_title,
-            "start_time": (
-                utcnow + datetime.timedelta(seconds=seconds_until_start)
-            ).isoformat(),
-            "duration_seconds": duration_seconds,
-            "lock_time_duration_seconds": lock_time_duration_seconds,
-        },
+    response = asyncio.run(
+        ktp_controller.examomatic.client._post(
+            "/mock/set_exam_info",
+            json={
+                "exam_title": exam_title,
+                "start_time": (
+                    utcnow + datetime.timedelta(seconds=seconds_until_start)
+                ).isoformat(),
+                "duration_seconds": duration_seconds,
+                "lock_time_duration_seconds": lock_time_duration_seconds,
+            },
+        )
     )
     assert response.status_code == 200
 
@@ -260,7 +273,9 @@ def assert_exam_scheduling_and_download(
     # the new exam data successfully.
     agent_downloaded_new_exam_info = False
     for i in range(10):
-        state = ktp_controller.examomatic.client._post("/mock/get_state").json()
+        state = asyncio.run(
+            ktp_controller.examomatic.client._post("/mock/get_state")
+        ).json()
 
         get_exam_info_status_codes = [
             s for p, s in state["requests"] if p == "/v2/schedules/exam_packages"
@@ -277,7 +292,9 @@ def assert_exam_scheduling_and_download(
     # ack.
     ackd = False
     for i in range(3):
-        state = ktp_controller.examomatic.client._post("/mock/get_state").json()
+        state = asyncio.run(
+            ktp_controller.examomatic.client._post("/mock/get_state")
+        ).json()
         if state["refresh_exams_count"] == state["ack_count"] == expected_ack_count:
             ackd = True
         time.sleep(1)
@@ -372,7 +389,9 @@ def assert_last_status_report_does_not_contain_student_names(*students):
 
 def assert_all_answer_uploads_are_successful():
     upload_answers_file_status_codes = []
-    state = ktp_controller.examomatic.client._post("/mock/get_state").json()
+    state = asyncio.run(
+        ktp_controller.examomatic.client._post("/mock/get_state")
+    ).json()
     upload_answers_file_status_codes = [
         s for p, s in state["requests"] if p == "/v1/answers/upload"
     ]
