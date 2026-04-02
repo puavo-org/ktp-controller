@@ -1,4 +1,5 @@
 # Standard library imports
+import asyncio
 
 # Third-party imports
 
@@ -55,7 +56,7 @@ def test_exam_package_gets_archived(testrunstate):
     assert_scheduled_exam_package_state_is(
         "archived", external_id=testrunstate.scheduled_exam_package1["external_id"]
     )
-    assert ktp_controller.api.client.get_current_exam_package() is None
+    assert asyncio.run(ktp_controller.api.client.get_current_exam_package()) is None
 
 
 def test_waiting_lobby_exam_is_running_again():

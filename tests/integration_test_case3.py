@@ -1,4 +1,5 @@
 # Standard library imports
+import asyncio
 import datetime
 import time
 
@@ -172,7 +173,7 @@ def test_second_exam_package_gets_archived(testrunstate):
         external_id=testrunstate.scheduled_exam_package2["external_id"],
         wait=90,
     )
-    assert ktp_controller.api.client.get_current_exam_package() is None
+    assert asyncio.run(ktp_controller.api.client.get_current_exam_package()) is None
 
 
 def test_all_answer_uploads_are_successful():

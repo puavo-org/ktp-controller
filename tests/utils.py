@@ -162,7 +162,9 @@ def assert_agent_has_done_initial_spontaneous_exam_refresh(
 def assert_student_access_code_is(
     key_code, verification_code
 ) -> ktp_controller.schemas.StudentAccessCode:
-    student_access_code = ktp_controller.api.client.get_student_access_code()
+    student_access_code = asyncio.run(
+        ktp_controller.api.client.get_student_access_code()
+    )
     assert student_access_code is not None
     assert (
         student_access_code.key_code,
@@ -177,7 +179,9 @@ def assert_student_access_code_is(
 def assert_student_access_code_is_not(
     key_code, verification_code
 ) -> ktp_controller.schemas.StudentAccessCode:
-    student_access_code = ktp_controller.api.client.get_student_access_code()
+    student_access_code = asyncio.run(
+        ktp_controller.api.client.get_student_access_code()
+    )
     assert student_access_code is not None
     assert (
         student_access_code.key_code,
@@ -220,7 +224,9 @@ def assert_clean_start() -> ktp_controller.schemas.StudentAccessCode:
 
 
 def assert_api_has_copy_of_last_status_report():
-    last_status_report_seen_by_api = ktp_controller.api.client.get_last_status_report()
+    last_status_report_seen_by_api = asyncio.run(
+        ktp_controller.api.client.get_last_status_report()
+    )
     assert last_status_report_seen_by_api.pop("reported_at") is not None
     state = asyncio.run(
         ktp_controller.examomatic.client._post("/mock/get_state")
@@ -229,7 +235,9 @@ def assert_api_has_copy_of_last_status_report():
 
 
 def assert_last_status_report_has_abitti2_domain():
-    last_status_report_seen_by_api = ktp_controller.api.client.get_last_status_report()
+    last_status_report_seen_by_api = asyncio.run(
+        ktp_controller.api.client.get_last_status_report()
+    )
     assert (
         last_status_report_seen_by_api["abitti2"]["domain"]
         == ktp_controller.abitti2.naksu2.read_domain()
@@ -312,8 +320,8 @@ def assert_scheduled_exam_package_state_is(
 
     scheduled_exam_package = None
     for try_ in tries(wait + 1):
-        scheduled_exam_package = ktp_controller.api.client.get_scheduled_exam_package(
-            external_id
+        scheduled_exam_package = asyncio.run(
+            ktp_controller.api.client.get_scheduled_exam_package(external_id)
         )
         if scheduled_exam_package["state"] == state:
             try_.done = True
@@ -332,10 +340,14 @@ def assert_scheduled_exam_package_gets_started(
         lambda running_exams: exam_title in running_exams, wait=wait
     )
 
-    current_exam_package = ktp_controller.api.client.get_current_exam_package()
+    current_exam_package = asyncio.run(
+        ktp_controller.api.client.get_current_exam_package()
+    )
     assert current_exam_package["state"] == "running"
 
-    last_status_report_seen_by_api = ktp_controller.api.client.get_last_status_report()
+    last_status_report_seen_by_api = asyncio.run(
+        ktp_controller.api.client.get_last_status_report()
+    )
     assert last_status_report_seen_by_api.pop("reported_at") is not None
     current_exam_package_from_status_report = last_status_report_seen_by_api[
         "ktp_controller"
@@ -356,7 +368,7 @@ def assert_scheduled_exam_package_gets_started(
 def assert_last_status_report_does_not_contain_student_names(*students):
     found_some_students = False
     for i in range(10):
-        last_status_report_seen_by_api = (
+        last_status_report_seen_by_api = asyncio.run(
             ktp_controller.api.client.get_last_status_report()
         )
         if len(last_status_report_seen_by_api["abitti2"]["students"]) > 1:
