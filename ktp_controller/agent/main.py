@@ -190,14 +190,14 @@ async def _transfer_answers(
     )
 
 
-def _create_exam_package_file(
+async def _create_exam_package_file(
     api_scheduled_exam_package,
 ) -> typing.Tuple[str, typing.Set[str]]:
     exam_file_infos = []
     for api_scheduled_exam_external_id in api_scheduled_exam_package[
         "scheduled_exam_external_ids"
     ]:
-        api_scheduled_exam = ktp_controller.api.client.get_scheduled_exam(
+        api_scheduled_exam = await ktp_controller.api.client.get_scheduled_exam(
             api_scheduled_exam_external_id
         )
         exam_file_infos.append(api_scheduled_exam["exam_file_info"])
@@ -229,10 +229,10 @@ def _create_exam_package_file(
     return exam_package_filepath, decrypt_codes
 
 
-def _set_current_exam_package_state(
+async def _set_current_exam_package_state(
     current_exam_package: typing.Dict[str, typing.Any], next_state: str
 ) -> bool:
-    last_state = ktp_controller.api.client.set_current_exam_package_state(
+    last_state = await ktp_controller.api.client.set_current_exam_package_state(
         current_exam_package["external_id"], next_state
     )
 
@@ -500,7 +500,7 @@ class Agent:
         _LOGGER.info("Preparing exam package: %r", current_exam_package)
 
         if not self.__uploaded:
-            (exam_package_filepath, decrypt_codes) = _create_exam_package_file(
+            (exam_package_filepath, decrypt_codes) = await _create_exam_package_file(
                 current_exam_package
             )
 
@@ -542,7 +542,7 @@ class Agent:
 
             _LOGGER.info(
                 "API says the access code is: %r",
-                ktp_controller.api.client.get_student_access_code(),
+                await ktp_controller.api.client.get_student_access_code(),
             )
 
         self.__old_security_code = None
@@ -622,7 +622,7 @@ class Agent:
             # Change the security code first to ensure students cannot enter anymore.
             await ktp_controller.abitti2.client.change_student_access_code()
 
-        last_status_report = ktp_controller.api.client.get_last_status_report()
+        last_status_report = await ktp_controller.api.client.get_last_status_report()
         if last_status_report is None:
             return False
 
@@ -676,7 +676,7 @@ class Agent:
         is_final: ktp_controller.examomatic.client.IsFinal,
     ) -> None:
         is_final = ktp_controller.examomatic.client.IsFinal(is_final)
-        status_report = ktp_controller.api.client.get_last_status_report()
+        status_report = await ktp_controller.api.client.get_last_status_report()
         if status_report is None or status_report["abitti2"]["answer_count"] is None:
             _LOGGER.warning(
                 "I don't know yet if there are answers to transfer, "
@@ -725,7 +725,9 @@ class Agent:
                 "and reported by upper levels in the call stack."
             )
 
-        locked_exam_packages = ktp_controller.api.client.get_locked_exam_packages()
+        locked_exam_packages = (
+            await ktp_controller.api.client.get_locked_exam_packages()
+        )
 
         if len(locked_exam_packages) == 0:
             if self.__is_auto_control_enabled:
@@ -792,7 +794,7 @@ class Agent:
                 current_exam_package,
             )
 
-        status_report = ktp_controller.api.client.get_last_status_report()
+        status_report = await ktp_controller.api.client.get_last_status_report()
         if status_report is None:
             _LOGGER.warning(
                 "Status of the whole system is still partially unknown, not processing"
@@ -896,7 +898,7 @@ class Agent:
             else:
                 do_transition = await action(current_exam_package)
             if do_transition:
-                changed = _set_current_exam_package_state(
+                changed = await _set_current_exam_package_state(
                     current_exam_package, transition["next_state"]
                 )
 
@@ -1113,7 +1115,7 @@ class Agent:
 
         self.__last_received_security_code = security_code
 
-        status_report = ktp_controller.api.client.get_last_status_report()
+        status_report = await ktp_controller.api.client.get_last_status_report()
         if status_report is None:
             return
 
@@ -1181,7 +1183,9 @@ class Agent:
             abitti2_version = None
 
         try:
-            current_exam_package = ktp_controller.api.client.get_current_exam_package()
+            current_exam_package = (
+                await ktp_controller.api.client.get_current_exam_package()
+            )
         except Exception:
             _LOGGER.exception("failed to get current exam package")
             current_exam_package = None
@@ -1231,7 +1235,7 @@ class Agent:
             _LOGGER.exception("failed to send status report to Exam-O-Matic")
             status_report["reported_at"] = None
 
-        ktp_controller.api.client.send_status_report(status_report)
+        await ktp_controller.api.client.send_status_report(status_report)
         _LOGGER.debug("sent status report to KTP Controller API")
 
     async def __handle_abitti2_exams_message(
@@ -1478,7 +1482,7 @@ class Agent:
         for eom_scheduled_exam in eom_exam_info["schedules"]:
             await self.__ensure_exam_file_exists(eom_scheduled_exam)
 
-        ktp_controller.api.client.save_exam_info(eom_exam_info)
+        await ktp_controller.api.client.save_exam_info(eom_exam_info)
 
         _LOGGER.info("refreshed exams successfully")
 
