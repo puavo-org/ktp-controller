@@ -116,7 +116,7 @@ def eom_exam_info_to_api_exam_info(
     ).model_dump()
 
 
-def get_agent_websock_url():
+def get_agent_websock_url() -> str:
     return ktp_controller.utils.get_url(
         f"{SETTINGS.api_host}:{SETTINGS.api_port}",
         "/api/v1/system/agent_websocket",
@@ -124,7 +124,7 @@ def get_agent_websock_url():
     )
 
 
-def get_ui_websock_url():
+def get_ui_websock_url() -> str:
     return ktp_controller.utils.get_url(
         f"{SETTINGS.api_host}:{SETTINGS.api_port}",
         "/api/v1/system/ui_websocket",
