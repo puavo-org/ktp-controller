@@ -12,7 +12,7 @@ from ktp_controller import VERSION
 async def _command_api_async_command(args: argparse.Namespace) -> str:
     import ktp_controller.api.client
 
-    return ktp_controller.api.client.async_command(args.COMMAND)
+    return await ktp_controller.api.client.async_command(args.COMMAND)
 
 
 def _print_as_yaml(obj):
@@ -65,8 +65,8 @@ def _agofy(last_status_report):
 async def _command_status(args: argparse.Namespace) -> None:
     import ktp_controller.api.client
 
-    current_exam_package = ktp_controller.api.client.get_current_exam_package()
-    last_status_report = ktp_controller.api.client.get_last_status_report()
+    current_exam_package = await ktp_controller.api.client.get_current_exam_package()
+    last_status_report = await ktp_controller.api.client.get_last_status_report()
 
     if current_exam_package is None:
         print("# Current exam package: -")
@@ -76,7 +76,7 @@ async def _command_status(args: argparse.Namespace) -> None:
             "scheduled_exam_external_ids"
         )
         for scheduled_exam_external_id in scheduled_exam_external_ids:
-            scheduled_exam = ktp_controller.api.client.get_scheduled_exam(
+            scheduled_exam = await ktp_controller.api.client.get_scheduled_exam(
                 scheduled_exam_external_id
             )
             current_exam_package.setdefault("scheduled_exams", []).append(
