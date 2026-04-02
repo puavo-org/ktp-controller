@@ -2,11 +2,8 @@
 import logging
 import typing
 
-# Third-party imports
-import requests
-import requests.exceptions
-
 # Internal imports
+import ktp_controller.httpx
 import ktp_controller.messages
 import ktp_controller.utils
 from ktp_controller import SETTINGS
@@ -31,40 +28,28 @@ __all__ = [
 ]
 
 
-# Constants:
-
-
 _LOGGER = logging.getLogger(__name__)
 
 
-# Utils:
-
-
-def _post(
+async def _post(
     path: str,
     *,
-    data=None,
+    content=None,
     json=None,
     timeout: int = 5,
     headers: typing.Dict[str, str] | None = None,
-) -> requests.Response:
-    if data is None:
-        data = {}
-    response = requests.post(
-        ktp_controller.utils.get_url(
-            f"{SETTINGS.api_host}:{SETTINGS.api_port}", path, scheme="http"
-        ),
-        data=data,
-        json=json,
-        timeout=timeout,
-        headers=headers,
+) -> typing.Any:
+    if json is None:
+        json = {}
+
+    url = ktp_controller.utils.get_url(
+        f"{SETTINGS.api_host}:{SETTINGS.api_port}", path, scheme="http"
     )
-    try:
-        response.raise_for_status()
-    except requests.exceptions.HTTPError as http_error:
-        _LOGGER.exception("POST failed: %s", http_error.response.content)
-        raise
-    return response
+
+    response = await ktp_controller.httpx.post(
+        url, content=content, json=json, timeout=timeout, headers=headers
+    )
+    return response.json()
 
 
 def eom_exam_info_to_api_exam_info(
@@ -135,34 +120,34 @@ def get_ui_websock_url() -> str:
 # API commands:
 
 
-def send_status_report(
+async def send_status_report(
     status_report: typing.Dict,
     *,
     timeout: int = 5,
 ) -> typing.Any:
-    data = (
+    content = (
         ktp_controller.api.system.schemas.StatusReport.model_validate(status_report)
         .model_dump_json(ensure_ascii=True)
         .encode("ascii")
     )
 
-    return _post(
+    return await _post(
         "/api/v1/system/send_status_report",
-        data=data,
+        content=content,
         headers={"Content-Type": "application/json"},
         timeout=timeout,
-    ).json()
+    )
 
 
-def get_last_status_report(
+async def get_last_status_report(
     *,
     timeout: int = 5,
 ) -> typing.Dict[str, typing.Any] | None:
-    return _post("/api/v1/system/get_last_status_report", timeout=timeout).json()
+    return await _post("/api/v1/system/get_last_status_report", timeout=timeout)
 
 
-def get_student_access_code() -> ktp_controller.schemas.StudentAccessCode | None:
-    last_status_report = get_last_status_report()
+async def get_student_access_code() -> ktp_controller.schemas.StudentAccessCode | None:
+    last_status_report = await get_last_status_report()
     if last_status_report is None:
         return None
 
@@ -180,55 +165,57 @@ def get_student_access_code() -> ktp_controller.schemas.StudentAccessCode | None
     return ktp_controller.schemas.StudentAccessCode.model_validate(student_access_code)
 
 
-def get_locked_exam_packages(
+async def get_locked_exam_packages(
     *, timeout: int = 20
 ) -> typing.List[typing.Dict[str, typing.Any]]:
-    return _post("/api/v1/exam/get_locked_exam_packages", timeout=timeout).json()
+    return await _post("/api/v1/exam/get_locked_exam_packages", timeout=timeout)
 
 
-def get_current_exam_package(*, timeout: int = 20) -> typing.Dict[str, typing.Any]:
-    return _post("/api/v1/exam/get_current_exam_package", timeout=timeout).json()
+async def get_current_exam_package(
+    *, timeout: int = 20
+) -> typing.Dict[str, typing.Any]:
+    return await _post("/api/v1/exam/get_current_exam_package", timeout=timeout)
 
 
-def set_current_exam_package_state(
+async def set_current_exam_package_state(
     external_id: str, state: str, *, timeout: int = 20
 ) -> str:
-    return _post(
+    return await _post(
         "/api/v1/exam/set_current_exam_package_state",
         json={"external_id": external_id, "state": state},
         timeout=timeout,
-    ).json()
+    )
 
 
-def get_scheduled_exam(
+async def get_scheduled_exam(
     external_id: str, *, timeout: int = 20
 ) -> typing.Dict[str, typing.Any]:
-    return _post(
+    return await _post(
         "/api/v1/exam/get_scheduled_exam",
         json={"external_id": external_id},
         timeout=timeout,
-    ).json()
+    )
 
 
-def save_exam_info(
+async def save_exam_info(
     eom_exam_info: typing.Dict[str, typing.Any], *, timeout: int = 5
 ) -> typing.Any:
-    return _post(
+    return await _post(
         "/api/v1/exam/save_exam_info",
         json=eom_exam_info_to_api_exam_info(eom_exam_info),
         timeout=timeout,
-    ).json()
+    )
 
 
-def async_command(command: ktp_controller.messages.Command) -> str:
-    return _post("/api/v1/system/async_command", json={"command": command}).json()
+async def async_command(command: ktp_controller.messages.Command) -> str:
+    return await _post("/api/v1/system/async_command", json={"command": command})
 
 
-def get_scheduled_exam_package(
+async def get_scheduled_exam_package(
     external_id: str, *, timeout: int = 20
 ) -> typing.Dict[str, typing.Any]:
-    return _post(
+    return await _post(
         "/api/v1/exam/get_scheduled_exam_package",
         json={"external_id": external_id},
         timeout=timeout,
-    ).json()
+    )
