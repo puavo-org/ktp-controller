@@ -49,6 +49,22 @@ class LocalFilepathType(str, enum.Enum):
         return self.value
 
 
+def get_local_dirpath(local_filepath_type: LocalFilepathType, dirname: str) -> str:
+    LocalFilepathType(local_filepath_type)
+    if local_filepath_type == LocalFilepathType.EXAM_FILE:
+        basedir = _EXAM_FILE_DIR
+    elif local_filepath_type == LocalFilepathType.EXAM_PACKAGE:
+        basedir = _EXAM_PACKAGE_DIR
+    elif local_filepath_type == LocalFilepathType.ANSWERS_FILE:
+        basedir = _ANSWERS_FILE_DIR
+    elif local_filepath_type == LocalFilepathType.ORPHAN_ANSWERS_FILE:
+        basedir = _ORPHAN_ANSWERS_FILE_DIR
+    else:
+        raise ValueError("invalid local_filepath_type")
+
+    return os.path.join(basedir, dirname)
+
+
 def get_local_filepath(
     local_filepath_type: LocalFilepathType, dirname: str, filename_suffix: str
 ) -> str:

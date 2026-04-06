@@ -80,9 +80,25 @@ def _create_dummy_exam_package_file():
             )
 
 
-def _mark_path_archived(path: str | pathlib.Path):
-    sentinel_filepath = f"{path}.archived"
-    pathlib.Path(sentinel_filepath).touch(mode=0o644, exist_ok=True)
+def _write_archive_file(archive_filepath: str):
+    utcnow_str = ktp_controller.utils.utcnow_str()
+
+    if os.path.exists(archive_filepath):
+        raise FileExistsError(archive_filepath)
+
+    with ktp_controller.utils.open_atomic_write(
+        archive_filepath, exclusive=True, encoding="utf-8"
+    ) as sentinel_file:
+        sentinel_file.write(utcnow_str)
+        sentinel_file.write("\n")
+
+
+def _mark_dir_archived(dirpath: str | pathlib.Path):
+    _write_archive_file(os.path.join(dirpath, ".archived"))
+
+
+def _mark_file_archived(filepath: str | pathlib.Path):
+    _write_archive_file(f"{filepath}.archived")
 
 
 def _transfer_answers(
@@ -134,10 +150,23 @@ def _transfer_answers(
     )
 
     try:
-        _mark_path_archived(answers_file_path)
+        _mark_file_archived(answers_file_path)
     except Exception as exception:
         _LOGGER.warning(
             "Failed to mark answers file %r archived: %s", answers_file_path, exception
+        )
+
+    exam_package_dirpath = ktp_controller.files.get_local_dirpath(
+        ktp_controller.files.LocalFilepathType.EXAM_PACKAGE, exam_package_external_id
+    )
+
+    try:
+        _mark_dir_archived(exam_package_dirpath)
+    except Exception as exception:
+        _LOGGER.warning(
+            "Failed to mark exam package dir %r archived: %s",
+            exam_package_dirpath,
+            exception,
         )
 
     duration = time.monotonic() - start_time_monotonic
