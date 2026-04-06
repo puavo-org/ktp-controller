@@ -80,6 +80,11 @@ def _create_dummy_exam_package_file():
             )
 
 
+def _mark_path_archived(path: str | pathlib.Path):
+    sentinel_filepath = f"{path}.archived"
+    pathlib.Path(sentinel_filepath).touch(mode=0o644, exist_ok=True)
+
+
 def _transfer_answers(
     *,
     exam_package_external_id: str | None,
@@ -128,12 +133,11 @@ def _transfer_answers(
         timeout=(60.1, 600),
     )
 
-    sentinel_file_path = f"{answers_file_path}.archived"
     try:
-        pathlib.Path(sentinel_file_path).touch(mode=0o644, exist_ok=True)
+        _mark_path_archived(answers_file_path)
     except Exception as exception:
         _LOGGER.warning(
-            "Failed to create sentinel file %r: %s", sentinel_file_path, exception
+            "Failed to mark answers file %r archived: %s", answers_file_path, exception
         )
 
     duration = time.monotonic() - start_time_monotonic
