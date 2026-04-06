@@ -42,38 +42,30 @@ __all__ = [
 ABITTI2_SUPERVISOR_USERNAME = "valvoja"
 
 
-async def _get(path: str, *, timeout=20) -> httpx.Response:
+async def _get(path: str, **kwargs) -> httpx.Response:
     host = ktp_controller.abitti2.naksu2.read_domain()
     url = ktp_controller.utils.get_url(host, path)
 
-    return await ktp_controller.httpx.get(
-        url,
-        auth=(
-            ABITTI2_SUPERVISOR_USERNAME,
-            ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
-        ),
-        timeout=timeout,
+    kwargs["auth"] = (
+        ABITTI2_SUPERVISOR_USERNAME,
+        ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
     )
 
+    return await ktp_controller.httpx.get(url, **kwargs)
 
-async def _post(
-    path: str, *, json: typing.Any | None = None, timeout=20
-) -> httpx.Response:
-    if json is None:
-        json = {}
+
+async def _post(path: str, **kwargs) -> httpx.Response:
+    kwargs.setdefault("json", {})
+
+    kwargs["auth"] = (
+        ABITTI2_SUPERVISOR_USERNAME,
+        ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
+    )
 
     host = ktp_controller.abitti2.naksu2.read_domain()
     url = ktp_controller.utils.get_url(host, path)
 
-    return await ktp_controller.httpx.post(
-        url,
-        json=json,
-        timeout=timeout,
-        auth=(
-            ABITTI2_SUPERVISOR_USERNAME,
-            ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
-        ),
-    )
+    return await ktp_controller.httpx.post(url, **kwargs)
 
 
 def get_basic_auth() -> typing.Dict[str, str]:
@@ -97,13 +89,13 @@ def get_abitti2_websock_url():
 async def get_current_abitti2_version() -> str:
     try:
         # Pre Abitti2 1.26.0
-        response = await _get("/api/version", timeout=5)
+        response = await _get("/api/version")
         version = response.json()["version"]
     except httpx.HTTPStatusError as http_error:
         if http_error.response.status_code != 404:
             raise
         # Abitti2 1.26.0+
-        response = await _get("/api/server-info", timeout=5)
+        response = await _get("/api/server-info")
         version = response.json()["version"]
 
     version_match = re.match(r"^SERVER-v((\d+)\.(\d+)\.(\d+))$", version)
@@ -117,39 +109,32 @@ async def change_student_access_code() -> typing.Dict:
     return response.json()
 
 
-async def decrypt_exams(decrypt_code: str, timeout=60) -> typing.Dict:
+async def decrypt_exams(decrypt_code: str, **kwargs) -> typing.Dict:
     response = await _post(
-        "/api/decrypt-exam", json={"decryptPassword": decrypt_code}, timeout=timeout
+        "/api/decrypt-exam", json={"decryptPassword": decrypt_code}, **kwargs
     )
     return response.json()
 
 
-async def upload_exam_package(
-    exam_package_filepath,
-    *,
-    timeout=(6.1, 60),
-) -> typing.List[str]:
+async def upload_exam_package(exam_package_filepath, **kwargs) -> typing.List[str]:
     exam_package_filename = os.path.basename(exam_package_filepath)
 
     host = ktp_controller.abitti2.naksu2.read_domain()
     url = ktp_controller.utils.get_url(host, "/api/load-exam")
 
     with open(exam_package_filepath, "rb") as exam_package_file:
-        response = await ktp_controller.httpx.post(
-            url,
-            auth=(
-                ABITTI2_SUPERVISOR_USERNAME,
-                ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
-            ),
-            timeout=timeout,
-            files={
-                "examZip": (
-                    exam_package_filename,
-                    exam_package_file,
-                    "application/zip",
-                )
-            },
+        kwargs["auth"] = (
+            ABITTI2_SUPERVISOR_USERNAME,
+            ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
         )
+        kwargs["files"] = {
+            "examZip": (
+                exam_package_filename,
+                exam_package_file,
+                "application/zip",
+            )
+        }
+        response = await ktp_controller.httpx.post(url, **kwargs)
         return response.json()
 
 
@@ -214,27 +199,22 @@ async def stop_exam_session(session_uuid: str) -> None:
     await _post("/api/end-student-session", json={"sessionUuid": session_uuid})
 
 
-async def download_answers_file(
-    dest_filepath: str,
-    timeout=(3.1, 20),
-) -> str:
+async def download_answers_file(dest_filepath: str, **kwargs) -> str:
     sha256sum = hashlib.sha256()
     host = ktp_controller.abitti2.naksu2.read_domain()
     url = ktp_controller.utils.get_url(host, "/api/answers-zip/answers.meb")
+
+    kwargs["auth"] = (
+        ABITTI2_SUPERVISOR_USERNAME,
+        ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
+    )
+    kwargs["chunk_size"] = 4096
 
     with ktp_controller.utils.open_atomic_write(
         dest_filepath, exclusive=True
     ) as dest_file:
         try:
-            async for chunk in ktp_controller.httpx.stream_read(
-                url,
-                auth=(
-                    ABITTI2_SUPERVISOR_USERNAME,
-                    ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
-                ),
-                timeout=timeout,
-                chunk_size=4096,
-            ):
+            async for chunk in ktp_controller.httpx.stream_read(url, **kwargs):
                 dest_file.write(chunk)
                 sha256sum.update(chunk)
 

@@ -10,6 +10,8 @@ _LOGGER = logging.getLogger(__name__)
 NumberT: typing.TypeAlias = int | float
 TimeoutT: typing.TypeAlias = NumberT | None | typing.Tuple[NumberT, NumberT]
 
+DEFAULT_TIMEOUT: TimeoutT = (3.1, 60)
+
 
 def _parse_timeout(timeout: TimeoutT) -> httpx.Timeout | NumberT | None:
     """Convert requests-style timeout tuple (connect, read) to httpx.Timeout."""
@@ -26,7 +28,7 @@ async def get(
     auth: typing.Tuple[str, str] | None = None,
     params: typing.Dict[str, str] | None = None,
     headers: typing.Dict[str, str] | None = None,
-    timeout: TimeoutT = 20,
+    timeout: TimeoutT = DEFAULT_TIMEOUT,
 ) -> httpx.Response:
     async with httpx.AsyncClient() as client:
         response = await client.get(
@@ -57,7 +59,7 @@ async def post(
     json: typing.Any | None = None,
     content: bytes | None = None,
     files: typing.Dict | None = None,
-    timeout: TimeoutT = 20,
+    timeout: TimeoutT = DEFAULT_TIMEOUT,
 ) -> httpx.Response:
 
     async with httpx.AsyncClient() as client:
@@ -92,7 +94,7 @@ async def stream_read(
     auth: typing.Tuple[str, str] | None = None,
     params: typing.Dict[str, str] | None = None,
     headers: typing.Dict[str, str] | None = None,
-    timeout: TimeoutT = 20,
+    timeout: TimeoutT = DEFAULT_TIMEOUT,
     chunk_size: int = 4096,
 ):
     async with httpx.AsyncClient() as client:
