@@ -4,6 +4,8 @@ import enum
 import logging
 import os.path
 import pathlib
+import shutil
+import typing
 
 # Third-party imports
 
@@ -62,7 +64,14 @@ def get_local_dirpath(local_filepath_type: LocalFilepathType, dirname: str) -> s
     else:
         raise ValueError("invalid local_filepath_type")
 
-    return os.path.join(basedir, dirname)
+    dirpath = os.path.join(basedir, dirname)
+
+    try:
+        os.makedirs(dirpath)
+    except FileExistsError:
+        pass
+
+    return dirpath
 
 
 def get_local_filepath(
@@ -292,3 +301,83 @@ def cleanup_old_answers_files(
         logger is None or logger.error("failed to cleanup empty dirs")
 
     return deleted_answers_files
+
+
+def _get_archived_exam_package_dirpath(
+    archive_filepath: pathlib.Path,
+) -> typing.Tuple[datetime.datetime, pathlib.Path]:
+    with open(archive_filepath, "r", encoding="utf-8") as sentinel_file:
+        archived_at_str = sentinel_file.readline().strip()
+
+    archived_at = datetime.datetime.fromisoformat(archived_at_str)
+
+    if archived_at.tzinfo is None:
+        raise RuntimeError("naive timestamp")
+
+    archived_exam_package_dirpath = archive_filepath.parent
+
+    if not archived_exam_package_dirpath.is_dir():
+        raise NotADirectoryError(archived_exam_package_dirpath)
+
+    return archived_at, archived_exam_package_dirpath
+
+
+def find_archived_exam_package_dirs(
+    *,
+    archived_timedelta: datetime.timedelta = datetime.timedelta(days=1),
+    exceptions: list | None = None,
+) -> typing.Iterator[str]:
+    """Yields dirpaths of all exam packages archived more than the specified
+    timedelta (by default, 1 day) ago.
+
+    If `exceptions` is `None`, exceptions are not handled and
+    iteration is stopped when the first exception is
+    raised. Otherwise, if `exceptions` is a list, are exceptions
+    during the iteration is are caught and appended to `exceptions`.
+
+    """
+    utcnow: datetime.datetime = ktp_controller.utils.utcnow()
+    cutoff_date: datetime.datetime = utcnow - archived_timedelta
+    basedirpath: pathlib.Path = pathlib.Path(_EXAM_PACKAGE_DIR)
+
+    if exceptions is not None and not isinstance(exceptions, list):
+        raise TypeError("exceptions must be either None or a list")
+
+    for archive_filepath in basedirpath.glob("*/.archived"):
+        try:
+            archived_at, archived_exam_package_dirpath = (
+                _get_archived_exam_package_dirpath(archive_filepath)
+            )
+        except Exception as e:
+            if exceptions is None:
+                raise
+            exceptions.append(e)
+            continue
+
+        if archived_at < cutoff_date:
+            yield str(archived_exam_package_dirpath)
+
+
+def cleanup_archived_exam_packages(
+    *,
+    archived_timedelta: datetime.timedelta = datetime.timedelta(days=1),
+    deleted_exam_package_external_ids: set[str] | None = None,
+) -> set[str]:
+    exceptions = []
+    for archived_exam_package_dir in find_archived_exam_package_dirs(
+        archived_timedelta=archived_timedelta, exceptions=exceptions
+    ):
+        try:
+            shutil.rmtree(archived_exam_package_dir)
+        except Exception as e:
+            exceptions.append(e)
+            continue
+
+        deleted_exam_package_external_ids is None or deleted_exam_package_external_ids.add(
+            os.path.basename(archived_exam_package_dir)
+        )
+
+    if exceptions:
+        raise ExceptionGroup(
+            "failed to cleanup some archived exam packages", exceptions
+        )
