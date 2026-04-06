@@ -102,6 +102,15 @@ def _transfer_answers(
             suffix,
         )
 
+    try:
+        deleted_answers_files = ktp_controller.files.cleanup_old_answers_files()
+    except Exception:
+        # cleanup_old_answers_files is best-effort; it deletes
+        # everything it can and raises exceptions afterwards,
+        _LOGGER.exception("Failed to cleanup some old answers files")
+    else:
+        _LOGGER.exception("Deleted %d old answers files", len(deleted_answers_files))
+
     sha256sum = ktp_controller.abitti2.client.download_answers_file(
         answers_file_path,
         timeout=(6.1, 200),
