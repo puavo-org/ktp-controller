@@ -158,19 +158,9 @@ async def get_exam_file_stream(sha256sum: str, **kwargs) -> typing.AsyncIterable
 
     sha256sum_of_downloaded_file = hashlib.sha256()
 
-    async with httpx.AsyncClient() as client:
-        async with client.stream("GET", url, **kwargs) as response:
-            try:
-                response.raise_for_status()
-            except httpx.HTTPStatusError:
-                await response.aread()
-                if response.text:
-                    _LOGGER.error("error content: %s", response.text)
-                raise
-
-            async for chunk in response.aiter_bytes(chunk_size=4096):
-                sha256sum_of_downloaded_file.update(chunk)
-                yield chunk
+    async for chunk in ktp_controller.httpx.stream_read(url, **kwargs):
+        sha256sum_of_downloaded_file.update(chunk)
+        yield chunk
 
     if sha256sum_of_downloaded_file.hexdigest() != sha256sum:
         raise RuntimeError("sha256sum mismatch of downloaded exam file")
