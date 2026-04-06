@@ -129,7 +129,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Puavo OS: `puavo-ers-naksu2` and `puavo-ers-abitti2server` are now part of the supervised run.
 - Self-healing capabilities if Redis connection fails, i.e. try reconnecting until Redis is back online.
 - Single Redis client connection for all websocket connections (agent and UI).
-- Orphan answer files are rescued, i.e. in auto-control mode, if Abitti2 is running an unknown exam (not launched by KTP Controller), save answers locally before proceeding.
+- Orphan answers files are rescued, i.e. in auto-control mode, if Abitti2 is running an unknown exam (not launched by KTP Controller), save answers locally before proceeding.
 - Mark all uploaded answers with `.archived` sentinel file.
 - More robust error handling.
 - The definition of "active" student is revised:
@@ -169,7 +169,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Self-heal wounds caused by Redis connection failures, i.e. try reconnecting until Redis is back online and preserve subscribed websockets.
 - Use single Redis client connection for all websocket connections (agent and UI).
-- Orphan answer files are rescued, i.e. in auto-control mode, if Abitti2 is running an unknown exam (not launched by KTP Controller), save answers locally before proceeding.
+- Orphan answers files are rescued, i.e. in auto-control mode, if Abitti2 is running an unknown exam (not launched by KTP Controller), save answers locally before proceeding.
 - Mark all uploaded answers with `.archived` sentinel file.
 - More robust error handling.
 
@@ -202,7 +202,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Exams are not stopped until all students have finished or the next exam is about to start.
 - Abitti2 server domain is now included in status reports sent to Exam-O-Matic.
-- Non-final answer files are periodically transferred from Abitti2 to Exam-O-Matic.
+- Non-final answers files are periodically transferred from Abitti2 to Exam-O-Matic.
 - Direct personal identifiers are removed from all Abitti2 stats messages on receipt.
 - Services are now automatically restarted on failure.
 - `LICENSE` file is now included in release files.

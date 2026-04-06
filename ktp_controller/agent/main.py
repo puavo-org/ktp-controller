@@ -139,7 +139,7 @@ def _transfer_answers(
     duration = time.monotonic() - start_time_monotonic
 
     _LOGGER.info(
-        "Transferred answer file '%s' from Abitti2 to Exam-O-Matic' in %.1f seconds.",
+        "Transferred answers file '%s' from Abitti2 to Exam-O-Matic' in %.1f seconds.",
         os.path.basename(answers_file_path),
         duration,
     )
@@ -519,7 +519,7 @@ class Agent:
                 self.__transfer_non_final_answers_periodically(current_exam_package)
             )
             _LOGGER.info(
-                "Started to transfer exam package '%s' answer files from Abitti2 to Exam-O-Matic periodically (approx. once per %d seconds).",
+                "Started to transfer exam package '%s' answers files from Abitti2 to Exam-O-Matic periodically (approx. once per %d seconds).",
                 current_exam_package["external_id"],
                 self.__approx_answer_transfer_interval_sec,
             )
@@ -541,7 +541,7 @@ class Agent:
             )
         finally:
             _LOGGER.info(
-                "Stopped periodic exam package '%s' answer file transfers from Abitti2 to Exam-O-Matic.",
+                "Stopped periodic exam package '%s' answers file transfers from Abitti2 to Exam-O-Matic.",
                 current_exam_package["external_id"],
             )
             self.__answer_transfer_task = None
@@ -705,7 +705,7 @@ class Agent:
                     # control mode, Abitti2 can be reset any time
                     # soon, when a new exam package gets locked, and
                     # then all answers would be lost. So, we try to
-                    # save them locally as orphan answer files (orphan
+                    # save them locally as orphan answers files (orphan
                     # because we don't know which exam package, if
                     # any, they are related to). Note that we cannot
                     # upload them to Exam-O-Matic, because

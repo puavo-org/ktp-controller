@@ -18,11 +18,11 @@ _EXAM_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-files")
 # ~/.local/share/ktp-controller/exam-packages/EXAM_PACKAGE_UUID/exam-package_COMPOUND_EXAM_FILE_SHA256.zip
 _EXAM_PACKAGE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-packages")
 
-# All answer files belonging to a known exam package will be stored here like so:
+# All answers files belonging to a known exam package will be stored here like so:
 # ~/.local/share/ktp-controller/answers-files/EXAM_PACKAGE_UUID/answers-file_TIMESTAMP.meb
 _ANSWERS_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/answers-files")
 
-# All orphan answer files, i.e. files downloaded from Abitti2, but
+# All orphan answers files, i.e. files downloaded from Abitti2, but
 # which could not be reliably linked to any exam package, will be
 # stored here like so:
 # ~/.local/share/ktp-controller/orphan-answers-files/unknown/orphan-answers-file_TIMESTAMP.meb
