@@ -132,6 +132,18 @@ def _transfer_answers(
     else:
         _LOGGER.exception("Deleted %d old answers files", len(deleted_answers_files))
 
+    deleted_exam_package_external_ids = set()
+    try:
+        ktp_controller.files.cleanup_archived_exam_packages(
+            deleted_exam_package_external_ids=deleted_exam_package_external_ids
+        )
+    except Exception:
+        # cleanup_old_exam_packages is best-effort; it deletes
+        # everything it can and raises exceptions afterwards,
+        _LOGGER.exception("Failed to cleanup some old exam packages")
+
+    _LOGGER.info("Deleted %d old exam packages", len(deleted_exam_package_external_ids))
+
     sha256sum = ktp_controller.abitti2.client.download_answers_file(
         answers_file_path,
         timeout=(6.1, 200),
