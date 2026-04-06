@@ -9,11 +9,11 @@ license = "GPL-2.0-only"
 maintainers = [{ name = "Opinsys Developers", email = "dev@opinsys.fi" }]
 dependencies = [
     "fastapi",
+    "httpx",
     "uvicorn[standard]",
     "alembic",
     "pydantic-settings",
     "python-multipart",
-    "requests",
     "supervisor",
     "redis",
     "websockets",
