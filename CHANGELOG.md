@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - All HTTP(S) requests are now made asynchronously using httpx.
 
+## [0.3.10] - 2026-04-07
+
+### Fixed
+
+- Send intermediate answers to Exam-O-Matic as is_final=FALSE (was is_final=UNKNOWN).
+
+
 ## [0.3.9] - 2026-03-31
 
 ### Fixed
