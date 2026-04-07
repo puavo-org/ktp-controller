@@ -104,7 +104,7 @@ def _mark_file_archived(filepath: str | pathlib.Path):
 async def _transfer_answers(
     *,
     exam_package_external_id: str | None,
-    is_final: ktp_controller.examomatic.client.IsFinal = ktp_controller.examomatic.client.IsFinal.UNKNOWN,
+    is_final: ktp_controller.examomatic.client.IsFinal,
 ):
     start_time_monotonic = time.monotonic()
 
@@ -765,7 +765,10 @@ class Agent:
                     # some conflicting actions taken by uninformed
                     # human beings.
                     #
-                    await _transfer_answers(exam_package_external_id=None)
+                    await _transfer_answers(
+                        exam_package_external_id=None,
+                        is_final=ktp_controller.examomatic.client.IsFinal.UNKNOWN,
+                    )
                 elif self.__last_received_exam_list == []:
                     # Cold reset: Abitti2 is not reporting it has any
                     # exams running, which means it has just
