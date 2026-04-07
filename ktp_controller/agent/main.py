@@ -701,7 +701,7 @@ class Agent:
             try:
                 await self.__transfer_answers(
                     current_exam_package,
-                    is_final=ktp_controller.examomatic.client.IsFinal.UNKNOWN,
+                    is_final=ktp_controller.examomatic.client.IsFinal.FALSE,
                 )
             except Exception:
                 _LOGGER.exception(
