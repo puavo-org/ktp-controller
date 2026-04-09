@@ -15,6 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - All HTTP(S) requests are now made asynchronously using httpx.
 
+
+## [0.3.11] - 2026-04-09
+
+### Fixed
+
+- Refresh exams independently of Exam-O-Matic websocket pongs:
+  websocket connections to Exam-O-Matic seem unreliable for an unknown
+  reason. Having independent asynchronous periodic (once per 3min)
+  refresh task ensures exam info gets refreshed even if websocket
+  connection is down.
+
+
 ## [0.3.10] - 2026-04-07
 
 ### Fixed
