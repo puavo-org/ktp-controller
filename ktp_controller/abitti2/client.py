@@ -211,7 +211,9 @@ async def download_answers_file(dest_filepath: str, **kwargs) -> str:
     kwargs["chunk_size"] = 4096
 
     with ktp_controller.utils.open_atomic_write(
-        dest_filepath, exclusive=True
+        dest_filepath,
+        exclusive=True,
+        do_makedirs=True,
     ) as dest_file:
         try:
             async for chunk in ktp_controller.httpx.stream_read(url, **kwargs):

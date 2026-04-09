@@ -56,7 +56,10 @@ def sha256(filepath: str, chunk_size_bytes: int = 1024**2) -> str:
 
 @contextlib.contextmanager
 def open_atomic_write(
-    dest_filepath: str, exclusive: bool = False, encoding: typing.Optional[str] = None
+    dest_filepath: str,
+    exclusive: bool = False,
+    encoding: typing.Optional[str] = None,
+    do_makedirs: bool = False,
 ):
     if exclusive:
         mode = "x"
@@ -67,6 +70,13 @@ def open_atomic_write(
     if encoding is None:
         mode = f"{mode}b"
         tmpfilemode = f"{tmpfilemode}b"
+
+    if do_makedirs:
+        dest_dirpath = os.path.dirname(dest_filepath)
+        try:
+            os.makedirs(dest_dirpath)
+        except FileExistsError:
+            pass
 
     tmp_dest_filepath = f"{dest_filepath}.ktp_controller_open_atomic_write_tmp"
     success = False
