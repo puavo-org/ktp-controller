@@ -82,6 +82,7 @@ class Settings(BaseSettings):
     examomatic_use_tls: StrictBool = True
     examomatic_ping_interval_sec: PositiveInt = 30
     answer_transfer_interval_sec: PositiveInt = 300
+    refresh_exams_interval_sec: PositiveInt = 180
     domain: str
     hostname: str = platform.node()
     id: PositiveInt
