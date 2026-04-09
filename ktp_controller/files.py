@@ -293,13 +293,6 @@ def cleanup_old_answers_files(
     if exceptions:
         raise ExceptionGroup("failed to cleanup old answers files", exceptions)
 
-    try:
-        rmdir_recursively_bottom_up(_ANSWERS_FILE_DIR)
-        rmdir_recursively_bottom_up(_ORPHAN_ANSWERS_FILE_DIR)
-    except Exception:
-        # Not fatal.
-        logger is None or logger.error("failed to cleanup empty dirs")
-
     return deleted_answers_files
 
 
