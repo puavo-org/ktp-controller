@@ -518,7 +518,10 @@ class Agent:
             )
         self.__uploaded = True
 
-        if self.__is_auto_control_enabled:
+        if (
+            self.__is_auto_control_enabled
+            and SETTINGS.abitti2_change_student_access_code_automatically
+        ):
             if self.__old_security_code is None:
                 self.__old_security_code = self.__last_received_security_code
                 _LOGGER.info(
@@ -621,7 +624,10 @@ class Agent:
         self,
         current_exam_package: typing.Dict[str, typing.Any],
     ) -> bool:
-        if self.__is_auto_control_enabled:
+        if (
+            self.__is_auto_control_enabled
+            and SETTINGS.abitti2_change_student_access_code_automatically
+        ):
             # Change the security code first to ensure students cannot enter anymore.
             await ktp_controller.abitti2.client.change_student_access_code()
 
