@@ -88,14 +88,14 @@ def get_abitti2_websock_url():
 
 async def get_current_abitti2_version() -> str:
     try:
-        # Pre Abitti2 1.26.0
-        response = await _get("/api/version")
+        # Abitti2 1.26.0+
+        response = await _get("/api/server-info")
         version = response.json()["version"]
     except httpx.HTTPStatusError as http_error:
         if http_error.response.status_code != 404:
             raise
-        # Abitti2 1.26.0+
-        response = await _get("/api/server-info")
+        # Pre Abitti2 1.26.0
+        response = await _get("/api/version")
         version = response.json()["version"]
 
     version_match = re.match(r"^SERVER-v((\d+)\.(\d+)\.(\d+))$", version)
