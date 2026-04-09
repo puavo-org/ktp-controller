@@ -1,0 +1,524 @@
+{
+  "v": 2,
+  "created_at": "2026-05-03T16:31:46.211+0000",
+  "abitti2": {
+    "stats": {
+      "exams": {
+        "Integraatiotestikoe1": {
+          "active_student_count": 1,
+          "idle_student_count": 0,
+          "gone_student_count": 1,
+          "duration_seconds": 21.590427
+        }
+      }
+    },
+    "answer_count": 1,
+    "domain": "ostelu-solmu.koe.abitti.net",
+    "student_access_code": {
+      "key_code": "1888",
+      "verification_code": "nt"
+    },
+    "supervisor_username": "valvoja",
+    "supervisor_passphrase": "jogurtti lihota vaivutus vigilia",
+    "version": "1.27.0",
+    "last_message_received_at": "2026-05-03T16:31:45.875+0000",
+    "exams": [
+      {
+        "uuid": "c574f93a-ac4d-4441-8679-ca47e565fb7b",
+        "title": "Integraatiotestikoe1",
+        "started_at": "2026-05-03T16:31:24.621+0000"
+      }
+    ],
+    "students": [
+      {
+        "uuid": "396d3178-28df-435f-9124-7debdc55111c",
+        "session_uuid": "4fb44768-3193-4e4b-9f3c-e60008362918",
+        "is_active": true,
+        "is_idle": false,
+        "is_connected": true,
+        "is_waiting_for_auth": false,
+        "is_finished": false,
+        "status": "waiting-for-auth-browser",
+        "exam_title": "Integraatiotestikoe1"
+      },
+      {
+        "uuid": "bf0cd3f9-08ef-44cb-8a2a-5e49dba7170d",
+        "session_uuid": "e192d05b-38bd-44a9-93ee-124602b6ace0",
+        "is_active": false,
+        "is_idle": false,
+        "is_connected": true,
+        "is_waiting_for_auth": false,
+        "is_finished": true,
+        "status": "exam-finished-by-student",
+        "exam_title": "Integraatiotestikoe1"
+      }
+    ]
+  },
+  "ktp_controller": {
+    "version": "0.5.0rc1",
+    "started_at": "2026-05-03T16:28:51.975+0000",
+    "is_auto_control_enabled": true,
+    "cached_files": {
+      "exams": [
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/90d99c0a-87b2-49b3-b791-3090550f6345/exam-file_8bd96c658b1a749c3634e71d61ac452affb4bfe6fabb5f293b682111511d83af.mex",
+          "size": 15948894,
+          "modified_at": "2026-03-26T20:02:06.343+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
+          "size": 25353142,
+          "modified_at": "2026-03-26T19:49:42.072+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/53d3594c-cde8-43af-ae00-403ed134eba3/exam-file_d4563210b1b0aaf14a33858bc50fd9a78d8c3ba26ab804d0940b695a697f2223.mex",
+          "size": 15949279,
+          "modified_at": "2026-03-26T20:05:17.773+0000"
+        }
+      ],
+      "exam_packages": [
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/bbca4d9e-cb65-4b42-a3ed-57593a5427b4/exam-package_b18a8b72f9392a3e1c824863b4d9c67c4da74222ac82306d9fa800c0520bdeb3.zip",
+          "size": 15949106,
+          "modified_at": "2026-04-02T19:28:28.765+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/45e885f6-4422-4051-8277-d2df4e3774b2/exam-package_a633a8894303afa26dc7af3d0c11e48efbe209fd3d1b743104a41b995dd92f92.zip",
+          "size": 15949539,
+          "modified_at": "2026-04-09T11:50:05.634+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/e393fc30-356b-42c3-9557-1186bba5b652/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-09T12:38:54.361+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/db4be1dd-061a-40ae-a110-5ede85eb8fcc/exam-package_b18a8b72f9392a3e1c824863b4d9c67c4da74222ac82306d9fa800c0520bdeb3.zip",
+          "size": 15949106,
+          "modified_at": "2026-04-12T18:35:26.168+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/38b7f895-37a0-415b-b4ec-f922e05d1c9c/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-03-26T20:10:30.997+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/1e0eb71d-7cde-4ab0-8a86-d294f578ceb8/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-02T19:18:17.397+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/511d8903-6b92-4b40-92fa-8e32561c11c7/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-09T08:21:45.454+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/666d56a8-88a4-433f-97ab-f895733d5da4/exam-package_b18a8b72f9392a3e1c824863b4d9c67c4da74222ac82306d9fa800c0520bdeb3.zip",
+          "size": 15949106,
+          "modified_at": "2026-04-09T08:16:22.139+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/dcf79641-3a6d-4b83-b167-222dbdb4e238/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-03-26T19:58:25.914+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/cb80a3b0-0656-4e2a-babe-267dcf4ce7ce/exam-package_b18a8b72f9392a3e1c824863b4d9c67c4da74222ac82306d9fa800c0520bdeb3.zip",
+          "size": 15949106,
+          "modified_at": "2026-04-09T11:46:53.064+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/e2afa382-f0cd-4f94-bce2-f8b90af3658f/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-02T19:26:58.744+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/4e589f50-00a3-47d4-9cf2-2c421f8f7433/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-03-26T21:46:37.719+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/bb38575c-7e05-40f4-88e4-83d3b6c7dbe2/exam-package_a633a8894303afa26dc7af3d0c11e48efbe209fd3d1b743104a41b995dd92f92.zip",
+          "size": 15949539,
+          "modified_at": "2026-03-26T20:05:59.222+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/70e26474-ccc9-4fbd-8c18-6c9a110e5c50/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-09T11:45:08.011+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/ab534c58-5930-45a0-9da8-aa007e965178/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-12T20:24:42.044+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/f84cb717-3644-47ff-aaaa-73fba4270714/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-05-03T16:16:32.005+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/57992a56-c109-4b4a-ac68-8a612eb882e7/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-12T18:33:30.779+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/058c1c20-ebec-44d8-acda-0e3f49c21ec3/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-03-26T20:07:44.283+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/d0dc1fe1-689f-43fd-aa57-0539fc858a77/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-12T18:30:42.033+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/476d17e6-d539-420c-8e02-20ac23b0a5be/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-09T11:42:28.326+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/f7a9aff5-db5d-4582-9771-637c9abaa949/exam-package_b18a8b72f9392a3e1c824863b4d9c67c4da74222ac82306d9fa800c0520bdeb3.zip",
+          "size": 15949106,
+          "modified_at": "2026-05-03T16:21:24.255+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/87c56ccc-d9e2-4bfa-8a75-63d59df0fa4f/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-05-03T16:11:53.207+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/87c56ccc-d9e2-4bfa-8a75-63d59df0fa4f/.archived",
+          "size": 29,
+          "modified_at": "2026-05-03T16:14:19.377+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/cdc86d1a-52f2-41ae-a47f-9b6ae8745dbd/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-05-03T16:19:29.235+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/6cb285ed-a230-4e6f-ad70-cdfb66fa562d/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-12T18:40:56.944+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a974b1a1-7075-4218-8e71-fef41c5dbd46/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-03-26T20:00:59.979+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/1b98fd6f-ee8f-4ea3-ade5-ca1b611dde0b/.archived",
+          "size": 29,
+          "modified_at": "2026-05-03T16:27:14.439+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/1b98fd6f-ee8f-4ea3-ade5-ca1b611dde0b/exam-package_a633a8894303afa26dc7af3d0c11e48efbe209fd3d1b743104a41b995dd92f92.zip",
+          "size": 15949539,
+          "modified_at": "2026-05-03T16:25:27.798+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/c17ebde1-c05e-49d4-a6cd-d5ccc17309bf/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-09T09:07:06.111+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/03fd85fd-f31e-4e6d-b7fa-9bef98dc8d1e/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-03-26T19:53:33.940+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/59c065d5-f78c-4a2a-abcd-6bfadafb5339/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-09T12:32:11.070+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/fad2e207-5123-43b5-aac2-3e24742a3450/exam-package_a633a8894303afa26dc7af3d0c11e48efbe209fd3d1b743104a41b995dd92f92.zip",
+          "size": 15949539,
+          "modified_at": "2026-04-09T08:19:54.666+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a9f0be97-1af2-424d-95c5-9ac1a552bf6f/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-29T10:08:46.026+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/cd51d6be-dcf4-47ff-a965-d60b87d5046c/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-09T08:12:00.877+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/d4cd0d20-d83d-4262-9c49-61bb0d06b859/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-12T20:22:00.463+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/52a4bc3c-b3b9-4117-b32e-d815c65106ed/exam-package_a633a8894303afa26dc7af3d0c11e48efbe209fd3d1b743104a41b995dd92f92.zip",
+          "size": 15949539,
+          "modified_at": "2026-04-02T19:31:44.545+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/54250d70-227c-4d54-a297-fc2fe25249b6/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-02T19:33:39.621+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/9bf076c7-89b9-41a4-9d42-0adfb280c0c3/exam-package_b18a8b72f9392a3e1c824863b4d9c67c4da74222ac82306d9fa800c0520bdeb3.zip",
+          "size": 15949106,
+          "modified_at": "2026-03-26T20:03:00.044+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/2652af47-47d9-48bb-9e1a-2e105e2b9f7a/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-28T19:46:26.175+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/3f8885ab-a17a-4273-aced-072142733682/exam-package_599b4628fa44a7c71ecde7972cc15ed87e5bdae0d04585d16efb7d35d85ee717.zip",
+          "size": 101413350,
+          "modified_at": "2026-04-29T06:34:08.632+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/78841841-0dd7-4876-8528-5cde415c5d31/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-02T19:24:15.456+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/c5978432-2137-40c4-8274-ac4195b27b62/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-09T12:17:09.467+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/7dd65d3b-4df7-431f-88b1-a8abcf8a74b6/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-09T08:14:37.043+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/952138f2-1b6d-4eac-8ed5-3e0c954f82d3/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-02T19:36:32.832+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/50c5f9cc-fc78-4439-8b75-0745ec7a5005/exam-package_b18a8b72f9392a3e1c824863b4d9c67c4da74222ac82306d9fa800c0520bdeb3.zip",
+          "size": 15949106,
+          "modified_at": "2026-04-09T12:12:09.212+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/b1ce7363-cdd8-4da0-a4f1-ddfe566ffb79/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-05-03T16:30:58.872+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/198e0211-5a53-4bad-9c52-4908927411b1/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-09T12:07:47.134+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/edb36794-0b58-459b-b8bf-233e9cdc950a/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-12T20:31:58.522+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/f0d6d2e5-c780-414a-8984-3d04aa08faeb/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-09T12:10:24.144+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/4719b9be-249c-40df-a5a3-0e0a01fef972/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-28T20:02:00.367+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/41f4b59c-eca8-4cac-813d-db1eafa19192/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-09T08:24:34.731+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/e9f5f5a4-8fcf-4d11-8990-c67cec6fb7e5/exam-package_b18a8b72f9392a3e1c824863b4d9c67c4da74222ac82306d9fa800c0520bdeb3.zip",
+          "size": 15949106,
+          "modified_at": "2026-04-29T10:03:43.544+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/9ef99f7c-387a-4ea7-8fdb-805dcae354e9/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-29T09:59:20.667+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/1024475e-483d-45d4-94b8-e9d7c0f3bbf6/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-05-03T16:27:25.495+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/bff94935-72c6-4282-9a50-be60b06e8efe/exam-package_b18a8b72f9392a3e1c824863b4d9c67c4da74222ac82306d9fa800c0520bdeb3.zip",
+          "size": 15949106,
+          "modified_at": "2026-04-09T12:34:01.170+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/536ecfc9-be30-4e8f-9052-8c48b444e72a/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-09T12:29:38.776+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/0e796b5a-8d44-4940-baaf-6061645cb464/exam-package_b18a8b72f9392a3e1c824863b4d9c67c4da74222ac82306d9fa800c0520bdeb3.zip",
+          "size": 15949106,
+          "modified_at": "2026-04-12T20:26:32.101+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/1040920f-5b37-4d87-b403-1e358d27c78b/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+          "size": 25353354,
+          "modified_at": "2026-04-29T10:01:58.480+0000"
+        }
+      ],
+      "answers": [
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/fd8d42eb-18f2-400b-8122-aa843ba3c2e8/answers-file_2026-04-28T20:17:47.103+0000_final.meb",
+          "size": 874519,
+          "modified_at": "2026-04-28T20:17:47.419+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/fd8d42eb-18f2-400b-8122-aa843ba3c2e8/answers-file_2026-04-28T20:17:47.103+0000_final.meb.archived",
+          "size": 29,
+          "modified_at": "2026-04-28T20:17:47.459+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/226dde4a-43ba-4a51-aa5b-99fb5c5c5d44/answers-file_2026-04-29T14:52:07.068+0000_final.meb",
+          "size": 1070014,
+          "modified_at": "2026-04-29T14:52:07.524+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/226dde4a-43ba-4a51-aa5b-99fb5c5c5d44/answers-file_2026-04-29T14:52:07.068+0000_final.meb.archived",
+          "size": 29,
+          "modified_at": "2026-04-29T14:52:07.560+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/87c56ccc-d9e2-4bfa-8a75-63d59df0fa4f/answers-file_2026-05-03T16:14:17.642+0000_final.meb.archived",
+          "size": 29,
+          "modified_at": "2026-05-03T16:14:19.377+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/87c56ccc-d9e2-4bfa-8a75-63d59df0fa4f/answers-file_2026-05-03T16:14:17.642+0000_final.meb",
+          "size": 990966,
+          "modified_at": "2026-05-03T16:14:18.897+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/1b98fd6f-ee8f-4ea3-ade5-ca1b611dde0b/answers-file_2026-05-03T16:27:13.233+0000_final.meb",
+          "size": 909591,
+          "modified_at": "2026-05-03T16:27:14.315+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/1b98fd6f-ee8f-4ea3-ade5-ca1b611dde0b/answers-file_2026-05-03T16:27:13.233+0000_final.meb.archived",
+          "size": 29,
+          "modified_at": "2026-05-03T16:27:14.439+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/08a86665-33aa-4175-8ba4-248f92b6b7df/answers-file_2026-04-29T14:26:19.946+0000_final.meb.archived",
+          "size": 29,
+          "modified_at": "2026-04-29T14:26:20.878+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/08a86665-33aa-4175-8ba4-248f92b6b7df/answers-file_2026-04-29T14:26:19.946+0000_final.meb",
+          "size": 1157770,
+          "modified_at": "2026-04-29T14:26:20.842+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/740be3d5-4e0a-405d-b863-fb862f677508/answers-file_2026-04-29T10:13:40.143+0000_final.meb.archived",
+          "size": 29,
+          "modified_at": "2026-04-29T10:13:40.625+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/740be3d5-4e0a-405d-b863-fb862f677508/answers-file_2026-04-29T10:13:40.143+0000_final.meb",
+          "size": 1211877,
+          "modified_at": "2026-04-29T10:13:40.577+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/0541a3aa-9439-4615-94e9-410623570620/answers-file_2026-04-29T10:18:00.060+0000_final.meb",
+          "size": 702424,
+          "modified_at": "2026-04-29T10:18:00.343+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/0541a3aa-9439-4615-94e9-410623570620/answers-file_2026-04-29T10:18:00.060+0000_final.meb.archived",
+          "size": 29,
+          "modified_at": "2026-04-29T10:18:00.383+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/02551744-ac3e-4543-8df7-6288ebc08689/answers-file_2026-04-29T10:08:39.359+0000_final.meb.archived",
+          "size": 29,
+          "modified_at": "2026-04-29T10:08:39.742+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/02551744-ac3e-4543-8df7-6288ebc08689/answers-file_2026-04-29T10:08:39.359+0000_final.meb",
+          "size": 878482,
+          "modified_at": "2026-04-29T10:08:39.698+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/9a16033f-11aa-4508-91a9-e13e21cb8a9c/answers-file_2026-04-29T15:08:54.298+0000_final.meb.archived",
+          "size": 29,
+          "modified_at": "2026-04-29T15:08:54.571+0000"
+        },
+        {
+          "path": "/home/puavo-ers/.local/share/ktp-controller/answers-files/9a16033f-11aa-4508-91a9-e13e21cb8a9c/answers-file_2026-04-29T15:08:54.298+0000_final.meb",
+          "size": 482730,
+          "modified_at": "2026-04-29T15:08:54.535+0000"
+        }
+      ]
+    },
+    "current_exam_package": {
+      "uuid": "b1ce7363-cdd8-4da0-a4f1-ddfe566ffb79",
+      "state": "running",
+      "state_changed_at": "2026-05-03T16:31:24.836+0000",
+      "started_at": "2026-05-03T16:31:24.836+0000",
+      "archived_at": null,
+      "scheduled_start_time": "2026-05-03T16:31:23.036+0000",
+      "scheduled_end_time": "2026-05-03T16:32:53.036+0000",
+      "scheduled_lock_time": "2026-05-03T16:30:53.036+0000"
+    }
+  },
+  "os": {
+    "stats": {
+      "disk_usage": [
+        {
+          "mountpoint": "/images",
+          "total": 41956900864,
+          "used": 39711305728,
+          "free": 81334272
+        },
+        {
+          "mountpoint": "/rofs",
+          "total": 12725911552,
+          "used": 12725911552,
+          "free": 0
+        },
+        {
+          "mountpoint": "/home",
+          "total": 20695207936,
+          "used": 13212286976,
+          "free": 6519250944
+        },
+        {
+          "mountpoint": "/state",
+          "total": 4143677440,
+          "used": 46149632,
+          "free": 3866005504
+        },
+        {
+          "mountpoint": "/tmp",
+          "total": 6249086976,
+          "used": 240054272,
+          "free": 5670133760
+        }
+      ],
+      "load_average": {
+        "1min": 7.1025390625,
+        "5min": 6.013671875,
+        "15min": 5.12939453125
+      },
+      "memory": {
+        "total": 8307036160,
+        "used": 4985487360,
+        "free": 213651456,
+        "available": 3321548800
+      },
+      "uptime": 2571.2189993858337
+    }
+  },
+  "reported_at": "2026-05-03T16:31:46.384+0000"
+}
