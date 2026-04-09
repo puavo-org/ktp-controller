@@ -1,4 +1,4 @@
-integration_test_case_targets := integration-test-case1 integration-test-case2 integration-test-case3 integration-test-case5
+integration_test_case_targets := integration-test-case1 integration-test-case2 integration-test-case3 integration-test-case5 integration-test-case7
 
 .NOTPARALLEL: all
 .PHONY: all
@@ -38,7 +38,7 @@ test:
 
 .PHONY: $(integration_test_case_targets)
 $(integration_test_case_targets): integration-test-%:
-	KTP_CONTROLLER_INTEGRATION_TEST_CASE='$(@:integration-test-%=%)' uv run supervisord -c supervisor/integration-test.conf
+	KTP_CONTROLLER_DOTENV='$(@:%=%.env)' KTP_CONTROLLER_INTEGRATION_TEST_CASE='$(@:integration-test-%=%)' uv run supervisord -c supervisor/integration-test.conf
 	@grep -q -x ok chain_result
 
 .NOTPARALLEL: integration-test
