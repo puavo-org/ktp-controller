@@ -287,6 +287,7 @@ class Agent:
         approx_examomatic_ping_interval_sec: int = SETTINGS.examomatic_ping_interval_sec,
         approx_reconnect_timeout_sec: int = 5,
         approx_answer_transfer_interval_sec: int = SETTINGS.answer_transfer_interval_sec,
+        approx_refresh_exams_interval_sec: int = SETTINGS.refresh_exams_interval_sec,
         state: ktp_controller.agent.state.AgentState,
         is_testbed_mode: bool = False,
     ):
@@ -295,6 +296,7 @@ class Agent:
         self.__started_at = None
         self.__state = state
         self.__answer_transfer_task = None
+        self.__refresh_exams_lock = asyncio.Lock()
 
         self.__approx_api_ping_interval_sec = approx_api_ping_interval_sec
         self.__approx_api_status_report_interval_sec = (
@@ -303,6 +305,7 @@ class Agent:
         self.__approx_examomatic_ping_interval_sec = approx_examomatic_ping_interval_sec
         self.__approx_reconnect_timeout_sec = approx_reconnect_timeout_sec
         self.__approx_answer_transfer_interval_sec = approx_answer_transfer_interval_sec
+        self.__approx_refresh_exams_interval_sec = approx_refresh_exams_interval_sec
 
         # Abitti2 reports these
         self.__last_received_exam_list = None
@@ -984,15 +987,8 @@ class Agent:
             ].last_message_received_at = received_at
 
             if message["type"] == "pong":
+                _LOGGER.info("received pong message from Exam-O-Matic")
                 self.__connection_stats[Component.EXAMOMATIC].ping_pong_count += 1
-                if (
-                    self.__connection_stats[Component.EXAMOMATIC].refresh_exams_count
-                    == 0
-                ):
-                    try:
-                        self.__refresh_exams(is_spontaneous=True)
-                    except Exception:
-                        _LOGGER.exception("Failed to refresh exams")
                 continue  # pongs are not acked
 
             if message["type"] == "change_keycode":
@@ -1011,7 +1007,10 @@ class Agent:
             elif message["type"] == "refresh_exams":
                 _LOGGER.info("received refresh_exams message from Exam-O-Matic")
                 try:
-                    self.__refresh_exams(is_spontaneous=False)
+                    async with self.__refresh_exams_lock:
+                        await asyncio.to_thread(
+                            self.__refresh_exams, is_spontaneous=False
+                        )
                 except Exception:
                     _LOGGER.exception("Failed to refresh exams")
                     continue  # Failed requests are not acked
@@ -1397,7 +1396,8 @@ class Agent:
 
     def __refresh_exams(self, *, is_spontaneous: bool):
         _LOGGER.info(
-            "Starting %sexam refresh...", "spontaneous " if is_spontaneous else ""
+            "Starting %sexam refresh...",
+            "spontaneous " if is_spontaneous else "requested ",
         )
 
         try:
@@ -1407,7 +1407,7 @@ class Agent:
                 if is_spontaneous:
                     # It's ok that there are no exam infos, because we
                     # are doing spontaneous refresh and we had no
-                    # prior knowledge about availability exam infos.
+                    # prior knowledge about availability of exam infos.
                     _LOGGER.info("No exam info available.")
                 else:
                     _LOGGER.error(
@@ -1425,6 +1425,12 @@ class Agent:
         ktp_controller.api.client.save_exam_info(eom_exam_info)
 
         _LOGGER.info("refreshed exams successfully")
+
+    async def __periodic_refresh_exams(self):
+        while not _SHUTDOWN_EVENT.is_set():
+            async with self.__refresh_exams_lock:
+                await asyncio.to_thread(self.__refresh_exams, is_spontaneous=True)
+            await asyncio.sleep(self.__approx_refresh_exams_interval_sec)
 
     async def forever(self):
         _LOGGER.info("Started.")
@@ -1444,6 +1450,7 @@ class Agent:
                 tg.create_task(self.__maintain_websocket_connection_to_api())
                 tg.create_task(self.__maintain_websocket_connection_to_abitti2())
                 tg.create_task(self.__maintain_websocket_connection_to_examomatic())
+                tg.create_task(self.__periodic_refresh_exams())
 
                 # Keep the main task alive while workers run
                 await asyncio.Event().wait()

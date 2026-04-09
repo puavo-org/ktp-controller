@@ -147,9 +147,9 @@ def assert_agent_has_done_initial_spontaneous_exam_refresh(
             # send refresh_exams message to Agent.
             assert state["refresh_exams_count"] == state["ack_count"] == 0
 
-            # 404, because freshly started Exam-O-Matic does not have any
-            # scheduled exams.
-            assert get_exam_packages_status_codes == [404]
+            # All responses should have been 404, because freshly
+            # started Exam-O-Matic does not have any scheduled exams.
+            assert set(get_exam_packages_status_codes) == {404}
 
 
 def assert_student_access_code_is(
