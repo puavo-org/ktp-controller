@@ -16,6 +16,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All HTTP(S) requests are now made asynchronously using httpx.
 
 
+## Added
+
+- Add configuration option to control automatic student access code
+  change:
+
+  `KTP_CONTROLLER_ABITTI2_CHANGE_STUDENT_ACCESS_CODE_AUTOMATICALLY=true|false`
+
+  The default remains unchanged and is `true`.
+
+
+## [0.3.12] - 2026-04-10
+
+### Fixed
+
+- Allow abitti2server to exit with status code 0.
+
+
 ## [0.3.11] - 2026-04-09
 
 ### Fixed
