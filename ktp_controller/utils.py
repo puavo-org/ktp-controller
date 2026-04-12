@@ -344,3 +344,7 @@ def ago(dt: str | datetime.datetime, *, now: datetime.datetime | None = None) ->
 
     days_ago, hours_ago = divmod(hours_ago, 24)
     return f"{days_ago}d {hours_ago}h {mins_ago}m {secs_ago}s ago"
+
+
+def is_puavo_os() -> bool:
+    return os.path.exists("/etc/puavo")

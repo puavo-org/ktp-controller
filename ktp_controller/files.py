@@ -12,6 +12,11 @@ import typing
 # Internal imports
 import ktp_controller.schemas
 
+
+_USER_FRIENDLY_DATA_DIR = os.path.expanduser("~/ktp-jako")
+
+_LOGS_DIR = os.path.expanduser("~/.puavo/puavo-ers/ktp-controller/logs")
+
 # All exam files will be stored here like so:
 # ~/.local/share/ktp-controller/exam-files/FILE_UUID/exam-file_FILE_SHA256.mex
 _EXAM_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-files")
@@ -39,6 +44,28 @@ DUMMY_EXAM_FILE_FILEPATH = os.path.expanduser(
 DUMMY_EXAM_PACKAGE_FILEPATH = os.path.expanduser(
     "~/.local/share/ktp-controller/dummy-exam-package.zip"
 )
+
+
+def create_user_friendly_data_dir():
+    try:
+        os.makedirs(_USER_FRIENDLY_DATA_DIR)
+    except FileExistsError:
+        pass
+    for symlink_target in (
+        _EXAM_FILE_DIR,
+        _EXAM_PACKAGE_DIR,
+        _ANSWERS_FILE_DIR,
+        _ORPHAN_ANSWERS_FILE_DIR,
+        _LOGS_DIR,
+    ):
+        symlink_filename = os.path.basename(symlink_target)
+        try:
+            os.symlink(
+                symlink_target,
+                os.path.join(_USER_FRIENDLY_DATA_DIR, symlink_filename),
+            )
+        except FileExistsError:
+            continue
 
 
 class LocalFilepathType(str, enum.Enum):
