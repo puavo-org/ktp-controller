@@ -75,6 +75,8 @@ async def _post(path: str, **kwargs) -> httpx.Response:
         "id": SETTINGS.id,
     }
 
+    kwargs["auth"] = _get_auth()
+
     return await ktp_controller.httpx.post(url, **kwargs)
 
 
