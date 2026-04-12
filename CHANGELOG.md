@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## Fixed
+
+- Get rid of harmless, but dangerous looking supervisor event buffer
+  overflow errors.
+
 ## Changed
 
 - Cleanup old answers files (more than 2 weeks old) and old archived
@@ -15,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - All HTTP(S) requests are now made asynchronously using httpx.
 
+- All dependencies have been updated.
 
 ## Added
 
