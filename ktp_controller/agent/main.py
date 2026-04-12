@@ -1558,6 +1558,15 @@ class Agent:
 
 def _run(args) -> int:
     utcnow = ktp_controller.utils.utcnow()
+
+    if ktp_controller.utils.is_puavo_os():
+        try:
+            ktp_controller.files.create_user_friendly_data_dir()
+        except Exception:
+            _LOGGER.exception(
+                "failed to create user-friendly data directory, which is really strange, but it's not fatal"
+            )
+
     agent_state = ktp_controller.agent.state.load_agent_state()
     if agent_state.finished_at is not None:
         seconds_since_last_finished = max(
