@@ -31,6 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   The default remains unchanged and is `true`.
 
+- In PuavoOS, `~/ktp-jako` (created if not exist) contains now symbolic links to:
+  - logs
+  - exam-files
+  - exam-packages
+  - answers-files
+  - orphan-answers-files
+
 
 ## [0.3.12] - 2026-04-10
 
