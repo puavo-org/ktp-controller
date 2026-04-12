@@ -4,6 +4,8 @@ import dataclasses
 import datetime
 import json
 import os
+import signal
+import select
 import subprocess
 import sys
 import typing
@@ -101,6 +103,11 @@ class Event:
 
 
 def _read_event() -> Event:
+    while True:
+        ready_to_read, _, _ = select.select([sys.stdin], [], [], 0.5)
+        if ready_to_read:
+            break
+
     # read header line and print it to stderr
     header_line = sys.stdin.readline()
 
@@ -159,6 +166,7 @@ class _Chainer:
         self.__has_been_running = {}
         self.__do_shutdown = False
         self.__expected_exits = {}
+        self.__is_terminated = False
 
         _write_stderr(f"Parsing arguments: {args}\n")
 
@@ -175,6 +183,9 @@ class _Chainer:
             self.__next_procs.append(arg)
 
         self.__proc = self.__next_procs.pop(0)
+
+    def __terminate(self, signum, frame_stack):
+        self.__is_terminated = True
 
     def run(self) -> None:
         while True:
@@ -246,6 +257,15 @@ class _Chainer:
         if self.__do_shutdown:
             _write_stderr("Shutting down the supervisor...\n")
             _supervisorctl("shutdown", self.__conf_filepath)
+        else:
+            signal.signal(signal.SIGTERM, self.__terminate)
+            while not self.__is_terminated:
+                # transition from ACKNOWLEDGED to READY
+                _write_stdout("READY\n")
+
+                with _guaranteed_result():
+                    event = _read_event()
+                    _write_stderr(f"Got event: {event}\n")
 
         return result
 
