@@ -4,6 +4,8 @@ import logging
 import typing
 
 # Internal imports
+import ktp_controller.abitti2.client
+import ktp_controller.schemas
 import ktp_controller.utils
 
 _LOGGER = logging.getLogger(__file__)
@@ -101,3 +103,78 @@ def parse_students(
         )
 
     return students
+
+
+def validate_security_code(security_code: typing.Dict[str, str]) -> None:
+    """Raise ValueError if security_code is not a well-formed Abitti2 security code dict."""
+    if not isinstance(security_code, dict):
+        raise ValueError("not dict")
+    if set(security_code.keys()) != {"keyCode", "confirmationCode"}:
+        raise ValueError("has invalid keys")
+    if not isinstance(security_code["keyCode"], str):
+        raise ValueError("keyCode is not str")
+    if not isinstance(security_code["confirmationCode"], str):
+        raise ValueError("confirmationCode is not str")
+
+
+def security_code_to_student_access_code(
+    security_code: typing.Dict[str, str] | None,
+) -> ktp_controller.schemas.StudentAccessCode | None:
+    """Convert an Abitti2 security code dict to a StudentAccessCode, or None."""
+    if security_code is None:
+        return None
+
+    return ktp_controller.schemas.StudentAccessCode(
+        key_code=security_code["keyCode"],
+        verification_code=security_code["confirmationCode"],
+    )
+
+
+def no_active_students(status_report: typing.Dict[str, typing.Any]) -> bool:
+    """Return True when there are no active students in the status report.
+
+    >>> no_active_students({"abitti2": {"students": []}})
+    True
+    >>> no_active_students({"abitti2": {"students": [{"age": 13}]}})
+    Traceback (most recent call last):
+    ...
+    KeyError: 'is_active'
+    >>> no_active_students({"abitti2": {"students": [{"is_active": False}]}})
+    True
+    >>> no_active_students({"abitti2": {"students": [{"is_active": True}, {"is_active": False}]}})
+    False
+    >>> no_active_students({"abitti2": {"students": [{"is_active": True}, {"is_active": True}]}})
+    False
+    >>> no_active_students({"abitti2": {"students": [{"is_active": False}, {"is_active": False}]}})
+    True
+    """
+    return all(not s["is_active"] for s in status_report["abitti2"]["students"])
+
+
+async def allow_students_to_use_browsers(students: typing.List[typing.Dict]) -> None:
+    """Grant browser access to every student that is waiting for auth-browser."""
+    for student in students:
+        student_uuid = student["uuid"]
+        session_uuid = student["session_uuid"]
+        student_status = student["status"]
+
+        if student_status != "waiting-for-auth-browser":
+            continue
+
+        try:
+            await ktp_controller.abitti2.client.set_exam_session_permission_to_use_browsers(
+                session_uuid, True
+            )
+        except Exception:
+            _LOGGER.error(
+                "failed to allow student %s to use browsers in session %s",
+                student_uuid,
+                session_uuid,
+            )
+            continue
+
+        _LOGGER.info(
+            "allowed student %s to use browsers in session %s",
+            student_uuid,
+            session_uuid,
+        )
