@@ -2,11 +2,13 @@
 import enum
 import hashlib
 import logging
+import os.path
 import typing
 import zipfile
 
 # Internal imports
 import ktp_controller.api.client
+import ktp_controller.examomatic.client
 import ktp_controller.files
 import ktp_controller.utils
 
@@ -18,6 +20,7 @@ __all__ = [
     "Component",
     "ExamPackageError",
     "ExamPackageUsageError",
+    "create_dummy_exam_package_file",
     "create_exam_package_file",
     "set_current_exam_package_state",
 ]
@@ -58,6 +61,22 @@ class ExamPackageUsageError(ExamPackageError):
 
     def __str__(self) -> str:
         return f"usage error: {self._error_message}"
+
+
+def create_dummy_exam_package_file() -> None:
+    """Create the dummy exam package file that Abitti2 uses for reset."""
+    ktp_controller.examomatic.client.download_dummy_exam_file(
+        ktp_controller.files.DUMMY_EXAM_FILE_FILEPATH
+    )
+
+    with ktp_controller.utils.open_atomic_write(
+        ktp_controller.files.DUMMY_EXAM_PACKAGE_FILEPATH
+    ) as exam_package_file:
+        with zipfile.ZipFile(exam_package_file, "w") as exam_package_file_zip:
+            exam_package_file_zip.write(
+                ktp_controller.files.DUMMY_EXAM_FILE_FILEPATH,
+                os.path.basename(ktp_controller.files.DUMMY_EXAM_FILE_FILEPATH),
+            )
 
 
 async def create_exam_package_file(

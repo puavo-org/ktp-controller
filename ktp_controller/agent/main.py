@@ -1270,7 +1270,7 @@ class Agent:
         self.__started_at = ktp_controller.utils.utcnow()
 
         # ktp_controller.abitti2.client needs dummy exam package to reset Abitti2.
-        ktp_controller.agent.answers.create_dummy_exam_package_file()
+        ktp_controller.agent.exam_package.create_dummy_exam_package_file()
 
         with contextlib.suppress(asyncio.CancelledError):
             asyncio.run(self.forever())

@@ -3,7 +3,6 @@ import logging
 import os.path
 import pathlib
 import time
-import zipfile
 
 # Internal imports
 import ktp_controller.abitti2.client
@@ -15,15 +14,11 @@ _LOGGER = logging.getLogger(__file__)
 
 
 __all__ = [
-    "write_archive_file",
-    "mark_dir_archived",
-    "mark_file_archived",
     "transfer_answers",
-    "create_dummy_exam_package_file",
 ]
 
 
-def write_archive_file(archive_filepath: str) -> None:
+def _write_archive_file(archive_filepath: str) -> None:
     """Write a timestamped sentinel file to mark something as archived.
 
     Raises FileExistsError if the sentinel file already exists.
@@ -40,14 +35,12 @@ def write_archive_file(archive_filepath: str) -> None:
         sentinel_file.write("\n")
 
 
-def mark_dir_archived(dirpath: str | pathlib.Path) -> None:
-    """Write a .archived sentinel file inside dirpath."""
-    write_archive_file(os.path.join(dirpath, ".archived"))
+def _mark_dir_archived(dirpath: str | pathlib.Path) -> None:
+    _write_archive_file(os.path.join(dirpath, ".archived"))
 
 
-def mark_file_archived(filepath: str | pathlib.Path) -> None:
-    """Write a <filepath>.archived sentinel file alongside filepath."""
-    write_archive_file(f"{filepath}.archived")
+def _mark_file_archived(filepath: str | pathlib.Path) -> None:
+    _write_archive_file(f"{filepath}.archived")
 
 
 async def transfer_answers(
@@ -117,7 +110,7 @@ async def transfer_answers(
     )
 
     try:
-        mark_file_archived(answers_file_path)
+        _mark_file_archived(answers_file_path)
     except Exception as exception:
         _LOGGER.warning(
             "Failed to mark answers file %r archived: %s", answers_file_path, exception
@@ -128,7 +121,7 @@ async def transfer_answers(
     )
 
     try:
-        mark_dir_archived(exam_package_dirpath)
+        _mark_dir_archived(exam_package_dirpath)
     except Exception as exception:
         _LOGGER.warning(
             "Failed to mark exam package dir %r archived: %s",
@@ -143,19 +136,3 @@ async def transfer_answers(
         os.path.basename(answers_file_path),
         duration,
     )
-
-
-def create_dummy_exam_package_file() -> None:
-    """Create the dummy exam package file that Abitti2 uses for reset."""
-    ktp_controller.examomatic.client.download_dummy_exam_file(
-        ktp_controller.files.DUMMY_EXAM_FILE_FILEPATH
-    )
-
-    with ktp_controller.utils.open_atomic_write(
-        ktp_controller.files.DUMMY_EXAM_PACKAGE_FILEPATH
-    ) as exam_package_file:
-        with zipfile.ZipFile(exam_package_file, "w") as exam_package_file_zip:
-            exam_package_file_zip.write(
-                ktp_controller.files.DUMMY_EXAM_FILE_FILEPATH,
-                os.path.basename(ktp_controller.files.DUMMY_EXAM_FILE_FILEPATH),
-            )
