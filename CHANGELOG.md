@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [0.3.13] - 2026-04-16
+
+## Fixed
+
+- When decrypting exams, be cool with a situtation where Abitti2 tells
+  us that some decrypt codes were invalid, but all exams were
+  decrypted successfully nevertheless. Yes, it's crooked. But as long
+  as Abitti2 can decrypt all exams we want, we don't care how it does
+  it.
+
+
 ## [0.3.12] - 2026-04-10
 
 ### Fixed
