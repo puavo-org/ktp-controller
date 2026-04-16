@@ -6,14 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.4.1] - 2026-04-16
+
+### Fixed
+
+- When decrypting exams, be cool with a situtation where Abitti2 tells
+  us that some decrypt codes were invalid, but all exams were
+  decrypted successfully nevertheless. Yes, it's crooked. But as long
+  as Abitti2 can decrypt all exams we want, we don't care how it does
+  it.
+
+
 ## [0.4.0] - 2026-04-12
 
-## Fixed
+### Fixed
 
 - Get rid of harmless, but dangerous looking supervisor event buffer
   overflow errors.
 
-## Changed
+### Changed
 
 - Cleanup old answers files (more than 2 weeks old) and old archived
   exam packages (exam packages marked as archived and more than 1 day
@@ -23,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - All dependencies have been updated.
 
-## Added
+### Added
 
 - Add configuration option to control automatic student access code
   change:
