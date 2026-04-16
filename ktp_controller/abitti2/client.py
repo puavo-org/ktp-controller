@@ -160,11 +160,7 @@ async def prepare_exam_package(
     for decrypt_code in decrypt_codes:
         retval = await decrypt_exams(decrypt_code)
         if retval["wrongPassword"]:
-            # TODO: is it ok to expose the decrypt code in log files?
-            _LOGGER.error(
-                "invalid decrypt code (sha1 hash: %r)",
-                hashlib.sha1(decrypt_code.encode("utf-8")).hexdigest(),
-            )
+            _LOGGER.error("invalid decrypt code %r", decrypt_code)
             had_invalid_decrypt_code = True
             continue
         decrypted_exam_filenames.update(retval["mebs"])
@@ -178,7 +174,7 @@ async def prepare_exam_package(
         )
 
     if had_invalid_decrypt_code:
-        raise RuntimeError(
+        _LOGGER.warning(
             "Encountered an invalid decrypt code, but all exams were "
             "decrypted nevertheless. So, something is crooked!"
         )
