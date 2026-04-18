@@ -6,12 +6,13 @@ Manage networking
 import ipaddress
 import logging
 import os.path
+import socket
 import subprocess
 import time
 import typing
 
 # Third-party imports
-import netifaces
+import psutil
 
 
 _LOGGER = logging.getLogger(os.path.basename(__file__))
@@ -27,8 +28,9 @@ __all__ = [
 def wait_interface(interface_name: str, *, timeout: float) -> bool:
     start_time = time.time()
     while time.time() - start_time < timeout:
-        addresses = netifaces.ifaddresses(interface_name)
-        if netifaces.AF_INET in addresses:
+        addrs = psutil.net_if_addrs().get(interface_name, [])
+        # Check if the interface has an IPv4 address (equivalent to checking AF_INET)
+        if any(snic.family == socket.AF_INET for snic in addrs):
             with open(
                 f"/sys/class/net/{interface_name}/operstate", encoding="ascii"
             ) as operstate_file:
@@ -41,14 +43,47 @@ def wait_interface(interface_name: str, *, timeout: float) -> bool:
 
 
 def interfaces() -> typing.List[str]:
-    return netifaces.interfaces()
+    return list(psutil.net_if_addrs().keys())
 
 
-def interface_addresses(interface):
-    return {
-        netifaces.address_families[k]: v
-        for k, v in netifaces.ifaddresses(interface).items()
-    }
+def interface_addresses(interface: str) -> dict:
+    """
+    Returns interface addresses in a format compatible with the legacy netifaces output,
+    ensuring downstream logic (like checking for 'AF_PACKET') still works.
+    """
+    addrs = psutil.net_if_addrs().get(interface, [])
+    result = {}
+
+    for snic in addrs:
+        # Map socket families to the string names expected by the original code
+        if snic.family == socket.AF_INET:
+            fam_name = "AF_INET"
+        elif snic.family == socket.AF_INET6:
+            fam_name = "AF_INET6"
+        elif snic.family == getattr(psutil, "AF_LINK", -1) or snic.family == getattr(
+            socket, "AF_PACKET", 17
+        ):
+            fam_name = "AF_PACKET"
+        else:
+            try:
+                fam_name = socket.AddressFamily(snic.family).name
+            except ValueError:
+                fam_name = str(snic.family)
+
+        if fam_name not in result:
+            result[fam_name] = []
+
+        addr_info = {"addr": snic.address}
+        if snic.netmask:
+            addr_info["netmask"] = snic.netmask
+        if snic.broadcast:
+            addr_info["broadcast"] = snic.broadcast
+        if snic.ptp:
+            addr_info["peer"] = snic.ptp
+
+        result[fam_name].append(addr_info)
+
+    return result
 
 
 class Net:
