@@ -1,5 +1,4 @@
 # Standard library imports
-import enum
 import hashlib
 import logging
 import os.path
@@ -16,38 +15,12 @@ _LOGGER = logging.getLogger(__file__)
 
 
 __all__ = [
-    "Trigger",
-    "Component",
     "ExamPackageError",
     "ExamPackageUsageError",
     "create_dummy_exam_package_file",
     "create_exam_package_file",
     "set_current_exam_package_state",
 ]
-
-
-class Trigger(str, enum.Enum):
-    """Reason why the exam package state machine was evaluated."""
-
-    TIME = "time"
-    MANUAL_PREPARE = "manual_prepare"
-    MANUAL_START = "manual_start"
-    MANUAL_STOP = "manual_stop"
-    MANUAL_ARCHIVE = "manual_archive"
-
-    def __str__(self) -> str:
-        return self.value
-
-
-class Component(str, enum.Enum):
-    """External component the agent maintains a WebSocket connection to."""
-
-    API = "API"
-    EXAMOMATIC = "Exam-O-Matic"
-    ABITTI2 = "Abitti2"
-
-    def __str__(self) -> str:
-        return self.value
 
 
 class ExamPackageError(Exception):
