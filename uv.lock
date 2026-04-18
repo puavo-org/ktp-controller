@@ -57,6 +57,15 @@ wheels = [
 ]
 
 [[package]]
+name = "asyncinotify"
+version = "4.4.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/23/90/f04f0a0c2001e43b3b5199ef6c63c117e43e80cdbaab3037b24c57feeef5/asyncinotify-4.4.4.tar.gz", hash = "sha256:a8afc92bec6666807ca50524156fca22655325cba6e2b51d842b8ec0d399c708", size = 20868, upload-time = "2026-04-13T20:32:27.416Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/41/31/0ac34c340f517a06cf944c2b4a518c53addf5663df7c704ee711b5e5c662/asyncinotify-4.4.4-py3-none-any.whl", hash = "sha256:9f4236249d78af4451eb689d0c1ed1f52ab5d44a22c7dd699f3dd34f2c3e01f4", size = 20225, upload-time = "2026-04-13T20:32:26.184Z" },
+]
+
+[[package]]
 name = "attrs"
 version = "26.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -281,6 +290,7 @@ version = "0.5.0rc1"
 source = { editable = "." }
 dependencies = [
     { name = "alembic" },
+    { name = "asyncinotify" },
     { name = "fastapi" },
     { name = "httpx" },
     { name = "psutil" },
@@ -305,6 +315,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "alembic" },
+    { name = "asyncinotify" },
     { name = "fastapi" },
     { name = "httpx" },
     { name = "psutil" },
