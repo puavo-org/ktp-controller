@@ -23,6 +23,7 @@ dependencies = [
     "python-multipart",
     "supervisor",
     "redis",
+    "validators",
     "websockets",
 ]
 repository = "https://github.com/puavo-org/ktp-controller"
