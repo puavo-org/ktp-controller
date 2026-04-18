@@ -3,6 +3,7 @@ import argparse
 import asyncio
 import contextlib
 import datetime
+import enum
 import json
 import logging
 import os
@@ -39,6 +40,26 @@ import ktp_controller.utils
 _LOGGER = logging.getLogger(__file__)
 
 _SHUTDOWN_EVENT = asyncio.Event()
+
+
+class Trigger(str, enum.Enum):
+    TIME = "time"
+    MANUAL_PREPARE = "manual_prepare"
+    MANUAL_START = "manual_start"
+    MANUAL_STOP = "manual_stop"
+    MANUAL_ARCHIVE = "manual_archive"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class Component(str, enum.Enum):
+    API = "API"
+    EXAMOMATIC = "Exam-O-Matic"
+    ABITTI2 = "Abitti2"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 class Agent:
@@ -81,7 +102,7 @@ class Agent:
         self.__last_cold_reset_time: datetime.datetime | None = None
 
         self.__connection_stats: typing.Dict[
-            ktp_controller.agent.exam_package.Component,
+            Component,
             ktp_controller.agent.stats.ConnectionStats,
         ] = {}
         self.__commands = {
@@ -181,7 +202,6 @@ class Agent:
                 ),
             )
 
-        Trigger = ktp_controller.agent.exam_package.Trigger
         manual_trigger = {
             ktp_controller.messages.Command.ARCHIVE_CURRENT_EXAM_PACKAGE: Trigger.MANUAL_ARCHIVE,
             ktp_controller.messages.Command.PREPARE_CURRENT_EXAM_PACKAGE: Trigger.MANUAL_PREPARE,
@@ -432,10 +452,7 @@ class Agent:
                 )
             await asyncio.sleep(self.__approx_answer_transfer_interval_sec)
 
-    async def __work_on_current_exam_package(
-        self, *, trigger: ktp_controller.agent.exam_package.Trigger
-    ) -> bool:
-        Trigger = ktp_controller.agent.exam_package.Trigger
+    async def __work_on_current_exam_package(self, *, trigger: Trigger) -> bool:
         utcnow = ktp_controller.utils.utcnow()
         trigger = Trigger(trigger)  # Raises ValueError if trigger is not a Trigger.
 
@@ -740,9 +757,7 @@ class Agent:
                 # sophisticated scheduling logic, but for now,
                 # ping-pong scheduling is good enough.
                 try:
-                    await self.__work_on_current_exam_package(
-                        trigger=ktp_controller.agent.exam_package.Trigger.TIME
-                    )
+                    await self.__work_on_current_exam_package(trigger=Trigger.TIME)
                 except Exception:
                     _LOGGER.exception(
                         "automatic work on the current exam package failed"
@@ -766,14 +781,12 @@ class Agent:
                 continue
 
             self.__connection_stats[
-                ktp_controller.agent.exam_package.Component.EXAMOMATIC
+                Component.EXAMOMATIC
             ].last_message_received_at = received_at
 
             if message["type"] == "pong":
                 _LOGGER.info("received pong message from Exam-O-Matic")
-                self.__connection_stats[
-                    ktp_controller.agent.exam_package.Component.EXAMOMATIC
-                ].ping_pong_count += 1
+                self.__connection_stats[Component.EXAMOMATIC].ping_pong_count += 1
                 continue  # pongs are not acked
 
             if message["type"] == "change_keycode":
@@ -1083,7 +1096,7 @@ class Agent:
 
     async def __maintain_websocket_connection_to_api(self):
         await self.__maintain_websocket_connection(
-            ktp_controller.agent.exam_package.Component.API,
+            Component.API,
             ktp_controller.api.client.get_agent_websock_url(),
             [
                 self.__send_pings_to_api,
@@ -1095,7 +1108,7 @@ class Agent:
 
     async def __maintain_websocket_connection_to_examomatic(self):
         await self.__maintain_websocket_connection(
-            ktp_controller.agent.exam_package.Component.EXAMOMATIC,
+            Component.EXAMOMATIC,
             ktp_controller.examomatic.client.get_examomatic_websock_url(),
             [
                 self.__send_pings_to_examomatic,
@@ -1107,7 +1120,7 @@ class Agent:
 
     async def __maintain_websocket_connection_to_abitti2(self):
         await self.__maintain_websocket_connection(
-            ktp_controller.agent.exam_package.Component.ABITTI2,
+            Component.ABITTI2,
             ktp_controller.abitti2.client.get_abitti2_websock_url(),
             [
                 self.__communicate_with_abitti2,
