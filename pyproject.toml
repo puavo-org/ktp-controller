@@ -18,6 +18,7 @@ dependencies = [
     "httpx",
     "uvicorn[standard]",
     "alembic",
+    "netifaces",
     "pydantic-settings",
     "python-multipart",
     "supervisor",
