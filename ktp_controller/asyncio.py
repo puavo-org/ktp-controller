@@ -3,11 +3,13 @@ Asyncio utils
 """
 
 # Standard library imports
-import aionotify
 import asyncio
 import logging
 import os.path
 import signal
+
+# Third-party imports
+from asyncinotify import Inotify, Mask
 
 __all__ = [
     "FileMonitor",
@@ -20,18 +22,23 @@ class FileMonitor:
         if not os.path.exists(path):
             raise FileNotFoundError(path)
         self.__loop = loop
-        self.__watcher = aionotify.Watcher()
-        self.__watcher.watch(
+
+        # Initialize asyncinotify Inotify instance
+        self.__watcher = Inotify()
+
+        # Add a watch using Mask enums
+        self.__watcher.add_watch(
             path,
-            aionotify.Flags.MODIFY | aionotify.Flags.CREATE | aionotify.Flags.DELETE,
+            Mask.MODIFY | Mask.CREATE | Mask.DELETE,
         )
+
         self.__task = None
         self.__cb = cb
 
     async def __run(self):
-        await self.__watcher.setup(self.__loop)
-        while True:
-            event = await self.__watcher.get_event()
+        # asyncinotify provides an async generator,
+        # so no explicit .setup(loop) is required anymore
+        async for event in self.__watcher:
             await self.__cb(event)
 
     def start(self):
