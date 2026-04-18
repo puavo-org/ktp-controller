@@ -8,8 +8,14 @@ on:
 jobs:
   build-bundle:
     runs-on: ubuntu-latest
+    # Explicitly grant the GITHUB_TOKEN permission to create releases
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -27,9 +33,35 @@ jobs:
         id: vars
         run: echo "pkg_version=$(uv version --short)" >> $GITHUB_OUTPUT
 
+      - name: Extract Release Notes
+        if: startsWith(github.ref, 'refs/tags/')
+        id: extract_notes
+        run: |
+          CURRENT_VERSION=$(uv version --short)
+          # Extracts the first '## ' heading of the given version and its contents up to the next '## '
+          awk -v ver="${CURRENT_VERSION}" '/^## \[/{if(p)exit} $0~"^## \\["ver"\\]"{p=1} p' CHANGELOG.md > release_notes.md
+
       - name: Create release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/ktp_controller-prodbundle-${{ steps.vars.outputs.pkg_version }}.zip
-          body: "Relocatable release bundle. Download, extract, and run `./ktp-controller`."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 1. Check if it should be marked as "latest"
+          LATEST_VERSION=$(aux/latest-version)
+          LATEST_FLAG=""
+          if [ "$LATEST_VERSION" = "${{ github.ref_name }}" ]; then
+            LATEST_FLAG="--latest"
+          else
+            LATEST_FLAG="--latest=false"
+          fi
+
+          # 2. Create the release using the GitHub CLI
+          gh release create ${{ github.ref_name }} \
+            --title "${{ github.ref_name }}" \
+            --notes-file release_notes.md \
+            $LATEST_FLAG \
+            "dist/ktp_controller-prodbundle-${{ steps.vars.outputs.pkg_version }}.zip#Relocatable Bundle for PuavoOS"
+
+      - name: Clean up intermediate file
+        if: always()
+        run: rm -f release_notes.md
