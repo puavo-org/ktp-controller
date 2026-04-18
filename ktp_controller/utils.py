@@ -5,7 +5,9 @@ import datetime
 import errno
 import fcntl
 import hashlib
+import io
 import json
+import locale
 import logging
 import os
 import os.path
@@ -27,14 +29,23 @@ __all__ = [
 ]
 
 
-# Constants:
-
-
 _LOGGER = logging.getLogger(__file__)
 _LOGGER.setLevel(logging.DEBUG)
 
 
-# Utils:
+class LineBufferedLoggingStream(io.TextIOWrapper):
+    def __init__(self, logger, level):
+        self.__buffer = io.BytesIO()
+        self.__logger = logger
+        self.__level = level
+        super().__init__(self.__buffer, line_buffering=True)
+
+    def flush(self):
+        with self.buffer.getbuffer() as buf:
+            s = buf.tobytes().decode(locale.getencoding())
+            if s:
+                self.__logger.log(self.__level, s)
+        self.buffer.truncate(0)
 
 
 def sha256(filepath: str, chunk_size_bytes: int = 1024**2) -> str:
