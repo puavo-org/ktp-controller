@@ -90,7 +90,11 @@ def parse_students(
             or student["sessionStatus"].startswith("exam_finished_by_")
         )
 
-        is_active = is_connected and not is_idle and not is_finished
+        is_waiting_for_auth = student.get("studentStatus", "") == "waiting-for-auth"
+
+        is_active = (
+            is_connected and not is_idle and not is_finished and not is_waiting_for_auth
+        )
 
         students.append(
             {
