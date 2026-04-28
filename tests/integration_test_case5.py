@@ -63,6 +63,7 @@ def test_exam_package_is_scheduled_and_downloaded(utcnow):
         lock_time_duration_seconds=30,
         expected_ack_count=1,
         utcnow=utcnow,
+        number_of_duplicates=3,
     )
 
 

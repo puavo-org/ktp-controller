@@ -69,7 +69,11 @@ def get_synthetic_exam_info(
     duration: datetime.timedelta | None = None,
     server_id: int = 2,
     exam_title: str = "exam1",
+    number_of_duplicates: int = 0,
 ) -> typing.Dict[str, typing.Any]:
+    if number_of_duplicates < 0:
+        raise ValueError("number_of_duplicates cannot be less than zero")
+
     if utcnow is None:
         utcnow = ktp_controller.utils.utcnow()
     if duration is None:
@@ -79,40 +83,44 @@ def get_synthetic_exam_info(
     if start_time is None:
         start_time = utcnow + lock_time_duration
 
-    exam_uuid = str(uuid.uuid4())
     exam_package_uuid = str(uuid.uuid4())
     end_time = start_time + duration
     lock_time = start_time - lock_time_duration
 
-    exam_schedule = {
-        "id": exam_uuid,
-        "start_time": start_time.isoformat(),
-        "end_time": end_time.isoformat(),
-        "exam_modified_at": (start_time - datetime.timedelta(hours=1)).isoformat(),
-        "schedule_modified_at": (
-            start_time - datetime.timedelta(minutes=30)
-        ).isoformat(),
-        "school_name": "school1",
-        "server_id": [server_id],
-        "is_retake": False,
-        "retake_participants": 0,
-    }
+    exam_schedules = []
+    exam_uuids = []
 
-    exam_schedule.update(_EXAM_FILE_INFOS[exam_title])
+    for i in range(number_of_duplicates + 1):
+        exam_uuid = str(uuid.uuid4())
+        exam_schedule = {
+            "id": exam_uuid,
+            "start_time": start_time.isoformat(),
+            "end_time": end_time.isoformat(),
+            "exam_modified_at": (start_time - datetime.timedelta(hours=1)).isoformat(),
+            "schedule_modified_at": (
+                start_time - datetime.timedelta(minutes=30)
+            ).isoformat(),
+            "school_name": "school1",
+            "server_id": [server_id],
+            "is_retake": False,
+            "retake_participants": 0,
+        }
+        exam_schedule.update(_EXAM_FILE_INFOS[exam_title])
+
+        exam_schedules.append(exam_schedule)
+        exam_uuids.append(exam_uuid)
 
     return json.loads(
         json.dumps(
             {
-                "schedules": [
-                    exam_schedule,
-                ],
+                "schedules": exam_schedules,
                 "packages": {
                     exam_package_uuid: {
                         "id": exam_package_uuid,
                         "start_time": start_time.isoformat(),
                         "end_time": end_time.isoformat(),
                         "lock_time": lock_time.isoformat(),
-                        "schedules": [exam_uuid],
+                        "schedules": exam_uuids,
                         "locked": utcnow >= lock_time,
                         "server_id": server_id,
                         "estimated_total_size": 0,

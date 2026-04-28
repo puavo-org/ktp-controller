@@ -133,6 +133,7 @@ class _SetExamInfoData(ktp_controller.pydantic.BaseModel):
     start_time: ktp_controller.pydantic.DateTime
     duration_seconds: pydantic.conint(strict=True, ge=1)
     lock_time_duration_seconds: pydantic.conint(strict=True, ge=1)
+    number_of_duplicates: pydantic.conint(strict=True, ge=0) = 0
 
 
 @APP.post(
@@ -154,6 +155,7 @@ async def _mock_set_exam_info(
         lock_time_duration=datetime.timedelta(seconds=data.lock_time_duration_seconds),
         exam_title=data.exam_title,
         server_id=server_id,
+        number_of_duplicates=data.number_of_duplicates,
     )
 
     APP.state.exam_info = exam_info
