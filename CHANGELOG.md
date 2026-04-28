@@ -9,8 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Abitti2 students waiting for authorization are not considered active
-  and hence do not block exam package state transitions anymore.
+- Abitti2 students waiting for authorization are considered inactive
+  and no longer block exam package state transitions.
+
+### Changed
+
+- Duplicate exam files (based on SHA256) are no longer included in
+  exam package files, as Abitti2 fails to process them. Should
+  Exam-O-Matic ever produce scheduled exam package definitions with
+  duplicate exam files, rest assured that KTP Controller will filter
+  them out of the final package (and log a warning message).
 
 
 ## [0.4.1] - 2026-04-16
