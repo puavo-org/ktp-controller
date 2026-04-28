@@ -255,6 +255,7 @@ def assert_exam_scheduling_and_download(
     lock_time_duration_seconds: int,
     expected_ack_count: int,
     utcnow: datetime.datetime | None = None,
+    number_of_duplicates: int = 0,
 ):
     if utcnow is None:
         utcnow = ktp_controller.utils.utcnow()
@@ -268,6 +269,7 @@ def assert_exam_scheduling_and_download(
                 ).isoformat(),
                 "duration_seconds": duration_seconds,
                 "lock_time_duration_seconds": lock_time_duration_seconds,
+                "number_of_duplicates": number_of_duplicates,
             },
         )
     )
