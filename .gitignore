@@ -10,3 +10,4 @@ flycheck_*
 /chain_result
 /chain_result.tmp
 /dump.rdb
+/.python-version
