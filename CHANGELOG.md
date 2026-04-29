@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [UNRELEASED]
+
+### Changed
+
+- All dependencies have been updated.
+
+
 ## [0.4.2] - 2026-04-29
 
 ### Fixed
@@ -25,19 +32,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- When decrypting exams, be cool with a situtation where Abitti2 tells
-  us that some decrypt codes were invalid, but all exams were
-  decrypted successfully nevertheless. Yes, it's crooked. But as long
-  as Abitti2 can decrypt all exams we want, we don't care how it does
-  it.
+- Resolved an issue where invalid Abitti2 exam decryption codes
+  triggered unnecessary error logging, ensuring the process continues
+  smoothly as long as all necessary exams are successfully decrypted.
 
 
 ## [0.4.0] - 2026-04-12
 
 ### Fixed
 
-- Get rid of harmless, but dangerous looking supervisor event buffer
-  overflow errors.
+- Fixed the root cause of benign supervisor event buffer overflow
+  errors to prevent confusion.
 
 ### Changed
 
@@ -71,11 +76,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- When decrypting exams, be cool with a situtation where Abitti2 tells
-  us that some decrypt codes were invalid, but all exams were
-  decrypted successfully nevertheless. Yes, it's crooked. But as long
-  as Abitti2 can decrypt all exams we want, we don't care how it does
-  it.
+- Resolved an issue where invalid Abitti2 exam decryption codes
+  triggered unnecessary error logging, ensuring the process continues
+  smoothly as long as all necessary exams are successfully decrypted.
 
 
 ## [0.3.12] - 2026-04-10
@@ -132,12 +135,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Agent now logs errors occured during periodic answer transfers.
+- Agent now logs errors that occurred during periodic answer transfers.
 
 - Periodic answer transfer task is not re-started anymore when the
   scheduled exam package is stopped. This caused issues when periodic
   answer transfer itself was failing (for any reason). Final archival
-  process will take care of transfering final answers from Abitti2 to
+  process will take care of transferring final answers from Abitti2 to
   Exam-O-Matic when the exam package has been stopped.
 
 
@@ -156,8 +159,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix regression: change to the uploading and decrypting logic in
   v0.3.3 caused agent to upload just the very first exam package,
-  which effectively made exam package scheduling to work only once per
-  runtime.
+  which effectively limited exam package scheduling to only run once per
+  session.
 
 - Ensure to not flood Abitti2 with reset requests.
 
@@ -225,9 +228,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All command line programs have now `--version` option.
 - Added new environment variable `KTP_CONTROLLER_ABITTI2_ALLOW_STUDENTS_TO_USE_BROWSERS` to allow overriding the default behavior.
 - Puavo OS: `puavo-ers-naksu2` and `puavo-ers-abitti2server` are now part of the supervised run.
-- Self-healing capabilities if Redis connection fails, i.e. try reconnecting until Redis is back online.
+- Improved system resilience by automatically attempting to reconnect to Redis during connection failures.
 - Single Redis client connection for all websocket connections (agent and UI).
-- Orphan answers files are rescued, i.e. in auto-control mode, if Abitti2 is running an unknown exam (not launched by KTP Controller), save answers locally before proceeding.
+- Added local backup for orphan answer files; in auto-control mode, answers from unknown exams (not launched by KTP Controller) are now saved locally before proceeding.
 - Mark all uploaded answers with `.archived` sentinel file.
 - More robust error handling.
 - The definition of "active" student is revised:
@@ -265,9 +268,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Self-heal wounds caused by Redis connection failures, i.e. try reconnecting until Redis is back online and preserve subscribed websockets.
+- Improved system resilience by automatically attempting to reconnect to Redis during connection failures, preserving subscribed websockets.
 - Use single Redis client connection for all websocket connections (agent and UI).
-- Orphan answers files are rescued, i.e. in auto-control mode, if Abitti2 is running an unknown exam (not launched by KTP Controller), save answers locally before proceeding.
+- Added local backup for orphan answer files; in auto-control mode, answers from unknown exams (not launched by KTP Controller) are now saved locally before proceeding.
 - Mark all uploaded answers with `.archived` sentinel file.
 - More robust error handling.
 
