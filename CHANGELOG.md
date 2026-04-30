@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- All Abitti2-related code and functionality imported from Puavo OS.
+
 ### Changed
 
 - All dependencies have been updated.
