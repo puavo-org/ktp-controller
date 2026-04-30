@@ -4,7 +4,6 @@ set -euo pipefail
 
 THIS=$(readlink -e "$0")
 HERE=$(dirname "$THIS")
-PYTHONPATH="$HERE/lib"
 RUNCONF=
 OS=
 
@@ -34,8 +33,7 @@ mkdir -p "${WORKDIR}/logs"
 
 cd "${WORKDIR}"
 
-export PYTHONPATH
-export PATH="$HERE/lib/bin:$PATH"
+export PATH="$HERE/bin:$PATH"
 
 if [ $# -eq 0 ]; then
     COMMAND=run
@@ -45,26 +43,20 @@ else
 fi
 
 case "$COMMAND" in
-    agent|api|supervisor_chainer)
-        exec python3 -m "ktp_controller.$COMMAND" "$@"
-        ;;
     cli)
-        KTP_CONTROLLER_LOGGING_LEVEL=WARNING exec python3 -m "ktp_controller.$COMMAND" "$@"
-        ;;
-    alembic)
-        exec alembic "$@"
-        ;;
-    bash)
-        exec bash --noprofile --rcfile <(echo "PS1='KTP Controller Shell\n\u@\h $ '") -i "$@"
+        echo "WARNING: deprecated, run instead: $0 $@" >&2
+        KTP_CONTROLLER_LOGGING_LEVEL=WARNING exec ktp-controller-cli "$@"
         ;;
     shutdown)
         exec supervisorctl -c "$HERE/$RUNCONF" shutdown
+        ;;
+    supervisorctl)
+        exec supervisorctl -c "$HERE/$RUNCONF" "$@"
         ;;
     run)
         exec supervisord -c "$HERE/$RUNCONF"
         ;;
     *)
-        echo "ERROR: invalid command '$COMMAND'" >&2
-        exit 1
+        KTP_CONTROLLER_LOGGING_LEVEL=WARNING exec ktp-controller-cli "$COMMAND" "$@"
         ;;
 esac

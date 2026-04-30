@@ -55,7 +55,7 @@ def _get_wd(name):
     if not re.match(r"^[a-z0-9]{1,32}$", name):
         raise ValueError("invalid working directory name", name)
 
-    wd = os.path.join(os.path.expanduser("~/.puavo/puavo-ers/abitti2server"), name)
+    wd = os.path.join(os.path.expanduser("~/.puavo/puavo-ers/ktp-controller"), name)
 
     try:
         os.makedirs(wd)
@@ -81,7 +81,7 @@ def _run_networking(*args):
         [
             "sudo",
             "-n",
-            os.path.join(_THIS_DIR, "puavo-ers-abitti2server-networking"),
+            "/opt/ktp-controller/bin/ktp-controller-networking",
         ]
         + list(args),
         _get_wd("networking"),
