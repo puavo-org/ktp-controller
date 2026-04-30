@@ -29,11 +29,12 @@ uv export --no-emit-project --no-dev --format requirements-txt >dist/requirement
 echo "🚚 Collecting packages into bundle..." >&2
 version=$(uv version --short)
 dir="dist/ktp_controller-prodbundle-${version}"
+rm -rf "$dir"
 mkdir -p "$dir"
 uv pip install \
     -r dist/requirements.txt \
     dist/*.whl \
-    --target "$dir/ktp-controller/lib"
+    --prefix "$dir/ktp-controller/"
 
 echo "🚀 Installing launchers..." >&2
 cp -v supervisor/*-prod-run.conf "$dir/ktp-controller/"
@@ -42,11 +43,15 @@ cp -v -r alembic "$dir/ktp-controller/"
 cp -v aux/launcher "$dir/ktp-controller/ktp-controller"
 cp -v LICENSE "$dir/ktp-controller/"
 cp -v CHANGELOG.md "$dir/ktp-controller/"
-find "$dir/ktp-controller/lib/bin" -type f -exec sed -i '1 s|^#!.*\(python[0-9]*\).*|#!/usr/bin/env \1|' {} \;
+cp -v aux/pyvenv.cfg "$dir/ktp-controller/"
+ln -vsf /usr/bin/python3 "$dir/ktp-controller/bin/python3"
+ln -vsf python3 "$dir/ktp-controller/bin/python"
+
+find "$dir/ktp-controller/bin" -type f -exec sed -i '1 s|^#!.*\(python[0-9]*\).*|#!/opt/ktp-controller/bin/\1|' {} \;
 
 echo "🗜️ Packing the bundle..." >&2
 cd "$dir"
-zip --quiet -r "../ktp_controller-prodbundle-${version}.zip" ktp-controller
+zip --symlinks --quiet -r "../ktp_controller-prodbundle-${version}.zip" ktp-controller
 
 echo "✅ Successfully created 'dist/ktp_controller-prodbundle-${version}.zip'" >&2
 
