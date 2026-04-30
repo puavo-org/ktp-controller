@@ -29,6 +29,14 @@ dependencies = [
 ]
 repository = "https://github.com/puavo-org/ktp-controller"
 
+[project.scripts]
+ktp-controller-agent = "ktp_controller.agent.main:run"
+ktp-controller-api = "ktp_controller.api.main:run"
+ktp-controller-cli = "ktp_controller.cli.main:run"
+ktp-controller-naksu2monitor = "ktp_controller.abitti2.naksu2monitor.main:run"
+ktp-controller-networking = "ktp_controller.networking.main:run"
+ktp-controller-supervisor-chainer = "ktp_controller.supervisor_chainer.main:run"
+
 [dependency-groups]
 dev = [
     "pytest",
