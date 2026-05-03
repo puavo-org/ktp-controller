@@ -34,6 +34,7 @@ import ktp_controller.api.client
 import ktp_controller.examomatic.client
 import ktp_controller.files
 import ktp_controller.messages
+import ktp_controller.os
 import ktp_controller.pydantic
 import ktp_controller.schemas
 import ktp_controller.utils
@@ -1094,6 +1095,9 @@ class Agent:
                 "is_auto_control_enabled": self.__is_auto_control_enabled,
                 "cached_files": ktp_controller.files.get_stats(),
                 "current_exam_package": current_exam_package,
+            },
+            "os": {
+                "stats": ktp_controller.os.get_stats(),
             },
         }
 
