@@ -3,13 +3,14 @@
   "created_at": "2026-05-03T16:31:46.211+0000",
   "abitti2": {
     "stats": {
-      "exams": {
-        "Integraatiotestikoe1": {
+      "exams": [
+        {
+          "title": "Integraatiotestikoe1",
           "active_student_count": 1,
           "idle_student_count": 0,
           "gone_student_count": 1
         }
-      }
+      ]
     },
     "answer_count": 1,
     "domain": "ostelu-solmu.koe.abitti.net",
