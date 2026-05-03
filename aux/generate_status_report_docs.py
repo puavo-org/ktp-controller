@@ -1,5 +1,6 @@
 """Generate docs/status_report.md from the StatusReport Pydantic schema."""
 
+import json
 import pathlib
 import textwrap
 
@@ -135,16 +136,18 @@ def _render_object(title: str, schema: dict, defs: dict, depth: int = 0) -> str:
     props = schema.get("properties", {})
     required = set(schema.get("required", []))
 
-    lines.append("| Field | Type | Always present | Description | Notes |")
-    lines.append("|-------|------|:--------------:|-------------|-------|")
+    lines.append("| Field | Type | Always present | Description | Example | Notes |")
+    lines.append("|-------|------|:--------------:|-------------|---------|-------|")
 
     for field, prop in props.items():
         ftype = _resolve_type(prop, defs)
         always_present = "yes" if (field in required or "default" in prop) else "no"
         description = prop.get("description", "")
         note = _notes(prop)
+        examples = prop.get("examples", [])
+        example = f"`{json.dumps(examples[0])}`" if examples else ""
         lines.append(
-            f"| `{field}` | {ftype} | {always_present} | {description} | {note} |"
+            f"| `{field}` | {ftype} | {always_present} | {description} | {example} | {note} |"
         )
 
     lines.append("")
