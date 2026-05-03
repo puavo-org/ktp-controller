@@ -3,6 +3,7 @@ from typing import Dict, List, Literal
 
 # Third-party imports
 import pydantic
+from pydantic import Field
 
 # Internal imports
 from ktp_controller import VERSION
@@ -46,9 +47,16 @@ class _Student(ktp_controller.pydantic.BaseModel):
 
 
 class _Abitti2ExamStats(ktp_controller.pydantic.BaseModel):
-    active_student_count: ktp_controller.pydantic.StrictNonNegativeInt
-    idle_student_count: ktp_controller.pydantic.StrictNonNegativeInt
-    gone_student_count: ktp_controller.pydantic.StrictNonNegativeInt
+    active_student_count: ktp_controller.pydantic.StrictNonNegativeInt = Field(
+        ..., description="How many students are active in the exam"
+    )
+    idle_student_count: ktp_controller.pydantic.StrictNonNegativeInt = Field(
+        ..., description="How many students are idle in the exam"
+    )
+    gone_student_count: ktp_controller.pydantic.StrictNonNegativeInt = Field(
+        ...,
+        description="How many students are gone in a way or another, e.g. disconnected, finished, waiting reauth, etc.",
+    )
 
 
 class _Abitti2Stats(ktp_controller.pydantic.BaseModel):
@@ -85,7 +93,9 @@ class _OSStats(ktp_controller.pydantic.BaseModel):
 
 class _OS(ktp_controller.pydantic.BaseModel):
     stats: _OSStats
-    release: pydantic.StrictStr
+    release: pydantic.StrictStr = Field(
+        ..., description="OS-specific release / version string"
+    )
 
 
 class StatusReport(ktp_controller.pydantic.BaseModel):
