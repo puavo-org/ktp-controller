@@ -74,7 +74,10 @@ def _resolve_type(prop: dict, defs: dict) -> str:
         non_null = [p for p in prop["anyOf"] if p.get("type") != "null"]
         nullable = len(non_null) < len(prop["anyOf"])
         inner = _resolve_type(non_null[0], defs) if non_null else "unknown"
-        return f"{inner} or null" if nullable else inner
+        if nullable:
+            wrapped = f"({inner})" if " " in inner else inner
+            return f"{wrapped} or null"
+        return inner
 
     ptype = prop.get("type", "unknown")
 
