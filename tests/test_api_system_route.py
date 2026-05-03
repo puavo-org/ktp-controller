@@ -78,6 +78,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
                 "memory": None,
                 "uptime": None,
             },
+            "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
         },
         "ktp_controller": {
             "version": VERSION,
@@ -144,6 +145,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
                 "memory": None,
                 "uptime": None,
             },
+            "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
         },
         "ktp_controller": {
             "version": VERSION,
@@ -217,6 +219,7 @@ def test_send_status_report__valid_minimal_input(client, testdb, utcnow):
                 "memory": None,
                 "uptime": None,
             },
+            "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
         },
         "ktp_controller": {
             "version": VERSION,
@@ -296,6 +299,7 @@ def test_send_status_report__same_valid_minimal_input_twice(client, testdb, utcn
                 "memory": None,
                 "uptime": None,
             },
+            "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
         },
         "ktp_controller": {
             "version": VERSION,
@@ -385,6 +389,7 @@ def test_send_status_report__valid_but_highly_unlikely_status(client, testdb, ut
                 "memory": None,
                 "uptime": None,
             },
+            "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
         },
         "ktp_controller": {
             "version": VERSION,
@@ -459,6 +464,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
                 "memory": None,
                 "uptime": None,
             },
+            "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
         },
         "ktp_controller": {
             "version": VERSION,
@@ -522,6 +528,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
                 "memory": None,
                 "uptime": None,
             },
+            "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
         },
         "ktp_controller": {
             "version": VERSION,
@@ -640,6 +647,7 @@ def test_send_status_report__multiple_reports_exactly_max_count(
                     "memory": None,
                     "uptime": None,
                 },
+                "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
             },
             "ktp_controller": {
                 "version": VERSION,
@@ -745,6 +753,7 @@ def test_send_status_report__multiple_reports_less_than_max_count(
                     "memory": None,
                     "uptime": None,
                 },
+                "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
             },
             "ktp_controller": {
                 "version": VERSION,
@@ -850,6 +859,7 @@ def test_send_status_report__multiple_reports_one_more_than_max_count(
                     "memory": None,
                     "uptime": None,
                 },
+                "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
             },
             "ktp_controller": {
                 "version": VERSION,
@@ -957,6 +967,7 @@ def test_send_status_report__multiple_reports_many_more_than_max_count(
                     "memory": None,
                     "uptime": None,
                 },
+                "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
             },
             "ktp_controller": {
                 "version": VERSION,
