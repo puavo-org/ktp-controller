@@ -75,6 +75,10 @@ build-sdist:
 .NOTPARALLEL: build
 build: build-prodbundle build-wheel build-sdist
 
+.PHONY: docs
+docs:
+	uv run python aux/generate_status_report_docs.py
+
 .PHONY: clean
 clean:
 	git clean -fdx dist/
