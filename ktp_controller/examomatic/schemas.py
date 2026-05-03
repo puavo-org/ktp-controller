@@ -1,5 +1,5 @@
 # Standard library imports
-from typing import Dict, List, Literal
+from typing import List, Literal
 
 # Third-party imports
 import pydantic
@@ -65,6 +65,7 @@ class _Student(ktp_controller.pydantic.BaseModel):
 
 
 class _Abitti2ExamStats(ktp_controller.pydantic.BaseModel):
+    title: pydantic.StrictStr = Field(examples=["Odotusaulakoe"])
     active_student_count: ktp_controller.pydantic.StrictNonNegativeInt = Field(
         ..., description="How many students are active in the exam", examples=[1]
     )
@@ -79,7 +80,7 @@ class _Abitti2ExamStats(ktp_controller.pydantic.BaseModel):
 
 
 class _Abitti2Stats(ktp_controller.pydantic.BaseModel):
-    exams: Dict[str, _Abitti2ExamStats] | None
+    exams: List[_Abitti2ExamStats] | None
 
 
 class _Abitti2(ktp_controller.pydantic.BaseModel):
