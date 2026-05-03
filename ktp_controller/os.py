@@ -1,5 +1,8 @@
+import logging
 import time
 import psutil
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def get_uptime() -> float:
@@ -54,9 +57,33 @@ def get_memory_stats() -> dict:
 
 
 def get_stats() -> dict:
+    try:
+        disk_usage_stats = get_disk_usage_stats()
+    except Exception:
+        _LOGGER.exception("Failed to get disk usage stats")
+        disk_usage_stats = None
+
+    try:
+        load_average_stats = get_load_average_stats()
+    except Exception:
+        _LOGGER.exception("Failed to get load average stats")
+        load_average_stats = None
+
+    try:
+        memory_stats = get_memory_stats()
+    except Exception:
+        _LOGGER.exception("Failed to get memory stats")
+        memory_stats = None
+
+    try:
+        uptime = get_uptime()
+    except Exception:
+        _LOGGER.exception("Failed to get uptime")
+        uptime = None
+
     return {
-        "disk_usage": get_disk_usage_stats(),
-        "load_average": get_load_average_stats(),
-        "memory": get_memory_stats(),
-        "uptime": get_uptime(),
+        "disk_usage": disk_usage_stats,
+        "load_average": load_average_stats,
+        "memory": memory_stats,
+        "uptime": uptime,
     }
