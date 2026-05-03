@@ -977,8 +977,6 @@ class Agent:
         return True
 
     def __get_exam_stats(self) -> dict | None:
-        utcnow = ktp_controller.utils.utcnow()
-
         if not self.__has_exam_stats():
             return None
 
@@ -992,9 +990,6 @@ class Agent:
                 "active_student_count": 0,
                 "idle_student_count": 0,
                 "gone_student_count": 0,
-                "duration_seconds": (
-                    utcnow - datetime.datetime.fromisoformat(exam_started_at)
-                ).total_seconds(),
             }
 
         for student in self.__last_received_students:

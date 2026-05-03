@@ -49,7 +49,6 @@ class _Abitti2ExamStats(ktp_controller.pydantic.BaseModel):
     active_student_count: ktp_controller.pydantic.StrictNonNegativeInt
     idle_student_count: ktp_controller.pydantic.StrictNonNegativeInt
     gone_student_count: ktp_controller.pydantic.StrictNonNegativeInt
-    duration_seconds: ktp_controller.pydantic.StrictNonNegativeFloat
 
 
 class _Abitti2Stats(ktp_controller.pydantic.BaseModel):
