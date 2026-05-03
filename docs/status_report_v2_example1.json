@@ -7,8 +7,7 @@
         "Odotusaulakoe": {
           "active_student_count": 0,
           "idle_student_count": 0,
-          "gone_student_count": 0,
-          "duration_seconds": 6.191921
+          "gone_student_count": 0
         }
       }
     },
