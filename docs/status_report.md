@@ -27,15 +27,15 @@ All fields are always present.
 | Field | Type | Description | Example | Notes |
 |-------|------|-------------|---------|-------|
 | `stats` | [Abitti2Stats](#abitti2stats) |  |  |  |
-| `answer_count` | `integer` or null |  | `1` | minimum: `0` |
-| `domain` | `string` or null |  | `"ostelu-solmu.koe.abitti.net"` |  |
-| `student_access_code` | [StudentAccessCode](#studentaccesscode) or null |  |  |  |
+| `answer_count` | `integer` or `null` |  | `1` | minimum: `0` |
+| `domain` | `string` or `null` |  | `"ostelu-solmu.koe.abitti.net"` |  |
+| `student_access_code` | [StudentAccessCode](#studentaccesscode) or `null` |  |  |  |
 | `supervisor_username` | `string` |  | `"valvoja"` |  |
-| `supervisor_passphrase` | `string` or null |  | `"jogurtti lihota vaivutus vigilia"` |  |
-| `version` | `string` or null |  | `"1.27.0"` |  |
-| `last_message_received_at` | `datetime` or null |  | `"2026-05-03T16:29:20.007+0000"` |  |
-| `exams` | (`array` of [Exam](#exam)) or null |  |  |  |
-| `students` | (`array` of [Student](#student)) or null |  |  |  |
+| `supervisor_passphrase` | `string` or `null` |  | `"jogurtti lihota vaivutus vigilia"` |  |
+| `version` | `string` or `null` |  | `"1.27.0"` |  |
+| `last_message_received_at` | `datetime` or `null` |  | `"2026-05-03T16:29:20.007+0000"` |  |
+| `exams` | (`array` of [Exam](#exam)) or `null` |  |  |  |
+| `students` | (`array` of [Student](#student)) or `null` |  |  |  |
 
 #### Abitti2Stats
 
@@ -43,7 +43,7 @@ All fields are always present.
 
 | Field | Type | Description | Example | Notes |
 |-------|------|-------------|---------|-------|
-| `exams` | (`object` mapping `string` → [Abitti2ExamStats](#abitti2examstats)) or null |  |  |  |
+| `exams` | (`object` mapping `string` → [Abitti2ExamStats](#abitti2examstats)) or `null` |  |  |  |
 
 ##### Abitti2ExamStats
 
@@ -72,7 +72,7 @@ All fields are always present.
 |-------|------|-------------|---------|-------|
 | `uuid` | `string` |  | `"390e7988-ff0e-42b4-a2e6-d13a969e7103"` |  |
 | `title` | `string` |  | `"Odotusaulakoe"` |  |
-| `started_at` | `datetime` or null |  | `"2026-05-03T16:29:14.304+0000"` |  |
+| `started_at` | `datetime` or `null` |  | `"2026-05-03T16:29:14.304+0000"` |  |
 
 #### Student
 
@@ -88,7 +88,7 @@ All fields are always present.
 | `is_waiting_for_auth` | `boolean` |  | `false` |  |
 | `is_finished` | `boolean` |  | `false` |  |
 | `status` | `string` |  | `"waiting-for-auth-browser"` |  |
-| `exam_title` | `string` or null |  | `"Odotusaulakoe"` |  |
+| `exam_title` | `string` or `null` |  | `"Odotusaulakoe"` |  |
 
 ### KTPController
 
@@ -100,7 +100,7 @@ All fields are always present.
 | `started_at` | `datetime` |  | `"2026-05-03T16:28:51.975+0000"` |  |
 | `is_auto_control_enabled` | `boolean` |  | `true` |  |
 | `cached_files` | [FileStats](#filestats) |  |  |  |
-| `current_exam_package` | [ExamPackage](#exampackage) or null |  |  |  |
+| `current_exam_package` | [ExamPackage](#exampackage) or `null` |  |  |  |
 
 #### FileStats
 
@@ -129,10 +129,10 @@ All fields are always present.
 | Field | Type | Description | Example | Notes |
 |-------|------|-------------|---------|-------|
 | `uuid` | `string` |  | `"b1ce7363-cdd8-4da0-a4f1-ddfe566ffb79"` |  |
-| `state` | [ScheduledExamPackageState](#scheduledexampackagestate) or null |  | `"running"` |  |
-| `state_changed_at` | `datetime` or null |  | `"2026-05-03T16:31:24.836+0000"` |  |
-| `started_at` | `datetime` or null |  | `"2026-05-03T16:31:24.836+0000"` |  |
-| `archived_at` | `datetime` or null |  | `"2026-05-03T16:32:53.036+0000"` |  |
+| `state` | [ScheduledExamPackageState](#scheduledexampackagestate) or `null` |  | `"running"` |  |
+| `state_changed_at` | `datetime` or `null` |  | `"2026-05-03T16:31:24.836+0000"` |  |
+| `started_at` | `datetime` or `null` |  | `"2026-05-03T16:31:24.836+0000"` |  |
+| `archived_at` | `datetime` or `null` |  | `"2026-05-03T16:32:53.036+0000"` |  |
 | `scheduled_start_time` | `datetime` |  | `"2026-05-03T16:31:23.036+0000"` |  |
 | `scheduled_end_time` | `datetime` |  | `"2026-05-03T16:32:53.036+0000"` |  |
 | `scheduled_lock_time` | `datetime` |  | `"2026-05-03T16:30:53.036+0000"` |  |
@@ -156,7 +156,7 @@ All fields are always present.
 
 | Field | Type | Description | Example | Notes |
 |-------|------|-------------|---------|-------|
-| `disk_usage` | `array` or null |  | `[{"free": 6673039360, "mountpoint": "/home", "total": 20695207936, "used": 13058498560}]` |  |
-| `load_average` | `object` or null |  | `{"15min": 4.7, "1min": 4.9, "5min": 5.0}` |  |
-| `memory` | `object` or null |  | `{"available": 3842932736, "free": 968290304, "total": 8307036160, "used": 4464103424}` |  |
-| `uptime` | `number` or null |  | `2425.53` |  |
+| `disk_usage` | `array` or `null` |  | `[{"free": 6673039360, "mountpoint": "/home", "total": 20695207936, "used": 13058498560}]` |  |
+| `load_average` | `object` or `null` |  | `{"15min": 4.7, "1min": 4.9, "5min": 5.0}` |  |
+| `memory` | `object` or `null` |  | `{"available": 3842932736, "free": 968290304, "total": 8307036160, "used": 4464103424}` |  |
+| `uptime` | `number` or `null` |  | `2425.53` |  |
