@@ -34,8 +34,8 @@ All fields are always present.
 | `supervisor_passphrase` | `string` or null |  | `"jogurtti lihota vaivutus vigilia"` |  |
 | `version` | `string` or null |  | `"1.27.0"` |  |
 | `last_message_received_at` | `datetime` or null |  | `"2026-05-03T16:29:20.007+0000"` |  |
-| `exams` | `array` of [Exam](#exam) or null |  |  |  |
-| `students` | `array` of [Student](#student) or null |  |  |  |
+| `exams` | (`array` of [Exam](#exam)) or null |  |  |  |
+| `students` | (`array` of [Student](#student)) or null |  |  |  |
 
 #### Abitti2Stats
 
@@ -43,7 +43,7 @@ All fields are always present.
 
 | Field | Type | Description | Example | Notes |
 |-------|------|-------------|---------|-------|
-| `exams` | `object` mapping `string` → [Abitti2ExamStats](#abitti2examstats) or null |  |  |  |
+| `exams` | (`object` mapping `string` → [Abitti2ExamStats](#abitti2examstats)) or null |  |  |  |
 
 ##### Abitti2ExamStats
 
