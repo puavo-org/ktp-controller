@@ -46,7 +46,7 @@ All fields are always present.
 
 | Field | Type | Description | Example | Notes |
 |-------|------|-------------|---------|-------|
-| `exams` | (`object` mapping `string` → [Abitti2ExamStats](#abitti2examstats)) or `null` |  |  |  |
+| `exams` | (`array` of [Abitti2ExamStats](#abitti2examstats)) or `null` |  |  |  |
 
 ##### Abitti2ExamStats
 
@@ -54,6 +54,7 @@ All fields are always present.
 
 | Field | Type | Description | Example | Notes |
 |-------|------|-------------|---------|-------|
+| `title` | `string` |  | `"Odotusaulakoe"` |  |
 | `active_student_count` | `integer` | How many students are active in the exam | `1` | minimum: `0` |
 | `idle_student_count` | `integer` | How many students are idle in the exam | `0` | minimum: `0` |
 | `gone_student_count` | `integer` | How many students are gone in a way or another, e.g. disconnected, finished, waiting reauth, etc. | `1` | minimum: `0` |

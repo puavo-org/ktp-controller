@@ -982,22 +982,27 @@ class Agent:
         if not self.__has_exam_stats():
             return None
 
-        exam_stats = {}
+        exam_stats = []
         for exam in self.__last_received_exam_list:
             exam_started_at = exam["started_at"]
             if exam_started_at is None:
                 # Stats of unstarted exams are not interesting.
                 continue
-            exam_stats[exam["title"]] = {
-                "active_student_count": 0,
-                "idle_student_count": 0,
-                "gone_student_count": 0,
-            }
+            exam_stats.append(
+                {
+                    "title": exam["title"],
+                    "active_student_count": 0,
+                    "idle_student_count": 0,
+                    "gone_student_count": 0,
+                }
+            )
+
+        exam_stats_by_title = {entry["title"]: entry for entry in exam_stats}
 
         for student in self.__last_received_students:
             exam_title = student["exam_title"]
             try:
-                stats = exam_stats[exam_title]
+                stats = exam_stats_by_title[exam_title]
             except KeyError:
                 # Abitti2 reported a student with exam title which
                 # does not exist! So, we cannot give out reliable exam
