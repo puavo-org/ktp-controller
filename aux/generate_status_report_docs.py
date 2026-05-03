@@ -74,7 +74,7 @@ def _resolve_type(prop: dict, defs: dict) -> str:
         non_null = [p for p in prop["anyOf"] if p.get("type") != "null"]
         nullable = len(non_null) < len(prop["anyOf"])
         inner = _resolve_type(non_null[0], defs) if non_null else "unknown"
-        return f"{inner}?" if nullable else inner
+        return f"{inner} or null" if nullable else inner
 
     ptype = prop.get("type", "unknown")
 
@@ -136,19 +136,38 @@ def _render_object(title: str, schema: dict, defs: dict, depth: int = 0) -> str:
     props = schema.get("properties", {})
     required = set(schema.get("required", []))
 
-    lines.append("| Field | Type | Always present | Description | Example | Notes |")
-    lines.append("|-------|------|:--------------:|-------------|---------|-------|")
+    always_present_map = {
+        field: (field in required or "default" in prop) for field, prop in props.items()
+    }
+    all_always_present = all(always_present_map.values())
+
+    if all_always_present:
+        lines.append("All fields are always present.\n")
+        lines.append("| Field | Type | Description | Example | Notes |")
+        lines.append("|-------|------|-------------|---------|-------|")
+    else:
+        lines.append(
+            "| Field | Type | Always present | Description | Example | Notes |"
+        )
+        lines.append(
+            "|-------|------|:--------------:|-------------|---------|-------|"
+        )
 
     for field, prop in props.items():
         ftype = _resolve_type(prop, defs)
-        always_present = "yes" if (field in required or "default" in prop) else "no"
         description = prop.get("description", "")
         note = _notes(prop)
         examples = prop.get("examples", [])
         example = f"`{json.dumps(examples[0])}`" if examples else ""
-        lines.append(
-            f"| `{field}` | {ftype} | {always_present} | {description} | {example} | {note} |"
-        )
+        if all_always_present:
+            lines.append(
+                f"| `{field}` | {ftype} | {description} | {example} | {note} |"
+            )
+        else:
+            always_present = "yes" if always_present_map[field] else "no"
+            lines.append(
+                f"| `{field}` | {ftype} | {always_present} | {description} | {example} | {note} |"
+            )
 
     lines.append("")
     return "\n".join(lines)
