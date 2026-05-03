@@ -89,7 +89,7 @@ class _OS(ktp_controller.pydantic.BaseModel):
 
 
 class StatusReport(ktp_controller.pydantic.BaseModel):
-    v: Literal[1] = 1
+    v: Literal[2] = 2
     created_at: ktp_controller.pydantic.DateTime
     abitti2: _Abitti2
     ktp_controller: _KTPController
