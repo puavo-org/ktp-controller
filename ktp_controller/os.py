@@ -10,7 +10,7 @@ def get_uptime() -> float:
     return time.time() - psutil.boot_time()
 
 
-def get_disk_usage_stats() -> dict:
+def get_disk_usage_stats() -> list:
     stats = []
 
     # all=False returns only physical disk partitions, ignoring pseudo-filesystems
