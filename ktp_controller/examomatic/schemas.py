@@ -77,8 +77,20 @@ class _KTPController(ktp_controller.pydantic.BaseModel):
     current_exam_package: _ExamPackage | None
 
 
+class _OSStats(ktp_controller.pydantic.BaseModel):
+    disk_usage: list | None
+    load_average: dict | None
+    memory: dict | None
+    uptime: float | None
+
+
+class _OS(ktp_controller.pydantic.BaseModel):
+    stats: _OSStats
+
+
 class StatusReport(ktp_controller.pydantic.BaseModel):
     v: Literal[1] = 1
     created_at: ktp_controller.pydantic.DateTime
     abitti2: _Abitti2
     ktp_controller: _KTPController
+    os: _OS
