@@ -32,31 +32,36 @@ def _collect_refs(prop: dict) -> list[str]:
     return refs
 
 
-def _ordered_defs(schema: dict) -> list[tuple[str, dict]]:
-    """Return (key, defn) pairs in depth-first, top-down order."""
+def _ordered_defs(schema: dict) -> list[tuple[str, dict, int]]:
+    """Return (key, defn, depth) triples in depth-first, top-down order."""
     defs = schema.get("$defs", {})
     visited: list[str] = []
+    depth_map: dict[str, int] = {}
 
-    def visit(key: str) -> None:
-        if key in visited or key not in defs:
+    def visit(key: str, depth: int) -> None:
+        if key not in defs:
+            return
+        if key in visited:
             return
         visited.append(key)
+        depth_map[key] = depth
         defn = defs[key]
         for prop in defn.get("properties", {}).values():
             for ref_key in _collect_refs(prop):
-                visit(ref_key)
+                visit(ref_key, depth + 1)
 
     # Seed traversal from root properties in declaration order
     for prop in schema.get("properties", {}).values():
         for ref_key in _collect_refs(prop):
-            visit(ref_key)
+            visit(ref_key, 1)
 
     # Append any defs not reachable from root (shouldn't happen, but be safe)
     for key in defs:
         if key not in visited:
             visited.append(key)
+            depth_map[key] = 1
 
-    return [(key, defs[key]) for key in visited]
+    return [(key, defs[key], depth_map[key]) for key in visited]
 
 
 def _resolve_type(prop: dict, defs: dict) -> str:
@@ -118,8 +123,9 @@ def _notes(prop: dict) -> str:
     return "; ".join(parts)
 
 
-def _render_object(title: str, schema: dict, defs: dict) -> str:
-    lines = [f"## {title}\n"]
+def _render_object(title: str, schema: dict, defs: dict, depth: int = 0) -> str:
+    heading = "#" * (depth + 2)
+    lines = [f"{heading} {title}\n"]
 
     if schema.get("enum"):
         values = ", ".join(f"`{v}`" for v in schema["enum"])
@@ -148,8 +154,6 @@ def generate() -> str:
     defs = schema.get("$defs", {})
 
     ordered = _ordered_defs(schema)
-    objects = [(k, v) for k, v in ordered if not v.get("enum")]
-    enums = [(k, v) for k, v in ordered if v.get("enum")]
 
     sections = []
 
@@ -164,17 +168,11 @@ def generate() -> str:
     """)
     sections.append(header)
 
-    # Root object first
-    sections.append(_render_object("StatusReport", schema, defs))
+    # Root object at depth 0 → ## heading
+    sections.append(_render_object("StatusReport", schema, defs, depth=0))
 
-    for key, defn in objects:
-        sections.append(_render_object(_display_name(key), defn, defs))
-
-    if enums:
-        sections.append("## Enumerations\n")
-        for key, defn in enums:
-            values = ", ".join(f"`{v}`" for v in defn["enum"])
-            sections.append(f"### {_display_name(key)}\n\nOne of: {values}\n")
+    for key, defn, depth in ordered:
+        sections.append(_render_object(_display_name(key), defn, defs, depth=depth))
 
     return "\n".join(sections)
 
