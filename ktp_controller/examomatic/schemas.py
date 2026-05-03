@@ -85,6 +85,7 @@ class _OSStats(ktp_controller.pydantic.BaseModel):
 
 class _OS(ktp_controller.pydantic.BaseModel):
     stats: _OSStats
+    release: pydantic.StrictStr
 
 
 class StatusReport(ktp_controller.pydantic.BaseModel):

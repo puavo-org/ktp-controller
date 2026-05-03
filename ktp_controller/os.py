@@ -1,6 +1,13 @@
+# Standard library imports
 import logging
 import time
+
+# Third-party imports
 import psutil
+
+# Internal imports
+import ktp_controller.utils
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -87,3 +94,20 @@ def get_stats() -> dict:
         "memory": memory_stats,
         "uptime": uptime,
     }
+
+
+def get_release() -> str:
+    try:
+        puavo_os_image_name = ktp_controller.utils.readfirstline(
+            "/etc/puavo-image/name"
+        )
+        puavo_os_image_release = ktp_controller.utils.readfirstline(
+            "/etc/puavo-image/release"
+        )
+    except Exception:
+        _LOGGER.exception(
+            "Failed to find out the release information of the current OS"
+        )
+        return "unknown"
+
+    return f"{puavo_os_image_release} ({puavo_os_image_name})"

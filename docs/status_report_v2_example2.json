@@ -517,7 +517,8 @@
         "available": 3321548800
       },
       "uptime": 2571.2189993858337
-    }
+    },
+    "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)"
   },
   "reported_at": "2026-05-03T16:31:46.384+0000"
 }

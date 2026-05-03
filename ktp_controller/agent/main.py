@@ -108,6 +108,8 @@ class Agent:
         self.__work_on_current_exam_package_lock = asyncio.Lock()
         self.__last_status_report_sent_to_examomatic_at = None
 
+        self.__os_release = ktp_controller.os.get_release()
+
         self.__approx_api_ping_interval_sec = approx_api_ping_interval_sec
         self.__approx_api_status_report_interval_sec = (
             approx_api_status_report_interval_sec
@@ -1093,6 +1095,7 @@ class Agent:
             },
             "os": {
                 "stats": ktp_controller.os.get_stats(),
+                "release": self.__os_release,
             },
         }
 
