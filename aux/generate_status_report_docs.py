@@ -135,15 +135,17 @@ def _render_object(title: str, schema: dict, defs: dict, depth: int = 0) -> str:
     props = schema.get("properties", {})
     required = set(schema.get("required", []))
 
-    lines.append("| Field | Type | Required | Description | Notes |")
-    lines.append("|-------|------|:--------:|-------------|-------|")
+    lines.append("| Field | Type | Always present | Description | Notes |")
+    lines.append("|-------|------|:--------------:|-------------|-------|")
 
     for field, prop in props.items():
         ftype = _resolve_type(prop, defs)
-        req = "yes" if field in required else "no"
+        always_present = "yes" if (field in required or "default" in prop) else "no"
         description = prop.get("description", "")
         note = _notes(prop)
-        lines.append(f"| `{field}` | {ftype} | {req} | {description} | {note} |")
+        lines.append(
+            f"| `{field}` | {ftype} | {always_present} | {description} | {note} |"
+        )
 
     lines.append("")
     return "\n".join(lines)
