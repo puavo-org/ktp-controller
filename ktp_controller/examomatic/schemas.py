@@ -1,5 +1,5 @@
 # Standard library imports
-from typing import List, Literal
+from typing import Dict, List, Literal
 
 # Third-party imports
 import pydantic
@@ -37,11 +37,27 @@ class _Student(ktp_controller.pydantic.BaseModel):
     uuid: pydantic.StrictStr
     session_uuid: pydantic.StrictStr
     is_active: pydantic.StrictBool
+    is_idle: pydantic.StrictBool
+    is_connected: pydantic.StrictBool
+    is_waiting_for_auth: pydantic.StrictBool
+    is_finished: pydantic.StrictBool
     status: pydantic.StrictStr
     exam_title: pydantic.StrictStr | None
 
 
+class _Abitti2ExamStats(ktp_controller.pydantic.BaseModel):
+    active_student_count: ktp_controller.pydantic.StrictNonNegativeInt
+    idle_student_count: ktp_controller.pydantic.StrictNonNegativeInt
+    gone_student_count: ktp_controller.pydantic.StrictNonNegativeInt
+    duration_seconds: ktp_controller.pydantic.StrictNonNegativeFloat
+
+
+class _Abitti2Stats(ktp_controller.pydantic.BaseModel):
+    exams: Dict[str, _Abitti2ExamStats] | None
+
+
 class _Abitti2(ktp_controller.pydantic.BaseModel):
+    stats: _Abitti2Stats
     answer_count: ktp_controller.pydantic.StrictNonNegativeInt | None
     domain: pydantic.StrictStr | None
     student_access_code: ktp_controller.schemas.StudentAccessCode | None

@@ -102,6 +102,10 @@ def parse_students(
                 "session_uuid": student["sessionUuid"],
                 "status": student["studentStatus"],
                 "is_active": is_active,
+                "is_idle": is_idle,
+                "is_connected": is_connected,
+                "is_waiting_for_auth": is_waiting_for_auth,
+                "is_finished": is_finished,
                 "exam_title": student.get("examTitle", None),
             }
         )
