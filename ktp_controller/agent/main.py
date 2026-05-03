@@ -958,6 +958,66 @@ class Agent:
 
         await self.__send_status_report()
 
+    def __has_exam_stats(self) -> bool:
+        # Stat calculation requires the information below. If any of
+        # them are missing, we cannot calculate stats, i.e. there are
+        # not stats available.
+        if None in (
+            self.__last_received_answer_count,
+            self.__last_received_students,
+            self.__last_received_exam_list,
+        ):
+            return False
+
+        if len(self.__last_received_exam_list) == 0:
+            # No exams, no stats.
+            return False
+
+        return True
+
+    def __get_exam_stats(self) -> dict | None:
+        utcnow = ktp_controller.utils.utcnow()
+
+        if not self.__has_exam_stats():
+            return None
+
+        exam_stats = {}
+        for exam in self.__last_received_exam_list:
+            exam_started_at = exam["started_at"]
+            if exam_started_at is None:
+                # Stats of unstarted exams are not interesting.
+                continue
+            exam_stats[exam["title"]] = {
+                "active_student_count": 0,
+                "idle_student_count": 0,
+                "gone_student_count": 0,
+                "duration_seconds": (
+                    utcnow - datetime.datetime.fromisoformat(exam_started_at)
+                ).total_seconds(),
+            }
+
+        for student in self.__last_received_students:
+            exam_title = student["exam_title"]
+            try:
+                stats = exam_stats[exam_title]
+            except KeyError:
+                # Abitti2 reported a student with exam title which
+                # does not exist! So, we cannot give out reliable exam
+                # stats.
+                _LOGGER.error(
+                    "Abitti2 reported there's a student in exam %r, but Abitti2 has NOT reported such exam actually exists!",
+                    exam_title,
+                )
+                return None
+            if student["is_active"]:
+                stats["active_student_count"] += 1
+            elif student["is_idle"]:
+                stats["idle_student_count"] += 1
+            else:
+                stats["gone_student_count"] += 1
+
+        return exam_stats
+
     async def __send_status_report(self):
         try:
             supervisor_passphrase = (
@@ -1004,9 +1064,19 @@ class Agent:
             }
 
         utcnow = ktp_controller.utils.utcnow()
+
+        try:
+            exam_stats = self.__get_exam_stats()
+        except Exception:
+            _LOGGER.exception("Failed to get exam stats")
+            exam_stats = None
+
         status_report = {
             "created_at": utcnow,
             "abitti2": {
+                "stats": {
+                    "exams": exam_stats,
+                },
                 "answer_count": self.__last_received_answer_count,
                 "domain": domain,
                 "student_access_code": ktp_controller.abitti2.utils.security_code_to_student_access_code(
