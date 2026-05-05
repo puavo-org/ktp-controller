@@ -6,7 +6,7 @@ import datetime
 # import pytest
 
 # Internal imports
-from ktp_controller import VERSION
+from ktp_controller import SETTINGS, VERSION
 import ktp_controller.messages
 from ktp_controller.api import models
 
@@ -81,6 +81,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
             "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
         },
         "ktp_controller": {
+            "settings": SETTINGS.model_dump(),
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": True,
@@ -148,6 +149,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
             "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
         },
         "ktp_controller": {
+            "settings": SETTINGS.model_dump(),
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": True,
@@ -222,6 +224,7 @@ def test_send_status_report__valid_minimal_input(client, testdb, utcnow):
             "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
         },
         "ktp_controller": {
+            "settings": SETTINGS.model_dump(),
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": True,
@@ -302,6 +305,7 @@ def test_send_status_report__same_valid_minimal_input_twice(client, testdb, utcn
             "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
         },
         "ktp_controller": {
+            "settings": SETTINGS.model_dump(),
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": True,
@@ -392,6 +396,7 @@ def test_send_status_report__valid_but_highly_unlikely_status(client, testdb, ut
             "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
         },
         "ktp_controller": {
+            "settings": SETTINGS.model_dump(),
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": False,
@@ -467,6 +472,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
             "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
         },
         "ktp_controller": {
+            "settings": SETTINGS.model_dump(),
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": False,
@@ -531,6 +537,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
             "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
         },
         "ktp_controller": {
+            "settings": SETTINGS.model_dump(),
             "version": VERSION,
             "started_at": "1970-01-01T01:01:01.010+0000",
             "is_auto_control_enabled": False,
@@ -650,6 +657,7 @@ def test_send_status_report__multiple_reports_exactly_max_count(
                 "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
             },
             "ktp_controller": {
+                "settings": SETTINGS.model_dump(),
                 "version": VERSION,
                 "started_at": "1970-01-01T01:01:01.010+0000",
                 "is_auto_control_enabled": False,
@@ -756,6 +764,7 @@ def test_send_status_report__multiple_reports_less_than_max_count(
                 "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
             },
             "ktp_controller": {
+                "settings": SETTINGS.model_dump(),
                 "version": VERSION,
                 "started_at": "1970-01-01T01:01:01.010+0000",
                 "is_auto_control_enabled": False,
@@ -862,6 +871,7 @@ def test_send_status_report__multiple_reports_one_more_than_max_count(
                 "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
             },
             "ktp_controller": {
+                "settings": SETTINGS.model_dump(),
                 "version": VERSION,
                 "started_at": "1970-01-01T01:01:01.010+0000",
                 "is_auto_control_enabled": False,
@@ -970,6 +980,7 @@ def test_send_status_report__multiple_reports_many_more_than_max_count(
                 "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
             },
             "ktp_controller": {
+                "settings": SETTINGS.model_dump(),
                 "version": VERSION,
                 "started_at": "1970-01-01T01:01:01.010+0000",
                 "is_auto_control_enabled": False,
