@@ -15,131 +15,131 @@ Examples:
 
 All fields are always present.
 
-| Field | Type | Description | Example | Notes |
-|-------|------|-------------|---------|-------|
-| `v` | `integer` |  |  | const: `2` |
-| `created_at` | `datetime` |  | `"2026-05-03T16:29:20.495+0000"` |  |
-| `abitti2` | [Abitti2](#abitti2) |  |  |  |
-| `ktp_controller` | [KTPController](#ktpcontroller) |  |  |  |
-| `os` | [OS](#os) |  |  |  |
+| Field            | Type                            | Description | Example                          | Notes      |
+| ---------------- | ------------------------------- | ----------- | -------------------------------- | ---------- |
+| `v`              | `integer`                       |             |                                  | const: `2` |
+| `created_at`     | `datetime`                      |             | `"2026-05-03T16:29:20.495+0000"` |            |
+| `abitti2`        | [Abitti2](#abitti2)             |             |                                  |            |
+| `ktp_controller` | [KTPController](#ktpcontroller) |             |                                  |            |
+| `os`             | [OS](#os)                       |             |                                  |            |
 
 ### Abitti2
 
 All fields are always present.
 
-| Field | Type | Description | Example | Notes |
-|-------|------|-------------|---------|-------|
-| `stats` | [Abitti2Stats](#abitti2stats) |  |  |  |
-| `answer_count` | `integer` or `null` |  | `1` | minimum: `0` |
-| `domain` | `string` or `null` |  | `"ostelu-solmu.koe.abitti.net"` |  |
-| `student_access_code` | [StudentAccessCode](#studentaccesscode) or `null` |  |  |  |
-| `supervisor_username` | `string` |  | `"valvoja"` |  |
-| `supervisor_passphrase` | `string` or `null` |  | `"jogurtti lihota vaivutus vigilia"` |  |
-| `version` | `string` or `null` |  | `"1.27.0"` |  |
-| `last_message_received_at` | `datetime` or `null` |  | `"2026-05-03T16:29:20.007+0000"` |  |
-| `exams` | (`array` of [Exam](#exam)) or `null` |  |  |  |
-| `students` | (`array` of [Student](#student)) or `null` |  |  |  |
+| Field                      | Type                                              | Description | Example                              | Notes        |
+| -------------------------- | ------------------------------------------------- | ----------- | ------------------------------------ | ------------ |
+| `stats`                    | [Abitti2Stats](#abitti2stats)                     |             |                                      |              |
+| `answer_count`             | `integer` or `null`                               |             | `1`                                  | minimum: `0` |
+| `domain`                   | `string` or `null`                                |             | `"ostelu-solmu.koe.abitti.net"`      |              |
+| `student_access_code`      | [StudentAccessCode](#studentaccesscode) or `null` |             |                                      |              |
+| `supervisor_username`      | `string`                                          |             | `"valvoja"`                          |              |
+| `supervisor_passphrase`    | `string` or `null`                                |             | `"jogurtti lihota vaivutus vigilia"` |              |
+| `version`                  | `string` or `null`                                |             | `"1.27.0"`                           |              |
+| `last_message_received_at` | `datetime` or `null`                              |             | `"2026-05-03T16:29:20.007+0000"`     |              |
+| `exams`                    | (`array` of [Exam](#exam)) or `null`              |             |                                      |              |
+| `students`                 | (`array` of [Student](#student)) or `null`        |             |                                      |              |
 
 #### Abitti2Stats
 
 All fields are always present.
 
-| Field | Type | Description | Example | Notes |
-|-------|------|-------------|---------|-------|
-| `exams` | (`array` of [Abitti2ExamStats](#abitti2examstats)) or `null` |  |  |  |
+| Field   | Type                                                         | Description | Example | Notes |
+| ------- | ------------------------------------------------------------ | ----------- | ------- | ----- |
+| `exams` | (`array` of [Abitti2ExamStats](#abitti2examstats)) or `null` |             |         |       |
 
 ##### Abitti2ExamStats
 
 All fields are always present.
 
-| Field | Type | Description | Example | Notes |
-|-------|------|-------------|---------|-------|
-| `title` | `string` |  | `"Odotusaulakoe"` |  |
-| `active_student_count` | `integer` | How many students are active in the exam | `1` | minimum: `0` |
-| `idle_student_count` | `integer` | How many students are idle in the exam | `0` | minimum: `0` |
-| `gone_student_count` | `integer` | How many students are gone in a way or another, e.g. disconnected, finished, waiting reauth, etc. | `1` | minimum: `0` |
+| Field                  | Type      | Description                                                                                       | Example           | Notes        |
+| ---------------------- | --------- | ------------------------------------------------------------------------------------------------- | ----------------- | ------------ |
+| `title`                | `string`  |                                                                                                   | `"Odotusaulakoe"` |              |
+| `active_student_count` | `integer` | How many students are active in the exam                                                          | `1`               | minimum: `0` |
+| `idle_student_count`   | `integer` | How many students are idle in the exam                                                            | `0`               | minimum: `0` |
+| `gone_student_count`   | `integer` | How many students are gone in a way or another, e.g. disconnected, finished, waiting reauth, etc. | `1`               | minimum: `0` |
 
 #### StudentAccessCode
 
 All fields are always present.
 
-| Field | Type | Description | Example | Notes |
-|-------|------|-------------|---------|-------|
-| `key_code` | `string` |  | `"1234"` |  |
-| `verification_code` | `string` |  | `"xx"` |  |
+| Field               | Type     | Description | Example  | Notes |
+| ------------------- | -------- | ----------- | -------- | ----- |
+| `key_code`          | `string` |             | `"1234"` |       |
+| `verification_code` | `string` |             | `"xx"`   |       |
 
 #### Exam
 
 All fields are always present.
 
-| Field | Type | Description | Example | Notes |
-|-------|------|-------------|---------|-------|
-| `uuid` | `string` |  | `"390e7988-ff0e-42b4-a2e6-d13a969e7103"` |  |
-| `title` | `string` |  | `"Odotusaulakoe"` |  |
-| `started_at` | `datetime` or `null` |  | `"2026-05-03T16:29:14.304+0000"` |  |
+| Field        | Type                 | Description | Example                                  | Notes |
+| ------------ | -------------------- | ----------- | ---------------------------------------- | ----- |
+| `uuid`       | `string`             |             | `"390e7988-ff0e-42b4-a2e6-d13a969e7103"` |       |
+| `title`      | `string`             |             | `"Odotusaulakoe"`                        |       |
+| `started_at` | `datetime` or `null` |             | `"2026-05-03T16:29:14.304+0000"`         |       |
 
 #### Student
 
 All fields are always present.
 
-| Field | Type | Description | Example | Notes |
-|-------|------|-------------|---------|-------|
-| `uuid` | `string` |  | `"396d3178-28df-435f-9124-7debdc55111c"` |  |
-| `session_uuid` | `string` |  | `"4fb44768-3193-4e4b-9f3c-e60008362918"` |  |
-| `is_active` | `boolean` |  | `true` |  |
-| `is_idle` | `boolean` |  | `false` |  |
-| `is_connected` | `boolean` |  | `true` |  |
-| `is_waiting_for_auth` | `boolean` |  | `false` |  |
-| `is_finished` | `boolean` |  | `false` |  |
-| `status` | `string` |  | `"waiting-for-auth-browser"` |  |
-| `exam_title` | `string` or `null` |  | `"Odotusaulakoe"` |  |
+| Field                 | Type               | Description | Example                                  | Notes |
+| --------------------- | ------------------ | ----------- | ---------------------------------------- | ----- |
+| `uuid`                | `string`           |             | `"396d3178-28df-435f-9124-7debdc55111c"` |       |
+| `session_uuid`        | `string`           |             | `"4fb44768-3193-4e4b-9f3c-e60008362918"` |       |
+| `is_active`           | `boolean`          |             | `true`                                   |       |
+| `is_idle`             | `boolean`          |             | `false`                                  |       |
+| `is_connected`        | `boolean`          |             | `true`                                   |       |
+| `is_waiting_for_auth` | `boolean`          |             | `false`                                  |       |
+| `is_finished`         | `boolean`          |             | `false`                                  |       |
+| `status`              | `string`           |             | `"waiting-for-auth-browser"`             |       |
+| `exam_title`          | `string` or `null` |             | `"Odotusaulakoe"`                        |       |
 
 ### KTPController
 
 All fields are always present.
 
-| Field | Type | Description | Example | Notes |
-|-------|------|-------------|---------|-------|
-| `version` | `string` |  |  | const: `0.5.0rc1` |
-| `started_at` | `datetime` |  | `"2026-05-03T16:28:51.975+0000"` |  |
-| `is_auto_control_enabled` | `boolean` |  | `true` |  |
-| `cached_files` | [FileStats](#filestats) |  |  |  |
-| `current_exam_package` | [ExamPackage](#exampackage) or `null` |  |  |  |
+| Field                     | Type                                  | Description | Example                          | Notes             |
+| ------------------------- | ------------------------------------- | ----------- | -------------------------------- | ----------------- |
+| `version`                 | `string`                              |             |                                  | const: `0.5.0rc1` |
+| `started_at`              | `datetime`                            |             | `"2026-05-03T16:28:51.975+0000"` |                   |
+| `is_auto_control_enabled` | `boolean`                             |             | `true`                           |                   |
+| `cached_files`            | [FileStats](#filestats)               |             |                                  |                   |
+| `current_exam_package`    | [ExamPackage](#exampackage) or `null` |             |                                  |                   |
 
 #### FileStats
 
 All fields are always present.
 
-| Field | Type | Description | Example | Notes |
-|-------|------|-------------|---------|-------|
-| `exams` | `array` of [FileStat](#filestat) |  |  |  |
-| `exam_packages` | `array` of [FileStat](#filestat) |  |  |  |
-| `answers` | `array` of [FileStat](#filestat) |  |  |  |
+| Field           | Type                             | Description | Example | Notes |
+| --------------- | -------------------------------- | ----------- | ------- | ----- |
+| `exams`         | `array` of [FileStat](#filestat) |             |         |       |
+| `exam_packages` | `array` of [FileStat](#filestat) |             |         |       |
+| `answers`       | `array` of [FileStat](#filestat) |             |         |       |
 
 ##### FileStat
 
 All fields are always present.
 
-| Field | Type | Description | Example | Notes |
-|-------|------|-------------|---------|-------|
-| `path` | `string` |  | `"/home/puavo-ers/.local/share/ktp-controller/exam-files/90d99c0a-87b2-49b3-b791-3090550f6345/exam-file.mex"` |  |
-| `size` | `integer` |  | `15948894` | minimum: `0` |
-| `modified_at` | `datetime` |  | `"2026-03-26T20:02:06.343+0000"` |  |
+| Field         | Type       | Description | Example                                                                                                       | Notes        |
+| ------------- | ---------- | ----------- | ------------------------------------------------------------------------------------------------------------- | ------------ |
+| `path`        | `string`   |             | `"/home/puavo-ers/.local/share/ktp-controller/exam-files/90d99c0a-87b2-49b3-b791-3090550f6345/exam-file.mex"` |              |
+| `size`        | `integer`  |             | `15948894`                                                                                                    | minimum: `0` |
+| `modified_at` | `datetime` |             | `"2026-03-26T20:02:06.343+0000"`                                                                              |              |
 
 #### ExamPackage
 
 All fields are always present.
 
-| Field | Type | Description | Example | Notes |
-|-------|------|-------------|---------|-------|
-| `uuid` | `string` |  | `"b1ce7363-cdd8-4da0-a4f1-ddfe566ffb79"` |  |
-| `state` | [ScheduledExamPackageState](#scheduledexampackagestate) or `null` |  | `"running"` |  |
-| `state_changed_at` | `datetime` or `null` |  | `"2026-05-03T16:31:24.836+0000"` |  |
-| `started_at` | `datetime` or `null` |  | `"2026-05-03T16:31:24.836+0000"` |  |
-| `archived_at` | `datetime` or `null` |  | `"2026-05-03T16:32:53.036+0000"` |  |
-| `scheduled_start_time` | `datetime` |  | `"2026-05-03T16:31:23.036+0000"` |  |
-| `scheduled_end_time` | `datetime` |  | `"2026-05-03T16:32:53.036+0000"` |  |
-| `scheduled_lock_time` | `datetime` |  | `"2026-05-03T16:30:53.036+0000"` |  |
+| Field                  | Type                                                              | Description | Example                                  | Notes |
+| ---------------------- | ----------------------------------------------------------------- | ----------- | ---------------------------------------- | ----- |
+| `uuid`                 | `string`                                                          |             | `"b1ce7363-cdd8-4da0-a4f1-ddfe566ffb79"` |       |
+| `state`                | [ScheduledExamPackageState](#scheduledexampackagestate) or `null` |             | `"running"`                              |       |
+| `state_changed_at`     | `datetime` or `null`                                              |             | `"2026-05-03T16:31:24.836+0000"`         |       |
+| `started_at`           | `datetime` or `null`                                              |             | `"2026-05-03T16:31:24.836+0000"`         |       |
+| `archived_at`          | `datetime` or `null`                                              |             | `"2026-05-03T16:32:53.036+0000"`         |       |
+| `scheduled_start_time` | `datetime`                                                        |             | `"2026-05-03T16:31:23.036+0000"`         |       |
+| `scheduled_end_time`   | `datetime`                                                        |             | `"2026-05-03T16:32:53.036+0000"`         |       |
+| `scheduled_lock_time`  | `datetime`                                                        |             | `"2026-05-03T16:30:53.036+0000"`         |       |
 
 ##### ScheduledExamPackageState
 
@@ -149,18 +149,18 @@ Enum — one of: `ready`, `running`, `stopping`, `stopped`, `archived`
 
 All fields are always present.
 
-| Field | Type | Description | Example | Notes |
-|-------|------|-------------|---------|-------|
-| `stats` | [OSStats](#osstats) |  |  |  |
-| `release` | `string` | OS-specific release / version string | `"O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)"` |  |
+| Field     | Type                | Description                          | Example                                                                   | Notes |
+| --------- | ------------------- | ------------------------------------ | ------------------------------------------------------------------------- | ----- |
+| `stats`   | [OSStats](#osstats) |                                      |                                                                           |       |
+| `release` | `string`            | OS-specific release / version string | `"O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)"` |       |
 
 #### OSStats
 
 All fields are always present.
 
-| Field | Type | Description | Example | Notes |
-|-------|------|-------------|---------|-------|
-| `disk_usage` | `array` or `null` |  | `[{"free": 6673039360, "mountpoint": "/home", "total": 20695207936, "used": 13058498560}]` |  |
-| `load_average` | `object` or `null` |  | `{"15min": 4.7, "1min": 4.9, "5min": 5.0}` |  |
-| `memory` | `object` or `null` |  | `{"available": 3842932736, "free": 968290304, "total": 8307036160, "used": 4464103424}` |  |
-| `uptime` | `number` or `null` |  | `2425.53` |  |
+| Field          | Type               | Description | Example                                                                                    | Notes |
+| -------------- | ------------------ | ----------- | ------------------------------------------------------------------------------------------ | ----- |
+| `disk_usage`   | `array` or `null`  |             | `[{"free": 6673039360, "mountpoint": "/home", "total": 20695207936, "used": 13058498560}]` |       |
+| `load_average` | `object` or `null` |             | `{"15min": 4.7, "1min": 4.9, "5min": 5.0}`                                                 |       |
+| `memory`       | `object` or `null` |             | `{"available": 3842932736, "free": 968290304, "total": 8307036160, "used": 4464103424}`    |       |
+| `uptime`       | `number` or `null` |             | `2425.53`                                                                                  |       |
