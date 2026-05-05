@@ -77,7 +77,7 @@ build: build-prodbundle build-wheel build-sdist
 
 .PHONY: docs
 docs:
-	uv run python aux/generate_status_report_docs.py
+	uv run python aux/generate_status_report_docs.py docs/status_report.md
 
 .PHONY: clean
 clean:
