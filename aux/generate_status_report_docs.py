@@ -145,31 +145,56 @@ def _render_object(title: str, schema: dict, defs: dict, depth: int = 0) -> str:
 
     if all_always_present:
         lines.append("All fields are always present.\n")
-        lines.append("| Field | Type | Description | Example | Notes |")
-        lines.append("|-------|------|-------------|---------|-------|")
+        headers = ["Field", "Type", "Description", "Example", "Notes"]
+        alignments = ["-", "-", "-", "-", "-"]
     else:
-        lines.append(
-            "| Field | Type | Always present | Description | Example | Notes |"
-        )
-        lines.append(
-            "|-------|------|:--------------:|-------------|---------|-------|"
-        )
+        headers = ["Field", "Type", "Always present", "Description", "Example", "Notes"]
+        alignments = ["-", "-", ":-:", "-", "-", "-"]
 
+    data_rows = []
     for field, prop in props.items():
         ftype = _resolve_type(prop, defs)
         description = prop.get("description", "")
         note = _notes(prop)
         examples = prop.get("examples", [])
         example = f"`{json.dumps(examples[0])}`" if examples else ""
+
         if all_always_present:
-            lines.append(
-                f"| `{field}` | {ftype} | {description} | {example} | {note} |"
-            )
+            data_rows.append([f"`{field}`", ftype, description, example, note])
         else:
             always_present = "yes" if always_present_map[field] else "no"
-            lines.append(
-                f"| `{field}` | {ftype} | {always_present} | {description} | {example} | {note} |"
+            data_rows.append(
+                [f"`{field}`", ftype, always_present, description, example, note]
             )
+
+    # Calculate maximum widths for each column
+    col_widths = [len(h) for h in headers]
+    for row in data_rows:
+        for i, cell in enumerate(row):
+            col_widths[i] = max(col_widths[i], len(str(cell)))
+
+    # Format rows with padded strings to align pipe characters
+    def format_row(row_data):
+        padded = [
+            f" {str(cell).ljust(col_widths[i])} " for i, cell in enumerate(row_data)
+        ]
+        return "|" + "|".join(padded) + "|"
+
+    lines.append(format_row(headers))
+
+    # Format the separator row ensuring consistent width
+    sep_cells = []
+    for i, align in enumerate(alignments):
+        w = col_widths[i]
+        if align == ":-:":
+            sep_cells.append(f" :{'-' * (w - 2)}: ")
+        else:
+            sep_cells.append(f" {'-' * w} ")
+    lines.append("|" + "|".join(sep_cells) + "|")
+
+    # Append all data rows
+    for row in data_rows:
+        lines.append(format_row(row))
 
     lines.append("")
     return "\n".join(lines)
