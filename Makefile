@@ -2,7 +2,7 @@ integration_test_case_targets := integration-test-case1 integration-test-case2 i
 
 .NOTPARALLEL: all
 .PHONY: all
-all: check test build
+all: check test docs build
 
 .PHONY: format
 format:
