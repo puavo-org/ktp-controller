@@ -1093,6 +1093,7 @@ class Agent:
                 "students": self.__last_received_students,
             },
             "ktp_controller": {
+                "settings": SETTINGS.model_dump(),
                 "started_at": self.__started_at,
                 "is_auto_control_enabled": self.__is_auto_control_enabled,
                 "cached_files": ktp_controller.files.get_stats(),

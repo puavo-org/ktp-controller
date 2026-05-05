@@ -470,6 +470,24 @@
       "scheduled_start_time": "2026-05-03T16:31:23.036+0000",
       "scheduled_end_time": "2026-05-03T16:32:53.036+0000",
       "scheduled_lock_time": "2026-05-03T16:30:53.036+0000"
+    },
+    "settings": {
+      "examomatic_host": "127.0.0.1:8001",
+      "examomatic_username": "integration.tester1",
+      "examomatic_password_file": "tests/examomatic-password.txt",
+      "examomatic_use_tls": false,
+      "examomatic_ping_interval_sec": 30,
+      "answer_transfer_interval_sec": 300,
+      "refresh_exams_interval_sec": 5,
+      "domain": "integration.test",
+      "hostname": "integration-test-host1",
+      "id": 1,
+      "api_host": "127.0.0.1",
+      "api_port": 8000,
+      "logging_level": "INFO",
+      "db_path": "tests/ktp_controller.sqlite",
+      "abitti2_allow_students_to_use_browsers": true,
+      "abitti2_change_student_access_code_automatically": true
     }
   },
   "os": {

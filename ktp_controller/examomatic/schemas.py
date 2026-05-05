@@ -10,7 +10,7 @@ from ktp_controller import VERSION
 import ktp_controller.api.exam.schemas
 import ktp_controller.pydantic
 import ktp_controller.schemas
-
+import ktp_controller.settings
 
 __all__ = [
     "StatusReport",
@@ -110,6 +110,9 @@ class _KTPController(ktp_controller.pydantic.BaseModel):
     is_auto_control_enabled: pydantic.StrictBool = Field(examples=[True])
     cached_files: ktp_controller.schemas.FileStats
     current_exam_package: _ExamPackage | None
+    settings: ktp_controller.settings.Settings = Field(
+        description="Effective runtime configuation of KTP Controller"
+    )
 
 
 class _OSStats(ktp_controller.pydantic.BaseModel):
