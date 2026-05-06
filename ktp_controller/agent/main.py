@@ -1231,8 +1231,11 @@ class Agent:
 
     async def __periodic_refresh_exams(self):
         while not _SHUTDOWN_EVENT.is_set():
-            async with self.__refresh_exams_lock:
-                await self.__refresh_exams(is_spontaneous=True)
+            try:
+                async with self.__refresh_exams_lock:
+                    await self.__refresh_exams(is_spontaneous=True)
+            except Exception:
+                _LOGGER.exception("Failed to refresh exams")
             await asyncio.sleep(self.__approx_refresh_exams_interval_sec)
 
     async def forever(self):
