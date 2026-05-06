@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [UNRELEASED]
 
 
+## [0.5.1] - 2026-05-06
+
+### Fixed
+
+- Periodic exam refresh task is now kept alive (and errors logged), no
+  matter what happens during exam refresh.
+
+
 ## [0.5.0] - 2026-05-04
 
 ### Added
@@ -18,6 +26,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - All dependencies have been updated.
+
+
+## [0.4.3] - 2026-05-06
+
+### Fixed
+
+- Periodic exam refresh task is now kept alive (and errors logged), no
+  matter what happens during exam refresh.
 
 
 ## [0.4.2] - 2026-04-29
