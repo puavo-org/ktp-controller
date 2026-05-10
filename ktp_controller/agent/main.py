@@ -62,6 +62,10 @@ class Component(str, enum.Enum):
         return self.value
 
 
+class _UnexpectedCancel(Exception):
+    pass
+
+
 class Agent:
     def __init__(
         self,
@@ -318,7 +322,11 @@ class Agent:
 
         self.__answer_transfer_task.cancel()
         try:
-            with contextlib.suppress(asyncio.CancelledError):
+            # _UnexpectedCancel is expected here because we explicitly
+            # cancel the task. This is special case, all other tasks
+            # are expected to not be canceled unless shutdown is in
+            # progress.
+            with contextlib.suppress(asyncio.CancelledError, _UnexpectedCancel):
                 await self.__answer_transfer_task
         except Exception:
             _LOGGER.exception(
@@ -440,10 +448,14 @@ class Agent:
     async def __transfer_non_final_answers_periodically(
         self, current_exam_package: typing.Dict[str, typing.Any]
     ):
+        started = False
         try:
             _LOGGER.info("Starting periodic non-final answer transfer task.")
             while not _SHUTDOWN_EVENT.is_set():
                 try:
+                    if started:
+                        await asyncio.sleep(self.__approx_answer_transfer_interval_sec)
+                    started = True
                     await self.__transfer_answers(
                         current_exam_package,
                         is_final=ktp_controller.examomatic.client.IsFinal.FALSE,
@@ -452,7 +464,13 @@ class Agent:
                     _LOGGER.exception(
                         "Failed to transfer non-final answers from Abitti2 to Exam-O-Matic."
                     )
-                await asyncio.sleep(self.__approx_answer_transfer_interval_sec)
+        except asyncio.CancelledError:
+            if _SHUTDOWN_EVENT.is_set():
+                # That's normal, cancelled while the agent is stopping.
+                raise
+            raise _UnexpectedCancel(
+                "Unexpected cancellation of periodic non-final answer transfer task."
+            )
         finally:
             if _SHUTDOWN_EVENT.is_set():
                 _LOGGER.info("Shutting periodic non-final answer transfer task.")
@@ -677,6 +695,13 @@ class Agent:
                 await websock.send(message)
                 _LOGGER.debug("--> API: %s", message)
                 await asyncio.sleep(self.__approx_api_ping_interval_sec)
+        except asyncio.CancelledError:
+            if _SHUTDOWN_EVENT.is_set():
+                # That's normal, cancelled while the agent is stopping.
+                raise
+            raise _UnexpectedCancel(
+                "Unexpected cancellation of periodic ping-pong game with API."
+            )
         finally:
             if _SHUTDOWN_EVENT.is_set():
                 _LOGGER.info("Shutting down periodic ping-pong game with API.")
@@ -695,6 +720,13 @@ class Agent:
                 await websock.send(message)
                 _LOGGER.debug("--> API: %s", message)
                 await asyncio.sleep(self.__approx_api_status_report_interval_sec)
+        except asyncio.CancelledError:
+            if _SHUTDOWN_EVENT.is_set():
+                # That's normal, cancelled while the agent is stopping.
+                raise
+            raise _UnexpectedCancel(
+                "Unexpected cancellation of periodic status reporting to API."
+            )
         finally:
             if _SHUTDOWN_EVENT.is_set():
                 _LOGGER.info("Shutting down periodic status reporting to API.")
@@ -715,6 +747,13 @@ class Agent:
                 await websock.send(message)
                 _LOGGER.debug("--> Exam-O-Matic: %s", message)
                 await asyncio.sleep(self.__approx_examomatic_ping_interval_sec)
+        except asyncio.CancelledError:
+            if _SHUTDOWN_EVENT.is_set():
+                # That's normal, cancelled while the agent is stopping.
+                raise
+            raise _UnexpectedCancel(
+                "Unexpected cancellation of periodic ping-pong game with Exam-O-Matic."
+            )
         finally:
             if _SHUTDOWN_EVENT.is_set():
                 _LOGGER.info("Shutting down periodic ping-pong game with Exam-O-Matic.")
@@ -800,6 +839,13 @@ class Agent:
                     continue  # playing it!
 
                 _LOGGER.error("unknown API message kind: %s", message_kind)
+        except asyncio.CancelledError:
+            if _SHUTDOWN_EVENT.is_set():
+                # That's normal, cancelled while the agent is stopping.
+                raise
+            raise _UnexpectedCancel(
+                "Unexpected cancellation of websocket communication with API."
+            )
         finally:
             if _SHUTDOWN_EVENT.is_set():
                 _LOGGER.info("Shutting down websocket communication with API.")
@@ -860,6 +906,13 @@ class Agent:
                     continue  # Unknown requests are not acked
 
                 await ktp_controller.examomatic.client.websock_ack(websock, message)
+        except asyncio.CancelledError:
+            if _SHUTDOWN_EVENT.is_set():
+                # That's normal, cancelled while the agent is stopping.
+                raise
+            raise _UnexpectedCancel(
+                "Unexpected cancellation of websocket communication with Exam-O-Matic."
+            )
         finally:
             if _SHUTDOWN_EVENT.is_set():
                 _LOGGER.info("Shutting down websocket communication with Exam-O-Matic.")
@@ -1106,6 +1159,13 @@ class Agent:
                             message_type,
                             message,
                         )
+        except asyncio.CancelledError:
+            if _SHUTDOWN_EVENT.is_set():
+                # That's normal, cancelled while the agent is stopping.
+                raise
+            raise _UnexpectedCancel(
+                "Unexpected cancellation of websocket communication with Abitti2."
+            )
         finally:
             if _SHUTDOWN_EVENT.is_set():
                 _LOGGER.info("Shutting down websocket communication with Abitti2.")
@@ -1121,10 +1181,20 @@ class Agent:
         connection_stats_class: type[ktp_controller.agent.stats.ConnectionStats],
         additional_headers: typing.Dict[str, str] | None = None,
     ):
+        started = False
         try:
-            _LOGGER.info("Starting websocket maintenance task to %r.", url)
+            _LOGGER.info("Starting websocket maintenance task to %s (%r).", name, url)
             while not _SHUTDOWN_EVENT.is_set():
                 try:
+                    if started:
+                        _LOGGER.error(
+                            "Reconnect to %s (%r) in approximately %d seconds...",
+                            name,
+                            url,
+                            self.__approx_reconnect_timeout_sec,
+                        )
+                        await asyncio.sleep(self.__approx_reconnect_timeout_sec)
+                    started = True
                     async with websockets.connect(
                         url,
                         additional_headers=additional_headers,
@@ -1135,22 +1205,19 @@ class Agent:
                         async with asyncio.TaskGroup() as tg:
                             for asyncfunc in asyncfuncs:
                                 tg.create_task(asyncfunc(websock))
-                except ExceptionGroup as eg:
-                    _LOGGER.error(
-                        "Websocket connection to %s has failed!",
-                        name,
-                        exc_info=eg.exceptions[0],
-                    )
-                    _LOGGER.error(
-                        "Reconnect to %s in approximately %d seconds...",
-                        name,
-                        self.__approx_reconnect_timeout_sec,
-                    )
-                    await asyncio.sleep(self.__approx_reconnect_timeout_sec)
+                except Exception:
+                    _LOGGER.exception("Websocket connection to %s has failed!", name)
                 finally:
                     if name in self.__connection_stats:
                         _LOGGER.info("Websocket connection to %r was closed.", url)
                     self.__connection_stats.pop(name, None)
+        except asyncio.CancelledError:
+            if _SHUTDOWN_EVENT.is_set():
+                # That's normal, cancelled while the agent is stopping.
+                raise
+            raise _UnexpectedCancel(
+                f"Unexpected cancellation of websocket maintenance task to {url!r}."
+            )
         finally:
             if _SHUTDOWN_EVENT.is_set():
                 _LOGGER.info("Shutting down websocket maintenance task to %r.", url)
@@ -1293,15 +1360,25 @@ class Agent:
         _LOGGER.info("refreshed exams successfully")
 
     async def __periodic_refresh_exams(self):
+        started = False
         try:
             _LOGGER.info("Starting periodic exam refresh task.")
             while not _SHUTDOWN_EVENT.is_set():
                 try:
+                    if started:
+                        await asyncio.sleep(self.__approx_refresh_exams_interval_sec)
+                    started = True
                     async with self.__refresh_exams_lock:
                         await self.__refresh_exams(is_spontaneous=True)
                 except Exception:
                     _LOGGER.exception("Failed to refresh exams")
-                await asyncio.sleep(self.__approx_refresh_exams_interval_sec)
+        except asyncio.CancelledError:
+            if _SHUTDOWN_EVENT.is_set():
+                # That's normal, cancelled while the agent is stopping.
+                raise
+            raise _UnexpectedCancel(
+                "Unexpected cancellation of periodic exam refresh task."
+            )
         finally:
             if _SHUTDOWN_EVENT.is_set():
                 _LOGGER.info("Shutting down periodic exam refresh task.")
