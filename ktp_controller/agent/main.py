@@ -726,17 +726,24 @@ class Agent:
     async def __transfer_non_final_answers_periodically(
         self, current_exam_package: typing.Dict[str, typing.Any]
     ):
-        while not _SHUTDOWN_EVENT.is_set():
-            try:
-                await self.__transfer_answers(
-                    current_exam_package,
-                    is_final=ktp_controller.examomatic.client.IsFinal.FALSE,
-                )
-            except Exception:
-                _LOGGER.exception(
-                    "Failed to transfer non-final answers from Abitti2 to Exam-O-Matic."
-                )
-            await asyncio.sleep(self.__approx_answer_transfer_interval_sec)
+        try:
+            _LOGGER.info("Starting periodic non-final answer transfer task.")
+            while not _SHUTDOWN_EVENT.is_set():
+                try:
+                    await self.__transfer_answers(
+                        current_exam_package,
+                        is_final=ktp_controller.examomatic.client.IsFinal.FALSE,
+                    )
+                except Exception:
+                    _LOGGER.exception(
+                        "Failed to transfer non-final answers from Abitti2 to Exam-O-Matic."
+                    )
+                await asyncio.sleep(self.__approx_answer_transfer_interval_sec)
+        finally:
+            if _SHUTDOWN_EVENT.is_set():
+                _LOGGER.info("Shutting periodic non-final answer transfer task.")
+            else:
+                _LOGGER.error("Aborting periodic non-final answer transfer task.")
 
     async def __work_on_current_exam_package(self, *, trigger: Trigger) -> bool:
         utcnow = ktp_controller.utils.utcnow()
@@ -949,161 +956,201 @@ class Agent:
         return changed
 
     async def __send_pings_to_api(self, websock):
-        while not _SHUTDOWN_EVENT.is_set():
-            message = ktp_controller.messages.PingMessage().model_dump_json()
-            await websock.send(message)
-            _LOGGER.debug("--> API: %s", message)
-            await asyncio.sleep(self.__approx_api_ping_interval_sec)
+        try:
+            _LOGGER.info("Starting periodic ping-pong game with API.")
+            while not _SHUTDOWN_EVENT.is_set():
+                message = ktp_controller.messages.PingMessage().model_dump_json()
+                await websock.send(message)
+                _LOGGER.debug("--> API: %s", message)
+                await asyncio.sleep(self.__approx_api_ping_interval_sec)
+        finally:
+            if _SHUTDOWN_EVENT.is_set():
+                _LOGGER.info("Shutting down periodic ping-pong game with API.")
+            else:
+                _LOGGER.error("Aborting periodic ping-pong game with API!")
 
     async def __send_status_reports_to_api(self, websock):
-        while not _SHUTDOWN_EVENT.is_set():
-            message = ktp_controller.messages.StatusReportMessage(
-                data=ktp_controller.messages.StatusReportData(
-                    is_auto_control_enabled=self.__is_auto_control_enabled
-                ),
-            ).model_dump_json()
-            await websock.send(message)
-            _LOGGER.debug("--> API: %s", message)
-            await asyncio.sleep(self.__approx_api_status_report_interval_sec)
+        try:
+            _LOGGER.info("Starting periodic status reporting to API.")
+            while not _SHUTDOWN_EVENT.is_set():
+                message = ktp_controller.messages.StatusReportMessage(
+                    data=ktp_controller.messages.StatusReportData(
+                        is_auto_control_enabled=self.__is_auto_control_enabled
+                    ),
+                ).model_dump_json()
+                await websock.send(message)
+                _LOGGER.debug("--> API: %s", message)
+                await asyncio.sleep(self.__approx_api_status_report_interval_sec)
+        finally:
+            if _SHUTDOWN_EVENT.is_set():
+                _LOGGER.info("Shutting down periodic status reporting to API.")
+            else:
+                _LOGGER.error("Aborting periodic status reporting to API!")
 
     async def __send_pings_to_examomatic(self, websock):
-        while not _SHUTDOWN_EVENT.is_set():
-            message = json.dumps(
-                {
-                    "type": "ping",
-                },
-                ensure_ascii=True,
-                separators=(",", ":"),
-            )
-            await websock.send(message)
-            _LOGGER.debug("--> Exam-O-Matic: %s", message)
-            await asyncio.sleep(self.__approx_examomatic_ping_interval_sec)
+        try:
+            _LOGGER.info("Starting periodic ping-pong game with Exam-O-Matic.")
+            while not _SHUTDOWN_EVENT.is_set():
+                message = json.dumps(
+                    {
+                        "type": "ping",
+                    },
+                    ensure_ascii=True,
+                    separators=(",", ":"),
+                )
+                await websock.send(message)
+                _LOGGER.debug("--> Exam-O-Matic: %s", message)
+                await asyncio.sleep(self.__approx_examomatic_ping_interval_sec)
+        finally:
+            if _SHUTDOWN_EVENT.is_set():
+                _LOGGER.info("Shutting down periodic ping-pong game with Exam-O-Matic.")
+            else:
+                _LOGGER.error("Aborting periodic ping-pong game with Exam-O-Matic!")
 
     async def __communicate_with_api(self, websock):
-        async for data in websock:
-            _LOGGER.debug("<-- API: %s", data)
-            try:
-                message = ktp_controller.utils.json_loads_dict(data)
-            except ValueError:
-                # Most probably a programming error, API should not
-                # send invalid JSON to agents.
-                _LOGGER.exception("API sent invalid JSON data!")
-                continue
-
-            try:
-                message_kind = message["kind"]
-            except KeyError:
-                _LOGGER.exception("API sent invalid message")
-                continue
-
-            if message_kind == "command":
+        try:
+            _LOGGER.info("Starting to communicate with API.")
+            async for data in websock:
+                _LOGGER.debug("<-- API: %s", data)
                 try:
-                    command_data = ktp_controller.messages.CommandData.model_validate(
-                        message["data"]
-                    )
-                except pydantic.ValidationError:
-                    _LOGGER.exception("API sent invalid command data")
-                    command_result = ktp_controller.messages.CommandResultData(
-                        command_uuid=message["uuid"],
-                        command_status=ktp_controller.messages.CommandStatus.ERROR,
-                        error_message="critical internal error",
-                    )
-                else:
-                    _LOGGER.info("Executing command %r...", command_data.command)
+                    message = ktp_controller.utils.json_loads_dict(data)
+                except ValueError:
+                    # Most probably a programming error, API should not
+                    # send invalid JSON to agents.
+                    _LOGGER.exception("API sent invalid JSON data!")
+                    continue
+
+                try:
+                    message_kind = message["kind"]
+                except KeyError:
+                    _LOGGER.exception("API sent invalid message")
+                    continue
+
+                if message_kind == "command":
                     try:
-                        command_result = await self.__commands[command_data.command](
-                            message["uuid"], command_data
+                        command_data = (
+                            ktp_controller.messages.CommandData.model_validate(
+                                message["data"]
+                            )
                         )
-                    except Exception:
-                        _LOGGER.exception(
-                            "Executing command %r failed", command_data.command
-                        )
+                    except pydantic.ValidationError:
+                        _LOGGER.exception("API sent invalid command data")
                         command_result = ktp_controller.messages.CommandResultData(
                             command_uuid=message["uuid"],
                             command_status=ktp_controller.messages.CommandStatus.ERROR,
                             error_message="critical internal error",
                         )
                     else:
-                        _LOGGER.info(
-                            "Executed command %r successfully.", command_data.command
-                        )
-                await websock.send(
-                    ktp_controller.messages.CommandResultMessage(
-                        kind=ktp_controller.messages.MessageKind.COMMAND_RESULT,
-                        data=command_result,
-                    ).model_dump_json()
-                )
-                _LOGGER.info("Sent command result %r successfully.", command_result)
-                continue
-
-            if message_kind == "pong":
-                # Whenever we get ponged, it's a sign for us to do
-                # some auto control work. So, keep ping pong interval
-                # quite short. This could be replaced with more
-                # sophisticated scheduling logic, but for now,
-                # ping-pong scheduling is good enough.
-                try:
-                    await self.__work_on_current_exam_package(trigger=Trigger.TIME)
-                except Exception:
-                    _LOGGER.exception(
-                        "automatic work on the current exam package failed"
+                        _LOGGER.info("Executing command %r...", command_data.command)
+                        try:
+                            command_result = await self.__commands[
+                                command_data.command
+                            ](message["uuid"], command_data)
+                        except Exception:
+                            _LOGGER.exception(
+                                "Executing command %r failed", command_data.command
+                            )
+                            command_result = ktp_controller.messages.CommandResultData(
+                                command_uuid=message["uuid"],
+                                command_status=ktp_controller.messages.CommandStatus.ERROR,
+                                error_message="critical internal error",
+                            )
+                        else:
+                            _LOGGER.info(
+                                "Executed command %r successfully.",
+                                command_data.command,
+                            )
+                    await websock.send(
+                        ktp_controller.messages.CommandResultMessage(
+                            kind=ktp_controller.messages.MessageKind.COMMAND_RESULT,
+                            data=command_result,
+                        ).model_dump_json()
                     )
-                # Ping pong is a great game!
-                # Let's
-                continue  # playing it!
+                    _LOGGER.info("Sent command result %r successfully.", command_result)
+                    continue
 
-            _LOGGER.error("unknown API message kind: %s", message_kind)
+                if message_kind == "pong":
+                    # Whenever we get ponged, it's a sign for us to do
+                    # some auto control work. So, keep ping pong interval
+                    # quite short. This could be replaced with more
+                    # sophisticated scheduling logic, but for now,
+                    # ping-pong scheduling is good enough.
+                    try:
+                        await self.__work_on_current_exam_package(trigger=Trigger.TIME)
+                    except Exception:
+                        _LOGGER.exception(
+                            "automatic work on the current exam package failed"
+                        )
+                    # Ping pong is a great game!
+                    # Let's
+                    continue  # playing it!
+
+                _LOGGER.error("unknown API message kind: %s", message_kind)
+        finally:
+            if _SHUTDOWN_EVENT.is_set():
+                _LOGGER.info("Shutting down websocket communication with API.")
+            else:
+                _LOGGER.error("Aborting websocket communication with API!")
 
     async def __communicate_with_examomatic(self, websock):
-        async for data in websock:
-            received_at = ktp_controller.utils.utcnow()
-            _LOGGER.debug("<-- Exam-O-Matic: %s", data)
-            try:
-                message = ktp_controller.examomatic.client.websock_validate_message(
-                    data
-                )
-            except ValueError:
-                _LOGGER.exception("received invalid data from Exam-O-Matic: %r", data)
-                continue
-
-            self.__connection_stats[
-                Component.EXAMOMATIC
-            ].last_message_received_at = received_at
-
-            if message["type"] == "pong":
-                _LOGGER.info("received pong message from Exam-O-Matic")
-                self.__connection_stats[Component.EXAMOMATIC].ping_pong_count += 1
-                continue  # pongs are not acked
-
-            if message["type"] == "change_keycode":
-                _LOGGER.info("received change_keycode message from Exam-O-Matic")
-                if not self.__is_auto_control_enabled:
-                    _LOGGER.error(
-                        "Keycode cannot be changed by Exam-O-Matic, because auto control is not enabled."
+        try:
+            _LOGGER.info("Starting to communicate with Exam-O-Matic.")
+            async for data in websock:
+                received_at = ktp_controller.utils.utcnow()
+                _LOGGER.debug("<-- Exam-O-Matic: %s", data)
+                try:
+                    message = ktp_controller.examomatic.client.websock_validate_message(
+                        data
+                    )
+                except ValueError:
+                    _LOGGER.exception(
+                        "received invalid data from Exam-O-Matic: %r", data
                     )
                     continue
-                try:
-                    await ktp_controller.abitti2.client.change_student_access_code()
-                except Exception:
-                    _LOGGER.exception("Failed to changed student access code")
-                    continue  # Failed requests are not acked
-                _LOGGER.info("Keycode changed.")
-            elif message["type"] == "refresh_exams":
-                _LOGGER.info("received refresh_exams message from Exam-O-Matic")
-                try:
-                    async with self.__refresh_exams_lock:
-                        await self.__refresh_exams(is_spontaneous=False)
-                except Exception:
-                    _LOGGER.exception("Failed to refresh exams")
-                    continue  # Failed requests are not acked
-            else:
-                _LOGGER.error(
-                    "received message of unknown type %r from Exam-O-Matic",
-                    message["type"],
-                )
-                continue  # Unknown requests are not acked
 
-            await ktp_controller.examomatic.client.websock_ack(websock, message)
+                self.__connection_stats[
+                    Component.EXAMOMATIC
+                ].last_message_received_at = received_at
+
+                if message["type"] == "pong":
+                    _LOGGER.info("received pong message from Exam-O-Matic")
+                    self.__connection_stats[Component.EXAMOMATIC].ping_pong_count += 1
+                    continue  # pongs are not acked
+
+                if message["type"] == "change_keycode":
+                    _LOGGER.info("received change_keycode message from Exam-O-Matic")
+                    if not self.__is_auto_control_enabled:
+                        _LOGGER.error(
+                            "Keycode cannot be changed by Exam-O-Matic, because auto control is not enabled."
+                        )
+                        continue
+                    try:
+                        await ktp_controller.abitti2.client.change_student_access_code()
+                    except Exception:
+                        _LOGGER.exception("Failed to changed student access code")
+                        continue  # Failed requests are not acked
+                    _LOGGER.info("Keycode changed.")
+                elif message["type"] == "refresh_exams":
+                    _LOGGER.info("received refresh_exams message from Exam-O-Matic")
+                    try:
+                        async with self.__refresh_exams_lock:
+                            await self.__refresh_exams(is_spontaneous=False)
+                    except Exception:
+                        _LOGGER.exception("Failed to refresh exams")
+                        continue  # Failed requests are not acked
+                else:
+                    _LOGGER.error(
+                        "received message of unknown type %r from Exam-O-Matic",
+                        message["type"],
+                    )
+                    continue  # Unknown requests are not acked
+
+                await ktp_controller.examomatic.client.websock_ack(websock, message)
+        finally:
+            if _SHUTDOWN_EVENT.is_set():
+                _LOGGER.info("Shutting down websocket communication with Exam-O-Matic.")
+            else:
+                _LOGGER.error("Aborting websocket communication with Exam-O-Matic!")
 
     async def __handle_abitti2_ping_message(
         self,
@@ -1308,39 +1355,46 @@ class Agent:
             return (None, None)
 
     async def __communicate_with_abitti2(self, websock):
-        async for data in websock:
-            received_at = ktp_controller.utils.utcnow()
-            self.__last_message_from_abitti2_received_at = received_at
+        try:
+            _LOGGER.info("Starting to communicate with Abitti2.")
+            async for data in websock:
+                received_at = ktp_controller.utils.utcnow()
+                self.__last_message_from_abitti2_received_at = received_at
 
-            _LOGGER.debug("<-- Abitti2: %s", data)
+                _LOGGER.debug("<-- Abitti2: %s", data)
 
-            message_type, message = self.__decode_abitti2_message(data)
-            if message_type is None:
-                continue
+                message_type, message = self.__decode_abitti2_message(data)
+                if message_type is None:
+                    continue
 
-            try:
-                handler = {
-                    "ping": self.__handle_abitti2_ping_message,
-                    "security-code": self.__handle_abitti2_security_code_message,
-                    "stats": self.__handle_abitti2_stats_message,
-                    "exams": self.__handle_abitti2_exams_message,
-                    "servers": None,  # Simply ignored for now
-                }[message_type]
-            except KeyError:
-                _LOGGER.warning("unhandled %r message from Abitti2", message_type)
-                continue
-
-            _LOGGER.debug("received %r message from Abitti2", message_type)
-
-            if handler is not None:
                 try:
-                    await handler(websock, received_at, message)
-                except Exception:
-                    _LOGGER.exception(
-                        "failed to handle %r message from Abitti2: %r",
-                        message_type,
-                        message,
-                    )
+                    handler = {
+                        "ping": self.__handle_abitti2_ping_message,
+                        "security-code": self.__handle_abitti2_security_code_message,
+                        "stats": self.__handle_abitti2_stats_message,
+                        "exams": self.__handle_abitti2_exams_message,
+                        "servers": None,  # Simply ignored for now
+                    }[message_type]
+                except KeyError:
+                    _LOGGER.warning("unhandled %r message from Abitti2", message_type)
+                    continue
+
+                _LOGGER.debug("received %r message from Abitti2", message_type)
+
+                if handler is not None:
+                    try:
+                        await handler(websock, received_at, message)
+                    except Exception:
+                        _LOGGER.exception(
+                            "failed to handle %r message from Abitti2: %r",
+                            message_type,
+                            message,
+                        )
+        finally:
+            if _SHUTDOWN_EVENT.is_set():
+                _LOGGER.info("Shutting down websocket communication with Abitti2.")
+            else:
+                _LOGGER.error("Aborting websocket communication with Abitti2!")
 
     async def __maintain_websocket_connection(
         self,
@@ -1351,32 +1405,41 @@ class Agent:
         connection_stats_class: type[ktp_controller.agent.stats.ConnectionStats],
         additional_headers: typing.Dict[str, str] | None = None,
     ):
-        while not _SHUTDOWN_EVENT.is_set():
-            try:
-                async with websockets.connect(
-                    url,
-                    additional_headers=additional_headers,
-                ) as websock:
-                    self.__connection_stats[name] = connection_stats_class(
-                        ktp_controller.utils.utcnow()
+        try:
+            _LOGGER.info("Starting websocket maintenance task to %r.", url)
+            while not _SHUTDOWN_EVENT.is_set():
+                try:
+                    async with websockets.connect(
+                        url,
+                        additional_headers=additional_headers,
+                    ) as websock:
+                        self.__connection_stats[name] = connection_stats_class(
+                            ktp_controller.utils.utcnow()
+                        )
+                        async with asyncio.TaskGroup() as tg:
+                            for asyncfunc in asyncfuncs:
+                                tg.create_task(asyncfunc(websock))
+                except ExceptionGroup as eg:
+                    _LOGGER.error(
+                        "Websocket connection to %s has failed!",
+                        name,
+                        exc_info=eg.exceptions[0],
                     )
-                    async with asyncio.TaskGroup() as tg:
-                        for asyncfunc in asyncfuncs:
-                            tg.create_task(asyncfunc(websock))
-            except ExceptionGroup as eg:
-                _LOGGER.error(
-                    "Websocket connection to %s has failed!",
-                    name,
-                    exc_info=eg.exceptions[0],
-                )
-                _LOGGER.error(
-                    "Reconnect to %s in approximately %d seconds...",
-                    name,
-                    self.__approx_reconnect_timeout_sec,
-                )
-                await asyncio.sleep(self.__approx_reconnect_timeout_sec)
-            finally:
-                self.__connection_stats.pop(name, None)
+                    _LOGGER.error(
+                        "Reconnect to %s in approximately %d seconds...",
+                        name,
+                        self.__approx_reconnect_timeout_sec,
+                    )
+                    await asyncio.sleep(self.__approx_reconnect_timeout_sec)
+                finally:
+                    if name in self.__connection_stats:
+                        _LOGGER.info("Websocket connection to %r was closed.", url)
+                    self.__connection_stats.pop(name, None)
+        finally:
+            if _SHUTDOWN_EVENT.is_set():
+                _LOGGER.info("Shutting down websocket maintenance task to %r.", url)
+            else:
+                _LOGGER.error("Aborting websocket maintenance task to %r!", url)
 
     async def __maintain_websocket_connection_to_api(self):
         await self.__maintain_websocket_connection(
@@ -1514,13 +1577,20 @@ class Agent:
         _LOGGER.info("refreshed exams successfully")
 
     async def __periodic_refresh_exams(self):
-        while not _SHUTDOWN_EVENT.is_set():
-            try:
-                async with self.__refresh_exams_lock:
-                    await self.__refresh_exams(is_spontaneous=True)
-            except Exception:
-                _LOGGER.exception("Failed to refresh exams")
-            await asyncio.sleep(self.__approx_refresh_exams_interval_sec)
+        try:
+            _LOGGER.info("Starting periodic exam refresh task.")
+            while not _SHUTDOWN_EVENT.is_set():
+                try:
+                    async with self.__refresh_exams_lock:
+                        await self.__refresh_exams(is_spontaneous=True)
+                except Exception:
+                    _LOGGER.exception("Failed to refresh exams")
+                await asyncio.sleep(self.__approx_refresh_exams_interval_sec)
+        finally:
+            if _SHUTDOWN_EVENT.is_set():
+                _LOGGER.info("Shutting down periodic exam refresh task.")
+            else:
+                _LOGGER.error("Aborting periodic exam refresh task!")
 
     async def forever(self):
         _LOGGER.info("Started.")
