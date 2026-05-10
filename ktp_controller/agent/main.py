@@ -1367,7 +1367,7 @@ class Agent:
                         "servers": None,  # Simply ignored for now
                     }[message_type]
                 except KeyError:
-                    _LOGGER.warning("unhandled %r message from Abitti2", message_type)
+                    _LOGGER.warning("unhandled %r message from Abitti2: %r", message_type, message)
                     continue
 
                 _LOGGER.debug("received %r message from Abitti2", message_type)
