@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.4.4] - 2026-05-11
+
+### Fixed
+
+- Fixed the handling of task cancellations. Now various asynchronous
+  tasks conducted by the Agent component of KTP Controller do not just
+  silently stop. Should a task get cancelled unexpectedly, for what
+  ever reason (network, explosion, aliens, etc.), a message is logged
+  and necessary actions are taken to return to normal operation.
+
+
 ## [0.4.3] - 2026-05-06
 
 ### Fixed
