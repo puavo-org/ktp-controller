@@ -8,6 +8,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Now, build bundle files include all necessary libraries for running
+  with Python 3.11.2. Previously, bundle file was built targeting
+  3.11.14, which caused some of the required libs (at least
+  async_timeout) to be missing from the bundle.
+
+
+## [0.5.3] - 2026-05-11
+
+### Fixed
+
+- Version number in an internal version file.
+
+
+## [0.5.2] - 2026-05-11
+
+### Fixed
+
+- Fixed the handling of task cancellations. Now various asynchronous
+  tasks conducted by the Agent component of KTP Controller do not just
+  silently stop. Should a task get cancelled unexpectedly, for what
+  ever reason (network, explosion, aliens, etc.), a message is logged
+  and necessary actions are taken to return to normal operation.
+
 
 ## [0.5.1] - 2026-05-06
 
@@ -26,6 +51,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - All dependencies have been updated.
+
+
+## [0.4.4] - 2026-05-11
+
+### Fixed
+
+- Fixed the handling of task cancellations. Now various asynchronous
+  tasks conducted by the Agent component of KTP Controller do not just
+  silently stop. Should a task get cancelled unexpectedly, for what
+  ever reason (network, explosion, aliens, etc.), a message is logged
+  and necessary actions are taken to return to normal operation.
 
 
 ## [0.4.3] - 2026-05-06
