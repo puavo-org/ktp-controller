@@ -20,7 +20,8 @@ exitval=1
 
 trap on_exit EXIT
 
-export UV_PYTHON=3.11.2
+export UV_PYTHON=3.11.1
+export UV_MANAGED_PYTHON=1
 
 echo "📦 Building wheel..." >&2
 uv build --wheel
@@ -30,9 +31,7 @@ uv export --no-emit-project --no-dev --format requirements-txt >dist/requirement
 
 echo "🚚 Collecting packages into bundle..." >&2
 version=$(uv version --short)
-pyversion=$(echo -n "${UV_PYTHON}" | tr '.' '_')
-bundle_name="ktp_controller-prodbundle-py${pyversion}-${version}"
-dir="dist/${bundle_name}"
+dir="dist/ktp_controller-prodbundle-${version}"
 rm -rf "$dir"
 mkdir -p "$dir"
 uv pip install \
@@ -55,8 +54,8 @@ find "$dir/ktp-controller/bin" -type f -exec sed -i '1 s|^#!.*\(python[0-9]*\).*
 
 echo "🗜️ Packing the bundle..." >&2
 cd "$dir"
-zip --symlinks --quiet -r "../${bundle_name}.zip" ktp-controller
+zip --symlinks --quiet -r "../ktp_controller-prodbundle-${version}.zip" ktp-controller
 
-echo "✅ Successfully created 'dist/${bundle_name}.zip'" >&2
+echo "✅ Successfully created 'dist/ktp_controller-prodbundle-${version}.zip'" >&2
 
 exitval=0
