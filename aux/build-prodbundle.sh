@@ -20,7 +20,8 @@ exitval=1
 
 trap on_exit EXIT
 
-export UV_PYTHON=3.11.2
+export UV_PYTHON=3.11.1
+export UV_MANAGED_PYTHON=1
 
 echo "📦 Building wheel..." >&2
 uv build --wheel
