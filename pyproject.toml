@@ -1,6 +1,6 @@
 [project]
 name = "ktp-controller"
-version = "0.5.5"
+version = "0.5.6"
 description = "ktp-controller"
 authors = [{ name = "Opinsys Developers", email = "dev@opinsys.fi" }]
 requires-python = ">=3.11, <3.15"
