@@ -6,7 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [UNRELEASED]
+## [0.5.6] - 2026-05-12
+
+### Fixed
+
+- Fixed Github build environment again.
+
+
+## [0.5.5] - 2026-05-12
+
+### Fixed
+
+- Fixed Github build environment.
+
+
+## [0.5.4] - 2026-05-12
 
 ### Fixed
 
