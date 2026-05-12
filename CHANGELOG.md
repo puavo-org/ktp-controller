@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.4] - 2026-05-12
+
+### Fixed
+
+- Now, build bundle files include all necessary libraries for running
+  with Python 3.11.2. Previously, bundle file was built targeting
+  3.11.14, which caused some of the required libs (at least
+  async_timeout) to be missing from the bundle.
+
+
 ## [0.5.3] - 2026-05-11
 
 ### Fixed
