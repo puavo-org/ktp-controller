@@ -156,7 +156,7 @@ def _render_object(title: str, schema: dict, defs: dict, depth: int = 0) -> str:
         description = prop.get("description", "")
         note = _notes(prop)
         examples = prop.get("examples", [])
-        example = f"`{json.dumps(examples[0])}`" if examples else ""
+        example = ", ".join([f"`{json.dumps(e)}`" for e in examples])
 
         if all_always_present:
             data_rows.append([f"`{field}`", ftype, description, example, note])
