@@ -1,4 +1,5 @@
 # Standard library imports
+import enum
 import typing
 
 # Third-party imports
@@ -13,7 +14,15 @@ __all__ = [
     "FileStat",
     "FileStats",
     "StudentAccessCode",
+    "StudentFlag",
 ]
+
+
+class StudentFlag(str, enum.Enum):
+    DISCONNECTED = "disconnected"
+    IDLE = "idle"
+    WAITING_FOR_AUTH = "waiting-for-auth"
+    UNDEFINED_EXAM = "undefined-exam"
 
 
 class StudentAccessCode(ktp_controller.pydantic.BaseModel):

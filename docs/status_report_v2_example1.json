@@ -6,9 +6,9 @@
       "exams": [
         {
           "title": "Odotusaulakoe",
-          "active_student_count": 0,
-          "idle_student_count": 0,
-          "gone_student_count": 0
+          "active_students_count": 0,
+          "finished_students_count": 0,
+          "flagged_students_count": 0
         }
       ]
     },

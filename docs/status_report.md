@@ -49,12 +49,12 @@ All fields are always present.
 
 All fields are always present.
 
-| Field                  | Type      | Description                                                                                       | Example           | Notes        |
-| ---------------------- | --------- | ------------------------------------------------------------------------------------------------- | ----------------- | ------------ |
-| `title`                | `string`  |                                                                                                   | `"Odotusaulakoe"` |              |
-| `active_student_count` | `integer` | How many students are active in the exam                                                          | `1`               | minimum: `0` |
-| `idle_student_count`   | `integer` | How many students are idle in the exam                                                            | `0`               | minimum: `0` |
-| `gone_student_count`   | `integer` | How many students are gone in a way or another, e.g. disconnected, finished, waiting reauth, etc. | `1`               | minimum: `0` |
+| Field                     | Type      | Description                                                                                                                | Example           | Notes        |
+| ------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------- | ----------------- | ------------ |
+| `title`                   | `string`  |                                                                                                                            | `"Odotusaulakoe"` |              |
+| `active_students_count`   | `integer` | How many students are active in the exam.                                                                                  | `1`               | minimum: `0` |
+| `finished_students_count` | `integer` | How many students have finished the exam                                                                                   | `0`               | minimum: `0` |
+| `flagged_students_count`  | `integer` | How many students have been flagged as having some kind of issue, e.g. disconnected, idle, waiting for authorization, etc. | `1`               | minimum: `0` |
 
 #### StudentAccessCode
 
@@ -79,17 +79,19 @@ All fields are always present.
 
 All fields are always present.
 
-| Field                 | Type               | Description | Example                                  | Notes |
-| --------------------- | ------------------ | ----------- | ---------------------------------------- | ----- |
-| `uuid`                | `string`           |             | `"396d3178-28df-435f-9124-7debdc55111c"` |       |
-| `session_uuid`        | `string`           |             | `"4fb44768-3193-4e4b-9f3c-e60008362918"` |       |
-| `is_active`           | `boolean`          |             | `true`                                   |       |
-| `is_idle`             | `boolean`          |             | `false`                                  |       |
-| `is_connected`        | `boolean`          |             | `true`                                   |       |
-| `is_waiting_for_auth` | `boolean`          |             | `false`                                  |       |
-| `is_finished`         | `boolean`          |             | `false`                                  |       |
-| `status`              | `string`           |             | `"waiting-for-auth-browser"`             |       |
-| `exam_title`          | `string` or `null` |             | `"Odotusaulakoe"`                        |       |
+| Field          | Type                                   | Description                                                                    | Example                                          | Notes |
+| -------------- | -------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------ | ----- |
+| `uuid`         | `string`                               |                                                                                | `"396d3178-28df-435f-9124-7debdc55111c"`         |       |
+| `session_uuid` | `string`                               |                                                                                | `"4fb44768-3193-4e4b-9f3c-e60008362918"`         |       |
+| `is_active`    | `boolean`                              | Is the student actively doing the exam. Active students do not have any flags. | `true`, `false`                                  |       |
+| `status`       | `string`                               |                                                                                | `"waiting-for-auth-browser"`                     |       |
+| `exam_title`   | `string` or `null`                     |                                                                                | `"Odotusaulakoe"`                                |       |
+| `has_finished` | `boolean`                              | Has the student finished the exam. Finished students do not have any flags.    | `true`, `false`                                  |       |
+| `flags`        | `array` of [StudentFlag](#studentflag) | Contains only unique values.                                                   | `["idle"]`, `["disconnected", "undefined-exam"]` |       |
+
+##### StudentFlag
+
+Enum — one of: `disconnected`, `idle`, `waiting-for-auth`, `undefined-exam`
 
 ### KTPController
 

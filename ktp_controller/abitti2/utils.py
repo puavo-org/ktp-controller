@@ -84,17 +84,34 @@ def parse_students(
                 utcnow - datetime.datetime.fromisoformat(update_time)
             ).total_seconds() >= 30 * 60
 
-        is_finished = (
+        has_finished = (
             student.get("examFinished", False) is True
             or student["sessionStatus"] == "session_ended"
             or student["sessionStatus"].startswith("exam_finished_by_")
         )
 
-        is_waiting_for_auth = student.get("studentStatus", "").startswith("waiting-for-auth")
-
-        is_active = (
-            is_connected and not is_idle and not is_finished and not is_waiting_for_auth
+        is_waiting_for_auth = student.get("studentStatus", "").startswith(
+            "waiting-for-auth"
         )
+
+        exam_title = student.get("examTitle", None)
+
+        flags: {ktp_controller.schemas.StudentFlag} = set()
+
+        if not is_connected:
+            flags.add(ktp_controller.schemas.StudentFlag.DISCONNECTED)
+        if is_waiting_for_auth:
+            flags.add(ktp_controller.schemas.StudentFlag.WAITING_FOR_AUTH)
+        if is_idle:
+            flags.add(ktp_controller.schemas.StudentFlag.IDLE)
+        if exam_title is None:
+            flags.add(ktp_controller.schemas.StudentFlag.UNDEFINED_EXAM)
+
+        if has_finished:
+            is_active = False
+            flags.clear()
+        else:
+            is_active = len(flags) == 0
 
         students.append(
             {
@@ -102,11 +119,9 @@ def parse_students(
                 "session_uuid": student["sessionUuid"],
                 "status": student["studentStatus"],
                 "is_active": is_active,
-                "is_idle": is_idle,
-                "is_connected": is_connected,
-                "is_waiting_for_auth": is_waiting_for_auth,
-                "is_finished": is_finished,
-                "exam_title": student.get("examTitle", None),
+                "flags": flags,
+                "has_finished": has_finished,
+                "exam_title": exam_title,
             }
         )
 
