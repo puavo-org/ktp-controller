@@ -6,9 +6,9 @@
       "exams": [
         {
           "title": "Integraatiotestikoe1",
-          "active_student_count": 1,
-          "idle_student_count": 0,
-          "gone_student_count": 1
+          "active_students_count": 0,
+          "finished_students_count": 1,
+          "flagged_students_count": 1
         }
       ]
     },
@@ -33,11 +33,9 @@
       {
         "uuid": "396d3178-28df-435f-9124-7debdc55111c",
         "session_uuid": "4fb44768-3193-4e4b-9f3c-e60008362918",
-        "is_active": true,
-        "is_idle": false,
-        "is_connected": true,
-        "is_waiting_for_auth": false,
-        "is_finished": false,
+        "is_active": false,
+        "has_finished": false,
+        "flags": ['waiting-for-auth'],
         "status": "waiting-for-auth-browser",
         "exam_title": "Integraatiotestikoe1"
       },
@@ -45,10 +43,8 @@
         "uuid": "bf0cd3f9-08ef-44cb-8a2a-5e49dba7170d",
         "session_uuid": "e192d05b-38bd-44a9-93ee-124602b6ace0",
         "is_active": false,
-        "is_idle": false,
-        "is_connected": true,
-        "is_waiting_for_auth": false,
-        "is_finished": true,
+        "has_finished": true,
+        "flags": [],
         "status": "exam-finished-by-student",
         "exam_title": "Integraatiotestikoe1"
       }

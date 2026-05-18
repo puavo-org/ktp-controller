@@ -1,5 +1,5 @@
 # Standard library imports
-from typing import List, Literal
+from typing import List, Literal, Set
 
 # Third-party imports
 import pydantic
@@ -55,26 +55,39 @@ class _Student(ktp_controller.pydantic.BaseModel):
     session_uuid: pydantic.StrictStr = Field(
         examples=["4fb44768-3193-4e4b-9f3c-e60008362918"]
     )
-    is_active: pydantic.StrictBool = Field(examples=[True])
-    is_idle: pydantic.StrictBool = Field(examples=[False])
-    is_connected: pydantic.StrictBool = Field(examples=[True])
-    is_waiting_for_auth: pydantic.StrictBool = Field(examples=[False])
-    is_finished: pydantic.StrictBool = Field(examples=[False])
+    is_active: pydantic.StrictBool = Field(
+        examples=[True, False],
+        description="Is the student actively doing the exam. Active students do not have any flags.",
+    )
     status: pydantic.StrictStr = Field(examples=["waiting-for-auth-browser"])
     exam_title: pydantic.StrictStr | None = Field(examples=["Odotusaulakoe"])
+    has_finished: pydantic.StrictBool = Field(
+        examples=[True, False],
+        description="Has the student finished the exam. Finished students do not have any flags.",
+    )
+    flags: Set[ktp_controller.schemas.StudentFlag] = Field(
+        examples=[
+            [ktp_controller.schemas.StudentFlag.IDLE],
+            [
+                ktp_controller.schemas.StudentFlag.DISCONNECTED,
+                ktp_controller.schemas.StudentFlag.UNDEFINED_EXAM,
+            ],
+        ],
+        description="Contains only unique values.",
+    )
 
 
 class _Abitti2ExamStats(ktp_controller.pydantic.BaseModel):
     title: pydantic.StrictStr = Field(examples=["Odotusaulakoe"])
-    active_student_count: ktp_controller.pydantic.StrictNonNegativeInt = Field(
-        ..., description="How many students are active in the exam", examples=[1]
+    active_students_count: ktp_controller.pydantic.StrictNonNegativeInt = Field(
+        ..., description="How many students are active in the exam.", examples=[1]
     )
-    idle_student_count: ktp_controller.pydantic.StrictNonNegativeInt = Field(
-        ..., description="How many students are idle in the exam", examples=[0]
+    finished_students_count: ktp_controller.pydantic.StrictNonNegativeInt = Field(
+        ..., description="How many students have finished the exam", examples=[0]
     )
-    gone_student_count: ktp_controller.pydantic.StrictNonNegativeInt = Field(
+    flagged_students_count: ktp_controller.pydantic.StrictNonNegativeInt = Field(
         ...,
-        description="How many students are gone in a way or another, e.g. disconnected, finished, waiting reauth, etc.",
+        description="How many students have been flagged as having some kind of issue, e.g. disconnected, idle, waiting for authorization, etc.",
         examples=[1],
     )
 

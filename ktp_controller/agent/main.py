@@ -994,9 +994,9 @@ class Agent:
             exam_stats.append(
                 {
                     "title": exam["title"],
-                    "active_student_count": 0,
-                    "idle_student_count": 0,
-                    "gone_student_count": 0,
+                    "active_students_count": 0,
+                    "finished_students_count": 0,
+                    "flagged_students_count": 0,
                 }
             )
 
@@ -1004,23 +1004,25 @@ class Agent:
 
         for student in self.__last_received_students:
             exam_title = student["exam_title"]
-            try:
-                stats = exam_stats_by_title[exam_title]
-            except KeyError:
-                # Abitti2 reported a student with exam title which
-                # does not exist! So, we cannot give out reliable exam
-                # stats.
-                _LOGGER.error(
-                    "Abitti2 reported there's a student in exam %r, but Abitti2 has NOT reported such exam actually exists!",
-                    exam_title,
-                )
-                return None
-            if student["is_active"]:
-                stats["active_student_count"] += 1
-            elif student["is_idle"]:
-                stats["idle_student_count"] += 1
+            if exam_title is not None:
+                try:
+                    stats = exam_stats_by_title[exam_title]
+                except KeyError:
+                    # Abitti2 reported a student with exam title which
+                    # does not exist! So, we cannot give out reliable exam
+                    # stats.
+                    _LOGGER.error(
+                        "Abitti2 reported there's a student in exam %r, but Abitti2 has NOT reported such exam actually exists!",
+                        exam_title,
+                    )
+                    return None
+            if student["has_finished"]:
+                stats["finished_students_count"] += 1
             else:
-                stats["gone_student_count"] += 1
+                if len(student["flags"]) == 0:
+                    stats["active_students_count"] += 1
+                else:
+                    stats["flagged_students_count"] += 1
 
         return exam_stats
 
