@@ -1,6 +1,7 @@
 # Standard library imports
 import argparse
 import asyncio
+import collections
 import contextlib
 import datetime
 import enum
@@ -10,6 +11,7 @@ import os
 import os.path
 import pathlib
 import signal
+import statistics
 import sys
 import time
 import typing
@@ -134,6 +136,7 @@ class Agent:
         self.__last_received_answer_count = None
         self.__last_cold_reset_time: datetime.datetime | None = None
 
+        self.__prev_connection_durations = collections.defaultdict(lambda: [])
         self.__connection_stats: typing.Dict[
             Component,
             ktp_controller.agent.stats.ConnectionStats,
@@ -1021,6 +1024,49 @@ class Agent:
 
         return exam_stats
 
+    def __get_websocket_stats(self, component: Component, utcnow) -> dict:
+        component = Component(component)
+
+        try:
+            stats = self.__connection_stats[component]
+        except KeyError:
+            connection_duration_current = None
+            connection_duration_mean = None
+            connection_duration_stdev = None
+            connection_count = 0
+        else:
+            connection_duration_current = (utcnow - stats.connected_at).total_seconds()
+            connection_durations = [
+                connection_duration_current
+            ] + self.__prev_connection_durations[component]
+            connection_duration_mean = statistics.mean(connection_durations)
+            if len(connection_durations) > 1:
+                connection_duration_stdev = statistics.stdev(connection_durations)
+            else:
+                connection_duration_stdev = None
+            connection_count = len(connection_durations)
+
+        return {
+            "connection_duration_current": connection_duration_current,
+            "connection_duration_mean": connection_duration_mean,
+            "connection_duration_stdev": connection_duration_stdev,
+            "connection_count": connection_count,
+        }
+
+    def __get_stats(self) -> dict:
+        utcnow = ktp_controller.utils.utcnow()
+
+        stats = {}
+
+        for key_prefix, name in zip(
+            ("abitti2", "api", "examomatic"),
+            (Component.ABITTI2, Component.API, Component.EXAMOMATIC),
+        ):
+            key = f"{key_prefix}_websocket_stats"
+            stats[key] = self.__get_websocket_stats(name, utcnow)
+
+        return stats
+
     async def __send_status_report(self):
         try:
             supervisor_passphrase = (
@@ -1074,6 +1120,12 @@ class Agent:
             _LOGGER.exception("Failed to get exam stats")
             exam_stats = None
 
+        try:
+            ktp_controller_stats = self.__get_stats()
+        except Exception:
+            _LOGGER.exception("Failed to get KTP Controller stats")
+            ktp_controller_stats = None
+
         status_report = {
             "created_at": utcnow,
             "abitti2": {
@@ -1098,6 +1150,7 @@ class Agent:
                 "is_auto_control_enabled": self.__is_auto_control_enabled,
                 "cached_files": ktp_controller.files.get_stats(),
                 "current_exam_package": current_exam_package,
+                "stats": ktp_controller_stats,
             },
             "os": {
                 "stats": ktp_controller.os.get_stats(),
@@ -1244,6 +1297,12 @@ class Agent:
                 finally:
                     if name in self.__connection_stats:
                         _LOGGER.info("Websocket connection to %r was closed.", url)
+                        self.__prev_connection_durations[name].append(
+                            (
+                                ktp_controller.utils.utcnow()
+                                - self.__connection_stats[name].connected_at
+                            ).total_seconds()
+                        )
                     self.__connection_stats.pop(name, None)
 
     async def __maintain_websocket_connection_to_api(self):

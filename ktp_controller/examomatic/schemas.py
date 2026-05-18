@@ -102,16 +102,53 @@ class _Abitti2(ktp_controller.pydantic.BaseModel):
     students: List[_Student] | None
 
 
+class _WebsocketStats(ktp_controller.pydantic.BaseModel):
+    connection_duration_current: (
+        ktp_controller.pydantic.StrictNonNegativeFloat | None
+    ) = Field(
+        description="Current connection duration in seconds. Null means there's no connection at the moment."
+    )
+    connection_duration_mean: ktp_controller.pydantic.StrictNonNegativeFloat | None = (
+        Field(
+            description="Mean connection duration in seconds since the program start. Null means there has been no connections yet."
+        )
+    )
+    connection_duration_stdev: ktp_controller.pydantic.StrictNonNegativeFloat | None = (
+        Field(
+            description="Standard deviation of all connection durations in seconds since the program start. Null means there has been no connections yet."
+        )
+    )
+    connection_count: ktp_controller.pydantic.StrictNonNegativeInt = Field(
+        description="Number of connections since the program start."
+    )
+
+
+class _KTPControllerStats(ktp_controller.pydantic.BaseModel):
+    abitti2_websocket_stats: _WebsocketStats = Field(
+        description="Abitti2 websocket connection statistics"
+    )
+    api_websocket_stats: _WebsocketStats = Field(
+        description="Internal API websocket connection statistics"
+    )
+    examomatic_websocket_stats: _WebsocketStats = Field(
+        description="Exam-O-Matic websocket connection statistics"
+    )
+
+
 class _KTPController(ktp_controller.pydantic.BaseModel):
     version: Literal[VERSION] = VERSION
     started_at: ktp_controller.pydantic.DateTime = Field(
-        examples=["2026-05-03T16:28:51.975+0000"]
+        description="When the program has started.",
+        examples=["2026-05-03T16:28:51.975+0000"],
     )
     is_auto_control_enabled: pydantic.StrictBool = Field(examples=[True])
     cached_files: ktp_controller.schemas.FileStats
     current_exam_package: _ExamPackage | None
     settings: ktp_controller.settings.Settings = Field(
         description="Effective runtime configuation of KTP Controller"
+    )
+    stats: _KTPControllerStats | None = Field(
+        description="All stats are reset when the program starts. If null, there was an error gathering the stats."
     )
 
 

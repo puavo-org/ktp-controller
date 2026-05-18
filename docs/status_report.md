@@ -95,14 +95,15 @@ All fields are always present.
 
 All fields are always present.
 
-| Field                     | Type                                  | Description                                      | Example                          | Notes             |
-| ------------------------- | ------------------------------------- | ------------------------------------------------ | -------------------------------- | ----------------- |
-| `version`                 | `string`                              |                                                  |                                  | const: `0.6.0rc1` |
-| `started_at`              | `datetime`                            |                                                  | `"2026-05-03T16:28:51.975+0000"` |                   |
-| `is_auto_control_enabled` | `boolean`                             |                                                  | `true`                           |                   |
-| `cached_files`            | [FileStats](#filestats)               |                                                  |                                  |                   |
-| `current_exam_package`    | [ExamPackage](#exampackage) or `null` |                                                  |                                  |                   |
-| `settings`                | [Settings](#settings)                 | Effective runtime configuation of KTP Controller |                                  |                   |
+| Field                     | Type                                                | Description                                                                                   | Example                          | Notes             |
+| ------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------- | ----------------- |
+| `version`                 | `string`                                            |                                                                                               |                                  | const: `0.6.0rc1` |
+| `started_at`              | `datetime`                                          | When the program has started.                                                                 | `"2026-05-03T16:28:51.975+0000"` |                   |
+| `is_auto_control_enabled` | `boolean`                                           |                                                                                               | `true`                           |                   |
+| `cached_files`            | [FileStats](#filestats)                             |                                                                                               |                                  |                   |
+| `current_exam_package`    | [ExamPackage](#exampackage) or `null`               |                                                                                               |                                  |                   |
+| `settings`                | [Settings](#settings)                               | Effective runtime configuation of KTP Controller                                              |                                  |                   |
+| `stats`                   | [KTPControllerStats](#ktpcontrollerstats) or `null` | All stats are reset when the program starts. If null, there was an error gathering the stats. |                                  |                   |
 
 #### FileStats
 
@@ -165,6 +166,27 @@ All fields are always present.
 | `db_path`                                          | `string`  |             |         |       |
 | `abitti2_allow_students_to_use_browsers`           | `boolean` |             |         |       |
 | `abitti2_change_student_access_code_automatically` | `boolean` |             |         |       |
+
+#### KTPControllerStats
+
+All fields are always present.
+
+| Field                        | Type                              | Description                                  | Example | Notes |
+| ---------------------------- | --------------------------------- | -------------------------------------------- | ------- | ----- |
+| `abitti2_websocket_stats`    | [WebsocketStats](#websocketstats) | Abitti2 websocket connection statistics      |         |       |
+| `api_websocket_stats`        | [WebsocketStats](#websocketstats) | Internal API websocket connection statistics |         |       |
+| `examomatic_websocket_stats` | [WebsocketStats](#websocketstats) | Exam-O-Matic websocket connection statistics |         |       |
+
+##### WebsocketStats
+
+All fields are always present.
+
+| Field                         | Type               | Description                                                                                                                      | Example | Notes        |
+| ----------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------ |
+| `connection_duration_current` | `number` or `null` | Current connection duration in seconds. Null means there's no connection at the moment.                                          |         | minimum: `0` |
+| `connection_duration_mean`    | `number` or `null` | Mean connection duration in seconds since the program start. Null means there has been no connections yet.                       |         | minimum: `0` |
+| `connection_duration_stdev`   | `number` or `null` | Standard deviation of all connection durations in seconds since the program start. Null means there has been no connections yet. |         | minimum: `0` |
+| `connection_count`            | `integer`          | Number of connections since the program start.                                                                                   |         | minimum: `0` |
 
 ### OS
 
