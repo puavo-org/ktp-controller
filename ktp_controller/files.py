@@ -1,6 +1,7 @@
 # Standard library imports
 import datetime
 import enum
+import glob
 import logging
 import os.path
 import pathlib
@@ -99,6 +100,37 @@ def get_local_dirpath(local_filepath_type: LocalFilepathType, dirname: str) -> s
         pass
 
     return dirpath
+
+
+def glob_local_filepath(
+    local_filepath_type: LocalFilepathType, dirname: str, filestem_pattern: str
+) -> [str]:
+    if os.path.sep in filestem_pattern:
+        raise ValueError("invalid pattern")
+
+    LocalFilepathType(local_filepath_type)
+
+    if local_filepath_type == LocalFilepathType.EXAM_FILE:
+        basedir = _EXAM_FILE_DIR
+        ext = ".mex"
+    elif local_filepath_type == LocalFilepathType.EXAM_PACKAGE:
+        basedir = _EXAM_PACKAGE_DIR
+        ext = ".zip"
+    elif local_filepath_type == LocalFilepathType.ANSWERS_FILE:
+        basedir = _ANSWERS_FILE_DIR
+        ext = ".meb"
+    elif local_filepath_type == LocalFilepathType.ORPHAN_ANSWERS_FILE:
+        basedir = _ORPHAN_ANSWERS_FILE_DIR
+        ext = ".meb"
+    else:
+        raise ValueError("invalid local_filepath_type")
+
+    dirpath = os.path.join(basedir, dirname)
+
+    return [
+        os.path.join(dirpath, f)
+        for f in glob.glob(f"{filestem_pattern}{ext}", root_dir=dirpath)
+    ]
 
 
 def get_local_filepath(
