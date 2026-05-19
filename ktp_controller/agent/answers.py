@@ -43,6 +43,29 @@ def _mark_file_archived(filepath: str | pathlib.Path) -> None:
     _write_archive_file(f"{filepath}.archived")
 
 
+def _cleanup_files():
+    try:
+        deleted_answers_files = ktp_controller.files.cleanup_old_answers_files()
+    except Exception:
+        # cleanup_old_answers_files is best-effort; it deletes
+        # everything it can and raises exceptions afterwards.
+        _LOGGER.exception("Failed to cleanup some old answers files")
+    else:
+        _LOGGER.info("Deleted %d old answers files", len(deleted_answers_files))
+
+    deleted_exam_package_external_ids: set = set()
+    try:
+        ktp_controller.files.cleanup_archived_exam_packages(
+            deleted_exam_package_external_ids=deleted_exam_package_external_ids
+        )
+    except Exception:
+        # cleanup_archived_exam_packages is best-effort; it deletes
+        # everything it can and raises exceptions afterwards.
+        _LOGGER.exception("Failed to cleanup some old exam packages")
+
+    _LOGGER.info("Deleted %d old exam packages", len(deleted_exam_package_external_ids))
+
+
 async def transfer_answers(
     *,
     exam_package_external_id: str | None,
@@ -71,26 +94,7 @@ async def transfer_answers(
             suffix,
         )
 
-    try:
-        deleted_answers_files = ktp_controller.files.cleanup_old_answers_files()
-    except Exception:
-        # cleanup_old_answers_files is best-effort; it deletes
-        # everything it can and raises exceptions afterwards.
-        _LOGGER.exception("Failed to cleanup some old answers files")
-    else:
-        _LOGGER.info("Deleted %d old answers files", len(deleted_answers_files))
-
-    deleted_exam_package_external_ids: set = set()
-    try:
-        ktp_controller.files.cleanup_archived_exam_packages(
-            deleted_exam_package_external_ids=deleted_exam_package_external_ids
-        )
-    except Exception:
-        # cleanup_archived_exam_packages is best-effort; it deletes
-        # everything it can and raises exceptions afterwards.
-        _LOGGER.exception("Failed to cleanup some old exam packages")
-
-    _LOGGER.info("Deleted %d old exam packages", len(deleted_exam_package_external_ids))
+    _cleanup_files()
 
     sha256sum = await ktp_controller.abitti2.client.download_answers_file(
         answers_file_path,
