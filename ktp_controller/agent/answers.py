@@ -145,6 +145,12 @@ async def transfer_answers(
         _LOGGER.warning("Orphan answers file cannot be uploaded: %r", answers_file_path)
         return
 
+    if _is_file_archived(answers_file_path):
+        _LOGGER.info(
+            "Answer file %r has already been uploaded and archived.", answers_file_path
+        )
+        return
+
     await ktp_controller.examomatic.client.upload_answers_file(
         exam_package_external_id=exam_package_external_id,
         filepath=answers_file_path,
