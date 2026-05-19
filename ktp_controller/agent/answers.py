@@ -70,19 +70,11 @@ def _cleanup_files():
     _LOGGER.info("Deleted %d old exam packages", len(deleted_exam_package_external_ids))
 
 
-async def transfer_answers(
+async def _download_answers_file(
     *,
     exam_package_external_id: str | None,
     is_final: ktp_controller.examomatic.client.IsFinal,
-) -> None:
-    """Download answers from Abitti2 and upload them to Exam-O-Matic.
-
-    If exam_package_external_id is None the answers are saved locally as
-    orphan files (they cannot be uploaded because Exam-O-Matic requires a
-    known exam package).
-    """
-    start_time_monotonic = time.monotonic()
-
+) -> (str, str):
     suffix = ktp_controller.utils.utcnow_str() + ("_final" if is_final else "")
 
     if exam_package_external_id is None:
@@ -98,12 +90,30 @@ async def transfer_answers(
             suffix,
         )
 
-    _cleanup_files()
-
     sha256sum = await ktp_controller.abitti2.client.download_answers_file(
         answers_file_path,
         timeout=(6.1, 200),
     )
+
+    return answers_file_path, sha256sum
+
+
+async def transfer_answers(
+    *,
+    exam_package_external_id: str | None,
+    is_final: ktp_controller.examomatic.client.IsFinal,
+) -> None:
+    """Download answers from Abitti2 and upload them to Exam-O-Matic.
+
+    If exam_package_external_id is None the answers are saved locally as
+    orphan files (they cannot be uploaded because Exam-O-Matic requires a
+    known exam package).
+    """
+    start_time_monotonic = time.monotonic()
+
+    _cleanup_files()
+
+    answers_file_path, sha256sum = await _download_answers_file()
 
     if exam_package_external_id is None:
         _LOGGER.warning("Orphan answers file cannot be uploaded: %r", answers_file_path)
