@@ -43,6 +43,10 @@ def _mark_file_archived(filepath: str | pathlib.Path) -> None:
     _write_archive_file(f"{filepath}.archived")
 
 
+def _is_file_archived(filepath: str | pathlib.Path) -> bool:
+    return os.path.exists(f"{filepath}.archived")
+
+
 def _cleanup_files():
     try:
         deleted_answers_files = ktp_controller.files.cleanup_old_answers_files()
