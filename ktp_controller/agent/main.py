@@ -325,8 +325,7 @@ class Agent:
                 self.__transfer_non_final_answers_periodically(current_exam_package)
             )
             _LOGGER.info(
-                "Started to transfer exam package '%s' answers files from Abitti2 to Exam-O-Matic periodically (approx. once per %d seconds).",
-                current_exam_package["external_id"],
+                "Started periodic (approx. once per %d seconds) non-final answer transfer task.",
                 self.__approx_answer_transfer_interval_sec,
             )
 
@@ -334,8 +333,10 @@ class Agent:
         self, current_exam_package: typing.Dict[str, typing.Any]
     ):
         if self.__answer_transfer_task is None:
-            _LOGGER.error("Cannot stop answer transfer task, because it's not running!")
+            _LOGGER.info("Periodic non-final answer transfer task is not running.")
             return
+
+        _LOGGER.info("Stopping periodic non-final answer transfer task...")
 
         self.__answer_transfer_task.cancel()
         try:
@@ -346,14 +347,9 @@ class Agent:
             with contextlib.suppress(asyncio.CancelledError, _UnexpectedCancel):
                 await self.__answer_transfer_task
         except Exception:
-            _LOGGER.exception(
-                "Periodic answer transfer from Abitti2 to Exam-O-Matic failed: %s"
-            )
+            _LOGGER.exception("Periodic non-final answer transfer task failed")
         finally:
-            _LOGGER.info(
-                "Stopped periodic exam package '%s' answers file transfers from Abitti2 to Exam-O-Matic.",
-                current_exam_package["external_id"],
-            )
+            _LOGGER.info("Stopped periodic non-final answer transfer task.")
             self.__answer_transfer_task = None
 
     async def __start_current_exam_package(
