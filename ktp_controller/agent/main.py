@@ -392,6 +392,7 @@ class Agent:
         self.__state = state
         self.__answer_transfer_task = None
         self.__refresh_exams_lock = asyncio.Lock()
+        self.__work_on_current_exam_package_lock = asyncio.Lock()
 
         self.__approx_api_ping_interval_sec = approx_api_ping_interval_sec
         self.__approx_api_status_report_interval_sec = (
@@ -764,8 +765,18 @@ class Agent:
                     )
 
     async def __work_on_current_exam_package(self, *, trigger: Trigger) -> bool:
-        utcnow = ktp_controller.utils.utcnow()
         trigger = Trigger(trigger)  # Raises ValueError if trigger is not a Trigger.
+        if (
+            trigger == Trigger.TIME
+            and self.__work_on_current_exam_package_lock.locked()
+        ):
+            return False
+        async with self.__work_on_current_exam_package_lock:
+            await self.__work_on_current_exam_package_locked(trigger=trigger)
+
+    async def __work_on_current_exam_package_locked(self, *, trigger: Trigger) -> bool:
+        _LOGGER.info("Working on the current exam package.")
+        utcnow = ktp_controller.utils.utcnow()
 
         if self.__do_crash:
             _LOGGER.fatal("CRASH!")
