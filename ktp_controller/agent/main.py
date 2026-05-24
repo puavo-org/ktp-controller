@@ -90,6 +90,7 @@ class Agent:
         approx_api_ping_interval_sec: int = 5,
         approx_api_status_report_interval_sec: int = 30,
         approx_examomatic_ping_interval_sec: int = SETTINGS.examomatic_ping_interval_sec,
+        approx_examomatic_min_status_report_interval_sec: int = SETTINGS.examomatic_min_status_report_interval_sec,
         approx_reconnect_timeout_sec: int = 5,
         approx_answer_transfer_interval_sec: int = SETTINGS.answer_transfer_interval_sec,
         approx_refresh_exams_interval_sec: int = SETTINGS.refresh_exams_interval_sec,
@@ -103,12 +104,16 @@ class Agent:
         self.__answer_transfer_task = None
         self.__refresh_exams_lock = asyncio.Lock()
         self.__work_on_current_exam_package_lock = asyncio.Lock()
+        self.__last_status_report_sent_to_examomatic_at = None
 
         self.__approx_api_ping_interval_sec = approx_api_ping_interval_sec
         self.__approx_api_status_report_interval_sec = (
             approx_api_status_report_interval_sec
         )
         self.__approx_examomatic_ping_interval_sec = approx_examomatic_ping_interval_sec
+        self.__approx_examomatic_min_status_report_interval_sec = (
+            approx_examomatic_min_status_report_interval_sec
+        )
         self.__approx_reconnect_timeout_sec = approx_reconnect_timeout_sec
         self.__approx_answer_transfer_interval_sec = approx_answer_transfer_interval_sec
         self.__approx_refresh_exams_interval_sec = approx_refresh_exams_interval_sec
@@ -992,8 +997,9 @@ class Agent:
                 "archived_at": current_exam_package["archived_at"],
             }
 
+        utcnow = ktp_controller.utils.utcnow()
         status_report = {
-            "created_at": ktp_controller.utils.utcnow(),
+            "created_at": utcnow,
             "abitti2": {
                 "answer_count": self.__last_received_answer_count,
                 "domain": domain,
@@ -1016,12 +1022,20 @@ class Agent:
         }
 
         try:
-            await ktp_controller.examomatic.client.send_status_report(status_report)
-            status_report["reported_at"] = ktp_controller.utils.utcnow_str()
-            _LOGGER.debug("sent status report to Exam-O-Matic")
+            if (
+                self.__last_status_report_sent_to_examomatic_at is None
+                or (
+                    utcnow - self.__last_status_report_sent_to_examomatic_at
+                ).total_seconds()
+                > self.__approx_examomatic_min_status_report_interval_sec
+            ):
+                await ktp_controller.examomatic.client.send_status_report(status_report)
+                status_report["reported_at"] = utcnow
+                self.__last_status_report_sent_to_examomatic_at = utcnow
+                _LOGGER.debug("sent status report to Exam-O-Matic")
         except Exception:
             _LOGGER.exception("failed to send status report to Exam-O-Matic")
-            status_report["reported_at"] = None
+        status_report.setdefault("reported_at", None)
 
         await ktp_controller.api.client.send_status_report(status_report)
         _LOGGER.debug("sent status report to KTP Controller API")
