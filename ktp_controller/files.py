@@ -28,7 +28,7 @@ _EXAM_PACKAGE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-packa
 
 # All answers files belonging to a known exam package will be stored here like so:
 # ~/.local/share/ktp-controller/answers-files/EXAM_PACKAGE_UUID/answers-file_TIMESTAMP.meb
-_ANSWERS_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/answers-files")
+ANSWERS_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/answers-files")
 
 # All orphan answers files, i.e. files downloaded from Abitti2, but
 # which could not be reliably linked to any exam package, will be
@@ -55,7 +55,7 @@ def create_user_friendly_data_dir():
     for symlink_target in (
         _EXAM_FILE_DIR,
         _EXAM_PACKAGE_DIR,
-        _ANSWERS_FILE_DIR,
+        ANSWERS_FILE_DIR,
         _ORPHAN_ANSWERS_FILE_DIR,
         _LOGS_DIR,
     ):
@@ -86,7 +86,7 @@ def get_local_dirpath(local_filepath_type: LocalFilepathType, dirname: str) -> s
     elif local_filepath_type == LocalFilepathType.EXAM_PACKAGE:
         basedir = _EXAM_PACKAGE_DIR
     elif local_filepath_type == LocalFilepathType.ANSWERS_FILE:
-        basedir = _ANSWERS_FILE_DIR
+        basedir = ANSWERS_FILE_DIR
     elif local_filepath_type == LocalFilepathType.ORPHAN_ANSWERS_FILE:
         basedir = _ORPHAN_ANSWERS_FILE_DIR
     else:
@@ -117,7 +117,7 @@ def glob_local_filepath(
         basedir = _EXAM_PACKAGE_DIR
         ext = ".zip"
     elif local_filepath_type == LocalFilepathType.ANSWERS_FILE:
-        basedir = _ANSWERS_FILE_DIR
+        basedir = ANSWERS_FILE_DIR
         ext = ".meb"
     elif local_filepath_type == LocalFilepathType.ORPHAN_ANSWERS_FILE:
         basedir = _ORPHAN_ANSWERS_FILE_DIR
@@ -144,7 +144,7 @@ def get_local_filepath(
         basedir = _EXAM_PACKAGE_DIR
         ext = ".zip"
     elif local_filepath_type == LocalFilepathType.ANSWERS_FILE:
-        basedir = _ANSWERS_FILE_DIR
+        basedir = ANSWERS_FILE_DIR
         ext = ".meb"
     elif local_filepath_type == LocalFilepathType.ORPHAN_ANSWERS_FILE:
         basedir = _ORPHAN_ANSWERS_FILE_DIR
@@ -167,7 +167,7 @@ def get_stats() -> ktp_controller.schemas.FileStats:
 
     for key, dirpath in zip(
         ["exams", "exam_packages", "answers"],
-        [_EXAM_FILE_DIR, _EXAM_PACKAGE_DIR, _ANSWERS_FILE_DIR],
+        [_EXAM_FILE_DIR, _EXAM_PACKAGE_DIR, ANSWERS_FILE_DIR],
     ):
         items = data.setdefault(key, [])
         for path, dirnames, filenames in os.walk(dirpath):
@@ -246,7 +246,7 @@ def find_old_answers_files(
     """
 
     for basedirpath, prefix, suffix in (
-        (_ANSWERS_FILE_DIR, "answers-file_", ".meb"),
+        (ANSWERS_FILE_DIR, "answers-file_", ".meb"),
         (_ORPHAN_ANSWERS_FILE_DIR, "orphan-answers-file_", ".meb"),
     ):
         for p in _find_old_answers_files(
