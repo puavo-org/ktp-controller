@@ -6,7 +6,7 @@ import subprocess
 import typing
 
 # Third-party imports
-from pydantic import field_validator, PositiveInt, StrictBool
+from pydantic import field_validator, NonNegativeInt, PositiveInt, StrictBool
 from pydantic.fields import FieldInfo
 from pydantic_settings import (
     BaseSettings,
@@ -81,6 +81,7 @@ class Settings(BaseSettings):
     examomatic_password_file: str
     examomatic_use_tls: StrictBool = True
     examomatic_ping_interval_sec: PositiveInt = 30
+    examomatic_min_status_report_interval_sec: NonNegativeInt = 30
     answer_transfer_interval_sec: PositiveInt = 300
     refresh_exams_interval_sec: PositiveInt = 180
     domain: str
