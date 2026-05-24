@@ -14,7 +14,8 @@ _LOGGER = logging.getLogger(__file__)
 
 
 __all__ = [
-    "transfer_answers",
+    "download_answers_file",
+    "upload_answers_file",
 ]
 
 
@@ -70,11 +71,18 @@ def _cleanup_files():
     _LOGGER.info("Deleted %d old exam packages", len(deleted_exam_package_external_ids))
 
 
-async def _download_answers_file(
+async def download_answers_file(
     *,
     exam_package_external_id: str | None,
     is_final: ktp_controller.examomatic.client.IsFinal,
 ) -> (str, str):
+    """Download answers from Abitti2.
+
+    If exam_package_external_id is None the answers are saved locally as
+    orphan files.
+    """
+    _cleanup_files()
+
     suffix = ktp_controller.utils.utcnow_str() + ("_final" if is_final else "")
 
     if exam_package_external_id is None:
@@ -116,47 +124,63 @@ async def _download_answers_file(
             suffix,
         )
 
+    download_start_time_monotonic = time.monotonic()
+
     sha256sum = await ktp_controller.abitti2.client.download_answers_file(
         answers_file_path,
         timeout=(6.1, 200),
     )
 
+    download_duration = time.monotonic() - download_start_time_monotonic
+
+    _LOGGER.info(
+        "Downloaded answers file '%s' from Abitti2 in %.1f seconds.",
+        os.path.basename(answers_file_path),
+        download_duration,
+    )
+
     return answers_file_path, sha256sum
 
 
-async def transfer_answers(
-    *,
-    exam_package_external_id: str | None,
-    is_final: ktp_controller.examomatic.client.IsFinal,
-) -> None:
-    """Download answers from Abitti2 and upload them to Exam-O-Matic.
+async def upload_answers_file(answers_file_path: str) -> bool:
+    p = pathlib.Path(answers_file_path)
+    p.resolve()
 
-    If exam_package_external_id is None the answers are saved locally as
-    orphan files (they cannot be uploaded because Exam-O-Matic requires a
-    known exam package).
-    """
-    start_time_monotonic = time.monotonic()
+    answers_file_path = str(p)
 
-    _cleanup_files()
-
-    answers_file_path, sha256sum = await _download_answers_file()
-
-    if exam_package_external_id is None:
+    if p.parent.name == "unknown":
         _LOGGER.warning("Orphan answers file cannot be uploaded: %r", answers_file_path)
-        return
+        return False
+
+    if p.stat().st_size == 0:
+        _LOGGER.warning("Empty answers file cannot be uploaded: %r", answers_file_path)
+        return False
 
     if _is_file_archived(answers_file_path):
-        _LOGGER.info(
-            "Answer file %r has already been uploaded and archived.", answers_file_path
-        )
-        return
+        return False
+
+    if p.name.endswith("_final.meb"):
+        is_final = ktp_controller.examomatic.client.IsFinal.TRUE
+    else:
+        is_final = ktp_controller.examomatic.client.IsFinal.FALSE
+
+    upload_start_time_monotonic = time.monotonic()
+
+    _LOGGER.info("Uploading answers file %r to Exam-O-Matic...", answers_file_path)
 
     await ktp_controller.examomatic.client.upload_answers_file(
-        exam_package_external_id=exam_package_external_id,
+        exam_package_external_id=p.parent.name,
         filepath=answers_file_path,
-        sha256sum=sha256sum,
         is_final=is_final,
         timeout=(60.1, 600),
+    )
+
+    upload_duration = time.monotonic() - upload_start_time_monotonic
+
+    _LOGGER.info(
+        "Uploaded answers file '%s' to Exam-O-Matic in %.1f seconds.",
+        os.path.basename(answers_file_path),
+        upload_duration,
     )
 
     try:
@@ -166,9 +190,9 @@ async def transfer_answers(
             "Failed to mark answers file %r archived: %s", answers_file_path, exception
         )
 
-    exam_package_dirpath = ktp_controller.files.get_local_dirpath(
-        ktp_controller.files.LocalFilepathType.EXAM_PACKAGE, exam_package_external_id
-    )
+    _LOGGER.info("Archived answers file %r.", os.path.basename(answers_file_path))
+
+    exam_package_dirpath = str(p.parent)
 
     try:
         _mark_dir_archived(exam_package_dirpath)
@@ -179,10 +203,6 @@ async def transfer_answers(
             exception,
         )
 
-    duration = time.monotonic() - start_time_monotonic
+    _LOGGER.info("Archived exam package directory %r.", exam_package_dirpath)
 
-    _LOGGER.info(
-        "Transferred answers file '%s' from Abitti2 to Exam-O-Matic in %.1f seconds.",
-        os.path.basename(answers_file_path),
-        duration,
-    )
+    return True
