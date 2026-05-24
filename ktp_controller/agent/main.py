@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import os.path
+import pathlib
 import signal
 import sys
 import time
@@ -92,7 +93,7 @@ class Agent:
         approx_examomatic_ping_interval_sec: int = SETTINGS.examomatic_ping_interval_sec,
         approx_examomatic_min_status_report_interval_sec: int = SETTINGS.examomatic_min_status_report_interval_sec,
         approx_reconnect_timeout_sec: int = 5,
-        approx_answer_transfer_interval_sec: int = SETTINGS.answer_transfer_interval_sec,
+        approx_answers_download_interval_sec: int = SETTINGS.answer_transfer_interval_sec,
         approx_refresh_exams_interval_sec: int = SETTINGS.refresh_exams_interval_sec,
         state: ktp_controller.agent.state.AgentState,
         is_testbed_mode: bool = False,
@@ -101,7 +102,7 @@ class Agent:
         self.__do_crash = False
         self.__started_at = None
         self.__state = state
-        self.__answer_transfer_task = None
+        self.__nonfinal_answers_download_task = None
         self.__refresh_exams_lock = asyncio.Lock()
         self.__work_on_current_exam_package_lock = asyncio.Lock()
         self.__last_status_report_sent_to_examomatic_at = None
@@ -115,7 +116,9 @@ class Agent:
             approx_examomatic_min_status_report_interval_sec
         )
         self.__approx_reconnect_timeout_sec = approx_reconnect_timeout_sec
-        self.__approx_answer_transfer_interval_sec = approx_answer_transfer_interval_sec
+        self.__approx_answers_download_interval_sec = (
+            approx_answers_download_interval_sec
+        )
         self.__approx_refresh_exams_interval_sec = approx_refresh_exams_interval_sec
 
         # Abitti2 reports these
@@ -323,40 +326,41 @@ class Agent:
 
         return True
 
-    def __ensure_answer_transfer_task_is_running(
+    def __ensure_nonfinal_answers_download_task_is_running(
         self, current_exam_package: typing.Dict[str, typing.Any]
     ):
-        if self.__answer_transfer_task is None:
-            self.__answer_transfer_task = asyncio.create_task(
-                self.__transfer_non_final_answers_periodically(current_exam_package)
+        if self.__nonfinal_answers_download_task is None:
+            self.__nonfinal_answers_download_task = asyncio.create_task(
+                self.__download_nonfinal_answers(current_exam_package)
             )
             _LOGGER.info(
-                "Started periodic (approx. once per %d seconds) non-final answer transfer task.",
-                self.__approx_answer_transfer_interval_sec,
+                "Started periodic (approx. once per %d seconds) non-final answers download task.",
+                self.__approx_answers_download_interval_sec,
             )
 
-    async def __stop_answer_transfer_task(
+    async def __stop_nonfinal_answers_download_task(
         self, current_exam_package: typing.Dict[str, typing.Any]
     ):
-        if self.__answer_transfer_task is None:
-            _LOGGER.info("Periodic non-final answer transfer task is not running.")
+        if self.__nonfinal_answers_download_task is None:
+            _LOGGER.info("Periodic non-final answers download task is not running.")
             return
 
-        _LOGGER.info("Stopping periodic non-final answer transfer task...")
+        _LOGGER.info("Stopping periodic non-final answers download task...")
 
-        self.__answer_transfer_task.cancel()
+        self.__nonfinal_answers_download_task.cancel()
+
         try:
             # _UnexpectedCancel is expected here because we explicitly
             # cancel the task. This is special case, all other tasks
             # are expected to not be canceled unless shutdown is in
             # progress.
             with contextlib.suppress(asyncio.CancelledError, _UnexpectedCancel):
-                await self.__answer_transfer_task
+                await self.__nonfinal_answers_download_task
         except Exception:
-            _LOGGER.exception("Periodic non-final answer transfer task failed")
+            _LOGGER.exception("Periodic non-final answers download task failed")
         finally:
-            _LOGGER.info("Stopped periodic non-final answer transfer task.")
-            self.__answer_transfer_task = None
+            _LOGGER.info("Stopped periodic non-final answers download task.")
+            self.__nonfinal_answers_download_task = None
 
     async def __start_current_exam_package(
         self,
@@ -429,8 +433,8 @@ class Agent:
             "Archiving current exam package %r...",
             current_exam_package["external_id"],
         )
-        await self.__stop_answer_transfer_task(current_exam_package)
-        await self.__transfer_answers(
+        await self.__stop_nonfinal_answers_download_task(current_exam_package)
+        await self.__download_answers(
             current_exam_package, is_final=ktp_controller.examomatic.client.IsFinal.TRUE
         )
         await ktp_controller.abitti2.client.reset()
@@ -440,7 +444,7 @@ class Agent:
         )
         return True
 
-    async def __transfer_answers(
+    async def __download_answers(
         self,
         current_exam_package: typing.Dict[str, typing.Any],
         is_final: ktp_controller.examomatic.client.IsFinal,
@@ -449,38 +453,38 @@ class Agent:
         status_report = await ktp_controller.api.client.get_last_status_report()
         if status_report is None or status_report["abitti2"]["answer_count"] is None:
             _LOGGER.warning(
-                "I don't know yet if there are answers to transfer, "
+                "I don't know yet if there are answers to download, "
                 "but I won't take the risk of trying to download them from Abitti2, "
                 "because Abitti2 can block indefinitely if there are no answers."
             )
             return
         if status_report["abitti2"]["answer_count"] > 0:
-            await ktp_controller.agent.answers.transfer_answers(
+            await ktp_controller.agent.answers.download_answers_file(
                 exam_package_external_id=current_exam_package["external_id"],
                 is_final=is_final,
             )
         else:
             # If there are no answers, Abitti2 blocks download
             # requests indefinitely.
-            _LOGGER.warning("There are no answers to transfer.")
+            _LOGGER.warning("There are no answers to download.")
 
-    async def __transfer_non_final_answers_periodically(
+    async def __download_nonfinal_answers(
         self, current_exam_package: typing.Dict[str, typing.Any]
     ):
         started = False
-        async with _task("periodic answer transfer"):
+        async with _task("periodic non-final answers download"):
             while not _SHUTDOWN_EVENT.is_set():
                 try:
                     if started:
-                        await asyncio.sleep(self.__approx_answer_transfer_interval_sec)
+                        await asyncio.sleep(self.__approx_answers_download_interval_sec)
                     started = True
-                    await self.__transfer_answers(
+                    await self.__download_answers(
                         current_exam_package,
                         is_final=ktp_controller.examomatic.client.IsFinal.FALSE,
                     )
                 except Exception:
                     _LOGGER.exception(
-                        "Failed to transfer non-final answers from Abitti2 to Exam-O-Matic."
+                        "Failed to download non-final answers from Abitti2."
                     )
 
     async def __work_on_current_exam_package(self, *, trigger: Trigger) -> bool:
@@ -549,7 +553,7 @@ class Agent:
                     # some conflicting actions taken by uninformed
                     # human beings.
                     #
-                    await ktp_controller.agent.answers.transfer_answers(
+                    await ktp_controller.agent.answers.download_answers_file(
                         exam_package_external_id=None,
                         is_final=ktp_controller.examomatic.client.IsFinal.UNKNOWN,
                     )
@@ -661,7 +665,9 @@ class Agent:
 
         state = current_exam_package["state"]
         if state == "running":
-            self.__ensure_answer_transfer_task_is_running(current_exam_package)
+            self.__ensure_nonfinal_answers_download_task_is_running(
+                current_exam_package
+            )
 
         transition = state_transitions[state]
 
@@ -1260,6 +1266,17 @@ class Agent:
                 filepath,
             )
 
+    async def __upload_answers_files(self):
+        answers_file_dir_path = pathlib.Path(ktp_controller.files.ANSWERS_FILE_DIR)
+        for answers_file_path in answers_file_dir_path.glob("*/*.meb"):
+            uploaded = await ktp_controller.agent.answers.upload_answers_file(
+                answers_file_path
+            )
+            if uploaded:
+                # One at a time, this function will be called soon
+                # again.
+                break
+
     async def __refresh_exams(self, *, is_spontaneous: bool):
         _LOGGER.info(
             "Starting %sexam refresh...",
@@ -1295,6 +1312,18 @@ class Agent:
 
         _LOGGER.info("refreshed exams successfully")
 
+    async def __answers_file_upload_task(self):
+        started = False
+        async with _task("answers file upload"):
+            while not _SHUTDOWN_EVENT.is_set():
+                try:
+                    if started:
+                        await asyncio.sleep(30)
+                    started = True
+                    await self.__upload_answers_files()
+                except Exception:
+                    _LOGGER.exception("answers file upload failed")
+
     async def __periodic_refresh_exams(self):
         started = False
         async with _task("periodic exam refresh"):
@@ -1327,6 +1356,7 @@ class Agent:
                 tg.create_task(self.__maintain_websocket_connection_to_abitti2())
                 tg.create_task(self.__maintain_websocket_connection_to_examomatic())
                 tg.create_task(self.__periodic_refresh_exams())
+                tg.create_task(self.__answers_file_upload_task())
 
                 # Keep the main task alive while workers run
                 await asyncio.Event().wait()
