@@ -29,7 +29,7 @@ def test_cleanup_old_answers_files(testdir):
     )
 
     # Monkey-patch for testing purposes.
-    ktp_controller.files._ANSWERS_FILE_DIR = os.path.join(basedir, "answers-files")
+    ktp_controller.files.ANSWERS_FILE_DIR = os.path.join(basedir, "answers-files")
     ktp_controller.files._ORPHAN_ANSWERS_FILE_DIR = os.path.join(
         basedir, "orphan-answers-files"
     )
