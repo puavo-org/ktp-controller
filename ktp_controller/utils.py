@@ -61,14 +61,12 @@ def open_atomic_write(
     encoding: typing.Optional[str] = None,
     do_makedirs: bool = False,
 ):
-    if exclusive:
-        mode = "x"
-    else:
-        mode = "a"  # "a" does not truncate the file rightaway, rename will do it if all succeeds
+    if exclusive and os.path.exists(dest_filepath):
+        raise FileExistsError(dest_filepath)
+
     tmpfilemode = "w"
 
     if encoding is None:
-        mode = f"{mode}b"
         tmpfilemode = f"{tmpfilemode}b"
 
     if do_makedirs:
@@ -79,28 +77,15 @@ def open_atomic_write(
             pass
 
     tmp_dest_filepath = f"{dest_filepath}.ktp_controller_open_atomic_write_tmp"
-    success = False
-    created_dest_file = False
-    created_tmp_file = False
-    pre_exists = os.path.exists(dest_filepath)
     try:
-        with open(dest_filepath, mode, encoding=encoding) as _:
-            created_dest_file = True
-            with open(
-                tmp_dest_filepath, tmpfilemode, encoding=encoding
-            ) as tmp_dest_file:
-                created_tmp_file = True
-                yield tmp_dest_file
-            os.rename(tmp_dest_filepath, dest_filepath)
-        success = True
+        with open(tmp_dest_filepath, tmpfilemode, encoding=encoding) as tmp_dest_file:
+            yield tmp_dest_file
+        os.rename(tmp_dest_filepath, dest_filepath)
     finally:
-        if not success:
-            try:
-                if not pre_exists and created_dest_file:
-                    os.unlink(dest_filepath)
-            finally:
-                if created_tmp_file:
-                    os.unlink(tmp_dest_filepath)
+        try:
+            os.unlink(tmp_dest_filepath)
+        except FileNotFoundError:
+            pass
 
 
 def copy_atomic(src_filepath: str, dest_filepath: str, exclusive: bool = False):
