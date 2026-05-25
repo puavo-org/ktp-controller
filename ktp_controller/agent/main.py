@@ -1619,7 +1619,9 @@ class Agent:
 
     async def __upload_answers_files(self):
         answers_file_dir_path = pathlib.Path(ktp_controller.files.ANSWERS_FILE_DIR)
-        for answers_file_path in answers_file_dir_path.glob("*/*.meb"):
+        for answers_file_path in sorted(
+            answers_file_dir_path.glob("*/*.meb"), key=lambda p: p.name
+        ):
             uploaded = await _upload_answers_file(answers_file_path)
             if uploaded:
                 # One at a time, this function will be called soon
