@@ -1159,7 +1159,9 @@ class Agent:
                         async with asyncio.TaskGroup() as tg:
                             for asyncfunc in asyncfuncs:
                                 tg.create_task(asyncfunc(websock))
-                except Exception:
+                except* _UnexpectedCancel:
+                    raise
+                except* Exception:
                     _LOGGER.exception("Websocket connection to %s has failed!", name)
                 finally:
                     if name in self.__connection_stats:
