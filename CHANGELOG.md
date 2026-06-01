@@ -67,6 +67,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All dependencies have been updated.
 
 
+## [0.4.6] - 2026-05-25
+
+## Fixed
+
+- Ensure answers files are always uploaded in ascending timestamp
+  order, i.e. oldest first.
+
+
 ## [0.4.5] - 2026-05-24
 
 ### Changed
