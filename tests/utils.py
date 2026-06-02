@@ -290,7 +290,7 @@ def assert_exam_scheduling_and_download(
         get_exam_info_status_codes = [
             s for p, s in state["requests"] if p == "/v2/schedules/exam_packages"
         ]
-        if get_exam_info_status_codes[-1] == 200:
+        if get_exam_info_status_codes[-1:] == [200]:
             agent_downloaded_new_exam_info = True
             break
         time.sleep(1)
@@ -410,3 +410,8 @@ def assert_all_answer_uploads_are_successful():
         s for p, s in state["requests"] if p == "/v1/answers/upload"
     ]
     assert all(v == 200 for v in upload_answers_file_status_codes)
+
+
+def assert_examomatic_shutdown():
+    response = asyncio.run(ktp_controller.examomatic.client._post("/mock/shutdown"))
+    assert response.status_code == 200

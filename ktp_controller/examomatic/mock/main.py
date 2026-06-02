@@ -6,6 +6,8 @@ import copy
 import datetime
 import hashlib
 import logging
+import os
+import signal
 import urllib.parse
 import uuid
 
@@ -299,6 +301,19 @@ async def _ktp_controller_websocket(
         tg.create_task(_send_refresh_exams(websock))
 
 
+def trigger_graceful_shutdown():
+    os.kill(os.getpid(), signal.SIGTERM)
+
+
+@APP.post(
+    "/mock/shutdown",
+    response_model=None,
+    status_code=200,
+)
+async def shutdown(background_tasks: fastapi.BackgroundTasks):
+    background_tasks.add_task(trigger_graceful_shutdown)
+
+
 def run() -> int:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -313,6 +328,7 @@ def run() -> int:
         host="127.0.0.1",
         port=args.port,
         reload=False,
+        timeout_graceful_shutdown=1,
     )
 
     return 0
