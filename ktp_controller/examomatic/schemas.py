@@ -157,6 +157,7 @@ class _KTPController(ktp_controller.pydantic.BaseModel):
     is_auto_control_enabled: pydantic.StrictBool = Field(examples=[True])
     cached_files: ktp_controller.schemas.FileStats
     current_exam_package: _ExamPackage | None
+    next_exam_packages: List[_ExamPackage] | None
     settings: ktp_controller.settings.Settings = Field(
         description="Effective runtime configuation of KTP Controller"
     )
