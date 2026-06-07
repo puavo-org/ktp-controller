@@ -87,6 +87,19 @@ class _UnexpectedCancel(Exception):
     pass
 
 
+def _simplify_exam_package(exam_package):
+    return {
+        "uuid": exam_package["external_id"],
+        "scheduled_lock_time": exam_package["lock_time"],
+        "scheduled_start_time": exam_package["start_time"],
+        "scheduled_end_time": exam_package["end_time"],
+        "state": exam_package["state"],
+        "state_changed_at": exam_package["state_changed_at"],
+        "started_at": exam_package["started_at"],
+        "archived_at": exam_package["archived_at"],
+    }
+
+
 class Agent:
     def __init__(
         self,
@@ -1093,26 +1106,26 @@ class Agent:
             abitti2_version = None
 
         try:
-            current_exam_package = (
-                await ktp_controller.api.client.get_current_exam_package()
+            locked_exam_packages = (
+                await ktp_controller.api.client.get_locked_exam_packages()
             )
         except Exception:
-            _LOGGER.exception("failed to get current exam package")
+            _LOGGER.exception("failed to get locked exam packages")
             current_exam_package = None
+            next_exam_packages = None
+        else:
+            if len(locked_exam_packages) == 0:
+                current_exam_package = None
+                next_exam_packages = []
+            else:
+                current_exam_package = locked_exam_packages[0]
+                next_exam_packages = locked_exam_packages[1:]
 
         if current_exam_package is not None:
             # Internal representation of the exam package is more
             # complex, here it's simplified for the status report.
-            current_exam_package = {
-                "uuid": current_exam_package["external_id"],
-                "scheduled_lock_time": current_exam_package["lock_time"],
-                "scheduled_start_time": current_exam_package["start_time"],
-                "scheduled_end_time": current_exam_package["end_time"],
-                "state": current_exam_package["state"],
-                "state_changed_at": current_exam_package["state_changed_at"],
-                "started_at": current_exam_package["started_at"],
-                "archived_at": current_exam_package["archived_at"],
-            }
+            current_exam_package = _simplify_exam_package(current_exam_package)
+            next_exam_packages = [_simplify_exam_package(p) for p in next_exam_packages]
 
         utcnow = ktp_controller.utils.utcnow()
 
@@ -1152,6 +1165,7 @@ class Agent:
                 "is_auto_control_enabled": self.__is_auto_control_enabled,
                 "cached_files": ktp_controller.files.get_stats(),
                 "current_exam_package": current_exam_package,
+                "next_exam_packages": next_exam_packages,
                 "stats": ktp_controller_stats,
             },
             "os": {

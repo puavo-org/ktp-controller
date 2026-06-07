@@ -104,6 +104,7 @@ All fields are always present.
 | `is_auto_control_enabled` | `boolean`                                           |                                                                                               | `true`                           |                   |
 | `cached_files`            | [FileStats](#filestats)                             |                                                                                               |                                  |                   |
 | `current_exam_package`    | [ExamPackage](#exampackage) or `null`               |                                                                                               |                                  |                   |
+| `next_exam_packages`      | (`array` of [ExamPackage](#exampackage)) or `null`  |                                                                                               |                                  |                   |
 | `settings`                | [Settings](#settings)                               | Effective runtime configuation of KTP Controller                                              |                                  |                   |
 | `stats`                   | [KTPControllerStats](#ktpcontrollerstats) or `null` | All stats are reset when the program starts. If null, there was an error gathering the stats. |                                  |                   |
 
