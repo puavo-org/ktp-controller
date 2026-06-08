@@ -79,18 +79,31 @@ class LocalFilepathType(str, enum.Enum):
         return self.value
 
 
-def get_local_dirpath(local_filepath_type: LocalFilepathType, dirname: str) -> str:
+def _get_local_filepath_basedir_and_ext(
+    local_filepath_type: LocalFilepathType,
+) -> typing.Tuple[str, str]:
     LocalFilepathType(local_filepath_type)
+
     if local_filepath_type == LocalFilepathType.EXAM_FILE:
         basedir = _EXAM_FILE_DIR
+        ext = ".mex"
     elif local_filepath_type == LocalFilepathType.EXAM_PACKAGE:
         basedir = _EXAM_PACKAGE_DIR
+        ext = ".zip"
     elif local_filepath_type == LocalFilepathType.ANSWERS_FILE:
         basedir = ANSWERS_FILE_DIR
+        ext = ".meb"
     elif local_filepath_type == LocalFilepathType.ORPHAN_ANSWERS_FILE:
         basedir = _ORPHAN_ANSWERS_FILE_DIR
+        ext = ".meb"
     else:
         raise ValueError("invalid local_filepath_type")
+
+    return basedir, ext
+
+
+def get_local_dirpath(local_filepath_type: LocalFilepathType, dirname: str) -> str:
+    basedir, _ = _get_local_filepath_basedir_and_ext(local_filepath_type)
 
     dirpath = os.path.join(basedir, dirname)
 
@@ -108,22 +121,7 @@ def glob_local_filepath(
     if os.path.sep in filestem_pattern:
         raise ValueError("invalid pattern")
 
-    LocalFilepathType(local_filepath_type)
-
-    if local_filepath_type == LocalFilepathType.EXAM_FILE:
-        basedir = _EXAM_FILE_DIR
-        ext = ".mex"
-    elif local_filepath_type == LocalFilepathType.EXAM_PACKAGE:
-        basedir = _EXAM_PACKAGE_DIR
-        ext = ".zip"
-    elif local_filepath_type == LocalFilepathType.ANSWERS_FILE:
-        basedir = ANSWERS_FILE_DIR
-        ext = ".meb"
-    elif local_filepath_type == LocalFilepathType.ORPHAN_ANSWERS_FILE:
-        basedir = _ORPHAN_ANSWERS_FILE_DIR
-        ext = ".meb"
-    else:
-        raise ValueError("invalid local_filepath_type")
+    basedir, ext = _get_local_filepath_basedir_and_ext(local_filepath_type)
 
     dirpath = os.path.join(basedir, dirname)
 
@@ -136,21 +134,7 @@ def glob_local_filepath(
 def get_local_filepath(
     local_filepath_type: LocalFilepathType, dirname: str, filename_suffix: str
 ) -> str:
-    LocalFilepathType(local_filepath_type)
-    if local_filepath_type == LocalFilepathType.EXAM_FILE:
-        basedir = _EXAM_FILE_DIR
-        ext = ".mex"
-    elif local_filepath_type == LocalFilepathType.EXAM_PACKAGE:
-        basedir = _EXAM_PACKAGE_DIR
-        ext = ".zip"
-    elif local_filepath_type == LocalFilepathType.ANSWERS_FILE:
-        basedir = ANSWERS_FILE_DIR
-        ext = ".meb"
-    elif local_filepath_type == LocalFilepathType.ORPHAN_ANSWERS_FILE:
-        basedir = _ORPHAN_ANSWERS_FILE_DIR
-        ext = ".meb"
-    else:
-        raise ValueError("invalid local_filepath_type")
+    basedir, ext = _get_local_filepath_basedir_and_ext(local_filepath_type)
 
     dirpath = os.path.join(basedir, dirname)
 
