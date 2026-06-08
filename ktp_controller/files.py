@@ -147,6 +147,10 @@ def get_local_filepath(
 
 
 def get_stats() -> ktp_controller.schemas.FileStats:
+    """
+    Archived files and/or directories are not included.
+    """
+
     data = {}
 
     for key, dirpath in zip(
@@ -155,8 +159,14 @@ def get_stats() -> ktp_controller.schemas.FileStats:
     ):
         items = data.setdefault(key, [])
         for path, dirnames, filenames in os.walk(dirpath):
+            if ".archived" in filenames:
+                dirnames.clear()
+                filenames.clear()
+                continue
             for filename in filenames:
                 filepath = os.path.join(path, filename)
+                if os.path.exists(f"{filepath}.archived"):
+                    continue
                 items.append(
                     {
                         "path": filepath,
