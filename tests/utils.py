@@ -373,7 +373,7 @@ def assert_last_status_report_does_not_contain_student_names(*students):
         last_status_report_seen_by_api = asyncio.run(
             ktp_controller.api.client.get_last_status_report()
         )
-        if len(last_status_report_seen_by_api["abitti2"]["students"]) > 1:
+        if len(last_status_report_seen_by_api["abitti2"]["students"]) > 0:
             found_some_students = True
             break
         time.sleep(1)
