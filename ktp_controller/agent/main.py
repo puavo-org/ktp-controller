@@ -963,6 +963,7 @@ class Agent:
                 message, utcnow=received_at
             )
         except ValueError:
+            _LOGGER.exception("Failed to parse students list received from Abitti2")
             self.__last_received_students = None
         else:
             if (
