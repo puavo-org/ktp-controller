@@ -155,7 +155,7 @@ class _KTPController(ktp_controller.pydantic.BaseModel):
         examples=["2026-05-03T16:28:51.975+0000"],
     )
     is_auto_control_enabled: pydantic.StrictBool = Field(examples=[True])
-    cached_files: ktp_controller.schemas.FileStats
+    cached_files: ktp_controller.schemas.CachedFiles
     current_exam_package: _ExamPackage | None
     next_exam_packages: List[_ExamPackage] | None
     settings: ktp_controller.settings.Settings = Field(

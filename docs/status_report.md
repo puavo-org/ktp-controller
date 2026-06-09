@@ -102,23 +102,23 @@ All fields are always present.
 | `version`                 | `string`                                            |                                                                                               |                                  | const: `0.6.0rc1` |
 | `started_at`              | `datetime`                                          | When the program has started.                                                                 | `"2026-05-03T16:28:51.975+0000"` |                   |
 | `is_auto_control_enabled` | `boolean`                                           |                                                                                               | `true`                           |                   |
-| `cached_files`            | [FileStats](#filestats)                             |                                                                                               |                                  |                   |
+| `cached_files`            | [CachedFiles](#cachedfiles)                         |                                                                                               |                                  |                   |
 | `current_exam_package`    | [ExamPackage](#exampackage) or `null`               |                                                                                               |                                  |                   |
 | `next_exam_packages`      | (`array` of [ExamPackage](#exampackage)) or `null`  |                                                                                               |                                  |                   |
 | `settings`                | [Settings](#settings)                               | Effective runtime configuation of KTP Controller                                              |                                  |                   |
 | `stats`                   | [KTPControllerStats](#ktpcontrollerstats) or `null` | All stats are reset when the program starts. If null, there was an error gathering the stats. |                                  |                   |
 
-#### FileStats
+#### CachedFiles
 
 All fields are always present.
 
-| Field           | Type                             | Description | Example | Notes |
-| --------------- | -------------------------------- | ----------- | ------- | ----- |
-| `exams`         | `array` of [FileStat](#filestat) |             |         |       |
-| `exam_packages` | `array` of [FileStat](#filestat) |             |         |       |
-| `answers`       | `array` of [FileStat](#filestat) |             |         |       |
+| Field           | Type                                 | Description | Example | Notes |
+| --------------- | ------------------------------------ | ----------- | ------- | ----- |
+| `exams`         | `array` of [CachedFile](#cachedfile) |             |         |       |
+| `exam_packages` | `array` of [CachedFile](#cachedfile) |             |         |       |
+| `answers`       | `array` of [CachedFile](#cachedfile) |             |         |       |
 
-##### FileStat
+##### CachedFile
 
 All fields are always present.
 
