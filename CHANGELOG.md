@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Archived exam packages and archived answers are NOT included in
   status reports (in `cached_files`) anymore.
 
+### Removed
+
+- Orphan answers files (answers of manually started exams) are not
+  saved anymore.
+
+
 ## [0.5.7] - 2026-06-03
 
 ### Fixed

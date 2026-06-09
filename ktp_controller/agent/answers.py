@@ -73,56 +73,45 @@ def _cleanup_files():
 
 async def download_answers_file(
     *,
-    exam_package_external_id: str | None,
+    exam_package_external_id: str,
     is_final: ktp_controller.examomatic.client.IsFinal,
 ) -> (str, str):
-    """Download answers from Abitti2.
-
-    If exam_package_external_id is None the answers are saved locally as
-    orphan files.
-    """
+    """Download answers from Abitti2."""
     _cleanup_files()
 
     suffix = ktp_controller.utils.utcnow_str() + ("_final" if is_final else "")
 
-    if exam_package_external_id is None:
-        answers_file_path = ktp_controller.files.get_local_filepath(
-            ktp_controller.files.LocalFilepathType.ORPHAN_ANSWERS_FILE,
-            "unknown",
-            suffix,
-        )
-    else:
-        if is_final:
-            existing_final_answers_file_paths = sorted(
-                ktp_controller.files.glob_local_filepath(
-                    ktp_controller.files.LocalFilepathType.ANSWERS_FILE,
-                    exam_package_external_id,
-                    "*_final",
-                )
+    if is_final:
+        existing_final_answers_file_paths = sorted(
+            ktp_controller.files.glob_local_filepath(
+                ktp_controller.files.LocalFilepathType.ANSWERS_FILE,
+                exam_package_external_id,
+                "*_final",
             )
-            if existing_final_answers_file_paths:
-                final_answers_file_path = existing_final_answers_file_paths[0]
-                _LOGGER.info(
-                    "Final answers for exam package %r has already been downloaded: %r",
+        )
+        if existing_final_answers_file_paths:
+            final_answers_file_path = existing_final_answers_file_paths[0]
+            _LOGGER.info(
+                "Final answers for exam package %r has already been downloaded: %r",
+                exam_package_external_id,
+                final_answers_file_path,
+            )
+            if len(existing_final_answers_file_paths) > 1:
+                _LOGGER.warning(
+                    "Bizarre situation! There are multiple (%d) final answer files for exam package %r. Picking the first one (%r) and ignoring the rest.",
+                    len(existing_final_answers_file_paths),
                     exam_package_external_id,
                     final_answers_file_path,
                 )
-                if len(existing_final_answers_file_paths) > 1:
-                    _LOGGER.warning(
-                        "Bizarre situation! There are multiple (%d) final answer files for exam package %r. Picking the first one (%r) and ignoring the rest.",
-                        len(existing_final_answers_file_paths),
-                        exam_package_external_id,
-                        final_answers_file_path,
-                    )
-                return final_answers_file_path, ktp_controller.utils.sha256(
-                    final_answers_file_path
-                )
+            return final_answers_file_path, ktp_controller.utils.sha256(
+                final_answers_file_path
+            )
 
-        answers_file_path = ktp_controller.files.get_local_filepath(
-            ktp_controller.files.LocalFilepathType.ANSWERS_FILE,
-            exam_package_external_id,
-            suffix,
-        )
+    answers_file_path = ktp_controller.files.get_local_filepath(
+        ktp_controller.files.LocalFilepathType.ANSWERS_FILE,
+        exam_package_external_id,
+        suffix,
+    )
 
     download_start_time_monotonic = time.monotonic()
 
@@ -147,10 +136,6 @@ async def upload_answers_file(answers_file_path: str) -> bool:
     p.resolve()
 
     answers_file_path = str(p)
-
-    if p.parent.name == "unknown":
-        _LOGGER.warning("Orphan answers file cannot be uploaded: %r", answers_file_path)
-        return False
 
     if p.stat().st_size == 0:
         _LOGGER.warning("Empty answers file cannot be uploaded: %r", answers_file_path)
