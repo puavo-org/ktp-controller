@@ -146,9 +146,7 @@ def get_local_filepath(
     return os.path.join(dirpath, f"{local_filepath_type}_{filename_suffix}{ext}")
 
 
-def get_cached_files(
-    *, include_archived: bool = False
-) -> ktp_controller.schemas.CachedFiles:
+def get_cached_files(*, include_archived: bool = False) -> dict[str, list[dict]]:
     """
     If include_archived is True, archived files and/or directories are included.
     """
@@ -156,8 +154,8 @@ def get_cached_files(
     data = {}
 
     for key, dirpath in zip(
-        ["exams", "exam_packages", "answers"],
-        [_EXAM_FILE_DIR, _EXAM_PACKAGE_DIR, ANSWERS_FILE_DIR],
+        ["exams", "exam_packages", "answers", "orphan_answers"],
+        [_EXAM_FILE_DIR, _EXAM_PACKAGE_DIR, ANSWERS_FILE_DIR, _ORPHAN_ANSWERS_FILE_DIR],
     ):
         items = data.setdefault(key, [])
         for path, dirnames, filenames in os.walk(dirpath):
@@ -179,7 +177,7 @@ def get_cached_files(
                     }
                 )
 
-    return ktp_controller.schemas.CachedFiles.model_validate(data)
+    return data
 
 
 def _find_old_answers_files(
