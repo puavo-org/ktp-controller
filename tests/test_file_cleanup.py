@@ -30,9 +30,6 @@ def test_cleanup_old_answers_files(testdir):
 
     # Monkey-patch for testing purposes.
     ktp_controller.files.ANSWERS_FILE_DIR = os.path.join(basedir, "answers-files")
-    ktp_controller.files._ORPHAN_ANSWERS_FILE_DIR = os.path.join(
-        basedir, "orphan-answers-files"
-    )
 
     # One exam package per week, most recent first.
     exam_package_external_ids = [
@@ -55,17 +52,11 @@ def test_cleanup_old_answers_files(testdir):
             suffix,
         )
         pathlib.Path(answers_file_path).touch()
-        orphan_answers_file_path = ktp_controller.files.get_local_filepath(
-            ktp_controller.files.LocalFilepathType.ORPHAN_ANSWERS_FILE,
-            exam_package_external_id,
-            suffix,
-        )
-        pathlib.Path(orphan_answers_file_path).touch()
 
     answers_file_paths_BEFORE_cleanup = _find_all_filepaths(basedir)
 
-    # 7 exam packages, each have one answers file + one orphan answers file
-    assert len(answers_file_paths_BEFORE_cleanup) == len(exam_package_external_ids) * 2
+    # 7 exam packages, each have one answers file
+    assert len(answers_file_paths_BEFORE_cleanup) == len(exam_package_external_ids)
     assert {
         pathlib.Path(p).parent.name for p in answers_file_paths_BEFORE_cleanup
     } == set(exam_package_external_ids)
@@ -75,7 +66,7 @@ def test_cleanup_old_answers_files(testdir):
     answers_file_paths_AFTER_cleanup = _find_all_filepaths(basedir)
 
     # After cleanup, only answers from the last two weeks are left.
-    assert len(answers_file_paths_AFTER_cleanup) == 2 * 2
+    assert len(answers_file_paths_AFTER_cleanup) == 2
     assert {
         pathlib.Path(p).parent.name for p in answers_file_paths_AFTER_cleanup
     } == set(exam_package_external_ids[:2])

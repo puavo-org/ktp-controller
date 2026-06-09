@@ -538,45 +538,7 @@ class Agent:
 
         if len(locked_exam_packages) == 0:
             if self.__is_auto_control_enabled:
-                if (
-                    self.__last_received_exam_list is not None
-                    and self.__last_received_exam_list != []
-                    and (
-                        [e["uuid"] for e in self.__last_received_exam_list]
-                        != [
-                            "390e7988-ff0e-42b4-a2e6-d13a969e7103"
-                        ]  # This is waiting lobby exam, do not save orphan answers.
-                    )
-                    and self.__last_received_answer_count is not None
-                    and self.__last_received_answer_count > 0
-                ):
-                    # This is unlikely but worrisome situation:
-                    # according to Exam-O-Matic, there are no locked
-                    # exam packages and hence nothing SHOULD be
-                    # running in Abitti2. But Abitti2 is reporting it
-                    # has some running exams
-                    # nevertheless. Furthermore, those exams have some
-                    # answers too! And because we are in the auto
-                    # control mode, Abitti2 can be reset any time
-                    # soon, when a new exam package gets locked, and
-                    # then all answers would be lost. So, we try to
-                    # save them locally as orphan answers files (orphan
-                    # because we don't know which exam package, if
-                    # any, they are related to). Note that we cannot
-                    # upload them to Exam-O-Matic, because
-                    # Exam-O-Matic expects all uploaded files to be
-                    # bound to some known exam package, but at least
-                    # they are saved locally.
-                    #
-                    # This situation has arised most probably due to
-                    # some conflicting actions taken by uninformed
-                    # human beings.
-                    #
-                    await ktp_controller.agent.answers.download_answers_file(
-                        exam_package_external_id=None,
-                        is_final=ktp_controller.examomatic.client.IsFinal.UNKNOWN,
-                    )
-                elif self.__last_received_exam_list == []:
+                if self.__last_received_exam_list == []:
                     # Cold reset: Abitti2 is not reporting it has any
                     # exams running, which means it has just
                     # started. So, we always want to have at least
@@ -1143,7 +1105,6 @@ class Agent:
             ktp_controller_stats = None
 
         cached_files = ktp_controller.files.get_cached_files()
-        cached_files.pop("orphan_answers")  # Not part of the status report schema
 
         status_report = {
             "created_at": utcnow,
