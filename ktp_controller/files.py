@@ -146,9 +146,11 @@ def get_local_filepath(
     return os.path.join(dirpath, f"{local_filepath_type}_{filename_suffix}{ext}")
 
 
-def get_cached_files() -> ktp_controller.schemas.CachedFiles:
+def get_cached_files(
+    *, include_archived: bool = False
+) -> ktp_controller.schemas.CachedFiles:
     """
-    Archived files and/or directories are not included.
+    If include_archived is True, archived files and/or directories are included.
     """
 
     data = {}
@@ -159,13 +161,13 @@ def get_cached_files() -> ktp_controller.schemas.CachedFiles:
     ):
         items = data.setdefault(key, [])
         for path, dirnames, filenames in os.walk(dirpath):
-            if ".archived" in filenames:
+            if not include_archived and ".archived" in filenames:
                 dirnames.clear()
                 filenames.clear()
                 continue
             for filename in filenames:
                 filepath = os.path.join(path, filename)
-                if os.path.exists(f"{filepath}.archived"):
+                if not include_archived and os.path.exists(f"{filepath}.archived"):
                     continue
                 items.append(
                     {
