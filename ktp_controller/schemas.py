@@ -11,8 +11,8 @@ import ktp_controller.pydantic
 
 
 __all__ = [
-    "FileStat",
-    "FileStats",
+    "CachedFile",
+    "CachedFiles",
     "StudentAccessCode",
     "StudentFlag",
 ]
@@ -30,7 +30,7 @@ class StudentAccessCode(ktp_controller.pydantic.BaseModel):
     verification_code: pydantic.StrictStr = Field(examples=["xx"])
 
 
-class FileStat(ktp_controller.pydantic.BaseModel):
+class CachedFile(ktp_controller.pydantic.BaseModel):
     path: pydantic.StrictStr = Field(
         examples=[
             "/home/puavo-ers/.local/share/ktp-controller/exam-files/90d99c0a-87b2-49b3-b791-3090550f6345/exam-file.mex"
@@ -42,7 +42,7 @@ class FileStat(ktp_controller.pydantic.BaseModel):
     )
 
 
-class FileStats(ktp_controller.pydantic.BaseModel):
-    exams: typing.List[FileStat]
-    exam_packages: typing.List[FileStat]
-    answers: typing.List[FileStat]
+class CachedFiles(ktp_controller.pydantic.BaseModel):
+    exams: typing.List[CachedFile]
+    exam_packages: typing.List[CachedFile]
+    answers: typing.List[CachedFile]

@@ -1164,7 +1164,7 @@ class Agent:
                 "settings": SETTINGS.model_dump(),
                 "started_at": self.__started_at,
                 "is_auto_control_enabled": self.__is_auto_control_enabled,
-                "cached_files": ktp_controller.files.get_stats(),
+                "cached_files": ktp_controller.files.get_cached_files(),
                 "current_exam_package": current_exam_package,
                 "next_exam_packages": next_exam_packages,
                 "stats": ktp_controller_stats,

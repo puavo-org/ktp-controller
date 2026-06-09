@@ -146,7 +146,7 @@ def get_local_filepath(
     return os.path.join(dirpath, f"{local_filepath_type}_{filename_suffix}{ext}")
 
 
-def get_stats() -> ktp_controller.schemas.FileStats:
+def get_cached_files() -> ktp_controller.schemas.CachedFiles:
     """
     Archived files and/or directories are not included.
     """
@@ -177,7 +177,7 @@ def get_stats() -> ktp_controller.schemas.FileStats:
                     }
                 )
 
-    return ktp_controller.schemas.FileStats.model_validate(data)
+    return ktp_controller.schemas.CachedFiles.model_validate(data)
 
 
 def _find_old_answers_files(
