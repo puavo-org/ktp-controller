@@ -24,13 +24,19 @@ def _write_stderr(s):
 
 
 class _guaranteed_result(contextlib.AbstractContextManager):
+    def __init__(self, *, do_log: bool = False):
+        super().__init__()
+        self.__do_log = do_log
+
     def __enter__(self) -> None:
-        _write_stderr("\n")
+        if self.__do_log:
+            _write_stderr("\n")
         return None
 
     def __exit__(self, exc_type, exc_value, traceback) -> True:
         if exc_type is None:
-            _write_stderr("Event handled successfully.\n")
+            if self.__do_log:
+                _write_stderr("Event handled successfully.\n")
             _write_stdout("RESULT 2\nOK")
         else:
             _write_stderr("Event handling failed.\n")
@@ -102,7 +108,7 @@ class Event:
     proc: _Proc | None
 
 
-def _read_event() -> Event:
+def _read_event(*, do_log: bool = True) -> Event:
     while True:
         ready_to_read, _, _ = select.select([sys.stdin], [], [], 0.5)
         if ready_to_read:
@@ -113,11 +119,13 @@ def _read_event() -> Event:
 
     # read event payload and print it to stderr
     headers = dict([x.split(":") for x in header_line.split()])
-    _write_stderr(f"Headers: {json.dumps(headers)}\n")
+    if do_log:
+        _write_stderr(f"Headers: {json.dumps(headers)}\n")
 
     payload_data = sys.stdin.read(int(headers["len"]))
     payload = dict([x.split(":") for x in payload_data.split()])
-    _write_stderr(f"Payload: {json.dumps(payload)}\n")
+    if do_log:
+        _write_stderr(f"Payload: {json.dumps(payload)}\n")
 
     name = headers["eventname"]
 
@@ -248,6 +256,14 @@ class _Chainer:
 
         _write_stderr("\n")
         _write_stderr("Stopped event handling.\n")
+        _write_stderr("\n")
+        _write_stderr("\n")
+        _write_stderr("    +==========================================+\n")
+        _write_stderr("    |                                          |\n")
+        _write_stderr("    | KTP Controller is now fully initialized! |\n")
+        _write_stderr("    |                                          |\n")
+        _write_stderr("    +==========================================+\n")
+        _write_stderr("\n")
 
         if all(self.__expected_exits.values()):
             result = "ok"
@@ -263,9 +279,8 @@ class _Chainer:
                 # transition from ACKNOWLEDGED to READY
                 _write_stdout("READY\n")
 
-                with _guaranteed_result():
-                    event = _read_event()
-                    _write_stderr(f"Got event: {event}\n")
+                with _guaranteed_result(do_log=False):
+                    event = _read_event(do_log=False)
 
         return result
 
