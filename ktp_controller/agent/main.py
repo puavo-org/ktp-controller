@@ -122,6 +122,7 @@ class Agent:
         self.__refresh_exams_lock = asyncio.Lock()
         self.__work_on_current_exam_package_lock = asyncio.Lock()
         self.__last_status_report_sent_to_examomatic_at = None
+        self.__cached_list_of_locked_exam_packages = None
 
         self.__os_release = ktp_controller.os.get_release()
 
@@ -532,9 +533,7 @@ class Agent:
                 "and reported by upper levels in the call stack."
             )
 
-        locked_exam_packages = (
-            await ktp_controller.api.client.get_locked_exam_packages()
-        )
+        locked_exam_packages = await self.__get_locked_exam_packages()
 
         if len(locked_exam_packages) == 0:
             if self.__is_auto_control_enabled:
@@ -1069,9 +1068,7 @@ class Agent:
             abitti2_version = None
 
         try:
-            locked_exam_packages = (
-                await ktp_controller.api.client.get_locked_exam_packages()
-            )
+            locked_exam_packages = await self.__get_locked_exam_packages()
         except Exception:
             _LOGGER.exception("failed to get locked exam packages")
             current_exam_package = None
@@ -1399,6 +1396,16 @@ class Agent:
                 # again.
                 break
 
+    async def __get_locked_exam_packages(
+        self,
+    ) -> typing.List[typing.Dict[str, typing.Any]]:
+        async with self.__refresh_exams_lock:
+            if self.__cached_list_of_locked_exam_packages is None:
+                self.__cached_list_of_locked_exam_packages = (
+                    await ktp_controller.api.client.get_locked_exam_packages()
+                )
+            return self.__cached_list_of_locked_exam_packages
+
     async def __refresh_exams(self, *, is_spontaneous: bool):
         _LOGGER.info(
             "Starting %sexam refresh...",
@@ -1431,6 +1438,10 @@ class Agent:
             await self.__ensure_exam_file_exists(eom_scheduled_exam)
 
         await ktp_controller.api.client.save_exam_info(eom_exam_info)
+        # Invalidate cached list of locked exam packages. Next call to
+        # self.__get_locked_exam_packages() will retrieve the updated
+        # list.
+        self.__cached_list_of_locked_exam_packages = None
 
         _LOGGER.info("refreshed exams successfully")
 
