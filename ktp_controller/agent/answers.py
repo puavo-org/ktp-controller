@@ -107,19 +107,21 @@ async def download_answers_file(
 
 
 async def upload_answers_file(answers_file_path: str) -> bool:
-    p = pathlib.Path(answers_file_path)
-    p.resolve()
+    pathobj = pathlib.Path(answers_file_path)
+    pathobj.resolve()
 
-    answers_file_path = str(p)
+    answers_file_path = str(pathobj)
+    answers_file_size = pathobj.stat().st_size
+    exam_package_external_id = pathobj.parent.name
 
-    if p.stat().st_size == 0:
+    if answers_file_size == 0:
         _LOGGER.warning("Empty answers file cannot be uploaded: %r", answers_file_path)
         return False
 
     if _is_file_archived(answers_file_path):
         return False
 
-    if p.name.endswith("_final.meb"):
+    if answers_file_path.endswith("_final.meb"):
         is_final = ktp_controller.examomatic.client.IsFinal.TRUE
     else:
         is_final = ktp_controller.examomatic.client.IsFinal.FALSE
@@ -129,7 +131,7 @@ async def upload_answers_file(answers_file_path: str) -> bool:
     _LOGGER.info("Uploading answers file %r to Exam-O-Matic...", answers_file_path)
 
     await ktp_controller.examomatic.client.upload_answers_file(
-        exam_package_external_id=p.parent.name,
+        exam_package_external_id=exam_package_external_id,
         filepath=answers_file_path,
         is_final=is_final,
         timeout=(60.1, 600),
@@ -152,7 +154,9 @@ async def upload_answers_file(answers_file_path: str) -> bool:
 
     _LOGGER.info("Archived answers file %r.", os.path.basename(answers_file_path))
 
-    exam_package_dirpath = str(p.parent)
+    exam_package_dirpath = ktp_controller.files.get_local_dirpath(
+        ktp_controller.files.LocalFilepathType.EXAM_PACKAGE, exam_package_external_id
+    )
 
     try:
         _mark_dir_archived(exam_package_dirpath)
