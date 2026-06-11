@@ -363,8 +363,8 @@ def find_archived_exam_package_dirs(
 
     If `exceptions` is `None`, exceptions are not handled and
     iteration is stopped when the first exception is
-    raised. Otherwise, if `exceptions` is a list, are exceptions
-    during the iteration is are caught and appended to `exceptions`.
+    raised. Otherwise, if `exceptions` is a list, all exceptions
+    during the iteration are caught and appended to `exceptions`.
 
     """
     utcnow: datetime.datetime = ktp_controller.utils.utcnow()
