@@ -1,4 +1,5 @@
 # Standard library imports
+import asyncio
 import datetime
 import enum
 import glob
@@ -412,3 +413,31 @@ def cleanup_archived_exam_packages(
         raise ExceptionGroup(
             "failed to cleanup some archived exam packages", exceptions
         )
+
+
+async def cleanup_files(logger: logging.Logger | None = None) -> None:
+    try:
+        deleted_answers_files = await asyncio.to_thread(cleanup_old_answers_files)
+    except Exception:
+        # cleanup_old_answers_files is best-effort; it deletes
+        # everything it can and raises exceptions afterwards.
+        logger is None or logger.exception("Failed to cleanup some old answers files")
+    else:
+        logger is None or logger.info(
+            "Deleted %d old answers files", len(deleted_answers_files)
+        )
+
+    deleted_exam_package_external_ids: set = set()
+    try:
+        await asyncio.to_thread(
+            cleanup_archived_exam_packages,
+            deleted_exam_package_external_ids=deleted_exam_package_external_ids,
+        )
+    except Exception:
+        # cleanup_archived_exam_packages is best-effort; it deletes
+        # everything it can and raises exceptions afterwards.
+        logger is None or logger.exception("Failed to cleanup some old exam packages")
+
+    logger is None or logger.info(
+        "Deleted %d archived exam packages", len(deleted_exam_package_external_ids)
+    )

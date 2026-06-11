@@ -48,37 +48,12 @@ def _is_file_archived(filepath: str | pathlib.Path) -> bool:
     return os.path.exists(f"{filepath}.archived")
 
 
-def _cleanup_files():
-    try:
-        deleted_answers_files = ktp_controller.files.cleanup_old_answers_files()
-    except Exception:
-        # cleanup_old_answers_files is best-effort; it deletes
-        # everything it can and raises exceptions afterwards.
-        _LOGGER.exception("Failed to cleanup some old answers files")
-    else:
-        _LOGGER.info("Deleted %d old answers files", len(deleted_answers_files))
-
-    deleted_exam_package_external_ids: set = set()
-    try:
-        ktp_controller.files.cleanup_archived_exam_packages(
-            deleted_exam_package_external_ids=deleted_exam_package_external_ids
-        )
-    except Exception:
-        # cleanup_archived_exam_packages is best-effort; it deletes
-        # everything it can and raises exceptions afterwards.
-        _LOGGER.exception("Failed to cleanup some old exam packages")
-
-    _LOGGER.info("Deleted %d archived exam packages", len(deleted_exam_package_external_ids))
-
-
 async def download_answers_file(
     *,
     exam_package_external_id: str,
     is_final: ktp_controller.examomatic.client.IsFinal,
 ) -> (str, str):
     """Download answers from Abitti2."""
-    _cleanup_files()
-
     suffix = ktp_controller.utils.utcnow_str() + ("_final" if is_final else "")
 
     if is_final:
