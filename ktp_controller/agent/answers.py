@@ -114,11 +114,11 @@ async def upload_answers_file(answers_file_path: str) -> bool:
     answers_file_size = pathobj.stat().st_size
     exam_package_external_id = pathobj.parent.name
 
-    if answers_file_size == 0:
-        _LOGGER.warning("Empty answers file cannot be uploaded: %r", answers_file_path)
+    if _is_file_archived(answers_file_path):
         return False
 
-    if _is_file_archived(answers_file_path):
+    if answers_file_size == 0:
+        _LOGGER.warning("Empty answers file cannot be uploaded: %r", answers_file_path)
         return False
 
     if answers_file_path.endswith("_final.meb"):
