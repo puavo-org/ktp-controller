@@ -47,7 +47,7 @@ _SHUTDOWN_EVENT = asyncio.Event()
 
 
 @contextlib.asynccontextmanager
-async def _task(name: str):
+async def _task(name: str, *, on_exit_coro: typing.Awaitable | None = None):
     try:
         _LOGGER.info("Starting task %r...", name)
         yield
@@ -61,6 +61,8 @@ async def _task(name: str):
             _LOGGER.info("Task %r was shut down.", name)
         else:
             _LOGGER.warning("Task %r was aborted!", name)
+        if on_exit_coro is not None:
+            await on_exit_coro
 
 
 class Trigger(str, enum.Enum):
@@ -123,6 +125,7 @@ class Agent:
         self.__work_on_current_exam_package_lock = asyncio.Lock()
         self.__last_status_report_sent_to_examomatic_at = None
         self.__cached_list_of_locked_exam_packages = None
+        self.__cached_abitti2_version = None
 
         self.__os_release = ktp_controller.os.get_release()
 
@@ -1060,9 +1063,7 @@ class Agent:
             domain = None
 
         try:
-            abitti2_version = (
-                await ktp_controller.abitti2.client.get_current_abitti2_version()
-            )
+            abitti2_version = await self.__get_abitti2_version()
         except Exception:
             _LOGGER.exception("failed to get current Abitti2 version")
             abitti2_version = None
@@ -1198,8 +1199,14 @@ class Agent:
             _LOGGER.exception("received invalid message from Abitti2: %r", data)
             return (None, None)
 
+    async def __clear_abitti2_caches(self):
+        self.__cached_abitti2_version = None
+        _LOGGER.info("All cached Abitti2 information has been cleared.")
+
     async def __communicate_with_abitti2(self, websock):
-        async with _task("communication with Abitti2"):
+        async with _task(
+            "communication with Abitti2", on_exit_coro=self.__clear_abitti2_caches()
+        ):
             async for data in websock:
                 received_at = ktp_controller.utils.utcnow()
                 self.__last_message_from_abitti2_received_at = received_at
@@ -1244,9 +1251,12 @@ class Agent:
         *,
         connection_stats_class: type[ktp_controller.agent.stats.ConnectionStats],
         additional_headers: typing.Dict[str, str] | None = None,
+        on_exit_coro: typing.Awaitable | None = None,
     ):
         started = False
-        async with _task(f"websocket maintenance to {name} ({url!r})"):
+        async with _task(
+            f"websocket maintenance to {name} ({url!r})", on_exit_coro=on_exit_coro
+        ):
             while not _SHUTDOWN_EVENT.is_set():
                 try:
                     if started:
@@ -1316,6 +1326,7 @@ class Agent:
             ],
             connection_stats_class=ktp_controller.agent.stats.Abitti2ConnectionStats,
             additional_headers=ktp_controller.abitti2.client.get_basic_auth(),
+            on_exit_coro=self.__clear_abitti2_caches(),
         )
 
     async def __ensure_exam_file_exists(self, eom_scheduled_exam):
@@ -1395,6 +1406,13 @@ class Agent:
                 # One at a time, this function will be called soon
                 # again.
                 break
+
+    async def __get_abitti2_version(self):
+        if self.__cached_abitti2_version is None:
+            self.__cached_abitti2_version = (
+                await ktp_controller.abitti2.client.get_current_abitti2_version()
+            )
+        return self.__cached_abitti2_version
 
     async def __get_locked_exam_packages(
         self,
