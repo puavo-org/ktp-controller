@@ -1463,6 +1463,18 @@ class Agent:
 
         _LOGGER.info("refreshed exams successfully")
 
+    async def __file_cleanup_task(self):
+        started = False
+        async with _task("file cleanup"):
+            while not _SHUTDOWN_EVENT.is_set():
+                try:
+                    if started:
+                        await asyncio.sleep(300)
+                    started = True
+                    await ktp_controller.files.cleanup_files(logger=_LOGGER)
+                except Exception:
+                    _LOGGER.exception("file cleanup failed")
+
     async def __answers_file_upload_task(self):
         started = False
         async with _task("answers file upload"):
@@ -1508,6 +1520,7 @@ class Agent:
                 tg.create_task(self.__maintain_websocket_connection_to_examomatic())
                 tg.create_task(self.__periodic_refresh_exams())
                 tg.create_task(self.__answers_file_upload_task())
+                tg.create_task(self.__file_cleanup_task())
 
                 # Keep the main task alive while workers run
                 await asyncio.Event().wait()
