@@ -68,7 +68,7 @@ def _cleanup_files():
         # everything it can and raises exceptions afterwards.
         _LOGGER.exception("Failed to cleanup some old exam packages")
 
-    _LOGGER.info("Deleted %d old exam packages", len(deleted_exam_package_external_ids))
+    _LOGGER.info("Deleted %d archived exam packages", len(deleted_exam_package_external_ids))
 
 
 async def download_answers_file(
