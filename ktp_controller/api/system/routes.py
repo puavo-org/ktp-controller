@@ -214,3 +214,22 @@ async def _agent_websocket(
         websock=websock,
         channel=ktp_controller.agent.utils.PUBSUB_CHANNEL,
     )
+
+
+@router.get(
+    "/echo",
+    response_model=schemas.Echo,
+    summary="Get echo response",
+)
+async def _get_echo(request: fastapi.Request):
+    now = ktp_controller.utils.now()
+
+    headers = dict(request.headers)
+
+    return {
+        "request": {
+            "method": "GET",
+            "received_at": now.isoformat(),
+            "headers": headers,
+        },
+    }
