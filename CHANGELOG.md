@@ -15,10 +15,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed redundant internal HTTP requests and started to cache
   Abitti2 server version and the list of locked exam packages.
 
+- Old and archived files are now cleaned regularly and independently
+  of other file operations.
+
 ### Removed
 
 - Orphan answers files (answers of manually started exams) are not
   saved anymore.
+
+### Fixed
+
+- Cleanup of archived exam package files.
 
 
 ## [0.5.7] - 2026-06-03
