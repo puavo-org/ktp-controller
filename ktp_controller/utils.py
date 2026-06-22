@@ -189,12 +189,20 @@ def utcnow() -> datetime.datetime:
     return datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
 
 
+def now() -> datetime.datetime:
+    return datetime.datetime.now().astimezone()
+
+
 def strfdt(dt: datetime.datetime) -> str:
     return dt.strftime(f"%Y-%m-%dT%H:%M:%S.{dt.microsecond // 1000:0>3}%z")
 
 
 def utcnow_str() -> str:
     return strfdt(utcnow())
+
+
+def now_str() -> str:
+    return strfdt(now())
 
 
 def is_valid_filename(filename: str) -> bool:
