@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Archived exam packages and archived answers are NOT included in
   status reports (in `cached_files`) anymore.
+  
+- Removed redundant internal HTTP requests and started to cache
+  Abitti2 server version and the list of locked exam packages.
 
 ### Removed
 
