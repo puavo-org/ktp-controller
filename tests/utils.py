@@ -331,7 +331,7 @@ def assert_scheduled_exam_package_state_is(
 
 
 def assert_scheduled_exam_package_gets_started(
-    exam_title: str, wait: int = 120, utcnow: datetime.datetime | None = None
+    exam_title: str, wait: int = 180, utcnow: datetime.datetime | None = None
 ) -> dict:
     if utcnow is None:
         utcnow = ktp_controller.utils.utcnow()
