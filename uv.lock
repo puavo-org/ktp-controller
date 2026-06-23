@@ -379,10 +379,10 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "httpx" },
-    { name = "mypy", specifier = ">=2.1.0" },
+    { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-mock" },
-    { name = "ruff", specifier = ">=0.14.13" },
+    { name = "ruff" },
     { name = "selenium" },
 ]
 

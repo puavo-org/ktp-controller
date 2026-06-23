@@ -43,8 +43,8 @@ dev = [
     "pytest-mock",
     "httpx",
     "selenium",
-    "ruff>=0.14.13",
-    "mypy>=2.1.0",
+    "ruff",
+    "mypy",
 ]
 
 [tool.uv.build-backend]
