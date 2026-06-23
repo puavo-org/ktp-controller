@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Old and archived files are now cleaned regularly and independently
   of other file operations.
 
+- All dependencies have been updated.
+
 ### Removed
 
 - Orphan answers files (answers of manually started exams) are not
