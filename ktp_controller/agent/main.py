@@ -90,6 +90,13 @@ class _UnexpectedCancel(Exception):
     pass
 
 
+class _StateTransition(typing.TypedDict):
+    valid_triggers: tuple[Trigger, ...]
+    time_condition: bool
+    action: typing.Callable[[dict[str, typing.Any]], typing.Awaitable[bool]] | None
+    next_state: str
+
+
 def _simplify_exam_package(exam_package):
     return {
         "uuid": exam_package["external_id"],
@@ -121,11 +128,13 @@ class Agent:
         self.__do_crash = False
         self.__started_at = None
         self.__state = state
-        self.__nonfinal_answers_download_task = None
+        self.__nonfinal_answers_download_task: asyncio.Task | None = None
         self.__refresh_exams_lock = asyncio.Lock()
         self.__work_on_current_exam_package_lock = asyncio.Lock()
         self.__last_status_report_sent_to_examomatic_at = None
-        self.__cached_list_of_locked_exam_packages = None
+        self.__cached_list_of_locked_exam_packages: (
+            list[dict[str, typing.Any]] | None
+        ) = None
         self.__cached_abitti2_version = None
 
         self.__os_release = ktp_controller.os.get_release()
@@ -145,16 +154,18 @@ class Agent:
         self.__approx_refresh_exams_interval_sec = approx_refresh_exams_interval_sec
 
         # Abitti2 reports these
-        self.__last_received_exam_list = None
+        self.__last_received_exam_list: list[dict[str, typing.Any]] | None = None
         self.__last_received_security_code = None
         self.__old_security_code = None
         self.__uploaded = False
         self.__last_message_from_abitti2_received_at = None
-        self.__last_received_students = None
+        self.__last_received_students: list[dict[str, typing.Any]] | None = None
         self.__last_received_answer_count = None
         self.__last_cold_reset_time: datetime.datetime | None = None
 
-        self.__prev_connection_durations = collections.defaultdict(list)
+        self.__prev_connection_durations: collections.defaultdict[
+            Component, list[float]
+        ] = collections.defaultdict(list)
         self.__connection_stats: dict[
             Component,
             ktp_controller.agent.stats.ConnectionStats,
@@ -191,7 +202,7 @@ class Agent:
 
     def __set_auto_control(
         self,
-        command_uuid: str,
+        command_uuid: pydantic.UUID4,
         enabled: bool,
     ) -> ktp_controller.messages.CommandResultData:
         changed = enabled is not self.__is_auto_control_enabled
@@ -211,7 +222,7 @@ class Agent:
 
     async def __command_crash(
         self,
-        command_uuid: str,
+        command_uuid: pydantic.UUID4,
         command_data: ktp_controller.messages.CommandData,
     ) -> ktp_controller.messages.CommandResultData:
         if self.__is_testbed_mode:
@@ -228,21 +239,21 @@ class Agent:
 
     async def __command_enable_auto_control(
         self,
-        command_uuid: str,
+        command_uuid: pydantic.UUID4,
         command_data: ktp_controller.messages.CommandData,
     ) -> ktp_controller.messages.CommandResultData:
         return self.__set_auto_control(command_uuid, True)
 
     async def __command_disable_auto_control(
         self,
-        command_uuid: str,
+        command_uuid: pydantic.UUID4,
         command_data: ktp_controller.messages.CommandData,
     ):
         return self.__set_auto_control(command_uuid, False)
 
     async def __command_change_current_exam_package_state(
         self,
-        command_uuid: str,
+        command_uuid: pydantic.UUID4,
         command_data: ktp_controller.messages.CommandData,
     ) -> ktp_controller.messages.CommandResultData:
         if self.__is_auto_control_enabled:
@@ -518,8 +529,7 @@ class Agent:
         ):
             return False
         async with self.__work_on_current_exam_package_lock:
-            await self.__work_on_current_exam_package_locked(trigger=trigger)
-        return None
+            return await self.__work_on_current_exam_package_locked(trigger=trigger)
 
     async def __work_on_current_exam_package_locked(self, *, trigger: Trigger) -> bool:
         _LOGGER.info("Working on the current exam package.")
@@ -584,7 +594,7 @@ class Agent:
 
         changed = False
 
-        state_transitions = {
+        state_transitions: dict[str | None, _StateTransition] = {
             None: {
                 "valid_triggers": (Trigger.MANUAL_PREPARE, Trigger.TIME),
                 "time_condition": self.__is_auto_control_enabled,
@@ -921,19 +931,20 @@ class Agent:
         ktp_controller.abitti2.utils.sanitize_stats_message(message)
 
         try:
-            self.__last_received_students = ktp_controller.abitti2.utils.parse_students(
+            students = ktp_controller.abitti2.utils.parse_students(
                 message, utcnow=received_at
             )
         except ValueError:
             _LOGGER.exception("Failed to parse students list received from Abitti2")
             self.__last_received_students = None
         else:
+            self.__last_received_students = students
             if (
                 self.__is_auto_control_enabled
                 and SETTINGS.abitti2_allow_students_to_use_browsers
             ):
                 await ktp_controller.abitti2.utils.allow_students_to_use_browsers(
-                    self.__last_received_students
+                    students
                 )
 
         self.__last_received_answer_count = message["data"]["answerPaperCount"]
@@ -944,19 +955,23 @@ class Agent:
         # Stat calculation requires the information below. If any of
         # them are missing, we cannot calculate stats, i.e. there are
         # not stats available.
-        if None in (
-            self.__last_received_answer_count,
-            self.__last_received_students,
-            self.__last_received_exam_list,
+        if (
+            self.__last_received_answer_count is None
+            or self.__last_received_students is None
+            or self.__last_received_exam_list is None
         ):
             return False
 
         # No exams, no stats.
         return len(self.__last_received_exam_list) != 0
 
-    def __get_exam_stats(self) -> dict | None:
+    def __get_exam_stats(self) -> list[dict[str, typing.Any]] | None:
         if not self.__has_exam_stats():
             return None
+
+        # __has_exam_stats() guarantees these are populated.
+        assert self.__last_received_exam_list is not None
+        assert self.__last_received_students is not None
 
         exam_stats = []
         for exam in self.__last_received_exam_list:
@@ -1241,9 +1256,11 @@ class Agent:
 
     async def __maintain_websocket_connection(
         self,
-        name: str,
+        name: Component,
         url: str,
-        asyncfuncs: typing.Awaitable,
+        asyncfuncs: typing.Iterable[
+            typing.Callable[..., typing.Coroutine[typing.Any, typing.Any, typing.Any]]
+        ],
         *,
         connection_stats_class: type[ktp_controller.agent.stats.ConnectionStats],
         additional_headers: dict[str, str] | None = None,

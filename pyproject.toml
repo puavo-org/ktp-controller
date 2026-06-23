@@ -116,11 +116,3 @@ warn_unused_ignores = true
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
-
-# TODO: agent.main needs TypedDicts for its state-machine dicts and Optional
-# annotations for several attributes before it can be type checked. Relaxed for
-# now so the rest of the codebase can be checked; tighten this module later.
-[[tool.mypy.overrides]]
-module = "ktp_controller.agent.main"
-ignore_errors = true
-

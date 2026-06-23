@@ -36,6 +36,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Loggers are now named after their module (`__name__`) instead of the
   source file path (`__file__`), producing readable logger names.
 
+- Manual exam package commands (prepare/start/stop/archive) now report
+  `ok` instead of always reporting `ok_no_change`, even when they did
+  change the state of the current exam package.
+
 
 ## [0.5.7] - 2026-06-03
 
