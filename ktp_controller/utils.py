@@ -112,7 +112,7 @@ def copy_atomic(src_filepath: str, dest_filepath: str, exclusive: bool = False):
             dest_file.write(data)
 
 
-def json_loads_dict(string: str) -> dict[str, typing.Any]:
+def json_loads_dict(string: str | bytes) -> dict[str, typing.Any]:
     try:
         data = json.loads(string)
     except Exception as e:
@@ -308,12 +308,12 @@ def ago(dt: str | datetime.datetime, *, now: datetime.datetime | None = None) ->
     ValueError: dt is in future
     """
     if now is None:
-        now: datetime.datetime = utcnow()
+        now = utcnow()
     elif isinstance(now, str):
-        now: datetime.datetime = datetime.datetime.fromisoformat(now)
+        now = datetime.datetime.fromisoformat(now)
 
     if isinstance(dt, str):
-        dt: datetime.datetime = datetime.datetime.fromisoformat(dt)
+        dt = datetime.datetime.fromisoformat(dt)
 
     dt_is_naive = False
     if dt.tzinfo is None:

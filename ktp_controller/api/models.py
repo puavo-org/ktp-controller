@@ -2,6 +2,7 @@ from __future__ import annotations
 
 # Standard library imports
 import datetime
+import typing
 
 # Third-party imports
 import sqlalchemy
@@ -233,7 +234,7 @@ class ExamInfo(Base):  # type: ignore
         unique=True,
     )
 
-    raw_data: Mapped[sqlalchemy.JSON] = mapped_column(
+    raw_data: Mapped[dict[str, typing.Any]] = mapped_column(
         sqlalchemy.JSON,
         nullable=False,
     )
@@ -255,7 +256,7 @@ class StatusReport(Base):  # type: ignore
         index=True,
     )
 
-    raw_data: Mapped[sqlalchemy.JSON] = mapped_column(
+    raw_data: Mapped[dict[str, typing.Any]] = mapped_column(
         sqlalchemy.JSON,
         nullable=False,
     )

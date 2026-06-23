@@ -18,8 +18,12 @@ check-alembic:
 	KTP_CONTROLLER_DB_PATH=ktp_controller_alembic_check.sqlite uv run alembic upgrade head
 	KTP_CONTROLLER_DB_PATH=ktp_controller_alembic_check.sqlite uv run alembic check
 
+.PHONY: check-types
+check-types:
+	uv run mypy
+
 .PHONY: check
-check: check-format check-alembic
+check: check-format check-alembic check-types
 	uv run ruff check
 
 .PHONY: pytest

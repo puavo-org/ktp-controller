@@ -123,7 +123,8 @@ async def _save_scheduled_exam_package(
 
         db_scheduled_exam_package.start_time = scheduled_exam_package.start_time
         db_scheduled_exam_package.end_time = scheduled_exam_package.end_time
-        db_scheduled_exam_package.lock_time = scheduled_exam_package.lock_time
+        # SQLAlchemy's typed attributes do not model nullable assignment well.
+        db_scheduled_exam_package.lock_time = scheduled_exam_package.lock_time  # type: ignore[assignment]
         db_scheduled_exam_package.locked = scheduled_exam_package.locked
 
     for scheduled_exam_external_id in scheduled_exam_external_ids:
@@ -260,8 +261,9 @@ async def _get_locked_exam_packages(
         .filter_by(state=None)
         .filter_by(current=False)
         .filter(
-            db_current_exam_package is None
-            or models.ScheduledExamPackage.dbid != db_current_exam_package.dbid
+            sqlalchemy.true()
+            if db_current_exam_package is None
+            else models.ScheduledExamPackage.dbid != db_current_exam_package.dbid
         )
         .filter(models.ScheduledExamPackage.end_time >= utcnow)
         .order_by(

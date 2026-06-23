@@ -21,7 +21,8 @@ def db_scheduled_exam_to_dict(db_scheduled_exam: models.ScheduledExam) -> dict:
         start_time=db_scheduled_exam.start_time,
         end_time=db_scheduled_exam.end_time,
         modified_at=db_scheduled_exam.modified_at,
-        exam_file_info=db_exam_info_to_dict(db_scheduled_exam.exam_info),
+        # pydantic coerces this dict into the nested ExamFileInfo model.
+        exam_file_info=db_exam_info_to_dict(db_scheduled_exam.exam_info),  # type: ignore[arg-type]
     ).dict()
 
 

@@ -13,10 +13,10 @@ import uuid
 from typing import Annotated, Any
 
 # Third-party imports
-import fastapi  # type: ignore
+import fastapi
 import fastapi.responses
 import pydantic
-import uvicorn  # type: ignore
+import uvicorn
 
 import ktp_controller.examomatic.schemas
 import ktp_controller.pydantic
@@ -99,7 +99,7 @@ class _Schedule(ktp_controller.pydantic.BaseModel):
     id_: pydantic.StrictStr = pydantic.Field(..., alias="id")
     exam_title: pydantic.StrictStr
     file_name: pydantic.StrictStr
-    file_size: pydantic.conint(strict=True, ge=0)
+    file_size: Annotated[int, pydantic.Field(strict=True, ge=0)]
     file_sha256: pydantic.StrictStr
     file_uuid: pydantic.StrictStr
     decrypt_code: pydantic.StrictStr
@@ -108,9 +108,9 @@ class _Schedule(ktp_controller.pydantic.BaseModel):
     exam_modified_at: ktp_controller.pydantic.DateTime
     schedule_modified_at: ktp_controller.pydantic.DateTime
     school_name: pydantic.StrictStr
-    server_id: list[pydantic.conint(strict=True, ge=1)]
+    server_id: list[Annotated[int, pydantic.Field(strict=True, ge=1)]]
     is_retake: pydantic.StrictBool
-    retake_participants: pydantic.conint(strict=True, ge=0)
+    retake_participants: Annotated[int, pydantic.Field(strict=True, ge=0)]
 
 
 class _Package(ktp_controller.pydantic.BaseModel):
@@ -120,8 +120,8 @@ class _Package(ktp_controller.pydantic.BaseModel):
     lock_time: ktp_controller.pydantic.DateTime
     schedules: list[pydantic.StrictStr]
     locked: pydantic.StrictBool
-    server_id: pydantic.conint(strict=True, ge=1)
-    estimated_total_size: pydantic.conint(strict=True, ge=0)
+    server_id: Annotated[int, pydantic.Field(strict=True, ge=1)]
+    estimated_total_size: Annotated[int, pydantic.Field(strict=True, ge=0)]
 
 
 class _ExamInfo(ktp_controller.pydantic.BaseModel):
@@ -133,9 +133,9 @@ class _ExamInfo(ktp_controller.pydantic.BaseModel):
 class _SetExamInfoData(ktp_controller.pydantic.BaseModel):
     exam_title: pydantic.StrictStr
     start_time: ktp_controller.pydantic.DateTime
-    duration_seconds: pydantic.conint(strict=True, ge=1)
-    lock_time_duration_seconds: pydantic.conint(strict=True, ge=1)
-    number_of_duplicates: pydantic.conint(strict=True, ge=0) = 0
+    duration_seconds: Annotated[int, pydantic.Field(strict=True, ge=1)]
+    lock_time_duration_seconds: Annotated[int, pydantic.Field(strict=True, ge=1)]
+    number_of_duplicates: Annotated[int, pydantic.Field(strict=True, ge=0)] = 0
 
 
 @APP.post(

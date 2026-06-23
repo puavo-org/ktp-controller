@@ -33,7 +33,7 @@ class _guaranteed_result(contextlib.AbstractContextManager):
             _write_stderr("\n")
         return
 
-    def __exit__(self, exc_type, exc_value, traceback) -> True:
+    def __exit__(self, exc_type, exc_value, traceback) -> bool:
         if exc_type is None:
             if self.__do_log:
                 _write_stderr("Event handled successfully.\n")
@@ -195,7 +195,7 @@ class _Chainer:
     def __terminate(self, signum, frame_stack):
         self.__is_terminated = True
 
-    def run(self) -> None:
+    def run(self) -> str:
         while True:
             # transition from ACKNOWLEDGED to READY
             _write_stdout("READY\n")

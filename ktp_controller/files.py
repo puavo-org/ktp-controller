@@ -104,7 +104,7 @@ def get_local_dirpath(local_filepath_type: LocalFilepathType, dirname: str) -> s
 
 def glob_local_filepath(
     local_filepath_type: LocalFilepathType, dirname: str, filestem_pattern: str
-) -> [str]:
+) -> list[str]:
     if os.path.sep in filestem_pattern:
         raise ValueError("invalid pattern")
 
@@ -138,7 +138,7 @@ def get_cached_files(*, include_archived: bool = False) -> dict[str, list[dict]]
     If include_archived is True, archived files and/or directories are included.
     """
 
-    data = {}
+    data: dict[str, typing.Any] = {}
 
     for key, dirpath in zip(
         ["exams", "exam_packages", "answers"],
@@ -199,18 +199,20 @@ def _find_old_answers_files(
         try:
             timestamp = datetime.datetime.fromisoformat(timestamp_str)
         except ValueError:
-            logger is None or logger.warning(
-                "Ignoring invalid answers file '%s': invalid timestamp: %r",
-                filepath,
-                timestamp_str,
-            )
+            if logger is not None:
+                logger.warning(
+                    "Ignoring invalid answers file '%s': invalid timestamp: %r",
+                    filepath,
+                    timestamp_str,
+                )
             continue
 
         if timestamp.tzinfo is None:
-            logger is None or logger.warning(
-                "Igoring invalid answers file '%s': timestamp lacks timezone information",
-                filepath,
-            )
+            if logger is not None:
+                logger.warning(
+                    "Igoring invalid answers file '%s': timestamp lacks timezone information",
+                    filepath,
+                )
             continue
 
         if timestamp < cutoff_date:
@@ -277,7 +279,7 @@ def find_empty_dirs_bottom_up(basedirpath: str | pathlib.Path):
 
 def rmdir_recursively_bottom_up(
     basedirpath: str | pathlib.Path,
-) -> [str]:
+) -> list[str]:
     """Recursively finds and deletes empty directories, working
     bottom-up so that newly emptied parent directories are also
     deleted.
@@ -307,7 +309,7 @@ def cleanup_old_answers_files(
     *,
     older_than_timedelta: datetime.timedelta = datetime.timedelta(weeks=2),
     logger: logging.Logger | None = None,
-) -> [str]:
+) -> list[str]:
     deleted_answers_files = []
     exceptions = []
 
@@ -392,8 +394,8 @@ def cleanup_archived_exam_packages(
     *,
     archived_timedelta: datetime.timedelta = datetime.timedelta(days=1),
     deleted_exam_package_external_ids: set[str] | None = None,
-) -> set[str]:
-    exceptions = []
+) -> None:
+    exceptions: list[Exception] = []
     for archived_exam_package_dir in find_archived_exam_package_dirs(
         archived_timedelta=archived_timedelta, exceptions=exceptions
     ):
@@ -403,9 +405,10 @@ def cleanup_archived_exam_packages(
             exceptions.append(e)
             continue
 
-        deleted_exam_package_external_ids is None or deleted_exam_package_external_ids.add(
-            os.path.basename(archived_exam_package_dir)
-        )
+        if deleted_exam_package_external_ids is not None:
+            deleted_exam_package_external_ids.add(
+                os.path.basename(archived_exam_package_dir)
+            )
 
     if exceptions:
         raise ExceptionGroup(
@@ -419,11 +422,11 @@ async def cleanup_files(logger: logging.Logger | None = None) -> None:
     except Exception:
         # cleanup_old_answers_files is best-effort; it deletes
         # everything it can and raises exceptions afterwards.
-        logger is None or logger.exception("Failed to cleanup some old answers files")
+        if logger is not None:
+            logger.exception("Failed to cleanup some old answers files")
     else:
-        logger is None or logger.info(
-            "Deleted %d old answers files", len(deleted_answers_files)
-        )
+        if logger is not None:
+            logger.info("Deleted %d old answers files", len(deleted_answers_files))
 
     deleted_exam_package_external_ids: set = set()
     try:
@@ -434,8 +437,10 @@ async def cleanup_files(logger: logging.Logger | None = None) -> None:
     except Exception:
         # cleanup_archived_exam_packages is best-effort; it deletes
         # everything it can and raises exceptions afterwards.
-        logger is None or logger.exception("Failed to cleanup some old exam packages")
+        if logger is not None:
+            logger.exception("Failed to cleanup some old exam packages")
 
-    logger is None or logger.info(
-        "Deleted %d archived exam packages", len(deleted_exam_package_external_ids)
-    )
+    if logger is not None:
+        logger.info(
+            "Deleted %d archived exam packages", len(deleted_exam_package_external_ids)
+        )

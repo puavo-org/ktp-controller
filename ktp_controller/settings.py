@@ -12,7 +12,7 @@ from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
-)  # type: ignore
+)
 
 # Internal imports
 

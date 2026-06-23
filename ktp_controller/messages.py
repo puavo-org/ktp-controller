@@ -98,7 +98,7 @@ Data = CommandData | CommandResultData | PongData | StatusReportData | None
 
 
 class _MessageBase(ktp_controller.pydantic.BaseModel):
-    uuid: pydantic.UUID4 = pydantic.Field(default_factory=lambda: str(uuid.uuid4()))
+    uuid: pydantic.UUID4 = pydantic.Field(default_factory=uuid.uuid4)
     kind: MessageKind
     data: Data
 

@@ -4,8 +4,8 @@ import logging
 import logging.config
 
 # Third-party imports
-import fastapi  # type: ignore
-import uvicorn  # type: ignore
+import fastapi
+import uvicorn
 
 # Internal imports
 import ktp_controller.api.database

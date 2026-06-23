@@ -150,7 +150,8 @@ class _KTPControllerStats(ktp_controller.pydantic.BaseModel):
 
 
 class _KTPController(ktp_controller.pydantic.BaseModel):
-    version: Literal[VERSION] = VERSION
+    # VERSION is a runtime constant; pydantic pins the field to its value.
+    version: Literal[VERSION] = VERSION  # type: ignore[valid-type]
     started_at: ktp_controller.pydantic.DateTime = Field(
         description="When the program has started.",
         examples=["2026-05-03T16:28:51.975+0000"],

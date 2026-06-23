@@ -52,7 +52,7 @@ async def download_answers_file(
     *,
     exam_package_external_id: str,
     is_final: ktp_controller.examomatic.client.IsFinal,
-) -> (str, str):
+) -> tuple[str, str]:
     """Download answers from Abitti2."""
     suffix = ktp_controller.utils.utcnow_str() + ("_final" if is_final else "")
 

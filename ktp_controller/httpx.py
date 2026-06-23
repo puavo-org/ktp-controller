@@ -65,7 +65,8 @@ async def post(
     async with httpx.AsyncClient() as client:
         response = await client.post(
             url,
-            auth=auth,
+            # httpx accepts None to mean "no auth"; its stubs disallow it.
+            auth=auth,  # type: ignore[arg-type]
             params=params,
             headers=headers,
             data=data,

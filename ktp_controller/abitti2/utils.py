@@ -96,7 +96,7 @@ def parse_students(
 
         exam_title = student.get("examTitle", None)
 
-        flags: {ktp_controller.schemas.StudentFlag} = set()
+        flags: set[ktp_controller.schemas.StudentFlag] = set()
 
         if not is_connected:
             flags.add(ktp_controller.schemas.StudentFlag.DISCONNECTED)

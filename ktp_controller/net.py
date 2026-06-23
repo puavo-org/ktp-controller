@@ -50,7 +50,7 @@ def interface_addresses(interface: str) -> dict:
     ensuring downstream logic (like checking for 'AF_PACKET') still works.
     """
     addrs = psutil.net_if_addrs().get(interface, [])
-    result = {}
+    result: dict[str, list[dict[str, str]]] = {}
 
     for snic in addrs:
         # Map socket families to the string names expected by the original code

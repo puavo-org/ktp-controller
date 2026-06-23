@@ -1,6 +1,7 @@
 # Standard library imports
 import argparse
 import asyncio
+import typing
 
 # Third-party imports
 import yaml
@@ -109,7 +110,7 @@ _COMMANDS = {
     "status": _command_status,
 }
 
-_COMMAND_ARGUMENTS = {
+_COMMAND_ARGUMENTS: dict[str, tuple[tuple[str, ...], dict[str, typing.Any]]] = {
     "status": (
         ("--show-cached-files",),
         {"help": "show cached files", "action": "store_true", "default": False},
@@ -172,11 +173,11 @@ def run() -> int:
     for command in _COMMANDS:
         subparser = subparsers.add_parser(command)
         try:
-            args, kwargs = _COMMAND_ARGUMENTS[command]
+            cmd_args, cmd_kwargs = _COMMAND_ARGUMENTS[command]
         except KeyError:
             pass
         else:
-            subparser.add_argument(*args, **kwargs)
+            subparser.add_argument(*cmd_args, **cmd_kwargs)
 
     args = parser.parse_args()
 

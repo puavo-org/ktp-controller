@@ -2,6 +2,7 @@
 import asyncio
 import contextlib
 import logging
+import typing
 
 # Third-party imports
 import fastapi
@@ -17,8 +18,9 @@ _LOGGER = logging.getLogger(__name__)
 class PubSubBroadcaster:
     def __init__(self, redis_url: str = "redis://127.0.0.1"):
         self.__redis_url = redis_url
-        self.__redis_client = None
-        self.__pubsub = None
+        self.__redis_client: typing.Any = None
+        # Redis' async pubsub object is dynamically typed; treat it as Any.
+        self.__pubsub: typing.Any = None
         self.__registrations: dict[str, list[fastapi.WebSocket]] = {}
         self.__listener_task = None
         self.__registrations_lock = asyncio.Lock()

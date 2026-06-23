@@ -44,6 +44,7 @@ dev = [
     "httpx",
     "selenium",
     "ruff>=0.14.13",
+    "mypy>=2.1.0",
 ]
 
 [tool.uv.build-backend]
@@ -100,3 +101,26 @@ extend-immutable-calls = [
 "tests/**" = [
     "B011", # assert-false: pytest tests legitimately use plain assert patterns
 ]
+
+[tool.mypy]
+python_version = "3.11"
+plugins = ["pydantic.mypy"]
+files = ["ktp_controller"]
+# Lenient start: surface real type errors in the annotated code, but do not
+# yet require every function to be fully annotated. Tighten over time.
+ignore_missing_imports = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+# TODO: agent.main needs TypedDicts for its state-machine dicts and Optional
+# annotations for several attributes before it can be type checked. Relaxed for
+# now so the rest of the codebase can be checked; tighten this module later.
+[[tool.mypy.overrides]]
+module = "ktp_controller.agent.main"
+ignore_errors = true
+

@@ -4,8 +4,8 @@ import json
 import logging
 
 # Third-party imports
-import fastapi  # type: ignore
-import fastapi.exceptions  # type: ignore
+import fastapi
+import fastapi.exceptions
 import pydantic
 import sqlalchemy
 import sqlalchemy.orm
@@ -21,8 +21,6 @@ from ktp_controller.api import models
 
 # Internal imports
 from ktp_controller.api.database import get_db
-
-from .. import main
 
 # Relative imports
 from . import schemas
@@ -62,13 +60,15 @@ async def _keep_silent_websocket_alive(websock: fastapi.WebSocket):
 async def _handle_websocket(*asyncfuncs, websock: fastapi.WebSocket, channel: str):
     await websock.accept()
     try:
-        await main.APP.state.pubsub_broadcaster.register_websocket(websock, channel)
+        await websock.app.state.pubsub_broadcaster.register_websocket(websock, channel)
         async with asyncio.TaskGroup() as tg:
             for asyncfunc in asyncfuncs:
                 tg.create_task(asyncfunc(websock))
 
     finally:
-        await main.APP.state.pubsub_broadcaster.unregister_websocket(websock, channel)
+        await websock.app.state.pubsub_broadcaster.unregister_websocket(
+            websock, channel
+        )
 
 
 @router.post(

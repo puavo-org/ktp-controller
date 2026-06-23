@@ -83,8 +83,9 @@ def eom_exam_info_to_api_exam_info(
         )
     return ktp_controller.api.exam.schemas.ExamInfo(
         request_id=eom_exam_info["request_id"],
-        scheduled_exams=scheduled_exams,
-        scheduled_exam_packages=scheduled_exam_packages,
+        # pydantic coerces these list-of-dicts into the nested models.
+        scheduled_exams=scheduled_exams,  # type: ignore[arg-type]
+        scheduled_exam_packages=scheduled_exam_packages,  # type: ignore[arg-type]
         raw_data=eom_exam_info,
     ).model_dump()
 
