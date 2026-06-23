@@ -12,6 +12,7 @@ import typing
 import validators
 
 import ktp_controller.asyncio
+import ktp_controller.net
 import ktp_controller.puavo.conf
 import ktp_controller.utils
 
