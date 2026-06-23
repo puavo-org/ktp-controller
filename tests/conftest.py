@@ -4,17 +4,18 @@ import datetime
 import os.path
 import shutil
 
-# Third-party imports
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 import fastapi.testclient
 import pytest
 import selenium.webdriver
 
+# Third-party imports
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
 # Internal imports
 import ktp_controller.schemas
-from ktp_controller.api.main import APP
 from ktp_controller.api.database import get_db
+from ktp_controller.api.main import APP
 from ktp_controller.api.models import Base
 
 # Relative imports
@@ -31,7 +32,7 @@ def db_engine():
     Base.metadata.drop_all(bind=engine)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testdb(db_engine):
     connection = db_engine.connect()
     transaction = connection.begin()
@@ -55,9 +56,9 @@ def client(testdb):
     APP.dependency_overrides.clear()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def utcnow():
-    yield datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+    return datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
 
 
 @pytest.fixture(scope="session")
@@ -80,12 +81,12 @@ def browser_firefox():
 
 @pytest.fixture(scope="session")
 def student1(browser_firefox):
-    yield Abitti2Student(browser_firefox)
+    return Abitti2Student(browser_firefox)
 
 
 @pytest.fixture(scope="session")
 def student2(browser_chrome):
-    yield Abitti2Student(browser_chrome)
+    return Abitti2Student(browser_chrome)
 
 
 @dataclasses.dataclass
@@ -97,10 +98,10 @@ class _TestRunState:
 
 @pytest.fixture(scope="session")
 def testrunstate():
-    yield _TestRunState()
+    return _TestRunState()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def testdir():
     dirpath = os.path.join(os.path.dirname(__file__), "testdir")
     os.makedirs(dirpath)

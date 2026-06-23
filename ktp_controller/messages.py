@@ -36,7 +36,7 @@ __all__ = [
 # Enums:
 
 
-class Command(str, enum.Enum):
+class Command(enum.StrEnum):
     ENABLE_AUTO_CONTROL = "enable_auto_control"
     DISABLE_AUTO_CONTROL = "disable_auto_control"
     STOP_CURRENT_EXAM_PACKAGE = "stop_current_exam_package"
@@ -49,7 +49,7 @@ class Command(str, enum.Enum):
         return self.value
 
 
-class CommandStatus(str, enum.Enum):
+class CommandStatus(enum.StrEnum):
     OK = "ok"
     OK_NO_CHANGE = "ok_no_change"
     ERROR = "error"
@@ -62,7 +62,7 @@ class CommandStatus(str, enum.Enum):
         return self.value == "ok" or self.value.startswith("ok_")
 
 
-class MessageKind(str, enum.Enum):
+class MessageKind(enum.StrEnum):
     PING = "ping"
     PONG = "pong"
     COMMAND = "command"
@@ -94,7 +94,7 @@ class StatusReportData(ktp_controller.pydantic.BaseModel):
     is_auto_control_enabled: pydantic.StrictBool
 
 
-Data = typing.Union[CommandData, CommandResultData, PongData, StatusReportData, None]
+Data = CommandData | CommandResultData | PongData | StatusReportData | None
 
 
 class _MessageBase(ktp_controller.pydantic.BaseModel):
@@ -128,6 +128,10 @@ class StatusReportMessage(_MessageBase):
     data: StatusReportData
 
 
-Message = typing.Union[
-    CommandMessage, CommandResultMessage, PingMessage, PongMessage, StatusReportMessage
-]
+Message = (
+    CommandMessage
+    | CommandResultMessage
+    | PingMessage
+    | PongMessage
+    | StatusReportMessage
+)

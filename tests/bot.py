@@ -1,11 +1,12 @@
 # Standard library imports
 import contextlib
 
+from selenium.webdriver.common.by import By
+
 # Third-party imports
 from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
 
 # Internal imports
 import ktp_controller.abitti2.naksu2

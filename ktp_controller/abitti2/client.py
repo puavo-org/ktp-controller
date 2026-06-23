@@ -9,12 +9,12 @@ import typing
 # Third-party imports
 import httpx
 
+import ktp_controller.abitti2.naksu2
+
 # Internal imports
 import ktp_controller.files
 import ktp_controller.httpx
 import ktp_controller.utils
-import ktp_controller.abitti2.naksu2
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,7 +68,7 @@ async def _post(path: str, **kwargs) -> httpx.Response:
     return await ktp_controller.httpx.post(url, **kwargs)
 
 
-def get_basic_auth() -> typing.Dict[str, str]:
+def get_basic_auth() -> dict[str, str]:
     return ktp_controller.utils.get_basic_auth(
         ABITTI2_SUPERVISOR_USERNAME,
         ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
@@ -104,19 +104,19 @@ async def get_current_abitti2_version() -> str:
     return version_match.group(1)
 
 
-async def change_student_access_code() -> typing.Dict:
+async def change_student_access_code() -> dict:
     response = await _post("/api/single-security-code")
     return response.json()
 
 
-async def decrypt_exams(decrypt_code: str, **kwargs) -> typing.Dict:
+async def decrypt_exams(decrypt_code: str, **kwargs) -> dict:
     response = await _post(
         "/api/decrypt-exam", json={"decryptPassword": decrypt_code}, **kwargs
     )
     return response.json()
 
 
-async def upload_exam_package(exam_package_filepath, **kwargs) -> typing.List[str]:
+async def upload_exam_package(exam_package_filepath, **kwargs) -> list[str]:
     exam_package_filename = os.path.basename(exam_package_filepath)
 
     host = ktp_controller.abitti2.naksu2.read_domain()
@@ -138,19 +138,19 @@ async def upload_exam_package(exam_package_filepath, **kwargs) -> typing.List[st
         return response.json()
 
 
-async def get_decrypted_exams() -> typing.Dict:
+async def get_decrypted_exams() -> dict:
     response = await _get("/api/exams")
     return response.json()
 
 
-async def start_decrypted_exams() -> typing.Dict:
+async def start_decrypted_exams() -> dict:
     response = await _post("/api/start-exam")
     return response.json()
 
 
 async def prepare_exam_package(
     exam_package_filepath: str, decrypt_codes: typing.Iterable[str]
-) -> typing.Set[str]:
+) -> set[str]:
     upload_result = await upload_exam_package(exam_package_filepath)
     exam_filenames = set(upload_result)
 

@@ -13,11 +13,11 @@ import ktp_controller.net
 _PuavoConfValueT = typing.TypeVar("_PuavoConfValueT")
 
 __all__ = [
-    "is_ers_mode_abitti2server",
     "get_ers_abitti2server_interface",
     "get_ers_abitti2server_network",
     "get_ers_abitti2server_number",
     "get_ers_mode",
+    "is_ers_mode_abitti2server",
 ]
 
 
@@ -104,7 +104,7 @@ def validate_abitti2server_number(
             "number is invalid", maybe_invalid_abitti2server_number
         ) from value_error
 
-    if 1 > number or number > 254:
+    if number < 1 or number > 254:
         raise ValidationError(
             "number is not betwen 1 and 254", maybe_invalid_abitti2server_number
         )

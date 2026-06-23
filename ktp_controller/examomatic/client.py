@@ -14,7 +14,7 @@ import ktp_controller.httpx
 import ktp_controller.utils
 from ktp_controller import SETTINGS
 
-_LOGGER = logging.getLogger(__file__)
+_LOGGER = logging.getLogger(__name__)
 
 __all__ = [
     # Utils:
@@ -32,7 +32,7 @@ __all__ = [
 ]
 
 
-def _get_auth() -> typing.Optional[typing.Tuple[str, str]]:
+def _get_auth() -> tuple[str, str] | None:
     if SETTINGS.examomatic_username and SETTINGS.examomatic_password_file:
         return (
             SETTINGS.examomatic_username,
@@ -80,7 +80,7 @@ async def _post(path: str, **kwargs) -> httpx.Response:
     return await ktp_controller.httpx.post(url, **kwargs)
 
 
-def get_basic_auth() -> typing.Dict[str, str]:
+def get_basic_auth() -> dict[str, str]:
     if SETTINGS.examomatic_username and SETTINGS.examomatic_password_file:
         return ktp_controller.utils.get_basic_auth(
             SETTINGS.examomatic_username,
@@ -125,7 +125,7 @@ def websock_validate_message(data):
 # Exam-O-Matic API commands:
 
 
-async def send_status_report(status_report: typing.Dict, **kwargs) -> typing.Any:
+async def send_status_report(status_report: dict, **kwargs) -> typing.Any:
     kwargs["content"] = (
         ktp_controller.examomatic.schemas.StatusReport.model_validate(status_report)
         .model_dump_json(ensure_ascii=True)
@@ -137,7 +137,7 @@ async def send_status_report(status_report: typing.Dict, **kwargs) -> typing.Any
     return response.json()
 
 
-async def get_exam_info(**kwargs) -> typing.Dict:
+async def get_exam_info(**kwargs) -> dict:
     response = await _get("/v2/schedules/exam_packages", **kwargs)
     return response.json()
 
@@ -189,7 +189,7 @@ async def websock_ack(websock, message):
     )
 
 
-class IsFinal(str, enum.Enum):
+class IsFinal(enum.StrEnum):
     FALSE = "false"
     TRUE = "true"
     UNKNOWN = "unknown"

@@ -1,10 +1,9 @@
-import typing
-
 from ktp_controller.api import models
+
 from . import schemas
 
 
-def db_exam_file_info_to_dict(db_exam_file_info: models.ExamFileInfo) -> typing.Dict:
+def db_exam_file_info_to_dict(db_exam_file_info: models.ExamFileInfo) -> dict:
     return schemas.ExamFileInfo(
         external_id=db_exam_file_info.external_id,
         name=db_exam_file_info.name,
@@ -15,7 +14,7 @@ def db_exam_file_info_to_dict(db_exam_file_info: models.ExamFileInfo) -> typing.
     ).dict()
 
 
-def db_scheduled_exam_to_dict(db_scheduled_exam: models.ScheduledExam) -> typing.Dict:
+def db_scheduled_exam_to_dict(db_scheduled_exam: models.ScheduledExam) -> dict:
     return schemas.ScheduledExam(
         external_id=db_scheduled_exam.external_id,
         exam_title=db_scheduled_exam.exam_title,
@@ -26,7 +25,7 @@ def db_scheduled_exam_to_dict(db_scheduled_exam: models.ScheduledExam) -> typing
     ).dict()
 
 
-def db_exam_info_to_dict(db_exam_info: models.ExamInfo) -> typing.Dict:
+def db_exam_info_to_dict(db_exam_info: models.ExamInfo) -> dict:
     return schemas.ExamInfo(
         request_id=db_exam_info.request_id,
         raw_data=db_exam_info.raw_data,

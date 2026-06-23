@@ -59,6 +59,10 @@ def new_event_loop(
 
     loop = asyncio.new_event_loop()
 
+    # Keep strong references to background tasks so they are not garbage
+    # collected before they finish (see asyncio.ensure_future docs).
+    background_tasks = set()
+
     async def _stop_loop():
         loop.stop()
 
@@ -68,7 +72,9 @@ def new_event_loop(
         logger.info("stopping due to caught signal %r", sig)
         for task in asyncio.all_tasks():
             task.cancel()
-        asyncio.ensure_future(_stop_loop())
+        stop_task = asyncio.ensure_future(_stop_loop())
+        background_tasks.add(stop_task)
+        stop_task.add_done_callback(background_tasks.discard)
 
     for sig in stop_signals:
         loop.add_signal_handler(sig, _stop, sig)

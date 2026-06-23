@@ -1,16 +1,17 @@
 # Standard library imports
-from typing import List, Literal, Set
+from typing import Literal
 
 # Third-party imports
 import pydantic
 from pydantic import Field
 
-# Internal imports
-from ktp_controller import VERSION
 import ktp_controller.api.exam.schemas
 import ktp_controller.pydantic
 import ktp_controller.schemas
 import ktp_controller.settings
+
+# Internal imports
+from ktp_controller import VERSION
 
 __all__ = [
     "StatusReport",
@@ -65,7 +66,7 @@ class _Student(ktp_controller.pydantic.BaseModel):
         examples=[True, False],
         description="Has the student finished the exam. Finished students do not have any flags.",
     )
-    flags: Set[ktp_controller.schemas.StudentFlag] = Field(
+    flags: set[ktp_controller.schemas.StudentFlag] = Field(
         examples=[
             [ktp_controller.schemas.StudentFlag.IDLE],
             [
@@ -93,7 +94,7 @@ class _Abitti2ExamStats(ktp_controller.pydantic.BaseModel):
 
 
 class _Abitti2Stats(ktp_controller.pydantic.BaseModel):
-    exams: List[_Abitti2ExamStats] | None
+    exams: list[_Abitti2ExamStats] | None
 
 
 class _Abitti2(ktp_controller.pydantic.BaseModel):
@@ -111,8 +112,8 @@ class _Abitti2(ktp_controller.pydantic.BaseModel):
     last_message_received_at: ktp_controller.pydantic.DateTime | None = Field(
         examples=["2026-05-03T16:29:20.007+0000"]
     )
-    exams: List[_Exam] | None
-    students: List[_Student] | None
+    exams: list[_Exam] | None
+    students: list[_Student] | None
 
 
 class _WebsocketStats(ktp_controller.pydantic.BaseModel):
@@ -157,7 +158,7 @@ class _KTPController(ktp_controller.pydantic.BaseModel):
     is_auto_control_enabled: pydantic.StrictBool = Field(examples=[True])
     cached_files: ktp_controller.schemas.CachedFiles
     current_exam_package: _ExamPackage | None
-    next_exam_packages: List[_ExamPackage] | None
+    next_exam_packages: list[_ExamPackage] | None
     settings: ktp_controller.settings.Settings = Field(
         description="Effective runtime configuation of KTP Controller"
     )

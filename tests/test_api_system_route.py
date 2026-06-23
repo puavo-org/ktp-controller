@@ -1,13 +1,13 @@
 # Standard library imports
 import datetime
 
+import ktp_controller.messages
+
 # Third-party imports
 # import fastapi
 # import pytest
-
 # Internal imports
 from ktp_controller import SETTINGS, VERSION
-import ktp_controller.messages
 from ktp_controller.api import models
 
 # Relative imports
@@ -266,9 +266,7 @@ def test_send_status_report__valid_minimal_input(client, testdb, utcnow):
 
     db_status_report = testdb.query(models.StatusReport).one()
 
-    assert (
-        db_status_report.dbrow_created_at.replace(tzinfo=datetime.timezone.utc) > utcnow
-    )
+    assert db_status_report.dbrow_created_at.replace(tzinfo=datetime.UTC) > utcnow
     assert db_status_report.raw_data == status_report
 
     response = client.post("/api/v1/system/get_last_status_report")
@@ -354,10 +352,7 @@ def test_send_status_report__same_valid_minimal_input_twice(client, testdb, utcn
         testdb.query(models.StatusReport).order_by(models.StatusReport.dbid).all()
     )
 
-    assert (
-        db_status_report1.dbrow_created_at.replace(tzinfo=datetime.timezone.utc)
-        > utcnow
-    )
+    assert db_status_report1.dbrow_created_at.replace(tzinfo=datetime.UTC) > utcnow
 
     assert db_status_report1.dbrow_created_at < db_status_report2.dbrow_created_at
 
@@ -442,9 +437,7 @@ def test_send_status_report__valid_but_highly_unlikely_status(client, testdb, ut
 
     db_status_report = testdb.query(models.StatusReport).one()
 
-    assert (
-        db_status_report.dbrow_created_at.replace(tzinfo=datetime.timezone.utc) > utcnow
-    )
+    assert db_status_report.dbrow_created_at.replace(tzinfo=datetime.UTC) > utcnow
     assert db_status_report.raw_data == status_report
 
 
@@ -597,10 +590,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
         testdb.query(models.StatusReport).order_by(models.StatusReport.dbid).all()
     )
 
-    assert (
-        db_status_report1.dbrow_created_at.replace(tzinfo=datetime.timezone.utc)
-        > utcnow
-    )
+    assert db_status_report1.dbrow_created_at.replace(tzinfo=datetime.UTC) > utcnow
 
     assert db_status_report1.dbrow_created_at < db_status_report2.dbrow_created_at
 

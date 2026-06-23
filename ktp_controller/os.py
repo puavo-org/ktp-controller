@@ -8,7 +8,6 @@ import psutil
 # Internal imports
 import ktp_controller.utils
 
-
 _LOGGER = logging.getLogger(__name__)
 
 

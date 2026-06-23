@@ -10,20 +10,20 @@ import os
 import signal
 import urllib.parse
 import uuid
-
-from typing import Annotated, Dict, List, Any
+from typing import Annotated, Any
 
 # Third-party imports
 import fastapi  # type: ignore
 import fastapi.responses
-import uvicorn  # type: ignore
 import pydantic
+import uvicorn  # type: ignore
 
-# Internal imports
-from ktp_controller import VERSION
 import ktp_controller.examomatic.schemas
 import ktp_controller.pydantic
 import ktp_controller.utils
+
+# Internal imports
+from ktp_controller import VERSION
 
 from .utils import get_exam_filepath, get_synthetic_exam_info
 
@@ -108,7 +108,7 @@ class _Schedule(ktp_controller.pydantic.BaseModel):
     exam_modified_at: ktp_controller.pydantic.DateTime
     schedule_modified_at: ktp_controller.pydantic.DateTime
     school_name: pydantic.StrictStr
-    server_id: List[pydantic.conint(strict=True, ge=1)]
+    server_id: list[pydantic.conint(strict=True, ge=1)]
     is_retake: pydantic.StrictBool
     retake_participants: pydantic.conint(strict=True, ge=0)
 
@@ -118,15 +118,15 @@ class _Package(ktp_controller.pydantic.BaseModel):
     start_time: ktp_controller.pydantic.DateTime
     end_time: ktp_controller.pydantic.DateTime
     lock_time: ktp_controller.pydantic.DateTime
-    schedules: List[pydantic.StrictStr]
+    schedules: list[pydantic.StrictStr]
     locked: pydantic.StrictBool
     server_id: pydantic.conint(strict=True, ge=1)
     estimated_total_size: pydantic.conint(strict=True, ge=0)
 
 
 class _ExamInfo(ktp_controller.pydantic.BaseModel):
-    schedules: List[_Schedule]
-    packages: Dict[str, _Package]
+    schedules: list[_Schedule]
+    packages: dict[str, _Package]
     request_id: pydantic.StrictStr
 
 
@@ -166,7 +166,7 @@ async def _mock_set_exam_info(
 
 @APP.post(
     "/mock/get_state",
-    response_model=Dict[str, Any],
+    response_model=dict[str, Any],
     status_code=200,
 )
 async def _mock_get_state(
@@ -197,7 +197,7 @@ async def _get_exam_info(
     exam_info = copy.deepcopy(APP.state.exam_info)
 
     exam_info["request_id"] = (
-        f"{domain} {hostname} {server_id} {utcnow.isoformat()} {str(uuid.uuid4())}"
+        f"{domain} {hostname} {server_id} {utcnow.isoformat()} {uuid.uuid4()!s}"
     )
     for p in exam_info["packages"].values():
         p["locked"] = utcnow >= datetime.datetime.fromisoformat(p["lock_time"])

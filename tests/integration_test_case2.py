@@ -2,8 +2,6 @@
 import asyncio
 
 # Third-party imports
-
-
 # Internal imports
 import ktp_controller.abitti2.client
 import ktp_controller.api.client
@@ -14,8 +12,8 @@ from .utils import (
     assert_abitti2_running_exams,
     assert_clean_start,
     assert_exam_scheduling_and_download,
-    assert_scheduled_exam_package_state_is,
     assert_scheduled_exam_package_gets_started,
+    assert_scheduled_exam_package_state_is,
 )
 
 # Test functions are and must be executed sequentially. In unit tests,

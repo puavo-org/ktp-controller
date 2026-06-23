@@ -11,20 +11,21 @@ import sqlalchemy
 import sqlalchemy.orm
 import sqlalchemy.sql
 
-# Internal imports
-from ktp_controller.api.database import get_db
+import ktp_controller.agent.utils
+import ktp_controller.api.utils
+import ktp_controller.messages
+import ktp_controller.pydantic
+import ktp_controller.redis
+import ktp_controller.ui
 from ktp_controller.api import models
 
-import ktp_controller.agent.utils
-import ktp_controller.messages
-import ktp_controller.redis
-import ktp_controller.pydantic
-import ktp_controller.api.utils
-import ktp_controller.ui
+# Internal imports
+from ktp_controller.api.database import get_db
+
+from .. import main
 
 # Relative imports
 from . import schemas
-from .. import main
 
 _LOGGER = logging.getLogger(__name__)
 

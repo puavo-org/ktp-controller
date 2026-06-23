@@ -10,7 +10,7 @@ import ktp_controller.examomatic.client
 import ktp_controller.files
 import ktp_controller.utils
 
-_LOGGER = logging.getLogger(__file__)
+_LOGGER = logging.getLogger(__name__)
 
 
 __all__ = [

@@ -4,7 +4,6 @@ import datetime
 import time
 
 # Third-party imports
-
 # Internal imports
 import ktp_controller.abitti2.client
 import ktp_controller.abitti2.naksu2

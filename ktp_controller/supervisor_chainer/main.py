@@ -4,8 +4,8 @@ import dataclasses
 import datetime
 import json
 import os
-import signal
 import select
+import signal
 import subprocess
 import sys
 import typing
@@ -31,7 +31,7 @@ class _guaranteed_result(contextlib.AbstractContextManager):
     def __enter__(self) -> None:
         if self.__do_log:
             _write_stderr("\n")
-        return None
+        return
 
     def __exit__(self, exc_type, exc_value, traceback) -> True:
         if exc_type is None:
@@ -41,7 +41,7 @@ class _guaranteed_result(contextlib.AbstractContextManager):
         else:
             _write_stderr("Event handling failed.\n")
             _write_stderr(f"{exc_type}: {exc_value}\n")
-            _write_stdout("RESULT 4\FAIL")
+            _write_stdout(r"RESULT 4\FAIL")
         return True
 
 
@@ -158,7 +158,7 @@ def _supervisorctl(command, conf_filepath, *args) -> bool:
     with open(os.devnull, "wb") as devnull:
         try:
             subprocess.check_call(
-                ["supervisorctl", "-c", conf_filepath, command] + list(args),
+                ["supervisorctl", "-c", conf_filepath, command, *list(args)],
                 stdout=devnull,
             )
         except subprocess.CalledProcessError:
@@ -265,10 +265,7 @@ class _Chainer:
         _write_stderr("    +==========================================+\n")
         _write_stderr("\n")
 
-        if all(self.__expected_exits.values()):
-            result = "ok"
-        else:
-            result = "fail"
+        result = "ok" if all(self.__expected_exits.values()) else "fail"
 
         if self.__do_shutdown:
             _write_stderr("Shutting down the supervisor...\n")

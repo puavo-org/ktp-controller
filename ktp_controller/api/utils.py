@@ -7,7 +7,6 @@ import logging
 import fastapi
 import redis.asyncio as redis
 
-
 __all__ = [
     "PubSubBroadcaster",
 ]
@@ -183,9 +182,10 @@ class PubSubBroadcaster:
     async def __broadcast(self, message):
         data, channel = message["data"], message["channel"]
 
-        tasks = []
-        for websock in self.__registrations.get(channel, []).copy():
-            tasks.append(self.__unicast(websock, data, channel))
+        tasks = [
+            self.__unicast(websock, data, channel)
+            for websock in self.__registrations.get(channel, []).copy()
+        ]
 
         if not tasks:
             return

@@ -1,7 +1,7 @@
 # Standard library imports
 import enum
 import typing
-from typing_extensions import Self
+from typing import Self
 
 # Third-party imports
 import pydantic
@@ -50,7 +50,7 @@ class ScheduledExam(ktp_controller.pydantic.BaseModel):
         return self
 
 
-class ScheduledExamPackageState(str, enum.Enum):
+class ScheduledExamPackageState(enum.StrEnum):
     READY = "ready"
     RUNNING = "running"
     STOPPING = "stopping"
@@ -67,7 +67,7 @@ class ScheduledExamPackage(ktp_controller.pydantic.BaseModel):
     end_time: ktp_controller.pydantic.DateTime
     lock_time: ktp_controller.pydantic.DateTime | None
     locked: pydantic.StrictBool
-    scheduled_exam_external_ids: typing.List[pydantic.StrictStr]
+    scheduled_exam_external_ids: list[pydantic.StrictStr]
     state: ScheduledExamPackageState | None
     state_changed_at: ktp_controller.pydantic.DateTime | None
     started_at: ktp_controller.pydantic.DateTime | None
@@ -81,10 +81,10 @@ class ScheduledExamPackage(ktp_controller.pydantic.BaseModel):
 
 
 class ExamInfo(ktp_controller.pydantic.BaseModel):
-    scheduled_exams: typing.List[ScheduledExam]
-    scheduled_exam_packages: typing.List[ScheduledExamPackage]
+    scheduled_exams: list[ScheduledExam]
+    scheduled_exam_packages: list[ScheduledExamPackage]
     request_id: pydantic.StrictStr
-    raw_data: typing.Dict[str, typing.Any]
+    raw_data: dict[str, typing.Any]
 
 
 class GetScheduledExamData(ktp_controller.pydantic.BaseModel):

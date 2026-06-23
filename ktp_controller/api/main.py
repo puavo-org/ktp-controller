@@ -13,7 +13,6 @@ import ktp_controller.api.exam.routes
 import ktp_controller.api.system.routes
 from ktp_controller import SETTINGS
 
-
 __all__ = [
     # Constants:
     "APP",

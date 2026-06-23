@@ -18,7 +18,7 @@ __all__ = [
 ]
 
 
-_LOGGER = logging.getLogger(__file__)
+_LOGGER = logging.getLogger(__name__)
 
 _AGENT_STATE_FILEPATH = os.path.expanduser(
     "~/.local/share/ktp-controller/agent-state.json"
@@ -33,7 +33,7 @@ class AgentState(ktp_controller.pydantic.BaseModel):
 def load_agent_state() -> AgentState:
     _LOGGER.info("Loading agent state...")
     try:
-        with open(_AGENT_STATE_FILEPATH, "r", encoding="ascii") as agent_state_file:
+        with open(_AGENT_STATE_FILEPATH, encoding="ascii") as agent_state_file:
             agent_state = AgentState.model_validate_json(agent_state_file.read())
     except FileNotFoundError:
         _LOGGER.info(

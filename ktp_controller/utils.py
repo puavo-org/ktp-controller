@@ -15,7 +15,6 @@ import sys
 import typing
 import urllib.parse
 
-
 __all__ = [
     # Utils:
     "sha256",
@@ -29,7 +28,7 @@ __all__ = [
 ]
 
 
-_LOGGER = logging.getLogger(__file__)
+_LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.DEBUG)
 
 
@@ -69,7 +68,7 @@ def sha256(filepath: str, chunk_size_bytes: int = 1024**2) -> str:
 def open_atomic_write(
     dest_filepath: str,
     exclusive: bool = False,
-    encoding: typing.Optional[str] = None,
+    encoding: str | None = None,
     do_makedirs: bool = False,
 ):
     if exclusive and os.path.exists(dest_filepath):
@@ -100,18 +99,20 @@ def open_atomic_write(
 
 
 def copy_atomic(src_filepath: str, dest_filepath: str, exclusive: bool = False):
-    with open(src_filepath, "rb") as src_file:
-        with open_atomic_write(
+    with (
+        open(src_filepath, "rb") as src_file,
+        open_atomic_write(
             dest_filepath, exclusive=exclusive, encoding=None
-        ) as dest_file:
-            while True:
-                data = src_file.read(4096)
-                if not data:
-                    break
-                dest_file.write(data)
+        ) as dest_file,
+    ):
+        while True:
+            data = src_file.read(4096)
+            if not data:
+                break
+            dest_file.write(data)
 
 
-def json_loads_dict(string: str) -> typing.Dict[str, typing.Any]:
+def json_loads_dict(string: str) -> dict[str, typing.Any]:
     try:
         data = json.loads(string)
     except Exception as e:
@@ -164,13 +165,15 @@ def get_url(
     return url
 
 
-def get_basic_auth(username: str, password: str) -> typing.Dict[str, str]:
-    auth = base64.b64encode(f"{username}:{password}".encode("utf-8")).decode("ascii")
+def get_basic_auth(username: str, password: str) -> dict[str, str]:
+    auth = base64.b64encode(f"{username}:{password}".encode()).decode("ascii")
     return {"Authorization": f"Basic {auth}"}
 
 
-def readfirstline(filepath, encoding=sys.getdefaultencoding()):
-    with open(filepath, "r", encoding=encoding) as f:
+def readfirstline(filepath, encoding=None):
+    if encoding is None:
+        encoding = sys.getdefaultencoding()
+    with open(filepath, encoding=encoding) as f:
         return f.readline().rstrip(os.linesep)
 
 
@@ -186,7 +189,7 @@ async def websock_send_json(websock, data) -> str:
 
 
 def utcnow() -> datetime.datetime:
-    return datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+    return datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
 
 
 def now() -> datetime.datetime:

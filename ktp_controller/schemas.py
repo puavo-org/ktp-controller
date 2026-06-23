@@ -1,6 +1,5 @@
 # Standard library imports
 import enum
-import typing
 
 # Third-party imports
 import pydantic
@@ -8,7 +7,6 @@ from pydantic import Field
 
 # Internal imports
 import ktp_controller.pydantic
-
 
 __all__ = [
     "CachedFile",
@@ -18,7 +16,7 @@ __all__ = [
 ]
 
 
-class StudentFlag(str, enum.Enum):
+class StudentFlag(enum.StrEnum):
     DISCONNECTED = "disconnected"
     IDLE = "idle"
     WAITING_FOR_AUTH = "waiting-for-auth"
@@ -43,6 +41,6 @@ class CachedFile(ktp_controller.pydantic.BaseModel):
 
 
 class CachedFiles(ktp_controller.pydantic.BaseModel):
-    exams: typing.List[CachedFile]
-    exam_packages: typing.List[CachedFile]
-    answers: typing.List[CachedFile]
+    exams: list[CachedFile]
+    exam_packages: list[CachedFile]
+    answers: list[CachedFile]

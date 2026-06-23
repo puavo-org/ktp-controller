@@ -4,7 +4,6 @@
 import sqlalchemy
 import sqlalchemy.orm
 
-
 __all__ = [
     # Utils:
     "get_db",

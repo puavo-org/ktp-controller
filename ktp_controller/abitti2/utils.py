@@ -8,10 +8,10 @@ import ktp_controller.abitti2.client
 import ktp_controller.schemas
 import ktp_controller.utils
 
-_LOGGER = logging.getLogger(__file__)
+_LOGGER = logging.getLogger(__name__)
 
 
-def sanitize_stats_message(stats_message: typing.Dict[str, typing.Any]) -> bool:
+def sanitize_stats_message(stats_message: dict[str, typing.Any]) -> bool:
     """Best-effort in-place sanitation of Abitti2 stats messages.
 
     Return boolean indicating whether the stats message was changed or not.
@@ -65,10 +65,10 @@ def sanitize_stats_message(stats_message: typing.Dict[str, typing.Any]) -> bool:
 
 
 def parse_students(
-    sanitized_stats_message: typing.Dict[str, typing.Any],
+    sanitized_stats_message: dict[str, typing.Any],
     *,
     utcnow: datetime.datetime | None = None,
-) -> typing.List[typing.Dict[str, typing.Any]]:
+) -> list[dict[str, typing.Any]]:
     if utcnow is None:
         utcnow = ktp_controller.utils.utcnow()
 
@@ -128,7 +128,7 @@ def parse_students(
     return students
 
 
-def validate_security_code(security_code: typing.Dict[str, str]) -> None:
+def validate_security_code(security_code: dict[str, str]) -> None:
     """Raise ValueError if security_code is not a well-formed Abitti2 security code dict."""
     if not isinstance(security_code, dict):
         raise ValueError("not dict")
@@ -141,7 +141,7 @@ def validate_security_code(security_code: typing.Dict[str, str]) -> None:
 
 
 def security_code_to_student_access_code(
-    security_code: typing.Dict[str, str] | None,
+    security_code: dict[str, str] | None,
 ) -> ktp_controller.schemas.StudentAccessCode | None:
     """Convert an Abitti2 security code dict to a StudentAccessCode, or None."""
     if security_code is None:
@@ -153,7 +153,7 @@ def security_code_to_student_access_code(
     )
 
 
-def no_active_students(status_report: typing.Dict[str, typing.Any]) -> bool:
+def no_active_students(status_report: dict[str, typing.Any]) -> bool:
     """Return True when there are no active students in the status report.
 
     >>> no_active_students({"abitti2": {"students": []}})
@@ -174,7 +174,7 @@ def no_active_students(status_report: typing.Dict[str, typing.Any]) -> bool:
     return all(not s["is_active"] for s in status_report["abitti2"]["students"])
 
 
-async def allow_students_to_use_browsers(students: typing.List[typing.Dict]) -> None:
+async def allow_students_to_use_browsers(students: list[dict]) -> None:
     """Grant browser access to every student that is waiting for auth-browser."""
     for student in students:
         student_uuid = student["uuid"]

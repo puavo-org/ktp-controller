@@ -6,7 +6,7 @@ import subprocess
 import typing
 
 # Third-party imports
-from pydantic import field_validator, NonNegativeInt, PositiveInt, StrictBool
+from pydantic import NonNegativeInt, PositiveInt, StrictBool, field_validator
 from pydantic.fields import FieldInfo
 from pydantic_settings import (
     BaseSettings,
@@ -35,12 +35,12 @@ class _PuavoSettingsSource(PydanticBaseSettingsSource):
 
         if field_name in ["hostname", "domain"]:
             puavo_filepath = f"/etc/puavo/{field_name}"
-            with open(puavo_filepath, "r", encoding="utf-8") as f:
+            with open(puavo_filepath, encoding="utf-8") as f:
                 field_value = f.read().rstrip()
 
         elif field_name == "id":
             puavo_filepath = "/etc/puavo/id"
-            with open(puavo_filepath, "r", encoding="utf-8") as f:
+            with open(puavo_filepath, encoding="utf-8") as f:
                 field_value = int(f.read().rstrip())
 
         elif field_name == "examomatic_host":
@@ -51,7 +51,7 @@ class _PuavoSettingsSource(PydanticBaseSettingsSource):
             )
 
         elif field_name == "examomatic_username":
-            with open("/etc/puavo/ldap/dn", "r", encoding="utf-8") as f:
+            with open("/etc/puavo/ldap/dn", encoding="utf-8") as f:
                 field_value = f.read().rstrip()
 
         elif field_name == "examomatic_password_file":

@@ -3,7 +3,6 @@ import logging
 import uuid
 
 # Third-party imports
-
 # Internal imports
 import ktp_controller.messages
 import ktp_controller.redis
@@ -16,9 +15,9 @@ __all__ = [
 ]
 
 
-_LOGGER = logging.getLogger(__file__)
+_LOGGER = logging.getLogger(__name__)
 
-PUBSUB_CHANNEL = f"ktp-controller__agent_messages__{str(uuid.uuid4())}"
+PUBSUB_CHANNEL = f"ktp-controller__agent_messages__{uuid.uuid4()!s}"
 
 
 async def send_command(command_data: ktp_controller.messages.CommandData) -> str:

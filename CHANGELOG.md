@@ -33,6 +33,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Cleanup of archived exam package files.
 
+- Loggers are now named after their module (`__name__`) instead of the
+  source file path (`__file__`), producing readable logger names.
+
 
 ## [0.5.7] - 2026-06-03
 

@@ -53,3 +53,50 @@ module-name = "ktp_controller"
 [build-system]
 requires = ["uv_build>=0.9.0,<0.10.0"]
 build-backend = "uv_build"
+
+[tool.ruff]
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    "PIE",  # flake8-pie
+    "PT",   # flake8-pytest-style
+    "RET",  # flake8-return
+    "LOG",  # flake8-logging
+    "G",    # flake8-logging-format
+    "PERF", # perflint
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "E501",   # line-too-long: handled by the formatter
+    "SIM105", # suppressible-exception: contextlib.suppress is not always clearer
+    "PERF203", # try-except-in-loop: not always avoidable
+    "RUF022", # unsorted-dunder-all: __all__ is intentionally grouped by comments
+]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI relies on function calls in argument defaults (Depends, Query, ...).
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Body",
+    "fastapi.Form",
+    "fastapi.File",
+    "fastapi.Header",
+    "fastapi.Cookie",
+    "fastapi.Security",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "B011", # assert-false: pytest tests legitimately use plain assert patterns
+]

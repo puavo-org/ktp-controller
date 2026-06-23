@@ -1,11 +1,11 @@
 # Standard library imports
 import uuid
 
-# Third-party imports
+import ktp_controller.messages
 
+# Third-party imports
 # Internal imports
 import ktp_controller.redis
-import ktp_controller.messages
 
 # Relative imports
 
@@ -22,7 +22,7 @@ __all__ = [
 # Constants
 
 
-PUBSUB_CHANNEL = f"ktp-controller__ui_messages__{str(uuid.uuid4())}"
+PUBSUB_CHANNEL = f"ktp-controller__ui_messages__{uuid.uuid4()!s}"
 
 
 # Utils:

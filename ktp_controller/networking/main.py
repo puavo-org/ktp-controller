@@ -33,10 +33,11 @@ import signal
 import subprocess
 import time
 
+import ktp_controller.net
+import ktp_controller.puavo.conf
+
 # Internal imports
 from ktp_controller import VERSION
-import ktp_controller.puavo.conf
-import ktp_controller.net
 
 _THIS_NAME = "ktp-controller-networking"
 _LOGGER = logging.getLogger(_THIS_NAME)
@@ -76,8 +77,10 @@ def _start_dhcp_dns_server(net: ktp_controller.net.Net) -> int:
         f"--addn-hosts={_DNSMASQ_HOSTS_FILE}",
     ]
 
-    for koe_abitti_net_dns_server in _KOE_ABITTI_NET_DNS_SERVERS:
-        args.append(f"--server=/koe.abitti.net/{koe_abitti_net_dns_server}")
+    args.extend(
+        f"--server=/koe.abitti.net/{koe_abitti_net_dns_server}"
+        for koe_abitti_net_dns_server in _KOE_ABITTI_NET_DNS_SERVERS
+    )
     if len(_KOE_ABITTI_NET_DNS_SERVERS) > 0:
         args.append("--all-servers")
 
@@ -132,8 +135,7 @@ def _stop_dhcp_dns_server() -> int:
 def _reload_networkmanager():
     completed_process = subprocess.run(
         ["systemctl", "reload", "NetworkManager.service"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
     )
     if completed_process.returncode != 0:
         _LOGGER.warning(
@@ -188,7 +190,9 @@ def _command_start(interface, network, number, args):
     try:
         _configure_networkmanager()
     finally:
-        return _start_dhcp_dns_server(net)
+        # The DHCP/DNS server must be (re)started regardless of whether
+        # configuring NetworkManager succeeded.
+        return _start_dhcp_dns_server(net)  # noqa: B012
 
 
 def _command_stop(interface, network, number, args) -> int:
@@ -196,8 +200,10 @@ def _command_stop(interface, network, number, args) -> int:
     try:
         _unconfigure_networkmanager()
     finally:
+        # The DHCP/DNS server must be stopped and the interface brought
+        # down regardless of whether unconfiguring NetworkManager failed.
         try:
-            return _stop_dhcp_dns_server()
+            return _stop_dhcp_dns_server()  # noqa: B012
         finally:
             net.down()
 
@@ -212,7 +218,9 @@ def _command_set_domain(interface, network, number, args) -> int:
     try:
         _reload_networkmanager()
     finally:
-        return int(_kill_dnsmasq(signal.SIGHUP))
+        # dnsmasq must always be signalled to reload regardless of whether
+        # reloading NetworkManager failed.
+        return int(_kill_dnsmasq(signal.SIGHUP))  # noqa: B012
 
 
 def _command_del_domain(interface, network, number, args) -> int:
@@ -222,7 +230,9 @@ def _command_del_domain(interface, network, number, args) -> int:
     try:
         _reload_networkmanager()
     finally:
-        return int(_kill_dnsmasq(signal.SIGHUP))
+        # dnsmasq must always be signalled to reload regardless of whether
+        # reloading NetworkManager failed.
+        return int(_kill_dnsmasq(signal.SIGHUP))  # noqa: B012
 
 
 def _main() -> int:

@@ -37,10 +37,12 @@ async def pubsub_send(message: ktp_controller.messages.Message, channel: str) ->
 
 @contextlib.asynccontextmanager
 async def pubsub(channel):
-    async with redis.from_url("redis://127.0.0.1") as redis_client:
-        async with redis_client.pubsub() as pubsub_:
-            await pubsub_.subscribe(channel)
-            try:
-                yield pubsub_
-            finally:
-                await pubsub_.unsubscribe(channel)
+    async with (
+        redis.from_url("redis://127.0.0.1") as redis_client,
+        redis_client.pubsub() as pubsub_,
+    ):
+        await pubsub_.subscribe(channel)
+        try:
+            yield pubsub_
+        finally:
+            await pubsub_.unsubscribe(channel)

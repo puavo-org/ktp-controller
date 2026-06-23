@@ -2,7 +2,6 @@
 import typing
 
 # Third-party imports
-
 # Internal imports
 import ktp_controller.examomatic.schemas
 import ktp_controller.pydantic
@@ -11,8 +10,8 @@ import ktp_controller.pydantic
 
 
 __all__ = [
-    "StatusReport",
     "Echo",
+    "StatusReport",
 ]
 
 

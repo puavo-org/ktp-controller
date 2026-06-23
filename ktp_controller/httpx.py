@@ -8,7 +8,7 @@ import httpx
 _LOGGER = logging.getLogger(__name__)
 
 NumberT: typing.TypeAlias = int | float
-TimeoutT: typing.TypeAlias = NumberT | None | typing.Tuple[NumberT, NumberT]
+TimeoutT: typing.TypeAlias = NumberT | None | tuple[NumberT, NumberT]
 
 DEFAULT_TIMEOUT: TimeoutT = (3.1, 60)
 
@@ -25,9 +25,9 @@ def _parse_timeout(timeout: TimeoutT) -> httpx.Timeout | NumberT | None:
 async def get(
     url: str,
     *,
-    auth: typing.Tuple[str, str] | None = None,
-    params: typing.Dict[str, str] | None = None,
-    headers: typing.Dict[str, str] | None = None,
+    auth: tuple[str, str] | None = None,
+    params: dict[str, str] | None = None,
+    headers: dict[str, str] | None = None,
     timeout: TimeoutT = DEFAULT_TIMEOUT,
 ) -> httpx.Response:
     async with httpx.AsyncClient() as client:
@@ -52,13 +52,13 @@ async def get(
 async def post(
     url: str,
     *,
-    auth: typing.Tuple[str, str] | None = None,
-    params: typing.Dict[str, str] | None = None,
-    headers: typing.Dict[str, str] | None = None,
+    auth: tuple[str, str] | None = None,
+    params: dict[str, str] | None = None,
+    headers: dict[str, str] | None = None,
     data: typing.Any | None = None,
     json: typing.Any | None = None,
     content: bytes | None = None,
-    files: typing.Dict | None = None,
+    files: dict | None = None,
     timeout: TimeoutT = DEFAULT_TIMEOUT,
 ) -> httpx.Response:
 
@@ -91,9 +91,9 @@ async def post(
 async def stream_read(
     url: str,
     *,
-    auth: typing.Tuple[str, str] | None = None,
-    params: typing.Dict[str, str] | None = None,
-    headers: typing.Dict[str, str] | None = None,
+    auth: tuple[str, str] | None = None,
+    params: dict[str, str] | None = None,
+    headers: dict[str, str] | None = None,
     timeout: TimeoutT = DEFAULT_TIMEOUT,
     chunk_size: int = 4096,
 ):

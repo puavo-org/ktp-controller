@@ -6,16 +6,16 @@ import os.path
 import pathlib
 import re
 import subprocess
-import typing
 
 # Third-party imports
 import validators
 
-# Internal imports
-from ktp_controller import VERSION
 import ktp_controller.asyncio
 import ktp_controller.puavo.conf
 import ktp_controller.utils
+
+# Internal imports
+from ktp_controller import VERSION
 
 _LOGGER = logging.getLogger(os.path.basename(__file__))
 _THIS_DIR = os.path.dirname(__file__)
@@ -23,11 +23,10 @@ _THIS_DIR = os.path.dirname(__file__)
 _NAKSU2_CERTS_DIR_PATH = os.path.expanduser("~/.local/share/digabi/naksu2/certs/")
 
 
-def _read_abitti2server_domain_name() -> typing.Optional[str]:
+def _read_abitti2server_domain_name() -> str | None:
     try:
         with open(
             os.path.join(_NAKSU2_CERTS_DIR_PATH, "domain.txt"),
-            "r",
             encoding="utf-8",
         ) as domain_file:
             domain_name = domain_file.readline().strip()
@@ -66,14 +65,16 @@ def _get_wd(name):
 
 
 def _run(prog_args, wd):
-    with open(os.path.join(wd, "stderr.log"), "w", encoding="utf-8") as stderr:
-        with open(os.path.join(wd, "stdout.log"), "w", encoding="utf-8") as stdout:
-            subprocess.check_call(
-                prog_args,
-                cwd=wd,
-                stdout=stdout,
-                stderr=stderr,
-            )
+    with (
+        open(os.path.join(wd, "stderr.log"), "w", encoding="utf-8") as stderr,
+        open(os.path.join(wd, "stdout.log"), "w", encoding="utf-8") as stdout,
+    ):
+        subprocess.check_call(
+            prog_args,
+            cwd=wd,
+            stdout=stdout,
+            stderr=stderr,
+        )
 
 
 def _run_networking(*args):
@@ -82,8 +83,8 @@ def _run_networking(*args):
             "sudo",
             "-n",
             "/opt/ktp-controller/bin/ktp-controller-networking",
-        ]
-        + list(args),
+            *list(args),
+        ],
         _get_wd("networking"),
     )
 

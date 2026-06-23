@@ -1,18 +1,16 @@
 # Standard library imports
 import asyncio
-import datetime
 import dataclasses
+import datetime
 import enum
 import json
 import random
 import re
 import sys
 import time
-
-from typing import Callable
+from collections.abc import Callable
 
 # Third-party imports
-
 # Internal imports
 import ktp_controller.api.client
 import ktp_controller.examomatic.client
@@ -46,7 +44,7 @@ def assert_response(response, *, expected_status_code: int):
         raise
 
 
-class Gender(str, enum.Enum):
+class Gender(enum.StrEnum):
     FEMALE = "female"
     MALE = "male"
 
@@ -282,7 +280,7 @@ def assert_exam_scheduling_and_download(
     # notified about it via websocket and Agent should have downloaded
     # the new exam data successfully.
     agent_downloaded_new_exam_info = False
-    for i in range(10):
+    for _i in range(10):
         state = asyncio.run(
             ktp_controller.examomatic.client._post("/mock/get_state")
         ).json()
@@ -301,7 +299,7 @@ def assert_exam_scheduling_and_download(
     # exam info successfully, hence this small timeout after checking
     # ack.
     ackd = False
-    for i in range(3):
+    for _i in range(3):
         state = asyncio.run(
             ktp_controller.examomatic.client._post("/mock/get_state")
         ).json()
@@ -369,7 +367,7 @@ def assert_scheduled_exam_package_gets_started(
 
 def assert_last_status_report_does_not_contain_student_names(*students):
     found_some_students = False
-    for i in range(10):
+    for _i in range(10):
         last_status_report_seen_by_api = asyncio.run(
             ktp_controller.api.client.get_last_status_report()
         )

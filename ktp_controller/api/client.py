@@ -2,14 +2,15 @@
 import logging
 import typing
 
+import ktp_controller.api.exam.schemas
+import ktp_controller.api.system.schemas
+
 # Internal imports
 import ktp_controller.httpx
 import ktp_controller.messages
+import ktp_controller.schemas
 import ktp_controller.utils
 from ktp_controller import SETTINGS
-import ktp_controller.api.exam.schemas
-import ktp_controller.api.system.schemas
-import ktp_controller.schemas
 
 __all__ = [
     # Utils:
@@ -43,27 +44,26 @@ async def _post(path: str, **kwargs) -> typing.Any:
 
 
 def eom_exam_info_to_api_exam_info(
-    eom_exam_info: typing.Dict[str, typing.Any],
-) -> typing.Dict[str, typing.Any]:
-    scheduled_exams = []
-    for schedule in eom_exam_info["schedules"]:
-        scheduled_exams.append(
-            {
-                "external_id": schedule["id"],
-                "modified_at": schedule["schedule_modified_at"],
-                "exam_title": schedule["exam_title"],
-                "start_time": schedule["start_time"],
-                "end_time": schedule["end_time"],
-                "exam_file_info": {
-                    "external_id": schedule["file_uuid"],
-                    "name": schedule["file_name"],
-                    "sha256": schedule["file_sha256"],
-                    "size": schedule["file_size"],
-                    "decrypt_code": schedule["decrypt_code"],
-                    "modified_at": schedule["exam_modified_at"],
-                },
-            }
-        )
+    eom_exam_info: dict[str, typing.Any],
+) -> dict[str, typing.Any]:
+    scheduled_exams = [
+        {
+            "external_id": schedule["id"],
+            "modified_at": schedule["schedule_modified_at"],
+            "exam_title": schedule["exam_title"],
+            "start_time": schedule["start_time"],
+            "end_time": schedule["end_time"],
+            "exam_file_info": {
+                "external_id": schedule["file_uuid"],
+                "name": schedule["file_name"],
+                "sha256": schedule["file_sha256"],
+                "size": schedule["file_size"],
+                "decrypt_code": schedule["decrypt_code"],
+                "modified_at": schedule["exam_modified_at"],
+            },
+        }
+        for schedule in eom_exam_info["schedules"]
+    ]
 
     scheduled_exam_packages = []
     for external_id, package in eom_exam_info["packages"].items():
@@ -82,12 +82,10 @@ def eom_exam_info_to_api_exam_info(
             }
         )
     return ktp_controller.api.exam.schemas.ExamInfo(
-        **{
-            "request_id": eom_exam_info["request_id"],
-            "scheduled_exams": scheduled_exams,
-            "scheduled_exam_packages": scheduled_exam_packages,
-            "raw_data": eom_exam_info,
-        }
+        request_id=eom_exam_info["request_id"],
+        scheduled_exams=scheduled_exams,
+        scheduled_exam_packages=scheduled_exam_packages,
+        raw_data=eom_exam_info,
     ).model_dump()
 
 
@@ -110,7 +108,7 @@ def get_ui_websock_url() -> str:
 # API commands:
 
 
-async def send_status_report(status_report: typing.Dict, **kwargs) -> typing.Any:
+async def send_status_report(status_report: dict, **kwargs) -> typing.Any:
     kwargs["content"] = (
         ktp_controller.api.system.schemas.StatusReport.model_validate(status_report)
         .model_dump_json(ensure_ascii=True)
@@ -121,7 +119,7 @@ async def send_status_report(status_report: typing.Dict, **kwargs) -> typing.Any
     return await _post("/api/v1/system/send_status_report", **kwargs)
 
 
-async def get_last_status_report(**kwargs) -> typing.Dict[str, typing.Any] | None:
+async def get_last_status_report(**kwargs) -> dict[str, typing.Any] | None:
     return await _post("/api/v1/system/get_last_status_report", **kwargs)
 
 
@@ -146,11 +144,11 @@ async def get_student_access_code() -> ktp_controller.schemas.StudentAccessCode 
 
 async def get_locked_exam_packages(
     **kwargs,
-) -> typing.List[typing.Dict[str, typing.Any]]:
+) -> list[dict[str, typing.Any]]:
     return await _post("/api/v1/exam/get_locked_exam_packages", **kwargs)
 
 
-async def get_current_exam_package(**kwargs) -> typing.Dict[str, typing.Any]:
+async def get_current_exam_package(**kwargs) -> dict[str, typing.Any]:
     return await _post("/api/v1/exam/get_current_exam_package", **kwargs)
 
 
@@ -160,17 +158,13 @@ async def set_current_exam_package_state(external_id: str, state: str, **kwargs)
     return await _post("/api/v1/exam/set_current_exam_package_state", **kwargs)
 
 
-async def get_scheduled_exam(
-    external_id: str, **kwargs
-) -> typing.Dict[str, typing.Any]:
+async def get_scheduled_exam(external_id: str, **kwargs) -> dict[str, typing.Any]:
     kwargs["json"] = {"external_id": external_id}
 
     return await _post("/api/v1/exam/get_scheduled_exam", **kwargs)
 
 
-async def save_exam_info(
-    eom_exam_info: typing.Dict[str, typing.Any], **kwargs
-) -> typing.Any:
+async def save_exam_info(eom_exam_info: dict[str, typing.Any], **kwargs) -> typing.Any:
     kwargs["json"] = eom_exam_info_to_api_exam_info(eom_exam_info)
 
     return await _post("/api/v1/exam/save_exam_info", **kwargs)
@@ -184,7 +178,7 @@ async def async_command(command: ktp_controller.messages.Command, **kwargs) -> s
 
 async def get_scheduled_exam_package(
     external_id: str, **kwargs
-) -> typing.Dict[str, typing.Any]:
+) -> dict[str, typing.Any]:
     kwargs["json"] = {"external_id": external_id}
 
     return await _post("/api/v1/exam/get_scheduled_exam_package", **kwargs)

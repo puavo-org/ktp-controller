@@ -9,16 +9,14 @@ import ktp_controller.utils
 def _find_all_filepaths(basedir):
     filepaths = []
     for dirpath, _, filenames in os.walk(basedir):
-        for filename in filenames:
-            filepaths.append(os.path.join(dirpath, filename))
+        filepaths.extend(os.path.join(dirpath, filename) for filename in filenames)
     return filepaths
 
 
 def _find_all_dirpaths(basedir):
     dirpaths = []
     for dirpath, dirnames, _ in os.walk(basedir):
-        for dirname in dirnames:
-            dirpaths.append(os.path.join(dirpath, dirname))
+        dirpaths.extend(os.path.join(dirpath, dirname) for dirname in dirnames)
     return dirpaths
 
 
@@ -123,9 +121,10 @@ def test_cleanup_old_archived_exam_package_dirs(testdir):
     ktp_controller.files.cleanup_archived_exam_packages(
         deleted_exam_package_external_ids=deleted_exam_package_external_ids
     )
-    assert deleted_exam_package_external_ids == set(exam_package_external_ids) - set(
-        [exam_package_external_ids[0], exam_package_external_ids[-1]]
-    )  # Latest should not be deleted.
+    assert deleted_exam_package_external_ids == set(exam_package_external_ids) - {
+        exam_package_external_ids[0],
+        exam_package_external_ids[-1],
+    }  # Latest should not be deleted.
 
     exam_package_paths_AFTER_cleanup = _find_all_dirpaths(basedir)
     exam_package_paths_AFTER_cleanup.pop(0)  # The root dir is not interesting.
@@ -134,6 +133,7 @@ def test_cleanup_old_archived_exam_package_dirs(testdir):
     # - the latest exam package still exists because archiving does not cleanup recently archived packages
     # - the oldest exam package still exists because it was not archived at all
     assert len(exam_package_paths_AFTER_cleanup) == 2
-    assert {pathlib.Path(p).name for p in exam_package_paths_AFTER_cleanup} == set(
-        [exam_package_external_ids[0], exam_package_external_ids[-1]]
-    )
+    assert {pathlib.Path(p).name for p in exam_package_paths_AFTER_cleanup} == {
+        exam_package_external_ids[0],
+        exam_package_external_ids[-1],
+    }

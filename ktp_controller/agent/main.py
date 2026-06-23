@@ -21,8 +21,6 @@ import httpx
 import pydantic
 import websockets
 
-# Internal imports
-from ktp_controller import SETTINGS, VERSION
 import ktp_controller.abitti2.client
 import ktp_controller.abitti2.naksu2
 import ktp_controller.abitti2.schemas
@@ -41,7 +39,10 @@ import ktp_controller.pydantic
 import ktp_controller.schemas
 import ktp_controller.utils
 
-_LOGGER = logging.getLogger(__file__)
+# Internal imports
+from ktp_controller import SETTINGS, VERSION
+
+_LOGGER = logging.getLogger(__name__)
 
 _SHUTDOWN_EVENT = asyncio.Event()
 
@@ -51,11 +52,11 @@ async def _task(name: str, *, on_exit_coro: typing.Awaitable | None = None):
     try:
         _LOGGER.info("Starting task %r...", name)
         yield
-    except asyncio.CancelledError:
+    except asyncio.CancelledError as err:
         if _SHUTDOWN_EVENT.is_set():
             # That's normal, the task was cancelled while the agent is shutting down.
             raise
-        raise _UnexpectedCancel(f"Unexpected cancellation of task {name!r}!")
+        raise _UnexpectedCancel(f"Unexpected cancellation of task {name!r}!") from err
     finally:
         if _SHUTDOWN_EVENT.is_set():
             _LOGGER.info("Task %r was shut down.", name)
@@ -65,7 +66,7 @@ async def _task(name: str, *, on_exit_coro: typing.Awaitable | None = None):
             await on_exit_coro
 
 
-class Trigger(str, enum.Enum):
+class Trigger(enum.StrEnum):
     TIME = "time"
     MANUAL_PREPARE = "manual_prepare"
     MANUAL_START = "manual_start"
@@ -76,7 +77,7 @@ class Trigger(str, enum.Enum):
         return self.value
 
 
-class Component(str, enum.Enum):
+class Component(enum.StrEnum):
     API = "API"
     EXAMOMATIC = "Exam-O-Matic"
     ABITTI2 = "Abitti2"
@@ -153,8 +154,8 @@ class Agent:
         self.__last_received_answer_count = None
         self.__last_cold_reset_time: datetime.datetime | None = None
 
-        self.__prev_connection_durations = collections.defaultdict(lambda: [])
-        self.__connection_stats: typing.Dict[
+        self.__prev_connection_durations = collections.defaultdict(list)
+        self.__connection_stats: dict[
             Component,
             ktp_controller.agent.stats.ConnectionStats,
         ] = {}
@@ -219,12 +220,11 @@ class Agent:
                 command_uuid=command_uuid,
                 command_status=ktp_controller.messages.CommandStatus.OK,
             )
-        else:
-            return ktp_controller.messages.CommandResultData(
-                command_uuid=command_uuid,
-                command_status=ktp_controller.messages.CommandStatus.ERROR,
-                error_message="agent is not running in testbed mode",
-            )
+        return ktp_controller.messages.CommandResultData(
+            command_uuid=command_uuid,
+            command_status=ktp_controller.messages.CommandStatus.ERROR,
+            error_message="agent is not running in testbed mode",
+        )
 
     async def __command_enable_auto_control(
         self,
@@ -282,7 +282,7 @@ class Agent:
 
     async def __prepare_current_exam_package(
         self,
-        current_exam_package: typing.Dict[str, typing.Any],
+        current_exam_package: dict[str, typing.Any],
     ) -> bool:
         _LOGGER.info("Preparing exam package: %r", current_exam_package)
 
@@ -350,7 +350,7 @@ class Agent:
         return True
 
     def __ensure_nonfinal_answers_download_task_is_running(
-        self, current_exam_package: typing.Dict[str, typing.Any]
+        self, current_exam_package: dict[str, typing.Any]
     ):
         if self.__nonfinal_answers_download_task is None:
             self.__nonfinal_answers_download_task = asyncio.create_task(
@@ -362,7 +362,7 @@ class Agent:
             )
 
     async def __stop_nonfinal_answers_download_task(
-        self, current_exam_package: typing.Dict[str, typing.Any]
+        self, current_exam_package: dict[str, typing.Any]
     ):
         if self.__nonfinal_answers_download_task is None:
             _LOGGER.info("Periodic non-final answers download task is not running.")
@@ -387,7 +387,7 @@ class Agent:
 
     async def __start_current_exam_package(
         self,
-        current_exam_package: typing.Dict[str, typing.Any],
+        current_exam_package: dict[str, typing.Any],
     ) -> bool:
         _LOGGER.info("Starting exam package: %r", current_exam_package)
         await ktp_controller.abitti2.client.start_decrypted_exams()
@@ -399,7 +399,7 @@ class Agent:
         return True
 
     async def __start_stopping_current_exam_package(
-        self, current_exam_package: typing.Dict[str, typing.Any]
+        self, current_exam_package: dict[str, typing.Any]
     ) -> bool:
         _LOGGER.info(
             "Stopping current exam package %r...",
@@ -410,7 +410,7 @@ class Agent:
 
     async def __stop_current_exam_package(
         self,
-        current_exam_package: typing.Dict[str, typing.Any],
+        current_exam_package: dict[str, typing.Any],
     ) -> bool:
         if (
             self.__is_auto_control_enabled
@@ -450,7 +450,7 @@ class Agent:
 
     async def __archive_current_exam_package(
         self,
-        current_exam_package: typing.Dict[str, typing.Any],
+        current_exam_package: dict[str, typing.Any],
     ) -> bool:
         _LOGGER.info(
             "Archiving current exam package %r...",
@@ -469,7 +469,7 @@ class Agent:
 
     async def __download_answers(
         self,
-        current_exam_package: typing.Dict[str, typing.Any],
+        current_exam_package: dict[str, typing.Any],
         is_final: ktp_controller.examomatic.client.IsFinal,
     ) -> None:
         is_final = ktp_controller.examomatic.client.IsFinal(is_final)
@@ -492,7 +492,7 @@ class Agent:
             _LOGGER.warning("There are no answers to download.")
 
     async def __download_nonfinal_answers(
-        self, current_exam_package: typing.Dict[str, typing.Any]
+        self, current_exam_package: dict[str, typing.Any]
     ):
         started = False
         async with _task("periodic non-final answers download"):
@@ -519,6 +519,7 @@ class Agent:
             return False
         async with self.__work_on_current_exam_package_lock:
             await self.__work_on_current_exam_package_locked(trigger=trigger)
+        return None
 
     async def __work_on_current_exam_package_locked(self, *, trigger: Trigger) -> bool:
         _LOGGER.info("Working on the current exam package.")
@@ -539,22 +540,21 @@ class Agent:
         locked_exam_packages = await self.__get_locked_exam_packages()
 
         if len(locked_exam_packages) == 0:
-            if self.__is_auto_control_enabled:
-                if self.__last_received_exam_list == []:
-                    # Cold reset: Abitti2 is not reporting it has any
-                    # exams running, which means it has just
-                    # started. So, we always want to have at least
-                    # waiting lobby exam running there. But sometimes
-                    # Abitti2 is really slow to get it up and running,
-                    # so, we have a short 15 waiting period here to
-                    # not flood Abitti2 with consecutive reset
-                    # requests.
-                    if (
-                        self.__last_cold_reset_time is None
-                        or (utcnow - self.__last_cold_reset_time).total_seconds() >= 15
-                    ):
-                        await ktp_controller.abitti2.client.reset()
-                        self.__last_cold_reset_time = utcnow
+            if self.__is_auto_control_enabled and self.__last_received_exam_list == []:  # noqa: SIM102
+                # Cold reset: Abitti2 is not reporting it has any
+                # exams running, which means it has just
+                # started. So, we always want to have at least
+                # waiting lobby exam running there. But sometimes
+                # Abitti2 is really slow to get it up and running,
+                # so, we have a short 15 waiting period here to
+                # not flood Abitti2 with consecutive reset
+                # requests.
+                if (
+                    self.__last_cold_reset_time is None
+                    or (utcnow - self.__last_cold_reset_time).total_seconds() >= 15
+                ):
+                    await ktp_controller.abitti2.client.reset()
+                    self.__last_cold_reset_time = utcnow
             return False  # No current exam package
 
         current_exam_package = locked_exam_packages[0]
@@ -871,7 +871,7 @@ class Agent:
         self,
         websock: websockets.ClientConnection,
         received_at: datetime.datetime,
-        message: typing.Dict[str, typing.Any],
+        message: dict[str, typing.Any],
     ):
         message_data = message["data"]
         try:
@@ -901,9 +901,7 @@ class Agent:
 
         await self.__send_status_report()
 
-    def __validate_abitti2_stats_message(
-        self, message: typing.Dict[str, typing.Any]
-    ) -> bool:
+    def __validate_abitti2_stats_message(self, message: dict[str, typing.Any]) -> bool:
         try:
             ktp_controller.abitti2.schemas.Abitti2StatsMessage.model_validate(message)
         except ValueError:
@@ -918,7 +916,7 @@ class Agent:
         self,
         websock: websockets.ClientConnection,
         received_at: datetime.datetime,
-        message: typing.Dict[str, typing.Any],
+        message: dict[str, typing.Any],
     ):
         ktp_controller.abitti2.utils.sanitize_stats_message(message)
 
@@ -953,11 +951,8 @@ class Agent:
         ):
             return False
 
-        if len(self.__last_received_exam_list) == 0:
-            # No exams, no stats.
-            return False
-
-        return True
+        # No exams, no stats.
+        return len(self.__last_received_exam_list) != 0
 
     def __get_exam_stats(self) -> dict | None:
         if not self.__has_exam_stats():
@@ -1041,6 +1036,7 @@ class Agent:
         for key_prefix, name in zip(
             ("abitti2", "api", "examomatic"),
             (Component.ABITTI2, Component.API, Component.EXAMOMATIC),
+            strict=False,
         ):
             key = f"{key_prefix}_websocket_stats"
             stats[key] = self.__get_websocket_stats(name, utcnow)
@@ -1160,7 +1156,7 @@ class Agent:
         self,
         websock: websockets.ClientConnection,
         received_at: datetime.datetime,
-        message: typing.Dict[str, typing.Any],
+        message: dict[str, typing.Any],
     ):
         exam_list = []
 
@@ -1183,7 +1179,7 @@ class Agent:
 
     def __decode_abitti2_message(
         self, data
-    ) -> typing.Tuple[str | None, typing.Dict[str, typing.Any] | None]:
+    ) -> tuple[str | None, dict[str, typing.Any] | None]:
         if data == "ping":
             return ("ping", None)
 
@@ -1250,7 +1246,7 @@ class Agent:
         asyncfuncs: typing.Awaitable,
         *,
         connection_stats_class: type[ktp_controller.agent.stats.ConnectionStats],
-        additional_headers: typing.Dict[str, str] | None = None,
+        additional_headers: dict[str, str] | None = None,
         on_exit_coro: typing.Awaitable | None = None,
     ):
         started = False
@@ -1416,7 +1412,7 @@ class Agent:
 
     async def __get_locked_exam_packages(
         self,
-    ) -> typing.List[typing.Dict[str, typing.Any]]:
+    ) -> list[dict[str, typing.Any]]:
         async with self.__refresh_exams_lock:
             if self.__cached_list_of_locked_exam_packages is None:
                 self.__cached_list_of_locked_exam_packages = (
@@ -1529,7 +1525,7 @@ class Agent:
             try:
                 # Give the tasks 5 seconds to run their 'finally' blocks
                 await asyncio.wait_for(self.__cancel_all_tasks(), timeout=5.0)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 _LOGGER.error("Task cleanup exceeded timeout! Forcefully exiting.")
             _LOGGER.info("All tasks have been stopped.")
         except* Exception:

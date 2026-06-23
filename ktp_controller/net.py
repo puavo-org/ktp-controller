@@ -9,19 +9,17 @@ import os.path
 import socket
 import subprocess
 import time
-import typing
 
 # Third-party imports
 import psutil
-
 
 _LOGGER = logging.getLogger(os.path.basename(__file__))
 
 
 __all__ = [
-    "interfaces",
-    "interface_addresses",
     "Net",
+    "interface_addresses",
+    "interfaces",
 ]
 
 
@@ -42,7 +40,7 @@ def wait_interface(interface_name: str, *, timeout: float) -> bool:
     return False
 
 
-def interfaces() -> typing.List[str]:
+def interfaces() -> list[str]:
     return list(psutil.net_if_addrs().keys())
 
 
@@ -101,7 +99,7 @@ class Net:
 
     @property
     def host_address(self) -> ipaddress.IPv4Address:
-        return list(self.__dhcp_subnet.hosts())[0]
+        return next(iter(self.__dhcp_subnet.hosts()))
 
     @property
     def broadcast_address(self) -> ipaddress.IPv4Address:
@@ -116,7 +114,7 @@ class Net:
         return ipaddress.IPv4Interface(f"{self.host_address}/{self.network.prefixlen}")
 
     @property
-    def dhcp_hosts(self) -> typing.List[ipaddress.IPv4Address]:
+    def dhcp_hosts(self) -> list[ipaddress.IPv4Address]:
         return list(self.__dhcp_subnet.hosts())[9:]
 
     def up(self):
@@ -231,7 +229,7 @@ class Net:
     def link_down(self) -> None:
         self.__link_cmd("down")
 
-    def nm_status(self) -> typing.Tuple[bool, bool]:
+    def nm_status(self) -> tuple[bool, bool]:
         lines = subprocess.check_output(
             [
                 "nmcli",

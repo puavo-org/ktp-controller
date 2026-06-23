@@ -1,7 +1,6 @@
 # Standard library imports
 import datetime
 import logging
-import typing
 
 # Third-party imports
 import fastapi
@@ -16,7 +15,6 @@ from ktp_controller.api.database import get_db
 
 # Relative imports
 from . import schemas
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -240,7 +238,7 @@ async def _set_current_exam_package_state(
 
 @router.post(
     "/get_locked_exam_packages",
-    response_model=typing.List[schemas.ScheduledExamPackage],
+    response_model=list[schemas.ScheduledExamPackage],
     summary="Get locked exam packages",
 )
 async def _get_locked_exam_packages(
@@ -284,17 +282,13 @@ async def _get_locked_exam_packages(
         {
             "external_id": db_locked_exam_package.external_id,
             "start_time": db_locked_exam_package.start_time.replace(
-                tzinfo=datetime.timezone.utc
+                tzinfo=datetime.UTC
             ),
-            "end_time": db_locked_exam_package.end_time.replace(
-                tzinfo=datetime.timezone.utc
-            ),
+            "end_time": db_locked_exam_package.end_time.replace(tzinfo=datetime.UTC),
             "lock_time": (
                 None
                 if db_locked_exam_package.lock_time is None
-                else db_locked_exam_package.lock_time.replace(
-                    tzinfo=datetime.timezone.utc
-                )
+                else db_locked_exam_package.lock_time.replace(tzinfo=datetime.UTC)
             ),
             "locked": db_locked_exam_package.locked,
             "scheduled_exam_external_ids": [
@@ -305,22 +299,18 @@ async def _get_locked_exam_packages(
                 None
                 if db_locked_exam_package.state_changed_at is None
                 else db_locked_exam_package.state_changed_at.replace(
-                    tzinfo=datetime.timezone.utc
+                    tzinfo=datetime.UTC
                 )
             ),
             "started_at": (
                 None
                 if db_locked_exam_package.started_at is None
-                else db_locked_exam_package.started_at.replace(
-                    tzinfo=datetime.timezone.utc
-                )
+                else db_locked_exam_package.started_at.replace(tzinfo=datetime.UTC)
             ),
             "archived_at": (
                 None
                 if db_locked_exam_package.archived_at is None
-                else db_locked_exam_package.archived_at.replace(
-                    tzinfo=datetime.timezone.utc
-                )
+                else db_locked_exam_package.archived_at.replace(tzinfo=datetime.UTC)
             ),
         }
         for db_locked_exam_package in db_locked_exam_packages
@@ -364,10 +354,8 @@ async def _get_scheduled_exam(
     return {
         "external_id": db_scheduled_exam.external_id,
         "exam_title": db_scheduled_exam.exam_title,
-        "start_time": db_scheduled_exam.start_time.replace(
-            tzinfo=datetime.timezone.utc
-        ),
-        "end_time": db_scheduled_exam.end_time.replace(tzinfo=datetime.timezone.utc),
+        "start_time": db_scheduled_exam.start_time.replace(tzinfo=datetime.UTC),
+        "end_time": db_scheduled_exam.end_time.replace(tzinfo=datetime.UTC),
         "exam_file_info": {
             "external_id": db_scheduled_exam.exam_file_info.external_id,
             "name": db_scheduled_exam.exam_file_info.name,
@@ -375,12 +363,10 @@ async def _get_scheduled_exam(
             "sha256": db_scheduled_exam.exam_file_info.sha256,
             "decrypt_code": db_scheduled_exam.exam_file_info.decrypt_code,
             "modified_at": db_scheduled_exam.exam_file_info.modified_at.replace(
-                tzinfo=datetime.timezone.utc
+                tzinfo=datetime.UTC
             ),
         },
-        "modified_at": db_scheduled_exam.modified_at.replace(
-            tzinfo=datetime.timezone.utc
-        ),
+        "modified_at": db_scheduled_exam.modified_at.replace(tzinfo=datetime.UTC),
     }
 
 
@@ -404,18 +390,12 @@ async def _get_scheduled_exam_package(
 
     return {
         "external_id": db_scheduled_exam_package.external_id,
-        "start_time": db_scheduled_exam_package.start_time.replace(
-            tzinfo=datetime.timezone.utc
-        ),
-        "end_time": db_scheduled_exam_package.end_time.replace(
-            tzinfo=datetime.timezone.utc
-        ),
+        "start_time": db_scheduled_exam_package.start_time.replace(tzinfo=datetime.UTC),
+        "end_time": db_scheduled_exam_package.end_time.replace(tzinfo=datetime.UTC),
         "lock_time": (
             None
             if db_scheduled_exam_package.lock_time is None
-            else db_scheduled_exam_package.lock_time.replace(
-                tzinfo=datetime.timezone.utc
-            )
+            else db_scheduled_exam_package.lock_time.replace(tzinfo=datetime.UTC)
         ),
         "locked": db_scheduled_exam_package.locked,
         "scheduled_exam_external_ids": [
@@ -425,22 +405,16 @@ async def _get_scheduled_exam_package(
         "state_changed_at": (
             None
             if db_scheduled_exam_package.state_changed_at is None
-            else db_scheduled_exam_package.state_changed_at.replace(
-                tzinfo=datetime.timezone.utc
-            )
+            else db_scheduled_exam_package.state_changed_at.replace(tzinfo=datetime.UTC)
         ),
         "started_at": (
             None
             if db_scheduled_exam_package.started_at is None
-            else db_scheduled_exam_package.started_at.replace(
-                tzinfo=datetime.timezone.utc
-            )
+            else db_scheduled_exam_package.started_at.replace(tzinfo=datetime.UTC)
         ),
         "archived_at": (
             None
             if db_scheduled_exam_package.archived_at is None
-            else db_scheduled_exam_package.archived_at.replace(
-                tzinfo=datetime.timezone.utc
-            )
+            else db_scheduled_exam_package.archived_at.replace(tzinfo=datetime.UTC)
         ),
     }

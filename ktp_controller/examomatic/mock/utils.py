@@ -6,7 +6,6 @@ import uuid
 
 import ktp_controller.utils
 
-
 _EXAM_FILE_INFOS = {
     "exam1": {
         "exam_title": "exam1",
@@ -52,7 +51,7 @@ def get_exam_filepath(filename: str) -> str:
     )
 
 
-def read_exam_info(filename: str) -> typing.Dict[str, typing.Any]:
+def read_exam_info(filename: str) -> dict[str, typing.Any]:
     ktp_controller.utils.check_filename(filename)
     return json.loads(
         importlib.resources.files("ktp_controller.examomatic.mock.data.exam_infos")
@@ -70,7 +69,7 @@ def get_synthetic_exam_info(
     server_id: int = 2,
     exam_title: str = "exam1",
     number_of_duplicates: int = 0,
-) -> typing.Dict[str, typing.Any]:
+) -> dict[str, typing.Any]:
     if number_of_duplicates < 0:
         raise ValueError("number_of_duplicates cannot be less than zero")
 
@@ -90,7 +89,7 @@ def get_synthetic_exam_info(
     exam_schedules = []
     exam_uuids = []
 
-    for i in range(number_of_duplicates + 1):
+    for _i in range(number_of_duplicates + 1):
         exam_uuid = str(uuid.uuid4())
         exam_schedule = {
             "id": exam_uuid,

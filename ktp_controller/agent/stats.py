@@ -8,12 +8,11 @@ import pydantic
 # Internal imports
 import ktp_controller.pydantic
 
-
 __all__ = [
-    "ConnectionStats",
-    "ExamomaticConnectionStats",
     "APIConnectionStats",
     "Abitti2ConnectionStats",
+    "ConnectionStats",
+    "ExamomaticConnectionStats",
 ]
 
 

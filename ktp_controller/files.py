@@ -10,10 +10,8 @@ import shutil
 import typing
 
 # Third-party imports
-
 # Internal imports
 import ktp_controller.schemas
-
 
 _USER_FRIENDLY_DATA_DIR = os.path.expanduser("~/ktp-jako")
 
@@ -62,7 +60,7 @@ def create_user_friendly_data_dir():
             continue
 
 
-class LocalFilepathType(str, enum.Enum):
+class LocalFilepathType(enum.StrEnum):
     ANSWERS_FILE = "answers-file"
     EXAM_FILE = "exam-file"
     EXAM_PACKAGE = "exam-package"
@@ -73,7 +71,7 @@ class LocalFilepathType(str, enum.Enum):
 
 def _get_local_filepath_basedir_and_ext(
     local_filepath_type: LocalFilepathType,
-) -> typing.Tuple[str, str]:
+) -> tuple[str, str]:
     LocalFilepathType(local_filepath_type)
 
     if local_filepath_type == LocalFilepathType.EXAM_FILE:
@@ -145,6 +143,7 @@ def get_cached_files(*, include_archived: bool = False) -> dict[str, list[dict]]
     for key, dirpath in zip(
         ["exams", "exam_packages", "answers"],
         [_EXAM_FILE_DIR, _EXAM_PACKAGE_DIR, ANSWERS_FILE_DIR],
+        strict=False,
     ):
         items = data.setdefault(key, [])
         for path, dirnames, filenames in os.walk(dirpath):
@@ -160,7 +159,7 @@ def get_cached_files(*, include_archived: bool = False) -> dict[str, list[dict]]
                     {
                         "path": filepath,
                         "modified_at": datetime.datetime.fromtimestamp(
-                            os.path.getmtime(filepath), datetime.timezone.utc
+                            os.path.getmtime(filepath), datetime.UTC
                         ),
                         "size": os.path.getsize(filepath),
                     }
@@ -182,7 +181,7 @@ def _find_old_answers_files(
     if not basedirpath.exists():
         return
 
-    now = datetime.datetime.now(datetime.timezone.utc)
+    now = datetime.datetime.now(datetime.UTC)
     cutoff_date = now - older_than_timedelta
 
     # Use glob to match exactly one directory deep (the UUID) and the specific filename pattern
@@ -229,14 +228,13 @@ def find_old_answers_files(
     """
 
     for basedirpath, prefix, suffix in ((ANSWERS_FILE_DIR, "answers-file_", ".meb"),):
-        for p in _find_old_answers_files(
+        yield from _find_old_answers_files(
             basedirpath,
             prefix,
             suffix,
             older_than_timedelta=older_than_timedelta,
             logger=logger,
-        ):
-            yield p
+        )
 
 
 def find_empty_dirs_bottom_up(basedirpath: str | pathlib.Path):
@@ -337,8 +335,8 @@ def cleanup_old_answers_files(
 
 def _get_archived_exam_package_dirpath(
     archive_filepath: pathlib.Path,
-) -> typing.Tuple[datetime.datetime, pathlib.Path]:
-    with open(archive_filepath, "r", encoding="utf-8") as sentinel_file:
+) -> tuple[datetime.datetime, pathlib.Path]:
+    with open(archive_filepath, encoding="utf-8") as sentinel_file:
         archived_at_str = sentinel_file.readline().strip()
 
     archived_at = datetime.datetime.fromisoformat(archived_at_str)

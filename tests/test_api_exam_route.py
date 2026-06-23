@@ -2,13 +2,14 @@
 import datetime
 import uuid
 
-# Internal imports
-from ktp_controller.api import models
 import ktp_controller.api.client
 import ktp_controller.api.exam.schemas
+
+# Internal imports
+from ktp_controller.api import models
 from ktp_controller.examomatic.mock.utils import (
-    read_exam_info,
     get_synthetic_exam_info,
+    read_exam_info,
 )
 
 # Relative imports
@@ -391,7 +392,7 @@ def test_get_current_exam_package__multiple_locked_packages_starting_at_same_tim
     client, testdb, utcnow
 ):
     first_api_exam_info = None
-    for i in range(10):
+    for _i in range(10):
         eom_exam_info = get_synthetic_exam_info(
             start_time=utcnow + datetime.timedelta(minutes=14),
             utcnow=utcnow,

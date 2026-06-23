@@ -95,7 +95,7 @@ async def _command_status(args: argparse.Namespace) -> None:
         _print_as_yaml(last_status_report)
     print()
 
-    return None
+    return
 
 
 _COMMANDS = {
@@ -120,9 +120,10 @@ _COMMAND_ARGUMENTS = {
 async def _dispatch_command(args: argparse.Namespace) -> int:
     # Lazily imported here to avoid long start-up time of this script.
     import websockets
+
     import ktp_controller.api.client
-    import ktp_controller.utils
     import ktp_controller.messages
+    import ktp_controller.utils
 
     command_result_data = None
 

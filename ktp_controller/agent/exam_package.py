@@ -11,7 +11,7 @@ import ktp_controller.examomatic.client
 import ktp_controller.files
 import ktp_controller.utils
 
-_LOGGER = logging.getLogger(__file__)
+_LOGGER = logging.getLogger(__name__)
 
 
 __all__ = [
@@ -42,19 +42,21 @@ def create_dummy_exam_package_file() -> None:
         ktp_controller.files.DUMMY_EXAM_FILE_FILEPATH
     )
 
-    with ktp_controller.utils.open_atomic_write(
-        ktp_controller.files.DUMMY_EXAM_PACKAGE_FILEPATH
-    ) as exam_package_file:
-        with zipfile.ZipFile(exam_package_file, "w") as exam_package_file_zip:
-            exam_package_file_zip.write(
-                ktp_controller.files.DUMMY_EXAM_FILE_FILEPATH,
-                os.path.basename(ktp_controller.files.DUMMY_EXAM_FILE_FILEPATH),
-            )
+    with (
+        ktp_controller.utils.open_atomic_write(
+            ktp_controller.files.DUMMY_EXAM_PACKAGE_FILEPATH
+        ) as exam_package_file,
+        zipfile.ZipFile(exam_package_file, "w") as exam_package_file_zip,
+    ):
+        exam_package_file_zip.write(
+            ktp_controller.files.DUMMY_EXAM_FILE_FILEPATH,
+            os.path.basename(ktp_controller.files.DUMMY_EXAM_FILE_FILEPATH),
+        )
 
 
 async def create_exam_package_file(
     api_scheduled_exam_package,
-) -> typing.Tuple[str, typing.Set[str]]:
+) -> tuple[str, set[str]]:
     """Download individual exam files and bundle them into a single zip package.
 
     Returns a tuple of (exam_package_filepath, decrypt_codes).
@@ -83,29 +85,29 @@ async def create_exam_package_file(
             continue
         exam_file_infos[exam_file_sha256] = exam_file_info
 
-    decrypt_codes: typing.Set[str] = set()
+    decrypt_codes: set[str] = set()
     exam_package_filepath = ktp_controller.files.get_local_filepath(
         ktp_controller.files.LocalFilepathType.EXAM_PACKAGE,
         api_scheduled_exam_package["external_id"],
-        hashlib.sha256(
-            "".join(sorted([sha256 for sha256 in exam_file_infos])).encode("ascii")
-        ).hexdigest(),
+        hashlib.sha256("".join(sorted(exam_file_infos)).encode("ascii")).hexdigest(),
     )
 
-    with ktp_controller.utils.open_atomic_write(
-        exam_package_filepath
-    ) as exam_package_file:
-        with zipfile.ZipFile(exam_package_file, "w") as exam_package_file_zip:
-            for exam_file_info in exam_file_infos.values():
-                exam_package_file_zip.write(
-                    ktp_controller.files.get_local_filepath(
-                        ktp_controller.files.LocalFilepathType.EXAM_FILE,
-                        exam_file_info["external_id"],
-                        exam_file_info["sha256"],
-                    ),
-                    ktp_controller.utils.utcnow_str() + exam_file_info["name"],
-                )
-                decrypt_codes.add(exam_file_info["decrypt_code"])
+    with (
+        ktp_controller.utils.open_atomic_write(
+            exam_package_filepath
+        ) as exam_package_file,
+        zipfile.ZipFile(exam_package_file, "w") as exam_package_file_zip,
+    ):
+        for exam_file_info in exam_file_infos.values():
+            exam_package_file_zip.write(
+                ktp_controller.files.get_local_filepath(
+                    ktp_controller.files.LocalFilepathType.EXAM_FILE,
+                    exam_file_info["external_id"],
+                    exam_file_info["sha256"],
+                ),
+                ktp_controller.utils.utcnow_str() + exam_file_info["name"],
+            )
+            decrypt_codes.add(exam_file_info["decrypt_code"])
 
     _LOGGER.info(
         "created exam package file %r with %d exams",
@@ -117,7 +119,7 @@ async def create_exam_package_file(
 
 
 async def set_current_exam_package_state(
-    current_exam_package: typing.Dict[str, typing.Any], next_state: str
+    current_exam_package: dict[str, typing.Any], next_state: str
 ) -> bool:
     """Transition the exam package to next_state via the API.
 

@@ -2,13 +2,11 @@ from __future__ import annotations
 
 # Standard library imports
 import datetime
-import typing
 
 # Third-party imports
 import sqlalchemy
 import sqlalchemy.orm
 from sqlalchemy.orm import Mapped, mapped_column
-
 
 __all__ = [
     # Types:
@@ -195,7 +193,7 @@ class ScheduledExamPackage(Base):  # type: ignore
         nullable=True,
     )
 
-    scheduled_exams: Mapped[typing.List[ScheduledExam]] = sqlalchemy.orm.relationship(
+    scheduled_exams: Mapped[list[ScheduledExam]] = sqlalchemy.orm.relationship(
         back_populates="scheduled_exam_package"
     )
     __table_args__ = (

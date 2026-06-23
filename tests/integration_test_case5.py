@@ -4,7 +4,6 @@ import datetime
 import time
 
 # Third-party imports
-
 # Internal imports
 import ktp_controller.abitti2.client
 import ktp_controller.abitti2.naksu2
@@ -20,9 +19,9 @@ from .utils import (
     assert_exam_scheduling_and_download,
     assert_last_status_report_does_not_contain_student_names,
     assert_last_status_report_has_abitti2_domain,
-    assert_student_access_code_is_not,
     assert_scheduled_exam_package_gets_started,
     assert_scheduled_exam_package_state_is,
+    assert_student_access_code_is_not,
 )
 
 # Test functions are and must be executed sequentially. In unit tests,

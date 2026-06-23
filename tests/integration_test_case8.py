@@ -5,8 +5,6 @@ import logging
 import time
 
 # Third-party imports
-
-
 # Internal imports
 import ktp_controller.abitti2.client
 import ktp_controller.api.client
@@ -18,9 +16,9 @@ from .utils import (
     assert_abitti2_running_exams,
     assert_clean_start,
     assert_exam_scheduling_and_download,
-    assert_scheduled_exam_package_state_is,
-    assert_scheduled_exam_package_gets_started,
     assert_examomatic_shutdown,
+    assert_scheduled_exam_package_gets_started,
+    assert_scheduled_exam_package_state_is,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -102,7 +100,7 @@ def test_examomatic_reboots_constantly_for_30secs_and_agent_restarts(utcnow):
 
 
 def test_examomatic_is_running_again():
-    for i in range(30):
+    for _i in range(30):
         try:
             response = asyncio.run(
                 ktp_controller.examomatic.client._post("/mock/get_state")

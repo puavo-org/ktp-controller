@@ -9,7 +9,7 @@ import pydantic
 import ktp_controller.pydantic
 
 
-class Abitti2MessageType(str, enum.Enum):
+class Abitti2MessageType(enum.StrEnum):
     EXAMS = "exams"
     SECURITY_CODE = "security-code"
     SERVERS = "servers"
@@ -20,7 +20,7 @@ class Abitti2MessageType(str, enum.Enum):
 
 
 class _Abitti2BaseModel(ktp_controller.pydantic.BaseModel):
-    model_config = {
+    model_config: typing.ClassVar = {
         # Abitti2 objects have several fields, but we are interested
         # only some of them. But for robustness, let's allow Abitti2
         # to add and remove various fields as it likes, as long as the
@@ -41,7 +41,7 @@ class Abitti2StatsMessageDataStudent(_Abitti2BaseModel):
 
 
 class Abitti2StatsMessageData(_Abitti2BaseModel):
-    students: typing.List[Abitti2StatsMessageDataStudent]
+    students: list[Abitti2StatsMessageDataStudent]
     answerPaperCount: ktp_controller.pydantic.StrictNonNegativeInt
     refreshedCount: ktp_controller.pydantic.StrictNonNegativeInt
     examStatus: Abitti2StatsMessageDataExamStatus

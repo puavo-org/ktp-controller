@@ -192,8 +192,7 @@ def _render_object(title: str, schema: dict, defs: dict, depth: int = 0) -> str:
     lines.append("|" + "|".join(sep_cells) + "|")
 
     # Append all data rows
-    for row in data_rows:
-        lines.append(format_row(row))
+    lines.extend(format_row(row) for row in data_rows)
 
     lines.append("")
     return "\n".join(lines)
