@@ -1,4 +1,5 @@
 # Standard library imports
+import collections.abc
 import contextlib
 import logging
 import logging.config
@@ -11,6 +12,7 @@ import uvicorn
 import ktp_controller.api.database
 import ktp_controller.api.exam.routes
 import ktp_controller.api.system.routes
+import ktp_controller.api.utils
 from ktp_controller import SETTINGS
 
 __all__ = [
@@ -28,7 +30,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @contextlib.asynccontextmanager
-async def _lifespan(app: fastapi.FastAPI):
+async def _lifespan(app: fastapi.FastAPI) -> collections.abc.AsyncIterator[None]:
     _LOGGER.info("Starting KTP Controller API...")
 
     database_url = f"sqlite:///{SETTINGS.db_path}"

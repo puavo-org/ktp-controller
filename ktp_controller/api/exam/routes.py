@@ -1,6 +1,7 @@
 # Standard library imports
 import datetime
 import logging
+import typing
 
 # Third-party imports
 import fastapi
@@ -146,7 +147,7 @@ async def _save_scheduled_exam_package(
 async def _save_exam_info(
     exam_info: schemas.ExamInfo,
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
-):
+) -> None:
     db_exam_info = (
         db.query(models.ExamInfo)
         .filter_by(request_id=exam_info.request_id)
@@ -191,7 +192,7 @@ _VALID_TRANSITIONS = {
 async def _set_current_exam_package_state(
     data: schemas.SetCurrentExamPackageStateData,
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
-):
+) -> str | None:
     utcnow = ktp_controller.utils.utcnow()
 
     db_current_exam_package = (
@@ -244,7 +245,7 @@ async def _set_current_exam_package_state(
 )
 async def _get_locked_exam_packages(
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
-):
+) -> list[dict[str, typing.Any]]:
     utcnow = ktp_controller.utils.utcnow()
 
     db_locked_exam_packages = []
@@ -326,7 +327,7 @@ async def _get_locked_exam_packages(
 )
 async def _get_current_exam_package(
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
-):
+) -> dict[str, typing.Any] | None:
     db_locked_exam_packages = await _get_locked_exam_packages(db)
 
     if len(db_locked_exam_packages) == 0:
@@ -343,7 +344,7 @@ async def _get_current_exam_package(
 async def _get_scheduled_exam(
     data: schemas.GetScheduledExamData,
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
-):
+) -> dict[str, typing.Any] | None:
     db_scheduled_exam = (
         db.query(models.ScheduledExam)
         .filter_by(external_id=data.external_id)
@@ -380,7 +381,7 @@ async def _get_scheduled_exam(
 async def _get_scheduled_exam_package(
     data: schemas.GetScheduledExamPackageData,
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
-):
+) -> dict[str, typing.Any] | None:
     db_scheduled_exam_package = (
         db.query(models.ScheduledExamPackage)
         .filter_by(external_id=data.external_id)

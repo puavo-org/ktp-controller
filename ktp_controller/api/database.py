@@ -1,7 +1,9 @@
 # Standard library imports
+import collections.abc
 
 # Third-party imports
 import sqlalchemy
+import sqlalchemy.engine
 import sqlalchemy.orm
 
 __all__ = [
@@ -14,14 +16,14 @@ __all__ = [
 # Constants:
 
 
-_ENGINE = None
-_SESSION_MAKER = None
+_ENGINE: sqlalchemy.engine.Engine | None = None
+_SESSION_MAKER: sqlalchemy.orm.sessionmaker[sqlalchemy.orm.Session] | None = None
 
 
 # Utils:
 
 
-def initialize(database_url):
+def initialize(database_url: str) -> None:
     global _ENGINE
     global _SESSION_MAKER
 
@@ -43,8 +45,9 @@ def initialize(database_url):
     )
 
 
-def get_db():
+def get_db() -> collections.abc.Iterator[sqlalchemy.orm.Session]:
     """Return SQL Alchemy database session"""
+    assert _SESSION_MAKER is not None
     db = _SESSION_MAKER()
     try:
         yield db

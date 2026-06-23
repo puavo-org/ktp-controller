@@ -42,7 +42,7 @@ __all__ = [
 ABITTI2_SUPERVISOR_USERNAME = "valvoja"
 
 
-async def _get(path: str, **kwargs) -> httpx.Response:
+async def _get(path: str, **kwargs: typing.Any) -> httpx.Response:
     host = ktp_controller.abitti2.naksu2.read_domain()
     url = ktp_controller.utils.get_url(host, path)
 
@@ -54,7 +54,7 @@ async def _get(path: str, **kwargs) -> httpx.Response:
     return await ktp_controller.httpx.get(url, **kwargs)
 
 
-async def _post(path: str, **kwargs) -> httpx.Response:
+async def _post(path: str, **kwargs: typing.Any) -> httpx.Response:
     kwargs.setdefault("json", {})
 
     kwargs["auth"] = (
@@ -75,7 +75,7 @@ def get_basic_auth() -> dict[str, str]:
     )
 
 
-def get_abitti2_websock_url():
+def get_abitti2_websock_url() -> str:
     return ktp_controller.utils.get_url(
         ktp_controller.abitti2.naksu2.read_domain(),
         "/ws/data",
@@ -90,7 +90,7 @@ async def get_current_abitti2_version() -> str:
     try:
         # Abitti2 1.26.0+
         response = await _get("/api/server-info")
-        version = response.json()["version"]
+        version: str = response.json()["version"]
     except httpx.HTTPStatusError as http_error:
         if http_error.response.status_code != 404:
             raise
@@ -104,19 +104,23 @@ async def get_current_abitti2_version() -> str:
     return version_match.group(1)
 
 
-async def change_student_access_code() -> dict:
+async def change_student_access_code() -> dict[str, typing.Any]:
     response = await _post("/api/single-security-code")
-    return response.json()
+    return typing.cast(dict[str, typing.Any], response.json())
 
 
-async def decrypt_exams(decrypt_code: str, **kwargs) -> dict:
+async def decrypt_exams(
+    decrypt_code: str, **kwargs: typing.Any
+) -> dict[str, typing.Any]:
     response = await _post(
         "/api/decrypt-exam", json={"decryptPassword": decrypt_code}, **kwargs
     )
-    return response.json()
+    return typing.cast(dict[str, typing.Any], response.json())
 
 
-async def upload_exam_package(exam_package_filepath, **kwargs) -> list[str]:
+async def upload_exam_package(
+    exam_package_filepath: str, **kwargs: typing.Any
+) -> list[str]:
     exam_package_filename = os.path.basename(exam_package_filepath)
 
     host = ktp_controller.abitti2.naksu2.read_domain()
@@ -135,17 +139,17 @@ async def upload_exam_package(exam_package_filepath, **kwargs) -> list[str]:
             )
         }
         response = await ktp_controller.httpx.post(url, **kwargs)
-        return response.json()
+        return typing.cast(list[str], response.json())
 
 
-async def get_decrypted_exams() -> dict:
+async def get_decrypted_exams() -> dict[str, typing.Any]:
     response = await _get("/api/exams")
-    return response.json()
+    return typing.cast(dict[str, typing.Any], response.json())
 
 
-async def start_decrypted_exams() -> dict:
+async def start_decrypted_exams() -> dict[str, typing.Any]:
     response = await _post("/api/start-exam")
-    return response.json()
+    return typing.cast(dict[str, typing.Any], response.json())
 
 
 async def prepare_exam_package(
@@ -195,7 +199,7 @@ async def stop_exam_session(session_uuid: str) -> None:
     await _post("/api/end-student-session", json={"sessionUuid": session_uuid})
 
 
-async def download_answers_file(dest_filepath: str, **kwargs) -> str:
+async def download_answers_file(dest_filepath: str, **kwargs: typing.Any) -> str:
     sha256sum = hashlib.sha256()
     host = ktp_controller.abitti2.naksu2.read_domain()
     url = ktp_controller.utils.get_url(host, "/api/answers-zip/answers.meb")
@@ -226,7 +230,7 @@ async def download_answers_file(dest_filepath: str, **kwargs) -> str:
 
 async def set_exam_session_permission_to_use_browsers(
     session_uuid: str, is_allowed_to_use_browsers: bool
-):
+) -> None:
     await _post(
         "/api/allow-all-browsers",
         json={"allow": is_allowed_to_use_browsers, "sessionUuid": session_uuid},

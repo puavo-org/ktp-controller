@@ -5,12 +5,15 @@ Multiprocessing helpers
 # Standard library imports
 import multiprocessing
 import queue
+import typing
 
 
-def run_tasks_until_one_dies(funcs):
-    results = []
+def run_tasks_until_one_dies(
+    funcs: typing.Iterable[typing.Callable[..., typing.Any]],
+) -> tuple[list[int | None], list[typing.Any]]:
+    results: list[typing.Any] = []
 
-    result_queue = multiprocessing.Queue()
+    result_queue: multiprocessing.Queue[typing.Any] = multiprocessing.Queue()
 
     procs = [
         multiprocessing.Process(target=func, kwargs={"result_queue": result_queue})

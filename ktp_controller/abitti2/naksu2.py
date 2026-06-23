@@ -1,6 +1,7 @@
 # Standard library imports
 import json
 import os.path
+import typing
 
 # Third-party imports
 # Internal imports
@@ -21,21 +22,21 @@ def make_password(word_list_indices: list[int]) -> str:
     return " ".join([ktp_controller.abitti2.words.WORDS[i] for i in word_list_indices])
 
 
-def read_naksu2_conf(*, filepath: str | None = None) -> dict:
+def read_naksu2_conf(*, filepath: str | None = None) -> dict[str, typing.Any]:
     if filepath is None:
         filepath = os.path.join(
             os.path.expanduser(_NAKSU2_CONF_DIR_PATH), "naksu2-config.json"
         )
     with open(filepath, "rb") as f:
-        return json.load(f)
+        return typing.cast(dict[str, typing.Any], json.load(f))
 
 
-def read_supervisor_passphrase():
+def read_supervisor_passphrase() -> str:
     naksu2_conf = read_naksu2_conf()
     return make_password(naksu2_conf["passwordSeed"])
 
 
-def read_domain():
+def read_domain() -> str:
     with open(
         os.path.join(os.path.expanduser(_NAKSU2_CONF_DIR_PATH), "certs", "domain.txt"),
         encoding="utf-8",

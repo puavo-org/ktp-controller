@@ -8,22 +8,23 @@ import select
 import signal
 import subprocess
 import sys
+import types
 import typing
 
 
-def _write_stdout(s):
+def _write_stdout(s: str) -> None:
     # only eventlistener protocol messages may be sent to stdout
     sys.stdout.write(s)
     sys.stdout.flush()
 
 
-def _write_stderr(s):
+def _write_stderr(s: str) -> None:
     utcnow = datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
     sys.stderr.write(f"{utcnow.isoformat(timespec='seconds')}  {s}")
     sys.stderr.flush()
 
 
-class _guaranteed_result(contextlib.AbstractContextManager):
+class _guaranteed_result(contextlib.AbstractContextManager[None]):
     def __init__(self, *, do_log: bool = False):
         super().__init__()
         self.__do_log = do_log
@@ -33,7 +34,12 @@ class _guaranteed_result(contextlib.AbstractContextManager):
             _write_stderr("\n")
         return
 
-    def __exit__(self, exc_type, exc_value, traceback) -> bool:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: types.TracebackType | None,
+    ) -> bool:
         if exc_type is None:
             if self.__do_log:
                 _write_stderr("Event handled successfully.\n")
@@ -129,8 +135,18 @@ def _read_event(*, do_log: bool = True) -> Event:
 
     name = headers["eventname"]
 
+    _ProcState = (
+        _ProcStateBackoff
+        | _ProcStateExited
+        | _ProcStateFatal
+        | _ProcStateRunning
+        | _ProcStateStarting
+        | _ProcStateStopped
+        | _ProcStateUnknown
+    )
+
     try:
-        proc_state_class = {
+        proc_state_class: type[_ProcState] = {
             "PROCESS_STATE_BACKOFF": _ProcStateBackoff,
             "PROCESS_STATE_EXITED": _ProcStateExited,
             "PROCESS_STATE_FATAL": _ProcStateFatal,
@@ -143,18 +159,31 @@ def _read_event(*, do_log: bool = True) -> Event:
         # Not process state event
         return Event(name=name, proc=None)
 
+    process_state: _ProcState
     if proc_state_class == _ProcStateExited:
         is_expected = bool(int(payload["expected"]))
-        process_state = proc_state_class(is_expected=is_expected)
+        process_state = _ProcStateExited(is_expected=is_expected)
     else:
-        process_state = proc_state_class()
+        # All non-exited proc state classes take no constructor arguments.
+        no_arg_class = typing.cast(
+            type[
+                _ProcStateBackoff
+                | _ProcStateFatal
+                | _ProcStateRunning
+                | _ProcStateStarting
+                | _ProcStateStopped
+                | _ProcStateUnknown
+            ],
+            proc_state_class,
+        )
+        process_state = no_arg_class()
 
     proc = _Proc(name=payload["processname"], state=process_state)
 
     return Event(name=name, proc=proc)
 
 
-def _supervisorctl(command, conf_filepath, *args) -> bool:
+def _supervisorctl(command: str, conf_filepath: str, *args: str) -> bool:
     with open(os.devnull, "wb") as devnull:
         try:
             subprocess.check_call(
@@ -167,13 +196,13 @@ def _supervisorctl(command, conf_filepath, *args) -> bool:
 
 
 class _Chainer:
-    def __init__(self, conf_filepath, args):
+    def __init__(self, conf_filepath: str, args: list[str]):
         self.__conf_filepath = conf_filepath
-        self.__next_procs = []
-        self.__waits = {}
-        self.__has_been_running = {}
+        self.__next_procs: list[str] = []
+        self.__waits: dict[str, bool] = {}
+        self.__has_been_running: dict[str, bool] = {}
         self.__do_shutdown = False
-        self.__expected_exits = {}
+        self.__expected_exits: dict[str, bool] = {}
         self.__is_terminated = False
 
         _write_stderr(f"Parsing arguments: {args}\n")
@@ -192,7 +221,7 @@ class _Chainer:
 
         self.__proc = self.__next_procs.pop(0)
 
-    def __terminate(self, signum, frame_stack):
+    def __terminate(self, signum: int, frame_stack: types.FrameType | None) -> None:
         self.__is_terminated = True
 
     def run(self) -> str:

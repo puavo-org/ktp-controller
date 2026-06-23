@@ -16,7 +16,7 @@ async def _command_api_async_command(args: argparse.Namespace) -> str:
     return await ktp_controller.api.client.async_command(args.COMMAND)
 
 
-def _print_as_yaml(obj):
+def _print_as_yaml(obj: typing.Any) -> None:
     print(
         yaml.dump(
             obj,
@@ -26,7 +26,7 @@ def _print_as_yaml(obj):
     )
 
 
-def _agofy(last_status_report):
+def _agofy(last_status_report: dict[str, typing.Any]) -> None:
     import ktp_controller.utils
 
     if last_status_report["reported_at"] is not None:
@@ -99,7 +99,9 @@ async def _command_status(args: argparse.Namespace) -> None:
     return
 
 
-_COMMANDS = {
+_COMMANDS: dict[
+    str, typing.Callable[[argparse.Namespace], typing.Awaitable[str | None]]
+] = {
     "enable_auto_control": _command_api_async_command,
     "disable_auto_control": _command_api_async_command,
     "start_current_exam_package": _command_api_async_command,

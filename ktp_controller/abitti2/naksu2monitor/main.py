@@ -6,6 +6,7 @@ import os.path
 import pathlib
 import re
 import subprocess
+import typing
 
 # Third-party imports
 import validators
@@ -42,7 +43,7 @@ def _read_abitti2server_domain_name() -> str | None:
     return domain_name
 
 
-def _reset_abitti2server_domain_name():
+def _reset_abitti2server_domain_name() -> None:
     fqdn = _read_abitti2server_domain_name()
     if fqdn:
         _run_networking("set_domain", fqdn)
@@ -50,7 +51,7 @@ def _reset_abitti2server_domain_name():
         _run_networking("del_domain")
 
 
-def _get_wd(name):
+def _get_wd(name: str) -> str:
     if not re.match(r"^[a-z0-9]{1,32}$", name):
         raise ValueError("invalid working directory name", name)
 
@@ -64,7 +65,7 @@ def _get_wd(name):
     return wd
 
 
-def _run(prog_args, wd):
+def _run(prog_args: list[str], wd: str) -> None:
     with (
         open(os.path.join(wd, "stderr.log"), "w", encoding="utf-8") as stderr,
         open(os.path.join(wd, "stdout.log"), "w", encoding="utf-8") as stdout,
@@ -77,7 +78,7 @@ def _run(prog_args, wd):
         )
 
 
-def _run_networking(*args):
+def _run_networking(*args: str) -> None:
     return _run(
         [
             "sudo",
@@ -89,7 +90,9 @@ def _run_networking(*args):
     )
 
 
-def _start_naksu2_certs_dir_monitor(loop):
+def _start_naksu2_certs_dir_monitor(
+    loop: typing.Any,
+) -> ktp_controller.asyncio.FileMonitor:
     pathlib.Path(_NAKSU2_CERTS_DIR_PATH).mkdir(parents=True, exist_ok=True)
 
     naksu2_certs_dir_monitor = ktp_controller.asyncio.FileMonitor(
@@ -103,12 +106,12 @@ def _start_naksu2_certs_dir_monitor(loop):
     return naksu2_certs_dir_monitor
 
 
-async def _naksu2_certs_changed(event):
+async def _naksu2_certs_changed(event: typing.Any) -> None:
     _LOGGER.info("ainotify event: %s", event)
     _reset_abitti2server_domain_name()
 
 
-def _main(args) -> int:
+def _main(args: argparse.Namespace) -> int:
     try:
         ers_mode = ktp_controller.puavo.conf.get_ers_mode()
     except ktp_controller.puavo.conf.ValidationError:

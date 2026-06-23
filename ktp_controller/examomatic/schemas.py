@@ -1,4 +1,5 @@
 # Standard library imports
+import typing
 from typing import Literal
 
 # Third-party imports
@@ -169,7 +170,7 @@ class _KTPController(ktp_controller.pydantic.BaseModel):
 
 
 class _OSStats(ktp_controller.pydantic.BaseModel):
-    disk_usage: list | None = Field(
+    disk_usage: list[dict[str, typing.Any]] | None = Field(
         examples=[
             [
                 {
@@ -181,10 +182,10 @@ class _OSStats(ktp_controller.pydantic.BaseModel):
             ]
         ]
     )
-    load_average: dict | None = Field(
+    load_average: dict[str, typing.Any] | None = Field(
         examples=[{"1min": 4.9, "5min": 5.0, "15min": 4.7}]
     )
-    memory: dict | None = Field(
+    memory: dict[str, typing.Any] | None = Field(
         examples=[
             {
                 "total": 8307036160,

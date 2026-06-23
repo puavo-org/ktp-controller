@@ -47,11 +47,11 @@ class BaseModel(pydantic.BaseModel):
 # Utils:
 
 
-def json_serializable(m: pydantic.BaseModel):
+def json_serializable(m: pydantic.BaseModel) -> typing.Any:
     return json.loads(m.model_dump_json())
 
 
-def _dt_to_str(dt) -> str:
+def _dt_to_str(dt: str | datetime.datetime) -> str:
     if isinstance(dt, str):
         dt = datetime.datetime.fromisoformat(dt)
     if dt.tzinfo is None:

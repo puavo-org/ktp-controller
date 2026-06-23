@@ -9,6 +9,7 @@ import os.path
 import socket
 import subprocess
 import time
+import typing
 
 # Third-party imports
 import psutil
@@ -44,7 +45,7 @@ def interfaces() -> list[str]:
     return list(psutil.net_if_addrs().keys())
 
 
-def interface_addresses(interface: str) -> dict:
+def interface_addresses(interface: str) -> dict[str, list[dict[str, str]]]:
     """
     Returns interface addresses in a format compatible with the legacy netifaces output,
     ensuring downstream logic (like checking for 'AF_PACKET') still works.
@@ -85,7 +86,9 @@ def interface_addresses(interface: str) -> dict:
 
 
 class Net:
-    def __init__(self, interface_name: str, network: str, dhcp_subnet_number: int):
+    def __init__(
+        self, interface_name: str, network: str, dhcp_subnet_number: int
+    ) -> None:
         if interface_name not in interfaces():
             raise ValueError("invalid interface_name", interface_name)
         self.__interface_name = interface_name
@@ -117,7 +120,7 @@ class Net:
     def dhcp_hosts(self) -> list[ipaddress.IPv4Address]:
         return list(self.__dhcp_subnet.hosts())[9:]
 
-    def up(self):
+    def up(self) -> None:
         self.__was_managed, is_connected = self.nm_status()
         if self.__was_managed and is_connected:
             self.nm_disconnect()
@@ -143,7 +146,7 @@ class Net:
             timeout=2,
         )
 
-    def down(self):
+    def down(self) -> None:
         try:
             self.__link_cmd("down")
         finally:
@@ -163,14 +166,19 @@ class Net:
                 if self.__was_managed:
                     self.nm_unmanage()
 
-    def __enter__(self):
+    def __enter__(self) -> "Net":
         self.up()
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: typing.Any,
+    ) -> None:
         self.down()
 
-    def __link_cmd(self, cmd) -> None:
+    def __link_cmd(self, cmd: str) -> None:
         subprocess.check_call(
             [
                 "ip",
@@ -182,7 +190,7 @@ class Net:
             timeout=2,
         )
 
-    def __nmcli_manage_cmd(self, yes_or_no) -> None:
+    def __nmcli_manage_cmd(self, yes_or_no: str) -> None:
         if yes_or_no not in ["yes", "no"]:
             raise ValueError("invalid yes or no", yes_or_no)
         subprocess.check_call(

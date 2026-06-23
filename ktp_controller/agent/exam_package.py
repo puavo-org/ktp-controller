@@ -55,7 +55,7 @@ def create_dummy_exam_package_file() -> None:
 
 
 async def create_exam_package_file(
-    api_scheduled_exam_package,
+    api_scheduled_exam_package: dict[str, typing.Any],
 ) -> tuple[str, set[str]]:
     """Download individual exam files and bundle them into a single zip package.
 
@@ -67,7 +67,7 @@ async def create_exam_package_file(
         api_scheduled_exam_package["external_id"],
     )
 
-    exam_file_infos = {}
+    exam_file_infos: dict[str, dict[str, typing.Any]] = {}
     for api_scheduled_exam_external_id in api_scheduled_exam_package[
         "scheduled_exam_external_ids"
     ]:

@@ -1,6 +1,7 @@
 # Standard library imports
 import contextlib
 import json
+import typing
 
 # Third-party imports
 import redis.asyncio as redis
@@ -32,11 +33,11 @@ async def pubsub_send(message: ktp_controller.messages.Message, channel: str) ->
                 separators=(",", ":"),
             ).encode("ascii"),
         )
-    return message_dict["uuid"]
+    return typing.cast(str, message_dict["uuid"])
 
 
 @contextlib.asynccontextmanager
-async def pubsub(channel):
+async def pubsub(channel: str) -> typing.AsyncIterator[typing.Any]:
     async with (
         redis.from_url("redis://127.0.0.1") as redis_client,
         redis_client.pubsub() as pubsub_,

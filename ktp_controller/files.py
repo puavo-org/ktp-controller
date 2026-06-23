@@ -39,7 +39,7 @@ DUMMY_EXAM_PACKAGE_FILEPATH = os.path.expanduser(
 )
 
 
-def create_user_friendly_data_dir():
+def create_user_friendly_data_dir() -> None:
     try:
         os.makedirs(_USER_FRIENDLY_DATA_DIR)
     except FileExistsError:
@@ -133,7 +133,9 @@ def get_local_filepath(
     return os.path.join(dirpath, f"{local_filepath_type}_{filename_suffix}{ext}")
 
 
-def get_cached_files(*, include_archived: bool = False) -> dict[str, list[dict]]:
+def get_cached_files(
+    *, include_archived: bool = False
+) -> dict[str, list[dict[str, typing.Any]]]:
     """
     If include_archived is True, archived files and/or directories are included.
     """
@@ -175,7 +177,7 @@ def _find_old_answers_files(
     *,
     older_than_timedelta: datetime.timedelta = datetime.timedelta(weeks=2),
     logger: logging.Logger | None = None,
-):
+) -> typing.Iterator[str]:
     basedirpath = pathlib.Path(basedirpath).expanduser()
 
     if not basedirpath.exists():
@@ -223,7 +225,7 @@ def find_old_answers_files(
     *,
     older_than_timedelta: datetime.timedelta = datetime.timedelta(weeks=2),
     logger: logging.Logger | None = None,
-):
+) -> typing.Iterator[str]:
     """Yields filepaths of all answers files older than the specified
     timedelta (by default, 2 weeks).
 
@@ -239,7 +241,9 @@ def find_old_answers_files(
         )
 
 
-def find_empty_dirs_bottom_up(basedirpath: str | pathlib.Path):
+def find_empty_dirs_bottom_up(
+    basedirpath: str | pathlib.Path,
+) -> typing.Iterator[str]:
     """Yields empty directories bottom-up. Because it yields lazily,
     parent directories will correctly register as empty if their
     children were deleted by the caller between iterations.
@@ -357,7 +361,7 @@ def _get_archived_exam_package_dirpath(
 def find_archived_exam_package_dirs(
     *,
     archived_timedelta: datetime.timedelta = datetime.timedelta(days=1),
-    exceptions: list | None = None,
+    exceptions: list[Exception] | None = None,
 ) -> typing.Iterator[str]:
     """Yields dirpaths of all exam packages archived more than the specified
     timedelta (by default, 1 day) ago.
@@ -428,7 +432,7 @@ async def cleanup_files(logger: logging.Logger | None = None) -> None:
         if logger is not None:
             logger.info("Deleted %d old answers files", len(deleted_answers_files))
 
-    deleted_exam_package_external_ids: set = set()
+    deleted_exam_package_external_ids: set[str] = set()
     try:
         await asyncio.to_thread(
             cleanup_archived_exam_packages,

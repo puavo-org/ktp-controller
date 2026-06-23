@@ -1,7 +1,9 @@
 # Standard library imports
 import asyncio
+import collections.abc
 import json
 import logging
+import typing
 
 # Third-party imports
 import fastapi
@@ -35,7 +37,7 @@ __all__ = [
 router = fastapi.APIRouter(tags=["system"])
 
 
-async def _keep_silent_websocket_alive(websock: fastapi.WebSocket):
+async def _keep_silent_websocket_alive(websock: fastapi.WebSocket) -> None:
     while True:
         try:
             data = await asyncio.wait_for(websock.receive_json(), timeout=2)
@@ -57,7 +59,13 @@ async def _keep_silent_websocket_alive(websock: fastapi.WebSocket):
             break
 
 
-async def _handle_websocket(*asyncfuncs, websock: fastapi.WebSocket, channel: str):
+async def _handle_websocket(
+    *asyncfuncs: collections.abc.Callable[
+        [fastapi.WebSocket], collections.abc.Coroutine[typing.Any, typing.Any, None]
+    ],
+    websock: fastapi.WebSocket,
+    channel: str,
+) -> None:
     await websock.accept()
     try:
         await websock.app.state.pubsub_broadcaster.register_websocket(websock, channel)
@@ -81,12 +89,12 @@ Command will be executed soon after the response is sent.
 Return asynchronous message UUID as application/json body.
 """,
 )
-async def _async_command(command_data: ktp_controller.messages.CommandData):
+async def _async_command(command_data: ktp_controller.messages.CommandData) -> str:
     return await ktp_controller.agent.utils.send_command(command_data)
 
 
 @router.websocket("/ui_websocket")
-async def _ui_websocket(websock: fastapi.WebSocket):
+async def _ui_websocket(websock: fastapi.WebSocket) -> None:
     await _handle_websocket(
         _keep_silent_websocket_alive,
         websock=websock,
@@ -100,11 +108,11 @@ async def _ui_websocket(websock: fastapi.WebSocket):
 # approx. 60 / 5 * 60 * 24 * 2
 # which means 2 days of reports will be stored, Abitti2 sends one report every 5secs
 # This constant is implemented as a function so that it can be easily mocked in tests.
-def _get_status_report_max_count():
+def _get_status_report_max_count() -> int:
     return 35000
 
 
-def _get_status_report_preserve_count():
+def _get_status_report_preserve_count() -> int:
     # 360 difference, means that delete will hit twice per hour
     # because Abitti2 sends status reports one per 5sec.
     return _get_status_report_max_count() - 360  # 60 / 5 * 30 = 360
@@ -122,7 +130,7 @@ assert 0 < _get_status_report_preserve_count() < _get_status_report_max_count()
 async def _send_status_report(
     request: schemas.StatusReport,
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
-):
+) -> None:
     status_report_count = db.query(models.StatusReport).count()
     if status_report_count >= _get_status_report_max_count():
         delete_subquery = (
@@ -149,7 +157,7 @@ async def _send_status_report(
 )
 async def _get_last_status_report(
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
-):
+) -> schemas.StatusReport | None:
     db_status_report = (
         db.query(models.StatusReport)
         .order_by(sqlalchemy.sql.desc(models.StatusReport.dbrow_created_at))
@@ -172,7 +180,7 @@ async def _get_last_status_report(
         return None
 
 
-async def _communicate_with_agent(websock: fastapi.WebSocket):
+async def _communicate_with_agent(websock: fastapi.WebSocket) -> None:
     async for message in websock.iter_json():
         if message["kind"] == ktp_controller.messages.MessageKind.PING:
             ping_message = ktp_controller.messages.PingMessage.model_validate(message)
@@ -209,7 +217,7 @@ async def _communicate_with_agent(websock: fastapi.WebSocket):
 @router.websocket("/agent_websocket")
 async def _agent_websocket(
     websock: fastapi.WebSocket,
-):
+) -> None:
     await _handle_websocket(
         _communicate_with_agent,
         websock=websock,
@@ -222,7 +230,7 @@ async def _agent_websocket(
     response_model=schemas.Echo,
     summary="Get echo response",
 )
-async def _get_echo(request: fastapi.Request):
+async def _get_echo(request: fastapi.Request) -> dict[str, typing.Any]:
     now = ktp_controller.utils.now()
 
     headers = dict(request.headers)

@@ -32,6 +32,7 @@ import os.path
 import signal
 import subprocess
 import time
+import typing
 
 import ktp_controller.net
 import ktp_controller.puavo.conf
@@ -99,7 +100,7 @@ def _start_dhcp_dns_server(net: ktp_controller.net.Net) -> int:
     return 0
 
 
-def _kill_dnsmasq(sig) -> bool:
+def _kill_dnsmasq(sig: int) -> bool:
     with open(_DNSMASQ_PID_FILE, encoding="ascii") as dnsmasq_pid_file:
         dnsmasq_pid = int(dnsmasq_pid_file.read().strip())
 
@@ -132,7 +133,7 @@ def _stop_dhcp_dns_server() -> int:
     return 1
 
 
-def _reload_networkmanager():
+def _reload_networkmanager() -> None:
     completed_process = subprocess.run(
         ["systemctl", "reload", "NetworkManager.service"],
         capture_output=True,
@@ -143,7 +144,7 @@ def _reload_networkmanager():
         )
 
 
-def _configure_networkmanager():
+def _configure_networkmanager() -> None:
     """Best-effort inclusion of the domain record in the local DNS controlled by NetworkManager"""
     try:
         with open(f"{_NM_CONF_FILE}.tmp", "w", encoding="utf-8") as nm_conf_file:
@@ -171,7 +172,7 @@ def _configure_networkmanager():
     _reload_networkmanager()
 
 
-def _unconfigure_networkmanager():
+def _unconfigure_networkmanager() -> None:
     try:
         os.unlink(_NM_CONF_FILE)
     except FileNotFoundError:
@@ -180,7 +181,9 @@ def _unconfigure_networkmanager():
     _reload_networkmanager()
 
 
-def _command_start(interface, network, number, args):
+def _command_start(
+    interface: str, network: str, number: int, args: argparse.Namespace
+) -> int:
     net = ktp_controller.net.Net(interface, network, number)
     net.up()
 
@@ -195,7 +198,9 @@ def _command_start(interface, network, number, args):
         return _start_dhcp_dns_server(net)  # noqa: B012
 
 
-def _command_stop(interface, network, number, args) -> int:
+def _command_stop(
+    interface: str, network: str, number: int, args: argparse.Namespace
+) -> int:
     net = ktp_controller.net.Net(interface, network, number)
     try:
         _unconfigure_networkmanager()
@@ -208,7 +213,9 @@ def _command_stop(interface, network, number, args) -> int:
             net.down()
 
 
-def _command_set_domain(interface, network, number, args) -> int:
+def _command_set_domain(
+    interface: str, network: str, number: int, args: argparse.Namespace
+) -> int:
     ipv4_addr = ipaddress.IPv4Address(
         ktp_controller.net.interface_addresses(interface)["AF_INET"][0]["addr"]
     )
@@ -223,7 +230,9 @@ def _command_set_domain(interface, network, number, args) -> int:
         return int(_kill_dnsmasq(signal.SIGHUP))  # noqa: B012
 
 
-def _command_del_domain(interface, network, number, args) -> int:
+def _command_del_domain(
+    interface: str, network: str, number: int, args: argparse.Namespace
+) -> int:
     with open(_DNSMASQ_HOSTS_FILE, "w", encoding="utf-8"):
         pass  # just truncate
 
@@ -275,7 +284,7 @@ def _main() -> int:
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
     if hasattr(args, "func"):
-        return args.func(interface, network, number, args)
+        return typing.cast(int, args.func(interface, network, number, args))
 
     argparser.print_help()
     return 1

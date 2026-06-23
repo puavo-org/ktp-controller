@@ -174,7 +174,9 @@ def no_active_students(status_report: dict[str, typing.Any]) -> bool:
     return all(not s["is_active"] for s in status_report["abitti2"]["students"])
 
 
-async def allow_students_to_use_browsers(students: list[dict]) -> None:
+async def allow_students_to_use_browsers(
+    students: list[dict[str, typing.Any]],
+) -> None:
     """Grant browser access to every student that is waiting for auth-browser."""
     for student in students:
         student_uuid = student["uuid"]

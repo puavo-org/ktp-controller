@@ -58,7 +58,7 @@ async def post(
     data: typing.Any | None = None,
     json: typing.Any | None = None,
     content: bytes | None = None,
-    files: dict | None = None,
+    files: dict[str, typing.Any] | None = None,
     timeout: TimeoutT = DEFAULT_TIMEOUT,
 ) -> httpx.Response:
 
@@ -97,7 +97,7 @@ async def stream_read(
     headers: dict[str, str] | None = None,
     timeout: TimeoutT = DEFAULT_TIMEOUT,
     chunk_size: int = 4096,
-):
+) -> typing.AsyncIterator[bytes]:
     async with httpx.AsyncClient() as client:
         try:
             async with client.stream(

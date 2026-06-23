@@ -53,10 +53,13 @@ def get_exam_filepath(filename: str) -> str:
 
 def read_exam_info(filename: str) -> dict[str, typing.Any]:
     ktp_controller.utils.check_filename(filename)
-    return json.loads(
-        importlib.resources.files("ktp_controller.examomatic.mock.data.exam_infos")
-        .joinpath(filename)
-        .read_text()
+    return typing.cast(
+        dict[str, typing.Any],
+        json.loads(
+            importlib.resources.files("ktp_controller.examomatic.mock.data.exam_infos")
+            .joinpath(filename)
+            .read_text()
+        ),
     )
 
 
@@ -109,23 +112,26 @@ def get_synthetic_exam_info(
         exam_schedules.append(exam_schedule)
         exam_uuids.append(exam_uuid)
 
-    return json.loads(
-        json.dumps(
-            {
-                "schedules": exam_schedules,
-                "packages": {
-                    exam_package_uuid: {
-                        "id": exam_package_uuid,
-                        "start_time": start_time.isoformat(),
-                        "end_time": end_time.isoformat(),
-                        "lock_time": lock_time.isoformat(),
-                        "schedules": exam_uuids,
-                        "locked": utcnow >= lock_time,
-                        "server_id": server_id,
-                        "estimated_total_size": 0,
+    return typing.cast(
+        dict[str, typing.Any],
+        json.loads(
+            json.dumps(
+                {
+                    "schedules": exam_schedules,
+                    "packages": {
+                        exam_package_uuid: {
+                            "id": exam_package_uuid,
+                            "start_time": start_time.isoformat(),
+                            "end_time": end_time.isoformat(),
+                            "lock_time": lock_time.isoformat(),
+                            "schedules": exam_uuids,
+                            "locked": utcnow >= lock_time,
+                            "server_id": server_id,
+                            "estimated_total_size": 0,
+                        },
                     },
-                },
-                "request_id": str(uuid.uuid4()),
-            }
-        )
+                    "request_id": str(uuid.uuid4()),
+                }
+            )
+        ),
     )

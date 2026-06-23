@@ -16,18 +16,18 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class PubSubBroadcaster:
-    def __init__(self, redis_url: str = "redis://127.0.0.1"):
+    def __init__(self, redis_url: str = "redis://127.0.0.1") -> None:
         self.__redis_url = redis_url
         self.__redis_client: typing.Any = None
         # Redis' async pubsub object is dynamically typed; treat it as Any.
         self.__pubsub: typing.Any = None
         self.__registrations: dict[str, list[fastapi.WebSocket]] = {}
-        self.__listener_task = None
+        self.__listener_task: asyncio.Task[None] | None = None
         self.__registrations_lock = asyncio.Lock()
         self.__stop_event = asyncio.Event()
         self.__start_event = asyncio.Event()
 
-    async def __connect_to_redis_locked(self):
+    async def __connect_to_redis_locked(self) -> None:
         if self.__redis_client is not None:
             return
 
@@ -43,7 +43,7 @@ class PubSubBroadcaster:
         self.__redis_client = redis_client
         _LOGGER.info("Connected to Redis.")
 
-    async def __subscribe_to_pubsub_locked(self):
+    async def __subscribe_to_pubsub_locked(self) -> None:
         if self.__pubsub is not None:
             return
 
@@ -57,12 +57,12 @@ class PubSubBroadcaster:
                 await self.__register_websocket_locked(websock, channel)
         _LOGGER.info("Subscribed to pubsub.")
 
-    async def __connect(self):
+    async def __connect(self) -> None:
         async with self.__registrations_lock:
             await self.__connect_to_redis_locked()
             await self.__subscribe_to_pubsub_locked()
 
-    async def __disconnect_from_redis_locked(self):
+    async def __disconnect_from_redis_locked(self) -> None:
         if self.__redis_client is None:
             return
         _LOGGER.info("Disconnecting from Redis...")
@@ -72,7 +72,7 @@ class PubSubBroadcaster:
             self.__redis_client = None
             _LOGGER.info("Disconnected from Redis.")
 
-    async def __unsubscribe_from_pubsub_locked(self):
+    async def __unsubscribe_from_pubsub_locked(self) -> None:
         if self.__pubsub is None:
             return
         _LOGGER.info("Unsubscribing from pubsub...")
@@ -91,14 +91,14 @@ class PubSubBroadcaster:
             self.__pubsub = None
             _LOGGER.info("Unsubscribed from pubsub.")
 
-    async def __disconnect(self):
+    async def __disconnect(self) -> None:
         async with self.__registrations_lock:
             try:
                 await self.__unsubscribe_from_pubsub_locked()
             finally:
                 await self.__disconnect_from_redis_locked()
 
-    async def __reconnect(self):
+    async def __reconnect(self) -> None:
         _LOGGER.info("Starting reconnection procedure...")
         reconnect_timeout = 1
         while not self.__stop_event.is_set():
@@ -117,7 +117,7 @@ class PubSubBroadcaster:
 
     async def __register_websocket_locked(
         self, websock: fastapi.WebSocket, channel: str
-    ):
+    ) -> None:
         _LOGGER.info(
             "Registering websocket %r to channel %r...", websock.client, channel
         )
@@ -129,7 +129,7 @@ class PubSubBroadcaster:
 
     async def __unregister_websocket_locked(
         self, websock: fastapi.WebSocket, channel: str
-    ):
+    ) -> None:
         try:
             self.__registrations[channel].remove(websock)
         except (KeyError, ValueError):
@@ -161,7 +161,7 @@ class PubSubBroadcaster:
         data: str,
         channel: str,
         timeout: float = 2.0,
-    ):
+    ) -> None:
         try:
             await asyncio.wait_for(websock.send_text(data), timeout=timeout)
         except Exception as e:
@@ -181,7 +181,7 @@ class PubSubBroadcaster:
                     e,
                 )
 
-    async def __broadcast(self, message):
+    async def __broadcast(self, message: dict[str, typing.Any]) -> None:
         data, channel = message["data"], message["channel"]
 
         tasks = [
@@ -202,7 +202,7 @@ class PubSubBroadcaster:
                 errors,
             )
 
-    async def __read_message(self):
+    async def __read_message(self) -> dict[str, typing.Any] | None:
         message = await self.__pubsub.get_message(
             ignore_subscribe_messages=True, timeout=1.0
         )
@@ -215,9 +215,9 @@ class PubSubBroadcaster:
             )
             return None
 
-        return message
+        return typing.cast("dict[str, typing.Any]", message)
 
-    async def __listen(self):
+    async def __listen(self) -> None:
         """Read messages from Redis and broadcast them to WebSockets.
 
         If connection to Redis fails, reconnect to Redis with exponential reconnect timeout.
@@ -242,15 +242,19 @@ class PubSubBroadcaster:
             with contextlib.suppress(asyncio.CancelledError):
                 await self.__disconnect()
 
-    async def register_websocket(self, websock: fastapi.WebSocket, channel: str):
+    async def register_websocket(
+        self, websock: fastapi.WebSocket, channel: str
+    ) -> None:
         async with self.__registrations_lock:
             await self.__register_websocket_locked(websock, channel)
 
-    async def unregister_websocket(self, websock: fastapi.WebSocket, channel: str):
+    async def unregister_websocket(
+        self, websock: fastapi.WebSocket, channel: str
+    ) -> None:
         async with self.__registrations_lock:
             await self.__unregister_websocket_locked(websock, channel)
 
-    async def start(self):
+    async def start(self) -> None:
         _LOGGER.info("Starting PubSubBroadcaster...")
         if self.__listener_task is not None:
             raise RuntimeError("PubSubBroadcaster is already started")
@@ -261,7 +265,7 @@ class PubSubBroadcaster:
 
         _LOGGER.info("Started PubSubBroadcaster.")
 
-    async def stop(self):
+    async def stop(self) -> None:
         _LOGGER.info("Stopping PubSubBroadcaster...")
         self.__stop_event.set()
         if self.__listener_task:

@@ -106,7 +106,7 @@ async def download_answers_file(
     return answers_file_path, sha256sum
 
 
-async def upload_answers_file(answers_file_path: str) -> bool:
+async def upload_answers_file(answers_file_path: str | pathlib.Path) -> bool:
     pathobj = pathlib.Path(answers_file_path)
     pathobj.resolve()
 

@@ -22,8 +22,8 @@ __all__ = [
 
 
 class ValidationError(Exception):
-    def __init__(self, message, value):
-        self.puavoconf_key = None
+    def __init__(self, message: str, value: typing.Any) -> None:
+        self.puavoconf_key: str | None = None
         self.value = value
         self.message = message
 

@@ -106,11 +106,8 @@ extend-immutable-calls = [
 python_version = "3.11"
 plugins = ["pydantic.mypy"]
 files = ["ktp_controller"]
-# Lenient start: surface real type errors in the annotated code, but do not
-# yet require every function to be fully annotated. Tighten over time.
+strict = true
 ignore_missing_imports = true
-warn_redundant_casts = true
-warn_unused_ignores = true
 
 [tool.pydantic-mypy]
 init_forbid_extra = true

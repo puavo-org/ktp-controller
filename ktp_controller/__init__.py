@@ -6,7 +6,7 @@ import logging
 from .settings import Settings
 
 
-def set_logging_level(level: str):
+def set_logging_level(level: str) -> None:
     logging.basicConfig(
         level=logging.getLevelNamesMapping()[level.upper()],
         format=DEFAULT_LOGGING_FORMAT,

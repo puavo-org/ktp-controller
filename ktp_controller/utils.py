@@ -9,6 +9,7 @@ import io
 import json
 import locale
 import logging
+import logging.handlers
 import os
 import os.path
 import sys
@@ -33,18 +34,18 @@ _LOGGER.setLevel(logging.DEBUG)
 
 
 class LineBufferedLoggingStream(io.TextIOWrapper):
-    def __init__(self, logger, level):
+    def __init__(self, logger: logging.Logger, level: int) -> None:
         self.__buffer = io.BytesIO()
         self.__logger = logger
         self.__level = level
         super().__init__(self.__buffer, line_buffering=True)
 
-    def flush(self):
-        with self.buffer.getbuffer() as buf:
+    def flush(self) -> None:
+        with self.__buffer.getbuffer() as buf:
             s = buf.tobytes().decode(locale.getencoding())
             if s:
                 self.__logger.log(self.__level, s)
-        self.buffer.truncate(0)
+        self.__buffer.truncate(0)
 
 
 def sha256(filepath: str, chunk_size_bytes: int = 1024**2) -> str:
@@ -70,7 +71,7 @@ def open_atomic_write(
     exclusive: bool = False,
     encoding: str | None = None,
     do_makedirs: bool = False,
-):
+) -> typing.Iterator[typing.IO[typing.Any]]:
     if exclusive and os.path.exists(dest_filepath):
         raise FileExistsError(dest_filepath)
 
@@ -98,7 +99,7 @@ def open_atomic_write(
             pass
 
 
-def copy_atomic(src_filepath: str, dest_filepath: str, exclusive: bool = False):
+def copy_atomic(src_filepath: str, dest_filepath: str, exclusive: bool = False) -> None:
     with (
         open(src_filepath, "rb") as src_file,
         open_atomic_write(
@@ -128,7 +129,7 @@ def get_url(
     host: str,
     path: str,
     *,
-    params=None,
+    params: typing.Mapping[str, typing.Any] | None = None,
     scheme: str = "https",
 ) -> str:
     r"""Construct valid URL
@@ -170,14 +171,14 @@ def get_basic_auth(username: str, password: str) -> dict[str, str]:
     return {"Authorization": f"Basic {auth}"}
 
 
-def readfirstline(filepath, encoding=None):
+def readfirstline(filepath: str, encoding: str | None = None) -> str:
     if encoding is None:
         encoding = sys.getdefaultencoding()
     with open(filepath, encoding=encoding) as f:
         return f.readline().rstrip(os.linesep)
 
 
-async def websock_send_json(websock, data) -> str:
+async def websock_send_json(websock: typing.Any, data: typing.Any) -> str:
     message = json.dumps(
         data,
         ensure_ascii=True,
@@ -246,7 +247,7 @@ def is_valid_filename(filename: str) -> bool:
     )
 
 
-def check_filename(filename: str):
+def check_filename(filename: str) -> None:
     if not is_valid_filename(filename):
         raise ValueError("invalid filename", filename)
 
@@ -261,7 +262,7 @@ def bytes_stream(filepath: str, chunk_size: int = 4096) -> typing.Iterator[bytes
 
 
 @contextlib.contextmanager
-def singleton():
+def singleton() -> typing.Iterator[None]:
     this_prog_path = os.path.realpath(sys.argv[0])
     with open(this_prog_path, "rb") as lock_file:
         try:
@@ -358,11 +359,11 @@ def is_puavo_os() -> bool:
 
 
 def logging_singleton_app(
-    main_func,
-    logger,
-    stderr_logging_level=logging.ERROR,
-    stdout_logging_level=logging.WARNING,
-):
+    main_func: typing.Callable[[], int],
+    logger: logging.Logger,
+    stderr_logging_level: int | None = logging.ERROR,
+    stdout_logging_level: int | None = logging.WARNING,
+) -> typing.NoReturn:
     original_stderr = sys.stderr
 
     if stderr_logging_level is not None:

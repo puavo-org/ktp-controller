@@ -43,7 +43,7 @@ def _get_auth() -> tuple[str, str] | None:
     return None
 
 
-async def _get(path: str, **kwargs) -> httpx.Response:
+async def _get(path: str, **kwargs: typing.Any) -> httpx.Response:
     params = {
         "domain": SETTINGS.domain,
         "hostname": SETTINGS.hostname,
@@ -62,7 +62,7 @@ async def _get(path: str, **kwargs) -> httpx.Response:
     return await ktp_controller.httpx.get(url, **kwargs)
 
 
-async def _post(path: str, **kwargs) -> httpx.Response:
+async def _post(path: str, **kwargs: typing.Any) -> httpx.Response:
     url = ktp_controller.utils.get_url(
         SETTINGS.examomatic_host,
         path,
@@ -91,7 +91,7 @@ def get_basic_auth() -> dict[str, str]:
     return {}
 
 
-def get_examomatic_websock_url():
+def get_examomatic_websock_url() -> str:
     return ktp_controller.utils.get_url(
         SETTINGS.examomatic_host,
         "/servers/ers_connection",
@@ -104,7 +104,7 @@ def get_examomatic_websock_url():
     )
 
 
-def websock_validate_message(data):
+def websock_validate_message(data: str | bytes) -> dict[str, typing.Any]:
     message = ktp_controller.utils.json_loads_dict(data)
 
     if "type" not in message:
@@ -125,7 +125,9 @@ def websock_validate_message(data):
 # Exam-O-Matic API commands:
 
 
-async def send_status_report(status_report: dict, **kwargs) -> typing.Any:
+async def send_status_report(
+    status_report: dict[str, typing.Any], **kwargs: typing.Any
+) -> typing.Any:
     kwargs["content"] = (
         ktp_controller.examomatic.schemas.StatusReport.model_validate(status_report)
         .model_dump_json(ensure_ascii=True)
@@ -137,12 +139,14 @@ async def send_status_report(status_report: dict, **kwargs) -> typing.Any:
     return response.json()
 
 
-async def get_exam_info(**kwargs) -> dict:
+async def get_exam_info(**kwargs: typing.Any) -> dict[str, typing.Any]:
     response = await _get("/v2/schedules/exam_packages", **kwargs)
-    return response.json()
+    return typing.cast(dict[str, typing.Any], response.json())
 
 
-async def get_exam_file_stream(sha256sum: str, **kwargs) -> typing.AsyncIterable[bytes]:
+async def get_exam_file_stream(
+    sha256sum: str, **kwargs: typing.Any
+) -> typing.AsyncIterable[bytes]:
     url = ktp_controller.utils.get_url(
         SETTINGS.examomatic_host,
         "/v1/exams/raw_file",
@@ -168,7 +172,9 @@ async def get_exam_file_stream(sha256sum: str, **kwargs) -> typing.AsyncIterable
         raise RuntimeError("sha256sum mismatch of downloaded exam file")
 
 
-async def download_exam_file(sha256sum: str, dest_filepath: str, **kwargs):
+async def download_exam_file(
+    sha256sum: str, dest_filepath: str, **kwargs: typing.Any
+) -> None:
     with ktp_controller.utils.open_atomic_write(
         dest_filepath, exclusive=True
     ) as dest_file:
@@ -176,14 +182,14 @@ async def download_exam_file(sha256sum: str, dest_filepath: str, **kwargs):
             dest_file.write(chunk)
 
 
-def download_dummy_exam_file(dest_filepath: str, **kwargs):
+def download_dummy_exam_file(dest_filepath: str, **kwargs: typing.Any) -> None:
     # This remains sync as it is doing a local file copy operation
     ktp_controller.utils.copy_atomic(
         os.path.join(os.path.dirname(__file__), "dummy-exam-file.mex"), dest_filepath
     )
 
 
-async def websock_ack(websock, message):
+async def websock_ack(websock: typing.Any, message: dict[str, typing.Any]) -> str:
     return await ktp_controller.utils.websock_send_json(
         websock, {"type": "ack", "id": message["id"]}
     )
@@ -207,8 +213,8 @@ async def upload_answers_file(
     filepath: str,
     sha256sum: str | None = None,
     is_final: IsFinal = IsFinal.UNKNOWN,
-    **kwargs,
-):
+    **kwargs: typing.Any,
+) -> None:
     is_final = IsFinal(is_final)
 
     if sha256sum is None:

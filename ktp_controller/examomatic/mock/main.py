@@ -8,6 +8,7 @@ import hashlib
 import logging
 import os
 import signal
+import typing
 import urllib.parse
 import uuid
 from typing import Annotated, Any
@@ -41,7 +42,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @contextlib.asynccontextmanager
-async def _lifespan(app: fastapi.FastAPI):
+async def _lifespan(app: fastapi.FastAPI) -> typing.AsyncIterator[None]:
     _LOGGER.info("Starting...")
     app.state.is_running = True
     yield
@@ -49,7 +50,7 @@ async def _lifespan(app: fastapi.FastAPI):
     _LOGGER.info("Stopping...")
 
 
-def _check_domain(domain: str):
+def _check_domain(domain: str) -> None:
     # For safety and user-friendlyness, user wanting to use this
     # Exam-O-Matic mock needs to explicitly claim it.
     if domain != "integration.test":
@@ -68,7 +69,10 @@ APP.state.requests = []
 
 
 @APP.middleware("http")
-async def request_counter(request: fastapi.Request, call_next):
+async def request_counter(
+    request: fastapi.Request,
+    call_next: typing.Callable[[fastapi.Request], typing.Awaitable[fastapi.Response]],
+) -> fastapi.Response:
     path = urllib.parse.urlparse(str(request.url)).path
     response = await call_next(request)
     APP.state.requests.append((path, response.status_code))
@@ -87,7 +91,7 @@ async def _get_exam_file_stream(
     sha256sum: ktp_controller.pydantic.StrictSHA256String = fastapi.Query(
         ..., alias="hash"
     ),
-):
+) -> fastapi.responses.StreamingResponse:
     _check_domain(domain)
     return fastapi.responses.StreamingResponse(
         ktp_controller.utils.bytes_stream(get_exam_filepath(sha256sum)),
@@ -148,7 +152,7 @@ async def _mock_set_exam_info(
     domain: str,
     hostname: str,
     server_id: int = fastapi.Query(..., alias="id"),
-):
+) -> None:
     _check_domain(domain)
 
     exam_info = get_synthetic_exam_info(
@@ -173,10 +177,11 @@ async def _mock_get_state(
     domain: str,
     hostname: str,
     server_id: int = fastapi.Query(..., alias="id"),
-):
+) -> dict[str, Any]:
     _check_domain(domain)
 
-    return APP.state._state
+    state: dict[str, Any] = APP.state._state
+    return state
 
 
 @APP.get(
@@ -186,7 +191,7 @@ async def _mock_get_state(
 )
 async def _get_exam_info(
     domain: str, hostname: str, server_id: int = fastapi.Query(..., alias="id")
-):
+) -> dict[str, Any]:
     utcnow = ktp_controller.utils.utcnow()
 
     _check_domain(domain)
@@ -194,7 +199,7 @@ async def _get_exam_info(
     if APP.state.exam_info is None:
         raise fastapi.HTTPException(404)
 
-    exam_info = copy.deepcopy(APP.state.exam_info)
+    exam_info: dict[str, Any] = copy.deepcopy(APP.state.exam_info)
 
     exam_info["request_id"] = (
         f"{domain} {hostname} {server_id} {utcnow.isoformat()} {uuid.uuid4()!s}"
@@ -215,7 +220,7 @@ async def _send_status_report(
     domain: str,
     hostname: str,
     server_id: int = fastapi.Query(..., alias="id"),
-):
+) -> None:
     _check_domain(domain)
 
     APP.state.status_reports.append(request.model_dump())
@@ -236,7 +241,7 @@ def _upload_answers_file(
     domain: str,
     hostname: str,
     server_id: int = fastapi.Query(..., alias="id"),
-):
+) -> None:
     _check_domain(domain)
 
     if answers_file.size != file_size:
@@ -256,7 +261,7 @@ def _upload_answers_file(
         raise fastapi.HTTPException(400, detail=f"incorrect is_final: {is_final!r}")
 
 
-async def _play_ping_pong_with_ktp_controller(websock: fastapi.WebSocket):
+async def _play_ping_pong_with_ktp_controller(websock: fastapi.WebSocket) -> None:
     async for message in websock.iter_json():
         if message["type"] == "ping":
             APP.state.pong_count += 1
@@ -272,7 +277,7 @@ async def _play_ping_pong_with_ktp_controller(websock: fastapi.WebSocket):
         _LOGGER.warning("Received and ignored unknown message: %s", message)
 
 
-async def _send_refresh_exams(websock: fastapi.WebSocket):
+async def _send_refresh_exams(websock: fastapi.WebSocket) -> None:
     while APP.state.is_running:
         if APP.state.do_send_refresh_exams:
             APP.state.do_send_refresh_exams = False
@@ -288,7 +293,7 @@ async def _ktp_controller_websocket(
     domain: str,
     hostname: str,
     server_id: int = fastapi.Query(..., alias="id"),
-):
+) -> None:
     try:
         _check_domain(domain)
     except fastapi.exceptions.HTTPException as e:
@@ -301,7 +306,7 @@ async def _ktp_controller_websocket(
         tg.create_task(_send_refresh_exams(websock))
 
 
-def trigger_graceful_shutdown():
+def trigger_graceful_shutdown() -> None:
     os.kill(os.getpid(), signal.SIGTERM)
 
 
@@ -310,7 +315,7 @@ def trigger_graceful_shutdown():
     response_model=None,
     status_code=200,
 )
-async def shutdown(background_tasks: fastapi.BackgroundTasks):
+async def shutdown(background_tasks: fastapi.BackgroundTasks) -> None:
     background_tasks.add_task(trigger_graceful_shutdown)
 
 

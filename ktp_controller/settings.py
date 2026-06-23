@@ -96,7 +96,7 @@ class Settings(BaseSettings):
 
     @field_validator("examomatic_use_tls", mode="before")
     @classmethod
-    def _validate_examomatic_use_tls(cls, v) -> typing.Any:
+    def _validate_examomatic_use_tls(cls, v: typing.Any) -> typing.Any:
         if isinstance(v, str):
             if v.lower().strip() in ["yes", "y", "true", "1"]:
                 return True
@@ -107,7 +107,9 @@ class Settings(BaseSettings):
 
     @field_validator("abitti2_allow_students_to_use_browsers", mode="before")
     @classmethod
-    def _validate_abitti2_allow_students_to_use_browsers(cls, v) -> typing.Any:
+    def _validate_abitti2_allow_students_to_use_browsers(
+        cls, v: typing.Any
+    ) -> typing.Any:
         if isinstance(v, str):
             if v.lower().strip() in ["yes", "y", "true", "1"]:
                 return True
@@ -119,7 +121,7 @@ class Settings(BaseSettings):
     @field_validator("abitti2_change_student_access_code_automatically", mode="before")
     @classmethod
     def _validate_abitti2_change_student_access_code_automatically(
-        cls, v
+        cls, v: typing.Any
     ) -> typing.Any:
         if isinstance(v, str):
             if v.lower().strip() in ["yes", "y", "true", "1"]:

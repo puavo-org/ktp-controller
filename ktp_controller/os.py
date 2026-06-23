@@ -1,6 +1,7 @@
 # Standard library imports
 import logging
 import time
+import typing
 
 # Third-party imports
 import psutil
@@ -13,11 +14,11 @@ _LOGGER = logging.getLogger(__name__)
 
 def get_uptime() -> float:
     # Uptime is current time minus boot time
-    return time.time() - psutil.boot_time()
+    return float(time.time() - psutil.boot_time())
 
 
-def get_disk_usage_stats() -> list:
-    stats = []
+def get_disk_usage_stats() -> list[dict[str, typing.Any]]:
+    stats: list[dict[str, typing.Any]] = []
 
     # all=False returns only physical disk partitions, ignoring pseudo-filesystems
     partitions = psutil.disk_partitions(all=False)
@@ -43,7 +44,7 @@ def get_disk_usage_stats() -> list:
     return stats
 
 
-def get_load_average_stats() -> dict:
+def get_load_average_stats() -> dict[str, typing.Any]:
     load1, load5, load15 = psutil.getloadavg()
     return {
         "1min": load1,
@@ -52,7 +53,7 @@ def get_load_average_stats() -> dict:
     }
 
 
-def get_memory_stats() -> dict:
+def get_memory_stats() -> dict[str, typing.Any]:
     mem = psutil.virtual_memory()
     return {
         "total": mem.total,
@@ -62,7 +63,7 @@ def get_memory_stats() -> dict:
     }
 
 
-def get_stats() -> dict:
+def get_stats() -> dict[str, typing.Any]:
     try:
         disk_usage_stats = get_disk_usage_stats()
     except Exception:

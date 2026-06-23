@@ -32,7 +32,7 @@ __all__ = [
 _LOGGER = logging.getLogger(__name__)
 
 
-async def _post(path: str, **kwargs) -> typing.Any:
+async def _post(path: str, **kwargs: typing.Any) -> typing.Any:
     kwargs.setdefault("json", {})
 
     url = ktp_controller.utils.get_url(
@@ -109,7 +109,9 @@ def get_ui_websock_url() -> str:
 # API commands:
 
 
-async def send_status_report(status_report: dict, **kwargs) -> typing.Any:
+async def send_status_report(
+    status_report: dict[str, typing.Any], **kwargs: typing.Any
+) -> typing.Any:
     kwargs["content"] = (
         ktp_controller.api.system.schemas.StatusReport.model_validate(status_report)
         .model_dump_json(ensure_ascii=True)
@@ -120,8 +122,13 @@ async def send_status_report(status_report: dict, **kwargs) -> typing.Any:
     return await _post("/api/v1/system/send_status_report", **kwargs)
 
 
-async def get_last_status_report(**kwargs) -> dict[str, typing.Any] | None:
-    return await _post("/api/v1/system/get_last_status_report", **kwargs)
+async def get_last_status_report(
+    **kwargs: typing.Any,
+) -> dict[str, typing.Any] | None:
+    return typing.cast(
+        "dict[str, typing.Any] | None",
+        await _post("/api/v1/system/get_last_status_report", **kwargs),
+    )
 
 
 async def get_student_access_code() -> ktp_controller.schemas.StudentAccessCode | None:
@@ -144,42 +151,64 @@ async def get_student_access_code() -> ktp_controller.schemas.StudentAccessCode 
 
 
 async def get_locked_exam_packages(
-    **kwargs,
+    **kwargs: typing.Any,
 ) -> list[dict[str, typing.Any]]:
-    return await _post("/api/v1/exam/get_locked_exam_packages", **kwargs)
+    return typing.cast(
+        "list[dict[str, typing.Any]]",
+        await _post("/api/v1/exam/get_locked_exam_packages", **kwargs),
+    )
 
 
-async def get_current_exam_package(**kwargs) -> dict[str, typing.Any]:
-    return await _post("/api/v1/exam/get_current_exam_package", **kwargs)
+async def get_current_exam_package(**kwargs: typing.Any) -> dict[str, typing.Any]:
+    return typing.cast(
+        "dict[str, typing.Any]",
+        await _post("/api/v1/exam/get_current_exam_package", **kwargs),
+    )
 
 
-async def set_current_exam_package_state(external_id: str, state: str, **kwargs) -> str:
+async def set_current_exam_package_state(
+    external_id: str, state: str, **kwargs: typing.Any
+) -> str:
     kwargs["json"] = {"external_id": external_id, "state": state}
 
-    return await _post("/api/v1/exam/set_current_exam_package_state", **kwargs)
+    return typing.cast(
+        str, await _post("/api/v1/exam/set_current_exam_package_state", **kwargs)
+    )
 
 
-async def get_scheduled_exam(external_id: str, **kwargs) -> dict[str, typing.Any]:
+async def get_scheduled_exam(
+    external_id: str, **kwargs: typing.Any
+) -> dict[str, typing.Any]:
     kwargs["json"] = {"external_id": external_id}
 
-    return await _post("/api/v1/exam/get_scheduled_exam", **kwargs)
+    return typing.cast(
+        "dict[str, typing.Any]",
+        await _post("/api/v1/exam/get_scheduled_exam", **kwargs),
+    )
 
 
-async def save_exam_info(eom_exam_info: dict[str, typing.Any], **kwargs) -> typing.Any:
+async def save_exam_info(
+    eom_exam_info: dict[str, typing.Any], **kwargs: typing.Any
+) -> typing.Any:
     kwargs["json"] = eom_exam_info_to_api_exam_info(eom_exam_info)
 
     return await _post("/api/v1/exam/save_exam_info", **kwargs)
 
 
-async def async_command(command: ktp_controller.messages.Command, **kwargs) -> str:
+async def async_command(
+    command: ktp_controller.messages.Command, **kwargs: typing.Any
+) -> str:
     kwargs["json"] = {"command": command}
 
-    return await _post("/api/v1/system/async_command", **kwargs)
+    return typing.cast(str, await _post("/api/v1/system/async_command", **kwargs))
 
 
 async def get_scheduled_exam_package(
-    external_id: str, **kwargs
+    external_id: str, **kwargs: typing.Any
 ) -> dict[str, typing.Any]:
     kwargs["json"] = {"external_id": external_id}
 
-    return await _post("/api/v1/exam/get_scheduled_exam_package", **kwargs)
+    return typing.cast(
+        "dict[str, typing.Any]",
+        await _post("/api/v1/exam/get_scheduled_exam_package", **kwargs),
+    )

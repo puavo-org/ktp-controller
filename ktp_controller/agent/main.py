@@ -48,7 +48,9 @@ _SHUTDOWN_EVENT = asyncio.Event()
 
 
 @contextlib.asynccontextmanager
-async def _task(name: str, *, on_exit_coro: typing.Awaitable | None = None):
+async def _task(
+    name: str, *, on_exit_coro: typing.Awaitable[typing.Any] | None = None
+) -> typing.AsyncIterator[None]:
     try:
         _LOGGER.info("Starting task %r...", name)
         yield
@@ -97,7 +99,9 @@ class _StateTransition(typing.TypedDict):
     next_state: str
 
 
-def _simplify_exam_package(exam_package):
+def _simplify_exam_package(
+    exam_package: dict[str, typing.Any],
+) -> dict[str, typing.Any]:
     return {
         "uuid": exam_package["external_id"],
         "scheduled_lock_time": exam_package["lock_time"],
@@ -126,16 +130,16 @@ class Agent:
     ):
         self.__is_testbed_mode = is_testbed_mode
         self.__do_crash = False
-        self.__started_at = None
+        self.__started_at: datetime.datetime | None = None
         self.__state = state
-        self.__nonfinal_answers_download_task: asyncio.Task | None = None
+        self.__nonfinal_answers_download_task: asyncio.Task[None] | None = None
         self.__refresh_exams_lock = asyncio.Lock()
         self.__work_on_current_exam_package_lock = asyncio.Lock()
-        self.__last_status_report_sent_to_examomatic_at = None
+        self.__last_status_report_sent_to_examomatic_at: datetime.datetime | None = None
         self.__cached_list_of_locked_exam_packages: (
             list[dict[str, typing.Any]] | None
         ) = None
-        self.__cached_abitti2_version = None
+        self.__cached_abitti2_version: str | None = None
 
         self.__os_release = ktp_controller.os.get_release()
 
@@ -155,12 +159,12 @@ class Agent:
 
         # Abitti2 reports these
         self.__last_received_exam_list: list[dict[str, typing.Any]] | None = None
-        self.__last_received_security_code = None
-        self.__old_security_code = None
+        self.__last_received_security_code: dict[str, str] | None = None
+        self.__old_security_code: dict[str, str] | None = None
         self.__uploaded = False
-        self.__last_message_from_abitti2_received_at = None
+        self.__last_message_from_abitti2_received_at: datetime.datetime | None = None
         self.__last_received_students: list[dict[str, typing.Any]] | None = None
-        self.__last_received_answer_count = None
+        self.__last_received_answer_count: int | None = None
         self.__last_cold_reset_time: datetime.datetime | None = None
 
         self.__prev_connection_durations: collections.defaultdict[
@@ -248,7 +252,7 @@ class Agent:
         self,
         command_uuid: pydantic.UUID4,
         command_data: ktp_controller.messages.CommandData,
-    ):
+    ) -> ktp_controller.messages.CommandResultData:
         return self.__set_auto_control(command_uuid, False)
 
     async def __command_change_current_exam_package_state(
@@ -362,7 +366,7 @@ class Agent:
 
     def __ensure_nonfinal_answers_download_task_is_running(
         self, current_exam_package: dict[str, typing.Any]
-    ):
+    ) -> None:
         if self.__nonfinal_answers_download_task is None:
             self.__nonfinal_answers_download_task = asyncio.create_task(
                 self.__download_nonfinal_answers(current_exam_package)
@@ -374,7 +378,7 @@ class Agent:
 
     async def __stop_nonfinal_answers_download_task(
         self, current_exam_package: dict[str, typing.Any]
-    ):
+    ) -> None:
         if self.__nonfinal_answers_download_task is None:
             _LOGGER.info("Periodic non-final answers download task is not running.")
             return
@@ -504,7 +508,7 @@ class Agent:
 
     async def __download_nonfinal_answers(
         self, current_exam_package: dict[str, typing.Any]
-    ):
+    ) -> None:
         started = False
         async with _task("periodic non-final answers download"):
             while not _SHUTDOWN_EVENT.is_set():
@@ -702,7 +706,7 @@ class Agent:
 
         return changed
 
-    async def __send_pings_to_api(self, websock):
+    async def __send_pings_to_api(self, websock: websockets.ClientConnection) -> None:
         async with _task("periodic ping-pong with API"):
             while not _SHUTDOWN_EVENT.is_set():
                 message = ktp_controller.messages.PingMessage().model_dump_json()
@@ -710,7 +714,9 @@ class Agent:
                 _LOGGER.debug("--> API: %s", message)
                 await asyncio.sleep(self.__approx_api_ping_interval_sec)
 
-    async def __send_status_reports_to_api(self, websock):
+    async def __send_status_reports_to_api(
+        self, websock: websockets.ClientConnection
+    ) -> None:
         async with _task("periodic status reporting to API"):
             while not _SHUTDOWN_EVENT.is_set():
                 message = ktp_controller.messages.StatusReportMessage(
@@ -722,7 +728,9 @@ class Agent:
                 _LOGGER.debug("--> API: %s", message)
                 await asyncio.sleep(self.__approx_api_status_report_interval_sec)
 
-    async def __send_pings_to_examomatic(self, websock):
+    async def __send_pings_to_examomatic(
+        self, websock: websockets.ClientConnection
+    ) -> None:
         async with _task("periodic ping-pong with Exam-O-Matic"):
             while not _SHUTDOWN_EVENT.is_set():
                 message = json.dumps(
@@ -736,7 +744,9 @@ class Agent:
                 _LOGGER.debug("--> Exam-O-Matic: %s", message)
                 await asyncio.sleep(self.__approx_examomatic_ping_interval_sec)
 
-    async def __communicate_with_api(self, websock):
+    async def __communicate_with_api(
+        self, websock: websockets.ClientConnection
+    ) -> None:
         async with _task("communication with API"):
             async for data in websock:
                 _LOGGER.debug("<-- API: %s", data)
@@ -815,7 +825,9 @@ class Agent:
 
                 _LOGGER.error("unknown API message kind: %s", message_kind)
 
-    async def __communicate_with_examomatic(self, websock):
+    async def __communicate_with_examomatic(
+        self, websock: websockets.ClientConnection
+    ) -> None:
         async with _task("communication with Exam-O-Matic"):
             async for data in websock:
                 received_at = ktp_controller.utils.utcnow()
@@ -830,13 +842,15 @@ class Agent:
                     )
                     continue
 
-                self.__connection_stats[
-                    Component.EXAMOMATIC
-                ].last_message_received_at = received_at
+                examomatic_stats = typing.cast(
+                    ktp_controller.agent.stats.ExamomaticConnectionStats,
+                    self.__connection_stats[Component.EXAMOMATIC],
+                )
+                examomatic_stats.last_message_received_at = received_at
 
                 if message["type"] == "pong":
                     _LOGGER.info("received pong message from Exam-O-Matic")
-                    self.__connection_stats[Component.EXAMOMATIC].ping_pong_count += 1
+                    examomatic_stats.ping_pong_count += 1
                     continue  # pongs are not acked
 
                 if message["type"] == "change_keycode":
@@ -873,8 +887,8 @@ class Agent:
         self,
         websock: websockets.ClientConnection,
         received_at: datetime.datetime,
-        message: None,
-    ):
+        message: dict[str, typing.Any] | None,
+    ) -> None:
         await websock.send("pong")
 
     async def __handle_abitti2_security_code_message(
@@ -882,7 +896,7 @@ class Agent:
         websock: websockets.ClientConnection,
         received_at: datetime.datetime,
         message: dict[str, typing.Any],
-    ):
+    ) -> None:
         message_data = message["data"]
         try:
             security_code = message_data["securityCode"]
@@ -927,7 +941,7 @@ class Agent:
         websock: websockets.ClientConnection,
         received_at: datetime.datetime,
         message: dict[str, typing.Any],
-    ):
+    ) -> None:
         ktp_controller.abitti2.utils.sanitize_stats_message(message)
 
         try:
@@ -1014,7 +1028,9 @@ class Agent:
 
         return exam_stats
 
-    def __get_websocket_stats(self, component: Component, utcnow) -> dict:
+    def __get_websocket_stats(
+        self, component: Component, utcnow: datetime.datetime
+    ) -> dict[str, typing.Any]:
         component = Component(component)
 
         try:
@@ -1043,10 +1059,10 @@ class Agent:
             "connection_count": connection_count,
         }
 
-    def __get_stats(self) -> dict:
+    def __get_stats(self) -> dict[str, typing.Any]:
         utcnow = ktp_controller.utils.utcnow()
 
-        stats = {}
+        stats: dict[str, typing.Any] = {}
 
         for key_prefix, name in zip(
             ("abitti2", "api", "examomatic"),
@@ -1058,7 +1074,7 @@ class Agent:
 
         return stats
 
-    async def __send_status_report(self):
+    async def __send_status_report(self) -> None:
         try:
             supervisor_passphrase = (
                 ktp_controller.abitti2.naksu2.read_supervisor_passphrase()
@@ -1115,7 +1131,7 @@ class Agent:
 
         cached_files = ktp_controller.files.get_cached_files()
 
-        status_report = {
+        status_report: dict[str, typing.Any] = {
             "created_at": utcnow,
             "abitti2": {
                 "stats": {
@@ -1172,7 +1188,7 @@ class Agent:
         websock: websockets.ClientConnection,
         received_at: datetime.datetime,
         message: dict[str, typing.Any],
-    ):
+    ) -> None:
         exam_list = []
 
         for abitti2_exam in message["data"]:
@@ -1193,7 +1209,7 @@ class Agent:
         self.__last_received_exam_list = exam_list
 
     def __decode_abitti2_message(
-        self, data
+        self, data: str | bytes
     ) -> tuple[str | None, dict[str, typing.Any] | None]:
         if data == "ping":
             return ("ping", None)
@@ -1210,11 +1226,13 @@ class Agent:
             _LOGGER.exception("received invalid message from Abitti2: %r", data)
             return (None, None)
 
-    async def __clear_abitti2_caches(self):
+    async def __clear_abitti2_caches(self) -> None:
         self.__cached_abitti2_version = None
         _LOGGER.info("All cached Abitti2 information has been cleared.")
 
-    async def __communicate_with_abitti2(self, websock):
+    async def __communicate_with_abitti2(
+        self, websock: websockets.ClientConnection
+    ) -> None:
         async with _task(
             "communication with Abitti2", on_exit_coro=self.__clear_abitti2_caches()
         ):
@@ -1228,14 +1246,18 @@ class Agent:
                 if message_type is None:
                     continue
 
+                handlers: dict[
+                    str,
+                    typing.Callable[..., typing.Awaitable[None]] | None,
+                ] = {
+                    "ping": self.__handle_abitti2_ping_message,
+                    "security-code": self.__handle_abitti2_security_code_message,
+                    "stats": self.__handle_abitti2_stats_message,
+                    "exams": self.__handle_abitti2_exams_message,
+                    "servers": None,  # Simply ignored for now
+                }
                 try:
-                    handler = {
-                        "ping": self.__handle_abitti2_ping_message,
-                        "security-code": self.__handle_abitti2_security_code_message,
-                        "stats": self.__handle_abitti2_stats_message,
-                        "exams": self.__handle_abitti2_exams_message,
-                        "servers": None,  # Simply ignored for now
-                    }[message_type]
+                    handler = handlers[message_type]
                 except KeyError:
                     _LOGGER.warning(
                         "unhandled %r message from Abitti2: %r", message_type, message
@@ -1264,8 +1286,8 @@ class Agent:
         *,
         connection_stats_class: type[ktp_controller.agent.stats.ConnectionStats],
         additional_headers: dict[str, str] | None = None,
-        on_exit_coro: typing.Awaitable | None = None,
-    ):
+        on_exit_coro: typing.Awaitable[typing.Any] | None = None,
+    ) -> None:
         started = False
         async with _task(
             f"websocket maintenance to {name} ({url!r})", on_exit_coro=on_exit_coro
@@ -1306,7 +1328,7 @@ class Agent:
                         )
                     self.__connection_stats.pop(name, None)
 
-    async def __maintain_websocket_connection_to_api(self):
+    async def __maintain_websocket_connection_to_api(self) -> None:
         await self.__maintain_websocket_connection(
             Component.API,
             ktp_controller.api.client.get_agent_websock_url(),
@@ -1318,7 +1340,7 @@ class Agent:
             connection_stats_class=ktp_controller.agent.stats.APIConnectionStats,
         )
 
-    async def __maintain_websocket_connection_to_examomatic(self):
+    async def __maintain_websocket_connection_to_examomatic(self) -> None:
         await self.__maintain_websocket_connection(
             Component.EXAMOMATIC,
             ktp_controller.examomatic.client.get_examomatic_websock_url(),
@@ -1330,7 +1352,7 @@ class Agent:
             additional_headers=ktp_controller.examomatic.client.get_basic_auth(),
         )
 
-    async def __maintain_websocket_connection_to_abitti2(self):
+    async def __maintain_websocket_connection_to_abitti2(self) -> None:
         await self.__maintain_websocket_connection(
             Component.ABITTI2,
             ktp_controller.abitti2.client.get_abitti2_websock_url(),
@@ -1342,7 +1364,9 @@ class Agent:
             on_exit_coro=self.__clear_abitti2_caches(),
         )
 
-    async def __ensure_exam_file_exists(self, eom_scheduled_exam):
+    async def __ensure_exam_file_exists(
+        self, eom_scheduled_exam: dict[str, typing.Any]
+    ) -> None:
         _LOGGER.info(
             "ensuring exam file %r (file_uuid=%s) exists",
             eom_scheduled_exam["file_name"],
@@ -1407,7 +1431,7 @@ class Agent:
                 filepath,
             )
 
-    async def __upload_answers_files(self):
+    async def __upload_answers_files(self) -> None:
         answers_file_dir_path = pathlib.Path(ktp_controller.files.ANSWERS_FILE_DIR)
         for answers_file_path in sorted(
             answers_file_dir_path.glob("*/*.meb"), key=lambda p: p.name
@@ -1420,7 +1444,7 @@ class Agent:
                 # again.
                 break
 
-    async def __get_abitti2_version(self):
+    async def __get_abitti2_version(self) -> str:
         if self.__cached_abitti2_version is None:
             self.__cached_abitti2_version = (
                 await ktp_controller.abitti2.client.get_current_abitti2_version()
@@ -1437,7 +1461,7 @@ class Agent:
                 )
             return self.__cached_list_of_locked_exam_packages
 
-    async def __refresh_exams(self, *, is_spontaneous: bool):
+    async def __refresh_exams(self, *, is_spontaneous: bool) -> None:
         _LOGGER.info(
             "Starting %sexam refresh...",
             "spontaneous " if is_spontaneous else "requested ",
@@ -1476,7 +1500,7 @@ class Agent:
 
         _LOGGER.info("refreshed exams successfully")
 
-    async def __file_cleanup_task(self):
+    async def __file_cleanup_task(self) -> None:
         started = False
         async with _task("file cleanup"):
             while not _SHUTDOWN_EVENT.is_set():
@@ -1488,7 +1512,7 @@ class Agent:
                 except Exception:
                     _LOGGER.exception("file cleanup failed")
 
-    async def __answers_file_upload_task(self):
+    async def __answers_file_upload_task(self) -> None:
         started = False
         async with _task("answers file upload"):
             while not _SHUTDOWN_EVENT.is_set():
@@ -1500,7 +1524,7 @@ class Agent:
                 except Exception:
                     _LOGGER.exception("answers file upload failed")
 
-    async def __periodic_refresh_exams(self):
+    async def __periodic_refresh_exams(self) -> None:
         started = False
         async with _task("periodic exam refresh"):
             while not _SHUTDOWN_EVENT.is_set():
@@ -1513,15 +1537,16 @@ class Agent:
                 except Exception:
                     _LOGGER.exception("Failed to refresh exams")
 
-    async def forever(self):
+    async def forever(self) -> None:
         _LOGGER.info("Started.")
         loop = asyncio.get_running_loop()
         main_task = asyncio.current_task()
 
-        def trigger_shutdown(signum):
+        def trigger_shutdown(signum: signal.Signals) -> None:
             _LOGGER.info("Received signal %r, stopping...", signum)
             _SHUTDOWN_EVENT.set()
-            main_task.cancel()
+            if main_task is not None:
+                main_task.cancel()
 
         for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP, signal.SIGQUIT):
             loop.add_signal_handler(sig, trigger_shutdown, sig)
@@ -1550,7 +1575,7 @@ class Agent:
         finally:
             _LOGGER.info("Stopped.")
 
-    async def __cancel_all_tasks(self):
+    async def __cancel_all_tasks(self) -> None:
         """Logic to ensure all pending tasks are accounted for."""
         tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
         for task in tasks:
@@ -1559,7 +1584,7 @@ class Agent:
         # Wait for all tasks to acknowledge cancellation
         await asyncio.gather(*tasks, return_exceptions=True)
 
-    def run(self):
+    def run(self) -> None:
         self.__started_at = ktp_controller.utils.utcnow()
 
         # ktp_controller.abitti2.client needs dummy exam package to reset Abitti2.
@@ -1572,7 +1597,7 @@ class Agent:
         return self.__state.model_copy()
 
 
-def _run(args) -> int:
+def _run(args: argparse.Namespace) -> int:
     utcnow = ktp_controller.utils.utcnow()
 
     if ktp_controller.utils.is_puavo_os():
