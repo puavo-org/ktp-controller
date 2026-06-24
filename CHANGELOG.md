@@ -24,6 +24,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - All dependencies have been updated.
 
+- Upload answers files in newest-answers-first order.
+
+- Non-uploaded intermediate (non-final) answers files are just
+  archived and not uploaded after the final answers file is uploaded
+  successfully. However, all intermediate answers files are still
+  retained locally for two weeks.
+
 ### Removed
 
 - Orphan answers files (answers of manually started exams) are not
