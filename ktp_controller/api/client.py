@@ -19,6 +19,7 @@ __all__ = [
     "get_ui_websock_url",
     # API commands:
     "async_command",
+    "delete_old_exam_info",
     "get_current_exam_package",
     "get_locked_exam_packages",
     "set_current_exam_package_state",
@@ -211,4 +212,13 @@ async def get_scheduled_exam_package(
     return typing.cast(
         "dict[str, typing.Any]",
         await _post("/api/v1/exam/get_scheduled_exam_package", **kwargs),
+    )
+
+
+async def delete_old_exam_info(*, older_than_days: int, **kwargs: typing.Any) -> None:
+    kwargs["json"] = {"older_than_days": older_than_days}
+
+    return typing.cast(
+        "None",
+        await _post("/api/v1/exam/delete_old_exam_info", **kwargs),
     )

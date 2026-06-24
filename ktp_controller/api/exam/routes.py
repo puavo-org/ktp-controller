@@ -175,6 +175,34 @@ async def _save_exam_info(
     db.commit()
 
 
+@router.post(
+    "/delete_old_exam_info",
+    response_model=None,
+    summary="Delete old exam info",
+)
+async def _delete_exam_info(
+    data: schemas.DeleteOldExamInfo,
+    db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
+) -> None:
+    older_than_date = (
+        ktp_controller.utils.utcnow() - datetime.timedelta(days=data.older_than_days)
+    ).date()
+
+    delete_subquery = (
+        db.query(models.ExamInfo.dbid)
+        .order_by(sqlalchemy.asc(models.ExamInfo.dbrow_created_at))
+        .filter(
+            sqlalchemy.func.date(models.ExamInfo.dbrow_created_at) <= older_than_date
+        )
+        .subquery()
+    )
+    db.query(models.ExamInfo).filter(
+        models.ExamInfo.dbid.in_(sqlalchemy.sql.select(delete_subquery))
+    ).delete(synchronize_session="fetch")
+
+    db.commit()
+
+
 _VALID_TRANSITIONS = {
     None: "ready",
     "ready": "running",
