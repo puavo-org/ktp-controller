@@ -19,15 +19,19 @@ __all__ = [
 ]
 
 
-def _write_archive_file(archive_filepath: str) -> None:
+def _write_archive_file(
+    archive_filepath: str, file_exists_is_error: bool = True
+) -> None:
     """Write a timestamped sentinel file to mark something as archived.
 
-    Raises FileExistsError if the sentinel file already exists.
+    Raises FileExistsError if the sentinel file already exists and file_exists_is_error is True.
     """
     utcnow_str = ktp_controller.utils.utcnow_str()
 
     if os.path.exists(archive_filepath):
-        raise FileExistsError(archive_filepath)
+        if file_exists_is_error:
+            raise FileExistsError(archive_filepath)
+        return
 
     with ktp_controller.utils.open_atomic_write(
         archive_filepath, exclusive=True, encoding="utf-8"
@@ -36,16 +40,28 @@ def _write_archive_file(archive_filepath: str) -> None:
         sentinel_file.write("\n")
 
 
-def _mark_dir_archived(dirpath: str | pathlib.Path) -> None:
-    _write_archive_file(os.path.join(dirpath, ".archived"))
+def _mark_dir_archived(
+    dirpath: str | pathlib.Path, file_exists_is_error: bool = True
+) -> None:
+    _write_archive_file(
+        os.path.join(dirpath, ".archived"), file_exists_is_error=file_exists_is_error
+    )
 
 
-def _mark_file_archived(filepath: str | pathlib.Path) -> None:
-    _write_archive_file(f"{filepath}.archived")
+def _mark_file_archived(
+    filepath: str | pathlib.Path, file_exists_is_error: bool = True
+) -> None:
+    _write_archive_file(
+        f"{filepath}.archived", file_exists_is_error=file_exists_is_error
+    )
 
 
 def _is_file_archived(filepath: str | pathlib.Path) -> bool:
     return os.path.exists(f"{filepath}.archived")
+
+
+def _is_dir_archived(dirpath: str | pathlib.Path) -> bool:
+    return os.path.exists(os.path.join(dirpath, ".archived"))
 
 
 async def download_answers_file(
@@ -106,7 +122,9 @@ async def download_answers_file(
     return answers_file_path, sha256sum
 
 
-async def upload_answers_file(answers_file_path: str | pathlib.Path) -> bool:
+async def upload_answers_file(
+    answers_file_path: str | pathlib.Path, is_re_upload: bool = False
+) -> bool:
     pathobj = pathlib.Path(answers_file_path)
     pathobj.resolve()
 
@@ -114,7 +132,12 @@ async def upload_answers_file(answers_file_path: str | pathlib.Path) -> bool:
     answers_file_size = pathobj.stat().st_size
     exam_package_external_id = pathobj.parent.name
 
-    if _is_file_archived(answers_file_path):
+    dirpath = os.path.dirname(answers_file_path)
+
+    if not is_re_upload and _is_dir_archived(dirpath):
+        return False
+
+    if not is_re_upload and _is_file_archived(answers_file_path):
         return False
 
     if answers_file_size == 0:
@@ -146,7 +169,7 @@ async def upload_answers_file(answers_file_path: str | pathlib.Path) -> bool:
     )
 
     try:
-        _mark_file_archived(answers_file_path)
+        _mark_file_archived(answers_file_path, file_exists_is_error=not is_re_upload)
     except Exception as exception:
         _LOGGER.warning(
             "Failed to mark answers file %r archived: %s", answers_file_path, exception
@@ -154,12 +177,34 @@ async def upload_answers_file(answers_file_path: str | pathlib.Path) -> bool:
 
     _LOGGER.info("Archived answers file %r.", os.path.basename(answers_file_path))
 
+    if is_final:
+        # If we successfully uploaded the final answers file, there's
+        # no need to upload any intermediate answers. Mark the whole
+        # answers directory as archived, including all answers files.
+        for fp in ktp_controller.files.glob_local_filepath(
+            ktp_controller.files.LocalFilepathType.ANSWERS_FILE,
+            exam_package_external_id,
+            "*",
+        ):
+            try:
+                _mark_file_archived(fp, file_exists_is_error=not is_re_upload)
+            except Exception as exception:
+                _LOGGER.warning(
+                    "Failed to mark answers file %r archived: %s", fp, exception
+                )
+        try:
+            _mark_dir_archived(dirpath, file_exists_is_error=not is_re_upload)
+        except Exception as exception:
+            _LOGGER.warning(
+                "Failed to mark answers directory %r archived: %s", dirpath, exception
+            )
+
     exam_package_dirpath = ktp_controller.files.get_local_dirpath(
         ktp_controller.files.LocalFilepathType.EXAM_PACKAGE, exam_package_external_id
     )
 
     try:
-        _mark_dir_archived(exam_package_dirpath)
+        _mark_dir_archived(exam_package_dirpath, file_exists_is_error=not is_re_upload)
     except Exception as exception:
         _LOGGER.warning(
             "Failed to mark exam package dir %r archived: %s",
