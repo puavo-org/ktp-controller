@@ -1433,8 +1433,11 @@ class Agent:
 
     async def __upload_answers_files(self) -> None:
         answers_file_dir_path = pathlib.Path(ktp_controller.files.ANSWERS_FILE_DIR)
+
+        # Latest answers file first, hence reverse=True. Filenames
+        # contain naturally sorting ISO timestamps.
         for answers_file_path in sorted(
-            answers_file_dir_path.glob("*/*.meb"), key=lambda p: p.name
+            answers_file_dir_path.glob("*/*.meb"), key=(lambda p: p.name), reverse=True
         ):
             uploaded = await ktp_controller.agent.answers.upload_answers_file(
                 answers_file_path
