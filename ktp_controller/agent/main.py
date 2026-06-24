@@ -1515,6 +1515,20 @@ class Agent:
                 except Exception:
                     _LOGGER.exception("file cleanup failed")
 
+    async def __old_exam_info_cleanup_task(self) -> None:
+        started = False
+        async with _task("old exam info cleanup"):
+            while not _SHUTDOWN_EVENT.is_set():
+                try:
+                    if started:
+                        await asyncio.sleep(3600)
+                    started = True
+                    await ktp_controller.api.client.delete_old_exam_info(
+                        older_than_days=14
+                    )
+                except Exception:
+                    _LOGGER.exception("old exam info cleanup failed")
+
     async def __answers_file_upload_task(self) -> None:
         started = False
         async with _task("answers file upload"):
@@ -1562,6 +1576,7 @@ class Agent:
                 tg.create_task(self.__periodic_refresh_exams())
                 tg.create_task(self.__answers_file_upload_task())
                 tg.create_task(self.__file_cleanup_task())
+                tg.create_task(self.__old_exam_info_cleanup_task())
 
                 # Keep the main task alive while workers run
                 await asyncio.Event().wait()
