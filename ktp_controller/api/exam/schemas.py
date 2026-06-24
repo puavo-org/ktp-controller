@@ -13,6 +13,7 @@ import ktp_controller.pydantic
 
 __all__ = [
     # Types:
+    "DeleteOldExamInfo",
     "ExamFileInfo",
     "ExamInfo",
     "GetScheduledExamData",
@@ -98,3 +99,7 @@ class SetCurrentExamPackageStateData(ktp_controller.pydantic.BaseModel):
 
 class GetScheduledExamPackageData(ktp_controller.pydantic.BaseModel):
     external_id: pydantic.StrictStr
+
+
+class DeleteOldExamInfo(ktp_controller.pydantic.BaseModel):
+    older_than_days: ktp_controller.pydantic.StrictNonNegativeInt
