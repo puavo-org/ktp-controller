@@ -9,7 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- GET /api/v1/system/echo
+- A new no-op endpoint (GET /api/v1/system/echo) which is safe to be
+  called anytime. Can be used for testing purposes.
+
+- Automatic and periodic cleanup of cached raw scheduling info
+  requests: raw scheduling info requests received from Exam-O-Matic
+  are now retained only for 14 days. Previously, they were stored for
+  an eternity. An eternity is a a long time and bloats the database
+  unnecessarily. 14 days is a good compromise and is inline with local
+  data retention in general.
 
 ### Changed
 
@@ -31,11 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   successfully. However, all intermediate answers files are still
   retained locally for two weeks.
 
-### Removed
-
-- Orphan answers files (answers of manually started exams) are not
-  saved anymore.
-
 ### Fixed
 
 - Cleanup of archived exam package files.
@@ -46,6 +49,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Manual exam package commands (prepare/start/stop/archive) now report
   `ok` instead of always reporting `ok_no_change`, even when they did
   change the state of the current exam package.
+
+### Removed
+
+- Orphan answers files (answers of manually started exams) are not
+  saved anymore.
 
 
 ## [0.5.7] - 2026-06-03
