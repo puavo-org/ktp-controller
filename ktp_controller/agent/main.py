@@ -1430,6 +1430,9 @@ class Agent:
                 eom_scheduled_exam["file_uuid"],
                 filepath,
             )
+            # Update mtime to avoid deleting this cached file
+            # soon. See ktp_controller.files.cleanup_exam_files()'
+            os.utime(filepath)
 
     async def __upload_answers_files(self) -> None:
         answers_file_dir_path = pathlib.Path(ktp_controller.files.ANSWERS_FILE_DIR)
