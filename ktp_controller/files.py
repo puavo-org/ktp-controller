@@ -170,15 +170,18 @@ def get_cached_files(
     return data
 
 
-def _find_old_answers_files(
-    basedirpath: str | pathlib.Path,
-    prefix: str,
-    suffix: str,
-    *,
+def find_old_answers_files(
     older_than_timedelta: datetime.timedelta = datetime.timedelta(weeks=2),
     logger: logging.Logger | None = None,
 ) -> typing.Iterator[str]:
-    basedirpath = pathlib.Path(basedirpath).expanduser()
+    """Yields filepaths of all answers files older than the specified
+    timedelta (by default, 2 weeks).
+
+    """
+
+    basedirpath = pathlib.Path(ANSWERS_FILE_DIR).expanduser()
+    prefix = "answers-file_"
+    suffix = ".meb"
 
     if not basedirpath.exists():
         return
@@ -219,26 +222,6 @@ def _find_old_answers_files(
 
         if timestamp < cutoff_date:
             yield str(filepath)
-
-
-def find_old_answers_files(
-    *,
-    older_than_timedelta: datetime.timedelta = datetime.timedelta(weeks=2),
-    logger: logging.Logger | None = None,
-) -> typing.Iterator[str]:
-    """Yields filepaths of all answers files older than the specified
-    timedelta (by default, 2 weeks).
-
-    """
-
-    for basedirpath, prefix, suffix in ((ANSWERS_FILE_DIR, "answers-file_", ".meb"),):
-        yield from _find_old_answers_files(
-            basedirpath,
-            prefix,
-            suffix,
-            older_than_timedelta=older_than_timedelta,
-            logger=logger,
-        )
 
 
 def find_empty_dirs_bottom_up(
