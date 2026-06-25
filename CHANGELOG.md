@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- In Puavo OS, all logs are sent to syslog.
+
 - Archived exam packages and archived answers are NOT included in
   status reports (in `cached_files`) anymore.
   
