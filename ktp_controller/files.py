@@ -7,6 +7,7 @@ import logging
 import os.path
 import pathlib
 import shutil
+import time
 import typing
 
 # Third-party imports
@@ -403,6 +404,66 @@ def cleanup_archived_exam_packages(
         )
 
 
+def cleanup_log_files(
+    *,
+    older_than_days: int = 14,
+    deleted_log_file_paths: set[str] | None = None,
+) -> int:
+    """Delete log files older than given days.
+
+    Deletions are carried out as best-effort: the procedure tries to
+    delete all files matching the criteria and raises exception group
+    afterwards. I.e. failure to delete one file does not block
+    deleting other files.
+
+    Return the number of deleted log files.
+
+    """
+
+    if older_than_days < 0:
+        raise ValueError("older_than_days cannot be negative")
+
+    seconds_since_epoch_now = time.time()
+    old_mtime = seconds_since_epoch_now - (older_than_days * 24 * 60 * 60)
+
+    try:
+        logs_dir_path = pathlib.Path(_LOGS_DIR).expanduser().resolve(strict=True)
+    except FileNotFoundError:
+        return 0
+
+    delete_count = 0
+    exceptions = []
+    try_count = 0
+    for file_name in os.listdir(logs_dir_path):
+        if not file_name.endswith(".log"):
+            continue
+
+        log_file_path = logs_dir_path.joinpath(file_name)
+        if log_file_path.stat().st_mtime >= old_mtime:
+            continue
+
+        try_count += 1
+
+        try:
+            log_file_path.unlink()
+        except Exception as e:
+            exceptions.append(e)
+            continue
+
+        delete_count += 1
+
+        if deleted_log_file_paths is not None:
+            deleted_log_file_paths.add(str(log_file_path))
+
+    if exceptions:
+        raise ExceptionGroup(
+            f"failed to delete {len(exceptions)}/{try_count} log files",
+            exceptions,
+        )
+
+    return delete_count
+
+
 async def cleanup_files(logger: logging.Logger | None = None) -> None:
     try:
         deleted_answers_files = await asyncio.to_thread(cleanup_old_answers_files)
@@ -431,3 +492,18 @@ async def cleanup_files(logger: logging.Logger | None = None) -> None:
         logger.info(
             "Deleted %d archived exam packages", len(deleted_exam_package_external_ids)
         )
+
+    deleted_log_file_paths: set[str] = set()
+    try:
+        await asyncio.to_thread(
+            cleanup_log_files,
+            deleted_log_file_paths=deleted_log_file_paths,
+        )
+    except Exception:
+        # cleanup_log_files is best-effort; it deletes
+        # everything it can and raises exceptions afterwards.
+        if logger is not None:
+            logger.exception("Failed to cleanup some old log files")
+
+    if logger is not None:
+        logger.info("Deleted %d old log files", len(deleted_log_file_paths))
