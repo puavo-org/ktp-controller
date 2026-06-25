@@ -19,7 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   unnecessarily. 14 days is a good compromise and is inline with local
   data retention in general.
 
-- Delete log files older than 14 days.
+- Delete log files older than 14 days (last modified more than 14 days ago).
+
+- Delete cached exam files older than 30 days (last modified more than
+  30 days ago). Last modified timestamps of cached exam files are
+  updated when KTP Controller would download them if they didn't
+  already exist.
 
 ### Changed
 
