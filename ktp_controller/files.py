@@ -404,10 +404,79 @@ def cleanup_archived_exam_packages(
         )
 
 
+def cleanup_old_files(
+    *,
+    basedirpath: str | pathlib.Path,
+    mtime_older_than_days: int,
+    select_func: typing.Callable[[pathlib.Path], bool] = lambda _fp: False,
+    deleted_filepaths: set[str] | None = None,
+) -> int:
+    """Delete files older than given days.
+
+    Deletions are carried out as best-effort: the procedure tries to
+    delete all files matching the criteria and raises exception group
+    afterwards. I.e. failure to delete one file does not block
+    deleting other files.
+
+    Filepaths for which select_func returns False are ignored. The
+    default select_func returns True for all filepaths.
+
+    If deleted_filepaths is given, all deleted file paths are added to it.
+
+    Return the number of deleted files.
+
+    """
+
+    if mtime_older_than_days < 0:
+        raise ValueError("older_than_days cannot be negative")
+
+    seconds_since_epoch_now = time.time()
+    old_mtime = seconds_since_epoch_now - (mtime_older_than_days * 24 * 60 * 60)
+
+    try:
+        basedirpath = pathlib.Path(basedirpath).expanduser().resolve(strict=True)
+    except FileNotFoundError:
+        return 0
+
+    delete_count = 0
+    exceptions = []
+    try_count = 0
+
+    for dirpath, _, filenames in os.walk(basedirpath):
+        for filename in filenames:
+            filepath = pathlib.Path(dirpath).joinpath(filename)
+            if not select_func(filepath):
+                continue
+
+            if filepath.stat().st_mtime >= old_mtime:
+                continue
+
+            try_count += 1
+
+            try:
+                filepath.unlink()
+            except Exception as e:
+                exceptions.append(e)
+                continue
+
+            delete_count += 1
+
+            if deleted_filepaths is not None:
+                deleted_filepaths.add(str(filepath))
+
+        if exceptions:
+            raise ExceptionGroup(
+                f"failed to delete {len(exceptions)}/{try_count} old files",
+                exceptions,
+            )
+
+    return delete_count
+
+
 def cleanup_log_files(
     *,
-    older_than_days: int = 14,
-    deleted_log_file_paths: set[str] | None = None,
+    mtime_older_than_days: int = 14,
+    deleted_filepaths: set[str] | None = None,
 ) -> int:
     """Delete log files older than given days.
 
@@ -416,52 +485,17 @@ def cleanup_log_files(
     afterwards. I.e. failure to delete one file does not block
     deleting other files.
 
+    If deleted_filepaths is given, all deleted log file paths are added to it.
+
     Return the number of deleted log files.
 
     """
-
-    if older_than_days < 0:
-        raise ValueError("older_than_days cannot be negative")
-
-    seconds_since_epoch_now = time.time()
-    old_mtime = seconds_since_epoch_now - (older_than_days * 24 * 60 * 60)
-
-    try:
-        logs_dir_path = pathlib.Path(_LOGS_DIR).expanduser().resolve(strict=True)
-    except FileNotFoundError:
-        return 0
-
-    delete_count = 0
-    exceptions = []
-    try_count = 0
-    for file_name in os.listdir(logs_dir_path):
-        if not file_name.endswith(".log"):
-            continue
-
-        log_file_path = logs_dir_path.joinpath(file_name)
-        if log_file_path.stat().st_mtime >= old_mtime:
-            continue
-
-        try_count += 1
-
-        try:
-            log_file_path.unlink()
-        except Exception as e:
-            exceptions.append(e)
-            continue
-
-        delete_count += 1
-
-        if deleted_log_file_paths is not None:
-            deleted_log_file_paths.add(str(log_file_path))
-
-    if exceptions:
-        raise ExceptionGroup(
-            f"failed to delete {len(exceptions)}/{try_count} log files",
-            exceptions,
-        )
-
-    return delete_count
+    return cleanup_old_files(
+        basedirpath=_LOGS_DIR,
+        mtime_older_than_days=mtime_older_than_days,
+        deleted_filepaths=deleted_filepaths,
+        select_func=lambda fp: str(fp).endswith(".log"),
+    )
 
 
 async def cleanup_files(logger: logging.Logger | None = None) -> None:
@@ -493,11 +527,11 @@ async def cleanup_files(logger: logging.Logger | None = None) -> None:
             "Deleted %d archived exam packages", len(deleted_exam_package_external_ids)
         )
 
-    deleted_log_file_paths: set[str] = set()
+    deleted_log_filepaths: set[str] = set()
     try:
         await asyncio.to_thread(
             cleanup_log_files,
-            deleted_log_file_paths=deleted_log_file_paths,
+            deleted_filepaths=deleted_log_filepaths,
         )
     except Exception:
         # cleanup_log_files is best-effort; it deletes
@@ -506,4 +540,4 @@ async def cleanup_files(logger: logging.Logger | None = None) -> None:
             logger.exception("Failed to cleanup some old log files")
 
     if logger is not None:
-        logger.info("Deleted %d old log files", len(deleted_log_file_paths))
+        logger.info("Deleted %d old log files", len(deleted_log_filepaths))
