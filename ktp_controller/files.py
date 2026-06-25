@@ -473,6 +473,31 @@ def cleanup_old_files(
     return delete_count
 
 
+def cleanup_exam_files(
+    *,
+    mtime_older_than_days: int = 30,
+    deleted_filepaths: set[str] | None = None,
+) -> int:
+    """Delete exam files older than given days.
+
+    Deletions are carried out as best-effort: the procedure tries to
+    delete all files matching the criteria and raises exception group
+    afterwards. I.e. failure to delete one file does not block
+    deleting other files.
+
+    If deleted_filepaths is given, all deleted exam file paths are added to it.
+
+    Return the number of deleted exam files.
+
+    """
+    return cleanup_old_files(
+        basedirpath=_EXAM_FILE_DIR,
+        mtime_older_than_days=mtime_older_than_days,
+        deleted_filepaths=deleted_filepaths,
+        select_func=lambda fp: str(fp).endswith(".mex"),
+    )
+
+
 def cleanup_log_files(
     *,
     mtime_older_than_days: int = 14,
@@ -541,3 +566,18 @@ async def cleanup_files(logger: logging.Logger | None = None) -> None:
 
     if logger is not None:
         logger.info("Deleted %d old log files", len(deleted_log_filepaths))
+
+    deleted_exam_filepaths: set[str] = set()
+    try:
+        await asyncio.to_thread(
+            cleanup_exam_files,
+            deleted_filepaths=deleted_exam_filepaths,
+        )
+    except Exception:
+        # cleanup_exam_files is best-effort; it deletes
+        # everything it can and raises exceptions afterwards.
+        if logger is not None:
+            logger.exception("Failed to cleanup some old exam files")
+
+    if logger is not None:
+        logger.info("Deleted %d old exam files", len(deleted_exam_filepaths))
