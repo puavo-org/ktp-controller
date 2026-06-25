@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   unnecessarily. 14 days is a good compromise and is inline with local
   data retention in general.
 
+- Delete log files older than 14 days.
+
 ### Changed
 
 - In Puavo OS, all logs are sent to syslog.
