@@ -1431,7 +1431,7 @@ class Agent:
                 filepath,
             )
             # Update mtime to avoid deleting this cached file
-            # soon. See ktp_controller.files.cleanup_exam_files()'
+            # soon. See ktp_controller.files.cleanup_old_exam_files()'
             os.utime(filepath)
 
     async def __upload_answers_files(self) -> None:
