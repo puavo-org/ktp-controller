@@ -18,26 +18,24 @@ _USER_FRIENDLY_DATA_DIR = os.path.expanduser("~/ktp-jako")
 
 _LOGS_DIR = os.path.expanduser("~/.puavo/puavo-ers/ktp-controller/logs")
 
+_BASEDIRPATH = os.path.expanduser("~/.local/share/ktp-controller")
+
 # All exam files will be stored here like so:
 # ~/.local/share/ktp-controller/exam-files/FILE_UUID/exam-file_FILE_SHA256.mex
-_EXAM_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-files")
+_EXAM_FILE_DIR = os.path.join(_BASEDIRPATH, "exam-files")
 
 # All exam packages will be stored here like so:
 # ~/.local/share/ktp-controller/exam-packages/EXAM_PACKAGE_UUID/exam-package_COMPOUND_EXAM_FILE_SHA256.zip
-_EXAM_PACKAGE_DIR = os.path.expanduser("~/.local/share/ktp-controller/exam-packages")
+_EXAM_PACKAGE_DIR = os.path.join(_BASEDIRPATH, "exam-packages")
 
 # All answers files belonging to a known exam package will be stored here like so:
 # ~/.local/share/ktp-controller/answers-files/EXAM_PACKAGE_UUID/answers-file_TIMESTAMP.meb
-ANSWERS_FILE_DIR = os.path.expanduser("~/.local/share/ktp-controller/answers-files")
+ANSWERS_FILE_DIR = os.path.join(_BASEDIRPATH, "answers-files")
 
 
-DUMMY_EXAM_FILE_FILEPATH = os.path.expanduser(
-    "~/.local/share/ktp-controller/dummy-exam-file.mex"
-)
+DUMMY_EXAM_FILE_FILEPATH = os.path.join(_BASEDIRPATH, "dummy-exam-file.mex")
 
-DUMMY_EXAM_PACKAGE_FILEPATH = os.path.expanduser(
-    "~/.local/share/ktp-controller/dummy-exam-package.zip"
-)
+DUMMY_EXAM_PACKAGE_FILEPATH = os.path.join(_BASEDIRPATH, "dummy-exam-package.zip")
 
 
 def create_user_friendly_data_dir() -> None:
@@ -323,9 +321,11 @@ def cleanup_old_answers_files(
     return deleted_answers_files
 
 
-def _get_archived_exam_package_dirpath(
-    archive_filepath: pathlib.Path,
+def _get_archived_dirpath(
+    archive_filepath: str | pathlib.Path,
 ) -> tuple[datetime.datetime, pathlib.Path]:
+    archive_filepath = pathlib.Path(archive_filepath)
+
     with open(archive_filepath, encoding="utf-8") as sentinel_file:
         archived_at_str = sentinel_file.readline().strip()
 
@@ -334,20 +334,21 @@ def _get_archived_exam_package_dirpath(
     if archived_at.tzinfo is None:
         raise RuntimeError("naive timestamp")
 
-    archived_exam_package_dirpath = archive_filepath.parent
+    archived_dirpath = archive_filepath.parent
 
-    if not archived_exam_package_dirpath.is_dir():
-        raise NotADirectoryError(archived_exam_package_dirpath)
+    if not archived_dirpath.is_dir():
+        raise NotADirectoryError(archived_dirpath)
 
-    return archived_at, archived_exam_package_dirpath
+    return archived_at, archived_dirpath
 
 
-def find_archived_exam_package_dirs(
+def find_archived_dirs(
     *,
+    basedirpath: str | pathlib.Path,
     archived_timedelta: datetime.timedelta = datetime.timedelta(days=1),
     exceptions: list[Exception] | None = None,
 ) -> typing.Iterator[str]:
-    """Yields dirpaths of all exam packages archived more than the specified
+    """Yields dirpaths of all directories archived more than the specified
     timedelta (by default, 1 day) ago.
 
     If `exceptions` is `None`, exceptions are not handled and
@@ -358,15 +359,15 @@ def find_archived_exam_package_dirs(
     """
     utcnow: datetime.datetime = ktp_controller.utils.utcnow()
     cutoff_date: datetime.datetime = utcnow - archived_timedelta
-    basedirpath: pathlib.Path = pathlib.Path(_EXAM_PACKAGE_DIR)
 
-    if exceptions is not None and not isinstance(exceptions, list):
-        raise TypeError("exceptions must be either None or a list")
+    basedirpath = pathlib.Path(basedirpath).expanduser().resolve()
 
-    for archive_filepath in basedirpath.glob("*/.archived"):
+    for archive_filepath in glob.glob(
+        "**/.archived", root_dir=basedirpath, recursive=True, include_hidden=True
+    ):
         try:
-            archived_at, archived_exam_package_dirpath = (
-                _get_archived_exam_package_dirpath(archive_filepath)
+            archived_at, archived_dirpath = _get_archived_dirpath(
+                basedirpath.joinpath(archive_filepath)
             )
         except Exception as e:
             if exceptions is None:
@@ -375,33 +376,32 @@ def find_archived_exam_package_dirs(
             continue
 
         if archived_at < cutoff_date:
-            yield str(archived_exam_package_dirpath)
+            yield str(archived_dirpath)
 
 
-def cleanup_archived_exam_packages(
+def cleanup_archived_dirs(
     *,
+    basedirpath: pathlib.Path | str,
     archived_timedelta: datetime.timedelta = datetime.timedelta(days=1),
-    deleted_exam_package_external_ids: set[str] | None = None,
+    deleted_dirpaths: set[str] | None = None,
 ) -> None:
     exceptions: list[Exception] = []
-    for archived_exam_package_dir in find_archived_exam_package_dirs(
-        archived_timedelta=archived_timedelta, exceptions=exceptions
+    for archived_dir in find_archived_dirs(
+        basedirpath=basedirpath,
+        archived_timedelta=archived_timedelta,
+        exceptions=exceptions,
     ):
         try:
-            shutil.rmtree(archived_exam_package_dir)
+            shutil.rmtree(archived_dir)
         except Exception as e:
             exceptions.append(e)
             continue
 
-        if deleted_exam_package_external_ids is not None:
-            deleted_exam_package_external_ids.add(
-                os.path.basename(archived_exam_package_dir)
-            )
+        if deleted_dirpaths is not None:
+            deleted_dirpaths.add(os.path.basename(archived_dir))
 
     if exceptions:
-        raise ExceptionGroup(
-            "failed to cleanup some archived exam packages", exceptions
-        )
+        raise ExceptionGroup("failed to cleanup some archived directories", exceptions)
 
 
 def cleanup_old_files(
@@ -535,23 +535,6 @@ async def cleanup_files(logger: logging.Logger | None = None) -> None:
         if logger is not None:
             logger.info("Deleted %d old answers files", len(deleted_answers_files))
 
-    deleted_exam_package_external_ids: set[str] = set()
-    try:
-        await asyncio.to_thread(
-            cleanup_archived_exam_packages,
-            deleted_exam_package_external_ids=deleted_exam_package_external_ids,
-        )
-    except Exception:
-        # cleanup_archived_exam_packages is best-effort; it deletes
-        # everything it can and raises exceptions afterwards.
-        if logger is not None:
-            logger.exception("Failed to cleanup some old exam packages")
-
-    if logger is not None:
-        logger.info(
-            "Deleted %d archived exam packages", len(deleted_exam_package_external_ids)
-        )
-
     deleted_log_filepaths: set[str] = set()
     try:
         await asyncio.to_thread(
@@ -581,3 +564,19 @@ async def cleanup_files(logger: logging.Logger | None = None) -> None:
 
     if logger is not None:
         logger.info("Deleted %d old exam files", len(deleted_exam_filepaths))
+
+    deleted_archived_dirpaths: set[str] = set()
+    try:
+        await asyncio.to_thread(
+            cleanup_archived_dirs,
+            basedirpath=_BASEDIRPATH,
+            deleted_dirpaths=deleted_archived_dirpaths,
+        )
+    except Exception:
+        # cleanup_archived_dirs is best-effort; it deletes
+        # everything it can and raises exceptions afterwards.
+        if logger is not None:
+            logger.exception("Failed to cleanup some archived directories")
+
+    if logger is not None:
+        logger.info("Deleted %d archived directories", len(deleted_archived_dirpaths))

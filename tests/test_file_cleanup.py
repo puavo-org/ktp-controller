@@ -117,10 +117,14 @@ def test_cleanup_old_archived_exam_package_dirs(testdir):
         exam_package_external_ids
     )
 
-    deleted_exam_package_external_ids = set()
-    ktp_controller.files.cleanup_archived_exam_packages(
-        deleted_exam_package_external_ids=deleted_exam_package_external_ids
+    deleted_exam_package_dirpaths = set()
+    ktp_controller.files.cleanup_archived_dirs(
+        basedirpath=ktp_controller.files._EXAM_PACKAGE_DIR,
+        deleted_dirpaths=deleted_exam_package_dirpaths,
     )
+    deleted_exam_package_external_ids = {
+        os.path.basename(dp) for dp in deleted_exam_package_dirpaths
+    }
     assert deleted_exam_package_external_ids == set(exam_package_external_ids) - {
         exam_package_external_ids[0],
         exam_package_external_ids[-1],
