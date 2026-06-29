@@ -263,16 +263,15 @@ def find_empty_dirs_bottom_up(
                 continue
 
 
-def rmdir_recursively_bottom_up(
-    basedirpath: str | pathlib.Path,
-) -> list[str]:
+def cleanup_empty_dirs(
+    basedirpath: str | pathlib.Path = _BASEDIRPATH,
+    deleted_paths: set[str] | None = None,
+) -> None:
     """Recursively finds and deletes empty directories, working
     bottom-up so that newly emptied parent directories are also
     deleted.
 
     """
-
-    deleted_empty_dirpaths = []
     exceptions = []
 
     for empty_dirpath in find_empty_dirs_bottom_up(basedirpath):
@@ -283,20 +282,19 @@ def rmdir_recursively_bottom_up(
         except Exception as e:
             exceptions.append(e)
             continue
-        deleted_empty_dirpaths.append(empty_dirpath)
+        if deleted_paths is not None:
+            deleted_paths.add(empty_dirpath)
 
     if exceptions:
-        raise ExceptionGroup("failed to remove empty dirs", exceptions)
-
-    return deleted_empty_dirpaths
+        raise ExceptionGroup("failed to delete some empty dirs", exceptions)
 
 
 def cleanup_old_answers_files(
     *,
     older_than_timedelta: datetime.timedelta = datetime.timedelta(weeks=2),
+    deleted_paths: set[str] | None = None,
     logger: logging.Logger | None = None,
-) -> list[str]:
-    deleted_answers_files = []
+) -> None:
     exceptions = []
 
     for answers_file_filepath in find_old_answers_files(
@@ -307,7 +305,8 @@ def cleanup_old_answers_files(
         except Exception as e:
             exceptions.append(e)
         else:
-            deleted_answers_files.append(answers_file_filepath)
+            if deleted_paths is not None:
+                deleted_paths.add(answers_file_filepath)
             sentinel_file_filepath = f"{answers_file_filepath}.archived"
             if os.path.exists(sentinel_file_filepath):
                 try:
@@ -316,9 +315,7 @@ def cleanup_old_answers_files(
                     exceptions.append(e)
 
     if exceptions:
-        raise ExceptionGroup("failed to cleanup old answers files", exceptions)
-
-    return deleted_answers_files
+        raise ExceptionGroup("failed to cleanup some old answers files", exceptions)
 
 
 def _get_archived_dirpath(
@@ -381,9 +378,9 @@ def find_archived_dirs(
 
 def cleanup_archived_dirs(
     *,
-    basedirpath: pathlib.Path | str,
+    basedirpath: pathlib.Path | str = _BASEDIRPATH,
     archived_timedelta: datetime.timedelta = datetime.timedelta(days=1),
-    deleted_dirpaths: set[str] | None = None,
+    deleted_paths: set[str] | None = None,
 ) -> None:
     exceptions: list[Exception] = []
     for archived_dir in find_archived_dirs(
@@ -397,8 +394,8 @@ def cleanup_archived_dirs(
             exceptions.append(e)
             continue
 
-        if deleted_dirpaths is not None:
-            deleted_dirpaths.add(os.path.basename(archived_dir))
+        if deleted_paths is not None:
+            deleted_paths.add(os.path.basename(archived_dir))
 
     if exceptions:
         raise ExceptionGroup("failed to cleanup some archived directories", exceptions)
@@ -409,7 +406,7 @@ def cleanup_old_files(
     basedirpath: str | pathlib.Path,
     mtime_older_than_days: int,
     select_func: typing.Callable[[pathlib.Path], bool] = lambda _fp: False,
-    deleted_filepaths: set[str] | None = None,
+    deleted_paths: set[str] | None = None,
 ) -> int:
     """Delete files older than given days.
 
@@ -461,8 +458,8 @@ def cleanup_old_files(
 
             delete_count += 1
 
-            if deleted_filepaths is not None:
-                deleted_filepaths.add(str(filepath))
+            if deleted_paths is not None:
+                deleted_paths.add(str(filepath))
 
         if exceptions:
             raise ExceptionGroup(
@@ -473,10 +470,10 @@ def cleanup_old_files(
     return delete_count
 
 
-def cleanup_exam_files(
+def cleanup_old_exam_files(
     *,
     mtime_older_than_days: int = 30,
-    deleted_filepaths: set[str] | None = None,
+    deleted_paths: set[str] | None = None,
 ) -> int:
     """Delete exam files older than given days.
 
@@ -493,15 +490,15 @@ def cleanup_exam_files(
     return cleanup_old_files(
         basedirpath=_EXAM_FILE_DIR,
         mtime_older_than_days=mtime_older_than_days,
-        deleted_filepaths=deleted_filepaths,
+        deleted_paths=deleted_paths,
         select_func=lambda fp: str(fp).endswith(".mex"),
     )
 
 
-def cleanup_log_files(
+def cleanup_old_log_files(
     *,
     mtime_older_than_days: int = 14,
-    deleted_filepaths: set[str] | None = None,
+    deleted_paths: set[str] | None = None,
 ) -> int:
     """Delete log files older than given days.
 
@@ -518,79 +515,29 @@ def cleanup_log_files(
     return cleanup_old_files(
         basedirpath=_LOGS_DIR,
         mtime_older_than_days=mtime_older_than_days,
-        deleted_filepaths=deleted_filepaths,
+        deleted_paths=deleted_paths,
         select_func=lambda fp: str(fp).endswith(".log"),
     )
 
 
 async def cleanup_files(logger: logging.Logger | None = None) -> None:
-    try:
-        deleted_answers_files = await asyncio.to_thread(cleanup_old_answers_files)
-    except Exception:
-        # cleanup_old_answers_files is best-effort; it deletes
-        # everything it can and raises exceptions afterwards.
+    for func in (
+        cleanup_old_answers_files,
+        cleanup_old_log_files,
+        cleanup_old_exam_files,
+        cleanup_archived_dirs,
+        cleanup_empty_dirs,
+    ):
+        delete_targets: str = " ".join(func.__name__.split("_")[1:])
+        deleted_paths: set[str] = set()
+        try:
+            await asyncio.to_thread(
+                func,
+                deleted_paths=deleted_paths,
+            )
+        except Exception:
+            if logger is not None:
+                logger.exception("Failed to delete some %s", delete_targets)
+
         if logger is not None:
-            logger.exception("Failed to cleanup some old answers files")
-    else:
-        if logger is not None:
-            logger.info("Deleted %d old answers files", len(deleted_answers_files))
-
-    deleted_log_filepaths: set[str] = set()
-    try:
-        await asyncio.to_thread(
-            cleanup_log_files,
-            deleted_filepaths=deleted_log_filepaths,
-        )
-    except Exception:
-        # cleanup_log_files is best-effort; it deletes
-        # everything it can and raises exceptions afterwards.
-        if logger is not None:
-            logger.exception("Failed to cleanup some old log files")
-
-    if logger is not None:
-        logger.info("Deleted %d old log files", len(deleted_log_filepaths))
-
-    deleted_exam_filepaths: set[str] = set()
-    try:
-        await asyncio.to_thread(
-            cleanup_exam_files,
-            deleted_filepaths=deleted_exam_filepaths,
-        )
-    except Exception:
-        # cleanup_exam_files is best-effort; it deletes
-        # everything it can and raises exceptions afterwards.
-        if logger is not None:
-            logger.exception("Failed to cleanup some old exam files")
-
-    if logger is not None:
-        logger.info("Deleted %d old exam files", len(deleted_exam_filepaths))
-
-    deleted_archived_dirpaths: set[str] = set()
-    try:
-        await asyncio.to_thread(
-            cleanup_archived_dirs,
-            basedirpath=_BASEDIRPATH,
-            deleted_dirpaths=deleted_archived_dirpaths,
-        )
-    except Exception:
-        # cleanup_archived_dirs is best-effort; it deletes
-        # everything it can and raises exceptions afterwards.
-        if logger is not None:
-            logger.exception("Failed to cleanup some archived directories")
-
-    if logger is not None:
-        logger.info("Deleted %d archived directories", len(deleted_archived_dirpaths))
-
-    try:
-        deleted_empty_dirs = await asyncio.to_thread(
-            rmdir_recursively_bottom_up,
-            basedirpath=_BASEDIRPATH,
-        )
-    except Exception:
-        # rmdir_recursively_bottom_up is best-effort; it deletes
-        # everything it can and raises exceptions afterwards.
-        if logger is not None:
-            logger.exception("Failed to delete some empty directories")
-
-    if logger is not None:
-        logger.info("Deleted %d empty directories", len(deleted_empty_dirs))
+            logger.info("Deleted %d %s", len(deleted_paths), delete_targets)
