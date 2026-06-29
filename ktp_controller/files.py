@@ -580,3 +580,17 @@ async def cleanup_files(logger: logging.Logger | None = None) -> None:
 
     if logger is not None:
         logger.info("Deleted %d archived directories", len(deleted_archived_dirpaths))
+
+    try:
+        deleted_empty_dirs = await asyncio.to_thread(
+            rmdir_recursively_bottom_up,
+            basedirpath=_BASEDIRPATH,
+        )
+    except Exception:
+        # rmdir_recursively_bottom_up is best-effort; it deletes
+        # everything it can and raises exceptions afterwards.
+        if logger is not None:
+            logger.exception("Failed to delete some empty directories")
+
+    if logger is not None:
+        logger.info("Deleted %d empty directories", len(deleted_empty_dirs))
