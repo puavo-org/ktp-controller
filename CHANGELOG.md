@@ -12,19 +12,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A new no-op endpoint (GET /api/v1/system/echo) which is safe to be
   called anytime. Can be used for testing purposes.
 
-- Automatic and periodic cleanup of cached raw scheduling info
-  requests: raw scheduling info requests received from Exam-O-Matic
-  are now retained only for 14 days. Previously, they were stored for
-  an eternity. An eternity is a a long time and bloats the database
-  unnecessarily. 14 days is a good compromise and is inline with local
-  data retention in general.
+- Periodic cleanup of:
 
-- Delete log files older than 14 days (last modified more than 14 days ago).
+  - cached raw scheduling info requests: raw scheduling info requests
+    received from Exam-O-Matic are now retained only for 14
+    days. Previously, they were stored for an eternity. An eternity is
+    a a long time and bloats the database unnecessarily. 14 days is a
+    good compromise and is inline with local data retention in
+    general.
 
-- Delete cached exam files older than 30 days (last modified more than
-  30 days ago). Last modified timestamps of cached exam files are
-  updated when KTP Controller would download them if they didn't
-  already exist.
+  - log files older than 14 days (last modified more than 14 days
+    ago).
+
+  - cached exam files older than 30 days (last modified more than 30
+    days ago). Last modified timestamps of cached exam files are also
+    updated when KTP Controller would download them (cache-hit).
+  
+  - all empty directories below `~/.local/share/ktp-controller`.
+  
+  - all archived dirs, not just archived exam package dirs.
 
 ### Changed
 
@@ -36,21 +42,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed redundant internal HTTP requests and started to cache
   Abitti2 server version and the list of locked exam packages.
 
-- Old and archived files are now cleaned regularly and independently
-  of other file operations.
-
 - All dependencies have been updated.
 
-- Upload answers files in newest-answers-first order.
+- Upload answers files to Exam-O-Matic in newest-answers-first order.
 
 - Non-uploaded intermediate (non-final) answers files are just
   archived and not uploaded after the final answers file is uploaded
-  successfully. However, all intermediate answers files are still
-  retained locally for two weeks.
+  to Exam-O-Matic successfully. However, all intermediate answers
+  files are still retained locally for two weeks.
+  
 
 ### Fixed
 
-- Cleanup of archived exam package files.
+- Periodic cleanup of archived exam package files.
 
 - Loggers are now named after their module (`__name__`) instead of the
   source file path (`__file__`), producing readable logger names.
