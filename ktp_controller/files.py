@@ -345,13 +345,17 @@ def find_archived_dirs(
     archived_timedelta: datetime.timedelta = datetime.timedelta(days=1),
     exceptions: list[Exception] | None = None,
 ) -> typing.Iterator[str]:
-    """Yields dirpaths of all directories archived more than the specified
-    timedelta (by default, 1 day) ago.
+    """Recursively yields dirpaths (below basedirpath) of all
+    directories archived more than the specified timedelta (by
+    default, 1 day) ago.
+
+    Archived directory is a directory which contains a file .archive
+    which has an ISO formatted timestamp on it's first line.
 
     If `exceptions` is `None`, exceptions are not handled and
     iteration is stopped when the first exception is
-    raised. Otherwise, if `exceptions` is a list, all exceptions
-    during the iteration are caught and appended to `exceptions`.
+    raised. Otherwise, all exceptions during the iteration are caught
+    and appended to `exceptions`.
 
     """
     utcnow: datetime.datetime = ktp_controller.utils.utcnow()
@@ -408,17 +412,17 @@ def cleanup_old_files(
     select_func: typing.Callable[[pathlib.Path], bool] = lambda _fp: False,
     deleted_paths: set[str] | None = None,
 ) -> int:
-    """Delete files older than given days.
+    """Delete files with last modified time older than given days.
 
     Deletions are carried out as best-effort: the procedure tries to
     delete all files matching the criteria and raises exception group
-    afterwards. I.e. failure to delete one file does not block
-    deleting other files.
+    afterwards. I.e. failure to delete one file does not prevent
+    deletion of of other files.
 
     Filepaths for which select_func returns False are ignored. The
     default select_func returns True for all filepaths.
 
-    If deleted_filepaths is given, all deleted file paths are added to it.
+    If deleted_paths is given, all deleted file paths are added to it.
 
     Return the number of deleted files.
 
@@ -475,14 +479,14 @@ def cleanup_old_exam_files(
     mtime_older_than_days: int = 30,
     deleted_paths: set[str] | None = None,
 ) -> int:
-    """Delete exam files older than given days.
+    """Delete exam files with last modified time older than given days.
 
     Deletions are carried out as best-effort: the procedure tries to
     delete all files matching the criteria and raises exception group
-    afterwards. I.e. failure to delete one file does not block
-    deleting other files.
+    afterwards. I.e. failure to delete one file does not prevent
+    deletion of other files.
 
-    If deleted_filepaths is given, all deleted exam file paths are added to it.
+    If deleted_path is given, all deleted exam file paths are added to it.
 
     Return the number of deleted exam files.
 
@@ -500,14 +504,14 @@ def cleanup_old_log_files(
     mtime_older_than_days: int = 14,
     deleted_paths: set[str] | None = None,
 ) -> int:
-    """Delete log files older than given days.
+    """Delete log files with last modified time older than given days.
 
     Deletions are carried out as best-effort: the procedure tries to
     delete all files matching the criteria and raises exception group
-    afterwards. I.e. failure to delete one file does not block
-    deleting other files.
+    afterwards. I.e. failure to delete one file does not prevent
+    deletion of other files.
 
-    If deleted_filepaths is given, all deleted log file paths are added to it.
+    If deleted_paths is given, all deleted log file paths are added to it.
 
     Return the number of deleted log files.
 
