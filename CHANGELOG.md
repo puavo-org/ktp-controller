@@ -40,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   status reports (in `cached_files`) anymore.
   
 - Removed redundant internal HTTP requests and started to cache
-  Abitti2 server version and the list of locked exam packages.
+  Abitti2 server version.
 
 - All dependencies have been updated.
 
