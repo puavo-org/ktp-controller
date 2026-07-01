@@ -2,6 +2,7 @@
 import asyncio
 import datetime
 import logging
+import subprocess
 import time
 
 # Third-party imports
@@ -16,7 +17,6 @@ from .utils import (
     assert_abitti2_running_exams,
     assert_clean_start,
     assert_exam_scheduling_and_download,
-    assert_examomatic_shutdown,
     assert_scheduled_exam_package_gets_started,
     assert_scheduled_exam_package_state_is,
 )
@@ -70,7 +70,7 @@ def test_odotusaulakoe_is_running_between_exams():
     )
 
 
-def test_examomatic_reboots_constantly_for_30secs_and_agent_restarts(utcnow):
+def test_examomatic_is_shutdown_for_2mins_and_agent_restarts(utcnow):
     last_status_report_seen_by_api = asyncio.run(
         ktp_controller.api.client.get_last_status_report()
     )
@@ -79,12 +79,29 @@ def test_examomatic_reboots_constantly_for_30secs_and_agent_restarts(utcnow):
         last_status_report_seen_by_api["ktp_controller"]["started_at"]
     )
 
-    while (ktp_controller.utils.utcnow() - utcnow).total_seconds() <= 30:
-        try:
-            assert_examomatic_shutdown()
-        except Exception:
-            pass
-        time.sleep(1)
+    subprocess.call(
+        [
+            "uv",
+            "run",
+            "supervisorctl",
+            "-c",
+            "supervisor/integration-test.conf",
+            "stop",
+            "examomatic-mock",
+        ]
+    )
+    time.sleep(120)
+    subprocess.call(
+        [
+            "uv",
+            "run",
+            "supervisorctl",
+            "-c",
+            "supervisor/integration-test.conf",
+            "start",
+            "examomatic-mock",
+        ]
+    )
 
     last_status_report_seen_by_api = asyncio.run(
         ktp_controller.api.client.get_last_status_report()
