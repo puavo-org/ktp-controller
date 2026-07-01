@@ -31,7 +31,7 @@ __all__ = [
     "get_decrypted_exams",
     "start_decrypted_exams",
     "reset",
-    "stop_exam_session",
+    "end_student_exam",
     "download_answers_file",
 ]
 
@@ -195,8 +195,11 @@ async def reset() -> None:
     _LOGGER.info("Abitti2 was reset.")
 
 
-async def stop_exam_session(session_uuid: str) -> None:
-    await _post("/api/end-student-session", json={"sessionUuid": session_uuid})
+async def end_student_exam(*, session_uuid: str, student_uuid: str) -> None:
+    await _post(
+        "/api/end-student-exam",
+        json={"sessionUuid": session_uuid, "studentUuid": student_uuid},
+    )
 
 
 async def download_answers_file(dest_filepath: str, **kwargs: typing.Any) -> str:

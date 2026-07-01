@@ -435,8 +435,9 @@ class Agent:
             return False
 
         for student in last_status_report["abitti2"]["students"]:
-            await ktp_controller.abitti2.client.stop_exam_session(
-                student["session_uuid"]
+            await ktp_controller.abitti2.client.end_student_exam(
+                session_uuid=student["session_uuid"],
+                student_uuid=student["uuid"],
             )
 
         is_stopped = (
