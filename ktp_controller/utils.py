@@ -411,6 +411,7 @@ def logging_singleton_app(
         raise
     sys.exit(status)
 
+
 def traverse_dict(
     d: dict[str, typing.Any],
 ) -> typing.Iterator[tuple[dict[str, typing.Any], str, typing.Any]]:

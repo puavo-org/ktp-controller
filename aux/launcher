@@ -56,6 +56,9 @@ case "$COMMAND" in
     run)
         exec supervisord -c "$HERE/$RUNCONF"
         ;;
+    tui)
+        exec ktp-controller-tui "$@"
+        ;;
     *)
         KTP_CONTROLLER_LOGGING_LEVEL=WARNING exec ktp-controller-cli "$COMMAND" "$@"
         ;;

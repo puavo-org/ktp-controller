@@ -25,6 +25,7 @@ dependencies = [
     "supervisor",
     "redis",
     "validators",
+    "textual",
     "websockets",
 ]
 repository = "https://github.com/puavo-org/ktp-controller"
@@ -36,6 +37,7 @@ ktp-controller-cli = "ktp_controller.cli.main:run"
 ktp-controller-naksu2monitor = "ktp_controller.abitti2.naksu2monitor.main:run"
 ktp-controller-networking = "ktp_controller.networking.main:run"
 ktp-controller-supervisor-chainer = "ktp_controller.supervisor_chainer.main:run"
+ktp-controller-tui = "ktp_controller.tui.main:run"
 
 [dependency-groups]
 dev = [
@@ -79,6 +81,7 @@ select = [
 ignore = [
     "E501",   # line-too-long: handled by the formatter
     "SIM105", # suppressible-exception: contextlib.suppress is not always clearer
+    "SIM117", # Use a single `with` statement with multiple contexts instead of nested `with` statements
     "PERF203", # try-except-in-loop: not always avoidable
     "RUF022", # unsorted-dunder-all: __all__ is intentionally grouped by comments
 ]
