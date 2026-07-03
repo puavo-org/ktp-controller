@@ -4,7 +4,7 @@ import json
 import pathlib
 import sys
 
-from ktp_controller.examomatic.schemas import StatusReport
+from ktp_controller.schemas import StatusReport
 
 
 def _display_name(def_key: str) -> str:

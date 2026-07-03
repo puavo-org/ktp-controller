@@ -8,6 +8,7 @@ import pydantic
 
 # Internal imports
 import ktp_controller.pydantic
+import ktp_controller.schemas
 
 # Relative imports
 
@@ -91,7 +92,7 @@ class PongData(ktp_controller.pydantic.BaseModel):
 
 
 class StatusReportData(ktp_controller.pydantic.BaseModel):
-    is_auto_control_enabled: pydantic.StrictBool
+    status_report: ktp_controller.schemas.StatusReport
 
 
 Data = CommandData | CommandResultData | PongData | StatusReportData | None

@@ -139,6 +139,7 @@ class Agent:
         self.__last_status_report: dict[str, typing.Any] | None = None
         self.__cached_abitti2_version: str | None = None
         self.__os_release = ktp_controller.os.get_release()
+        self.__status_report_should_be_sent = asyncio.Event()
 
         self.__approx_api_ping_interval_sec = approx_api_ping_interval_sec
         self.__approx_api_status_report_interval_sec = (
@@ -214,6 +215,7 @@ class Agent:
                 "Auto control is now %s.", "enabled" if enabled else "disabled"
             )
             command_status = ktp_controller.messages.CommandStatus.OK
+            self.__status_report_should_be_sent.set()
         else:
             command_status = ktp_controller.messages.CommandStatus.OK_NO_CHANGE
 
@@ -532,7 +534,10 @@ class Agent:
         ):
             return False
         async with self.__work_on_current_exam_package_lock:
-            return await self.__work_on_current_exam_package_locked(trigger=trigger)
+            changed = await self.__work_on_current_exam_package_locked(trigger=trigger)
+            if changed:
+                self.__status_report_should_be_sent.set()
+            return changed
 
     async def __work_on_current_exam_package_locked(self, *, trigger: Trigger) -> bool:
         _LOGGER.info("Working on the current exam package.")
@@ -715,20 +720,6 @@ class Agent:
                 await websock.send(message)
                 _LOGGER.debug("--> API: %s", message)
                 await asyncio.sleep(self.__approx_api_ping_interval_sec)
-
-    async def __send_status_reports_to_api(
-        self, websock: websockets.ClientConnection
-    ) -> None:
-        async with _task("periodic status reporting to API"):
-            while not _SHUTDOWN_EVENT.is_set():
-                message = ktp_controller.messages.StatusReportMessage(
-                    data=ktp_controller.messages.StatusReportData(
-                        is_auto_control_enabled=self.__is_auto_control_enabled
-                    ),
-                ).model_dump_json()
-                await websock.send(message)
-                _LOGGER.debug("--> API: %s", message)
-                await asyncio.sleep(self.__approx_api_status_report_interval_sec)
 
     async def __send_pings_to_examomatic(
         self, websock: websockets.ClientConnection
@@ -924,7 +915,7 @@ class Agent:
         if self.__last_status_report is None:
             return
 
-        await self.__send_status_report()
+        self.__status_report_should_be_sent.set()
 
     def __validate_abitti2_stats_message(self, message: dict[str, typing.Any]) -> bool:
         try:
@@ -964,7 +955,7 @@ class Agent:
 
         self.__last_received_answer_count = message["data"]["answerPaperCount"]
 
-        await self.__send_status_report()
+        self.__status_report_should_be_sent.set()
 
     def __has_exam_stats(self) -> bool:
         # Stat calculation requires the information below. If any of
@@ -1338,7 +1329,6 @@ class Agent:
             ktp_controller.api.client.get_agent_websock_url(),
             [
                 self.__send_pings_to_api,
-                self.__send_status_reports_to_api,
                 self.__communicate_with_api,
             ],
             connection_stats_class=ktp_controller.agent.stats.APIConnectionStats,
@@ -1547,6 +1537,18 @@ class Agent:
                 except Exception:
                     _LOGGER.exception("Failed to refresh exams")
 
+    async def __send_status_reports_task(self) -> None:
+        async with _task("send status reports"):
+            while not _SHUTDOWN_EVENT.is_set():
+                try:
+                    await asyncio.wait_for(
+                        self.__status_report_should_be_sent.wait(), timeout=5.0
+                    )
+                except TimeoutError:
+                    pass
+                self.__status_report_should_be_sent.clear()
+                await self.__send_status_report()
+
     async def forever(self) -> None:
         _LOGGER.info("Started.")
         loop = asyncio.get_running_loop()
@@ -1570,6 +1572,7 @@ class Agent:
                 tg.create_task(self.__answers_file_upload_task())
                 tg.create_task(self.__file_cleanup_task())
                 tg.create_task(self.__old_exam_info_cleanup_task())
+                tg.create_task(self.__send_status_reports_task())
 
                 # Keep the main task alive while workers run
                 await asyncio.Event().wait()

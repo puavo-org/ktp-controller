@@ -8,9 +8,10 @@ import typing
 # Third-party imports
 import httpx
 
-# Internal imports
-import ktp_controller.examomatic.schemas
 import ktp_controller.httpx
+
+# Internal imports
+import ktp_controller.schemas
 import ktp_controller.utils
 from ktp_controller import SETTINGS
 
@@ -129,7 +130,7 @@ async def send_status_report(
     status_report: dict[str, typing.Any], **kwargs: typing.Any
 ) -> typing.Any:
     kwargs["content"] = (
-        ktp_controller.examomatic.schemas.StatusReport.model_validate(status_report)
+        ktp_controller.schemas.StatusReport.model_validate(status_report)
         .model_dump_json(ensure_ascii=True)
         .encode("ascii")
     )

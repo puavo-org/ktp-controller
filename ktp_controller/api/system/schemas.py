@@ -1,10 +1,11 @@
 # Standard library imports
 import typing
 
+import ktp_controller.pydantic
+
 # Third-party imports
 # Internal imports
-import ktp_controller.examomatic.schemas
-import ktp_controller.pydantic
+import ktp_controller.schemas
 
 # Relative imports
 
@@ -15,7 +16,7 @@ __all__ = [
 ]
 
 
-class StatusReport(ktp_controller.examomatic.schemas.StatusReport):
+class StatusReport(ktp_controller.schemas.StatusReport):
     reported_at: ktp_controller.pydantic.DateTime | None
 
 

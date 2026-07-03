@@ -19,8 +19,8 @@ import fastapi.responses
 import pydantic
 import uvicorn
 
-import ktp_controller.examomatic.schemas
 import ktp_controller.pydantic
+import ktp_controller.schemas
 import ktp_controller.utils
 
 # Internal imports
@@ -216,7 +216,7 @@ async def _get_exam_info(
     status_code=200,
 )
 async def _send_status_report(
-    request: ktp_controller.examomatic.schemas.StatusReport,
+    request: ktp_controller.schemas.StatusReport,
     domain: str,
     hostname: str,
     server_id: int = fastapi.Query(..., alias="id"),

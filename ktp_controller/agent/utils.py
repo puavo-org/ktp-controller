@@ -20,6 +20,9 @@ _LOGGER = logging.getLogger(__name__)
 PUBSUB_CHANNEL = f"ktp-controller__agent_messages__{uuid.uuid4()!s}"
 
 
-async def send_command(command_data: ktp_controller.messages.CommandData) -> str:
+async def send_command(
+    command_data: ktp_controller.messages.CommandData,
+) -> ktp_controller.messages.CommandMessage:
     command_message = ktp_controller.messages.CommandMessage(data=command_data)
-    return await ktp_controller.redis.pubsub_send(command_message, PUBSUB_CHANNEL)
+    await ktp_controller.redis.pubsub_send(command_message, PUBSUB_CHANNEL)
+    return command_message

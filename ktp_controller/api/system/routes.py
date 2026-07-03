@@ -90,7 +90,9 @@ Return asynchronous message UUID as application/json body.
 """,
 )
 async def _async_command(command_data: ktp_controller.messages.CommandData) -> str:
-    return await ktp_controller.agent.utils.send_command(command_data)
+    command_message = await ktp_controller.agent.utils.send_command(command_data)
+    await ktp_controller.ui.forward_command_message(command_message)
+    return str(command_message.uuid)
 
 
 @router.websocket("/ui_websocket")
@@ -143,11 +145,18 @@ async def _send_status_report(
             models.StatusReport.dbid.in_(sqlalchemy.sql.select(delete_subquery))
         ).delete(synchronize_session="fetch")
 
+    internal_status_report_dict = json.loads(request.model_dump_json())
+
     db_status_report = models.StatusReport(
-        dbid=None, raw_data=json.loads(request.model_dump_json())
+        dbid=None, raw_data=internal_status_report_dict
     )
     db.add(db_status_report)
     db.commit()
+
+    status_report_dict = internal_status_report_dict.copy()
+    status_report_dict.pop("reported_at")
+
+    await ktp_controller.ui.send_status_report(status_report_dict)
 
 
 @router.post(
@@ -203,13 +212,6 @@ async def _communicate_with_agent(websock: fastapi.WebSocket) -> None:
                 command_result_message
             )
             _LOGGER.info("forwarded command result successfully")
-            continue
-        if message["kind"] == ktp_controller.messages.MessageKind.STATUS_REPORT:
-            status_report_message = (
-                ktp_controller.messages.StatusReportMessage.model_validate(message)
-            )
-            await ktp_controller.ui.forward_status_report_message(status_report_message)
-            _LOGGER.info("forwarded status report successfully")
             continue
         _LOGGER.warning("Received and ignored unknown message: %s", message)
 
