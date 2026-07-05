@@ -136,6 +136,7 @@ class Agent:
         self.__refresh_exams_lock = asyncio.Lock()
         self.__work_on_current_exam_package_lock = asyncio.Lock()
         self.__last_status_report_sent_to_examomatic_at: datetime.datetime | None = None
+        self.__last_status_report: dict[str, typing.Any] | None = None
         self.__cached_abitti2_version: str | None = None
         self.__os_release = ktp_controller.os.get_release()
 
@@ -430,21 +431,20 @@ class Agent:
             # Change the security code first to ensure students cannot enter anymore.
             await ktp_controller.abitti2.client.change_student_access_code()
 
-        last_status_report = await ktp_controller.api.client.get_last_status_report()
-        if last_status_report is None:
+        if self.__last_status_report is None:
             return False
 
-        for student in last_status_report["abitti2"]["students"]:
+        for student in self.__last_status_report["abitti2"]["students"]:
             await ktp_controller.abitti2.client.end_student_exam(
                 session_uuid=student["session_uuid"],
                 student_uuid=student["uuid"],
             )
 
         is_stopped = (
-            ktp_controller.abitti2.utils.no_active_students(last_status_report)
+            ktp_controller.abitti2.utils.no_active_students(self.__last_status_report)
             and current_exam_package["state"] == "stopping"
-            and last_status_report["created_at"]
-            > current_exam_package["state_changed_at"]
+            and self.__last_status_report["created_at"]
+            > datetime.datetime.fromisoformat(current_exam_package["state_changed_at"])
         )
 
         if is_stopped:
@@ -485,15 +485,17 @@ class Agent:
         is_final: ktp_controller.examomatic.client.IsFinal,
     ) -> None:
         is_final = ktp_controller.examomatic.client.IsFinal(is_final)
-        status_report = await ktp_controller.api.client.get_last_status_report()
-        if status_report is None or status_report["abitti2"]["answer_count"] is None:
+        if (
+            self.__last_status_report is None
+            or self.__last_status_report["abitti2"]["answer_count"] is None
+        ):
             _LOGGER.warning(
                 "I don't know yet if there are answers to download, "
                 "but I won't take the risk of trying to download them from Abitti2, "
                 "because Abitti2 can block indefinitely if there are no answers."
             )
             return
-        if status_report["abitti2"]["answer_count"] > 0:
+        if self.__last_status_report["abitti2"]["answer_count"] > 0:
             await ktp_controller.agent.answers.download_answers_file(
                 exam_package_external_id=current_exam_package["external_id"],
                 is_final=is_final,
@@ -581,8 +583,7 @@ class Agent:
                 current_exam_package,
             )
 
-        status_report = await ktp_controller.api.client.get_last_status_report()
-        if status_report is None:
+        if self.__last_status_report is None:
             _LOGGER.warning(
                 "Status of the whole system is still partially unknown, not processing"
                 " exam packages until a complete view of the current status is formed."
@@ -629,7 +630,9 @@ class Agent:
                         )
                     )
                     and (
-                        ktp_controller.abitti2.utils.no_active_students(status_report)
+                        ktp_controller.abitti2.utils.no_active_students(
+                            self.__last_status_report
+                        )
                         or len(locked_exam_packages) > 1
                     )
                 ),
@@ -918,8 +921,7 @@ class Agent:
 
         self.__last_received_security_code = security_code
 
-        status_report = await ktp_controller.api.client.get_last_status_report()
-        if status_report is None:
+        if self.__last_status_report is None:
             return
 
         await self.__send_status_report()
@@ -1182,6 +1184,7 @@ class Agent:
         status_report.setdefault("reported_at", None)
 
         await ktp_controller.api.client.send_status_report(status_report)
+        self.__last_status_report = status_report
         _LOGGER.debug("sent status report to KTP Controller API")
 
     async def __handle_abitti2_exams_message(
