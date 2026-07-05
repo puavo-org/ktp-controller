@@ -890,6 +890,7 @@ class Agent:
         received_at: datetime.datetime,
         message: dict[str, typing.Any],
     ) -> None:
+        changed = False
         message_data = message["data"]
         try:
             security_code = message_data["securityCode"]
@@ -910,12 +911,14 @@ class Agent:
             )
             return
 
+        changed |= self.__last_received_security_code != security_code
         self.__last_received_security_code = security_code
 
         if self.__last_status_report is None:
             return
 
-        self.__status_report_should_be_created.set()
+        if changed:
+            self.__status_report_should_be_created.set()
 
     def __validate_abitti2_stats_message(self, message: dict[str, typing.Any]) -> bool:
         try:
@@ -935,6 +938,7 @@ class Agent:
         message: dict[str, typing.Any],
     ) -> None:
         ktp_controller.abitti2.utils.sanitize_stats_message(message)
+        changed = False
 
         try:
             students = ktp_controller.abitti2.utils.parse_students(
@@ -942,20 +946,26 @@ class Agent:
             )
         except ValueError:
             _LOGGER.exception("Failed to parse students list received from Abitti2")
-            self.__last_received_students = None
-        else:
-            self.__last_received_students = students
-            if (
-                self.__is_auto_control_enabled
-                and SETTINGS.abitti2_allow_students_to_use_browsers
-            ):
-                await ktp_controller.abitti2.utils.allow_students_to_use_browsers(
-                    students
-                )
+            students = None
 
+        changed |= self.__last_received_students != students
+
+        self.__last_received_students = students
+
+        if (
+            students is not None
+            and self.__is_auto_control_enabled
+            and SETTINGS.abitti2_allow_students_to_use_browsers
+        ):
+            await ktp_controller.abitti2.utils.allow_students_to_use_browsers(students)
+
+        changed |= (
+            self.__last_received_answer_count != message["data"]["answerPaperCount"]
+        )
         self.__last_received_answer_count = message["data"]["answerPaperCount"]
 
-        self.__status_report_should_be_created.set()
+        if changed:
+            self.__status_report_should_be_created.set()
 
     def __has_exam_stats(self) -> bool:
         # Stat calculation requires the information below. If any of
@@ -1066,6 +1076,20 @@ class Agent:
 
         return stats
 
+    def __get_seconds_until_time_to_send_next_status_report_to_examomatic(
+        self, *, utcnow: datetime.datetime | None = None
+    ) -> float:
+        if utcnow is None:
+            utcnow = ktp_controller.utils.utcnow()
+
+        if self.__last_status_report_sent_to_examomatic_at is None:
+            return 0
+
+        return (
+            self.__approx_examomatic_min_status_report_interval_sec
+            - (utcnow - self.__last_status_report_sent_to_examomatic_at).total_seconds()
+        )
+
     async def __create_status_report(self) -> None:
         try:
             supervisor_passphrase = (
@@ -1157,14 +1181,12 @@ class Agent:
                 "release": self.__os_release,
             },
         }
-
         try:
             if (
-                self.__last_status_report_sent_to_examomatic_at is None
-                or (
-                    utcnow - self.__last_status_report_sent_to_examomatic_at
-                ).total_seconds()
-                > self.__approx_examomatic_min_status_report_interval_sec
+                self.__get_seconds_until_time_to_send_next_status_report_to_examomatic(
+                    utcnow=utcnow
+                )
+                <= 0
             ):
                 await ktp_controller.examomatic.client.send_status_report(status_report)
                 status_report["reported_at"] = utcnow
@@ -1184,6 +1206,7 @@ class Agent:
         received_at: datetime.datetime,
         message: dict[str, typing.Any],
     ) -> None:
+        changed = False
         exam_list = []
 
         for abitti2_exam in message["data"]:
@@ -1200,8 +1223,11 @@ class Agent:
                     "started_at": started_at,
                 }
             )
-
+        changed = self.__last_received_exam_list != exam_list
         self.__last_received_exam_list = exam_list
+
+        if changed:
+            self.__status_report_should_be_created.set()
 
     def __decode_abitti2_message(
         self, data: str | bytes
@@ -1542,7 +1568,8 @@ class Agent:
             while not _SHUTDOWN_EVENT.is_set():
                 try:
                     await asyncio.wait_for(
-                        self.__status_report_should_be_created.wait(), timeout=5.0
+                        self.__status_report_should_be_created.wait(),
+                        timeout=self.__get_seconds_until_time_to_send_next_status_report_to_examomatic(),
                     )
                 except TimeoutError:
                     pass
