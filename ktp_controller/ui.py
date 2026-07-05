@@ -13,9 +13,9 @@ import ktp_controller.schemas
 
 __all__ = [
     "PUBSUB_CHANNEL",
+    "broadcast_status_report",
     "forward_command_message",
     "forward_command_result_message",
-    "send_status_report",
 ]
 
 
@@ -36,7 +36,7 @@ async def forward_command_result_message(
     )
 
 
-async def send_status_report(status_report_dict: dict[str, typing.Any]) -> str:
+async def broadcast_status_report(status_report_dict: dict[str, typing.Any]) -> str:
     status_report = ktp_controller.schemas.StatusReport.model_validate(
         status_report_dict
     )

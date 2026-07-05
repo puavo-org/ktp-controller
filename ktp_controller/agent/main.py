@@ -139,7 +139,7 @@ class Agent:
         self.__last_status_report: dict[str, typing.Any] | None = None
         self.__cached_abitti2_version: str | None = None
         self.__os_release = ktp_controller.os.get_release()
-        self.__status_report_should_be_sent = asyncio.Event()
+        self.__status_report_should_be_created = asyncio.Event()
 
         self.__approx_api_ping_interval_sec = approx_api_ping_interval_sec
         self.__approx_api_status_report_interval_sec = (
@@ -215,7 +215,7 @@ class Agent:
                 "Auto control is now %s.", "enabled" if enabled else "disabled"
             )
             command_status = ktp_controller.messages.CommandStatus.OK
-            self.__status_report_should_be_sent.set()
+            self.__status_report_should_be_created.set()
         else:
             command_status = ktp_controller.messages.CommandStatus.OK_NO_CHANGE
 
@@ -536,7 +536,7 @@ class Agent:
         async with self.__work_on_current_exam_package_lock:
             changed = await self.__work_on_current_exam_package_locked(trigger=trigger)
             if changed:
-                self.__status_report_should_be_sent.set()
+                self.__status_report_should_be_created.set()
             return changed
 
     async def __work_on_current_exam_package_locked(self, *, trigger: Trigger) -> bool:
@@ -915,7 +915,7 @@ class Agent:
         if self.__last_status_report is None:
             return
 
-        self.__status_report_should_be_sent.set()
+        self.__status_report_should_be_created.set()
 
     def __validate_abitti2_stats_message(self, message: dict[str, typing.Any]) -> bool:
         try:
@@ -955,7 +955,7 @@ class Agent:
 
         self.__last_received_answer_count = message["data"]["answerPaperCount"]
 
-        self.__status_report_should_be_sent.set()
+        self.__status_report_should_be_created.set()
 
     def __has_exam_stats(self) -> bool:
         # Stat calculation requires the information below. If any of
@@ -1066,7 +1066,7 @@ class Agent:
 
         return stats
 
-    async def __send_status_report(self) -> None:
+    async def __create_status_report(self) -> None:
         try:
             supervisor_passphrase = (
                 ktp_controller.abitti2.naksu2.read_supervisor_passphrase()
@@ -1174,7 +1174,7 @@ class Agent:
             _LOGGER.exception("failed to send status report to Exam-O-Matic")
         status_report.setdefault("reported_at", None)
 
-        await ktp_controller.api.client.send_status_report(status_report)
+        await ktp_controller.api.client.save_status_report(status_report)
         self.__last_status_report = status_report
         _LOGGER.debug("sent status report to KTP Controller API")
 
@@ -1537,17 +1537,17 @@ class Agent:
                 except Exception:
                     _LOGGER.exception("Failed to refresh exams")
 
-    async def __send_status_reports_task(self) -> None:
-        async with _task("send status reports"):
+    async def __create_status_reports_task(self) -> None:
+        async with _task("create status reports"):
             while not _SHUTDOWN_EVENT.is_set():
                 try:
                     await asyncio.wait_for(
-                        self.__status_report_should_be_sent.wait(), timeout=5.0
+                        self.__status_report_should_be_created.wait(), timeout=5.0
                     )
                 except TimeoutError:
                     pass
-                self.__status_report_should_be_sent.clear()
-                await self.__send_status_report()
+                self.__status_report_should_be_created.clear()
+                await self.__create_status_report()
 
     async def forever(self) -> None:
         _LOGGER.info("Started.")
@@ -1572,7 +1572,7 @@ class Agent:
                 tg.create_task(self.__answers_file_upload_task())
                 tg.create_task(self.__file_cleanup_task())
                 tg.create_task(self.__old_exam_info_cleanup_task())
-                tg.create_task(self.__send_status_reports_task())
+                tg.create_task(self.__create_status_reports_task())
 
                 # Keep the main task alive while workers run
                 await asyncio.Event().wait()

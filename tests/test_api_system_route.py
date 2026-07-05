@@ -40,13 +40,13 @@ from .utils import assert_response
 #         }
 
 
-def test_send_status_report__invalid_input(client, testdb, utcnow):
+def test_save_status_report__invalid_input(client, testdb, utcnow):
     assert testdb.query(models.StatusReport).all() == []
 
-    response = client.post("/api/v1/system/send_status_report", data={})
+    response = client.post("/api/v1/system/save_status_report", data={})
     assert_response(response, expected_status_code=422)
 
-    response = client.post("/api/v1/system/send_status_report", json={})
+    response = client.post("/api/v1/system/save_status_report", json={})
     assert_response(response, expected_status_code=422)
 
     status_report_with_extra_field = {
@@ -115,7 +115,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
     }
 
     response = client.post(
-        "/api/v1/system/send_status_report",
+        "/api/v1/system/save_status_report",
         json=status_report_with_extra_field,
     )
     assert_response(response, expected_status_code=422)
@@ -185,7 +185,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
     }
 
     response = client.post(
-        "/api/v1/system/send_status_report",
+        "/api/v1/system/save_status_report",
         json=status_report_with_invalid_exams,
     )
     assert_response(response, expected_status_code=422)
@@ -194,7 +194,7 @@ def test_send_status_report__invalid_input(client, testdb, utcnow):
     assert testdb.query(models.StatusReport).all() == []
 
 
-def test_send_status_report__valid_minimal_input(client, testdb, utcnow):
+def test_save_status_report__valid_minimal_input(client, testdb, utcnow):
     assert testdb.query(models.StatusReport).all() == []
 
     status_report = {
@@ -261,7 +261,7 @@ def test_send_status_report__valid_minimal_input(client, testdb, utcnow):
         },
     }
 
-    response = client.post("/api/v1/system/send_status_report", json=status_report)
+    response = client.post("/api/v1/system/save_status_report", json=status_report)
     assert_response(response, expected_status_code=200)
 
     db_status_report = testdb.query(models.StatusReport).one()
@@ -275,7 +275,7 @@ def test_send_status_report__valid_minimal_input(client, testdb, utcnow):
     assert response.json() == status_report
 
 
-def test_send_status_report__same_valid_minimal_input_twice(client, testdb, utcnow):
+def test_save_status_report__same_valid_minimal_input_twice(client, testdb, utcnow):
     assert testdb.query(models.StatusReport).all() == []
 
     status_report = {
@@ -342,10 +342,10 @@ def test_send_status_report__same_valid_minimal_input_twice(client, testdb, utcn
         },
     }
 
-    response = client.post("/api/v1/system/send_status_report", json=status_report)
+    response = client.post("/api/v1/system/save_status_report", json=status_report)
     assert_response(response, expected_status_code=200)
 
-    response = client.post("/api/v1/system/send_status_report", json=status_report)
+    response = client.post("/api/v1/system/save_status_report", json=status_report)
     assert_response(response, expected_status_code=200)
 
     db_status_report1, db_status_report2 = (
@@ -359,7 +359,7 @@ def test_send_status_report__same_valid_minimal_input_twice(client, testdb, utcn
     assert db_status_report1.raw_data == db_status_report2.raw_data == status_report
 
 
-def test_send_status_report__valid_but_highly_unlikely_status(client, testdb, utcnow):
+def test_save_status_report__valid_but_highly_unlikely_status(client, testdb, utcnow):
     assert testdb.query(models.StatusReport).all() == []
 
     status_report = {
@@ -432,7 +432,7 @@ def test_send_status_report__valid_but_highly_unlikely_status(client, testdb, ut
         },
     }
 
-    response = client.post("/api/v1/system/send_status_report", json=status_report)
+    response = client.post("/api/v1/system/save_status_report", json=status_report)
     assert_response(response, expected_status_code=200)
 
     db_status_report = testdb.query(models.StatusReport).one()
@@ -441,7 +441,7 @@ def test_send_status_report__valid_but_highly_unlikely_status(client, testdb, ut
     assert db_status_report.raw_data == status_report
 
 
-def test_send_status_report__two_different_reports(client, testdb, utcnow):
+def test_save_status_report__two_different_reports(client, testdb, utcnow):
     assert testdb.query(models.StatusReport).all() == []
 
     status_report1 = {
@@ -508,7 +508,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
         },
     }
 
-    response = client.post("/api/v1/system/send_status_report", json=status_report1)
+    response = client.post("/api/v1/system/save_status_report", json=status_report1)
     assert_response(response, expected_status_code=200)
 
     status_report2 = {
@@ -583,7 +583,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
             "stats": None,
         },
     }
-    response = client.post("/api/v1/system/send_status_report", json=status_report2)
+    response = client.post("/api/v1/system/save_status_report", json=status_report2)
     assert_response(response, expected_status_code=200)
 
     db_status_report1, db_status_report2 = (
@@ -604,7 +604,7 @@ def test_send_status_report__two_different_reports(client, testdb, utcnow):
     assert response.json() == status_report2
 
 
-def test_send_status_report__multiple_reports_exactly_max_count(
+def test_save_status_report__multiple_reports_exactly_max_count(
     client, testdb, utcnow, mocker
 ):
     assert testdb.query(models.StatusReport).all() == []
@@ -694,7 +694,7 @@ def test_send_status_report__multiple_reports_exactly_max_count(
             },
         }
 
-        response = client.post("/api/v1/system/send_status_report", json=status_report)
+        response = client.post("/api/v1/system/save_status_report", json=status_report)
         assert_response(response, expected_status_code=200)
         status_reports.append(status_report)
 
@@ -712,7 +712,7 @@ def test_send_status_report__multiple_reports_exactly_max_count(
     assert response.json() == status_reports[-1]
 
 
-def test_send_status_report__multiple_reports_less_than_max_count(
+def test_save_status_report__multiple_reports_less_than_max_count(
     client, testdb, utcnow, mocker
 ):
     assert testdb.query(models.StatusReport).all() == []
@@ -803,7 +803,7 @@ def test_send_status_report__multiple_reports_less_than_max_count(
             },
         }
 
-        response = client.post("/api/v1/system/send_status_report", json=status_report)
+        response = client.post("/api/v1/system/save_status_report", json=status_report)
         assert_response(response, expected_status_code=200)
         status_reports.append(status_report)
 
@@ -821,7 +821,7 @@ def test_send_status_report__multiple_reports_less_than_max_count(
     assert response.json() == status_reports[-1]
 
 
-def test_send_status_report__multiple_reports_one_more_than_max_count(
+def test_save_status_report__multiple_reports_one_more_than_max_count(
     client, testdb, utcnow, mocker
 ):
     assert testdb.query(models.StatusReport).all() == []
@@ -912,7 +912,7 @@ def test_send_status_report__multiple_reports_one_more_than_max_count(
             },
         }
 
-        response = client.post("/api/v1/system/send_status_report", json=status_report)
+        response = client.post("/api/v1/system/save_status_report", json=status_report)
         assert_response(response, expected_status_code=200)
         status_reports.append(status_report)
 
@@ -932,7 +932,7 @@ def test_send_status_report__multiple_reports_one_more_than_max_count(
     assert response.json() == status_reports[-1]
 
 
-def test_send_status_report__multiple_reports_many_more_than_max_count(
+def test_save_status_report__multiple_reports_many_more_than_max_count(
     client, testdb, utcnow, mocker
 ):
     assert testdb.query(models.StatusReport).all() == []
@@ -1005,7 +1005,7 @@ def test_send_status_report__multiple_reports_many_more_than_max_count(
             },
         }
 
-        response = client.post("/api/v1/system/send_status_report", json=status_report)
+        response = client.post("/api/v1/system/save_status_report", json=status_report)
         assert_response(response, expected_status_code=200)
         status_reports.append(status_report)
 

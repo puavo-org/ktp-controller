@@ -26,7 +26,7 @@ __all__ = [
     "get_scheduled_exam",
     "get_scheduled_exam_package",
     "save_exam_info",
-    "send_status_report",
+    "save_status_report",
 ]
 
 
@@ -110,7 +110,7 @@ def get_ui_websock_url() -> str:
 # API commands:
 
 
-async def send_status_report(
+async def save_status_report(
     status_report: dict[str, typing.Any], **kwargs: typing.Any
 ) -> typing.Any:
     kwargs["content"] = (
@@ -120,7 +120,7 @@ async def send_status_report(
     )
     kwargs["headers"] = {"Content-Type": "application/json"}
 
-    return await _post("/api/v1/system/send_status_report", **kwargs)
+    return await _post("/api/v1/system/save_status_report", **kwargs)
 
 
 async def get_last_status_report(

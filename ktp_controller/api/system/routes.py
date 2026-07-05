@@ -125,11 +125,11 @@ assert 0 < _get_status_report_preserve_count() < _get_status_report_max_count()
 
 
 @router.post(
-    "/send_status_report",
+    "/save_status_report",
     response_model=None,
-    summary="Send status report",
+    summary="Save status report",
 )
-async def _send_status_report(
+async def _save_status_report(
     request: schemas.StatusReport,
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ) -> None:
@@ -156,7 +156,7 @@ async def _send_status_report(
     status_report_dict = internal_status_report_dict.copy()
     status_report_dict.pop("reported_at")
 
-    await ktp_controller.ui.send_status_report(status_report_dict)
+    await ktp_controller.ui.broadcast_status_report(status_report_dict)
 
 
 @router.post(
