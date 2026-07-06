@@ -69,6 +69,11 @@ async def _handle_websocket(
     await websock.accept()
     try:
         await websock.app.state.pubsub_broadcaster.register_websocket(websock, channel)
+        await _send_async_command(
+            ktp_controller.messages.CommandData(
+                command=ktp_controller.messages.Command.CREATE_STATUS_REPORT
+            )
+        )
         async with asyncio.TaskGroup() as tg:
             for asyncfunc in asyncfuncs:
                 tg.create_task(asyncfunc(websock))
@@ -77,6 +82,12 @@ async def _handle_websocket(
         await websock.app.state.pubsub_broadcaster.unregister_websocket(
             websock, channel
         )
+
+
+async def _send_async_command(command_data: ktp_controller.messages.CommandData) -> str:
+    command_message = await ktp_controller.agent.utils.send_command(command_data)
+    await ktp_controller.ui.forward_command_message(command_message)
+    return str(command_message.uuid)
 
 
 @router.post(
@@ -90,9 +101,7 @@ Return asynchronous message UUID as application/json body.
 """,
 )
 async def _async_command(command_data: ktp_controller.messages.CommandData) -> str:
-    command_message = await ktp_controller.agent.utils.send_command(command_data)
-    await ktp_controller.ui.forward_command_message(command_message)
-    return str(command_message.uuid)
+    return await _send_async_command(command_data)
 
 
 @router.websocket("/ui_websocket")
