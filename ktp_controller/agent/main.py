@@ -192,6 +192,9 @@ class Agent:
                 ktp_controller.messages.Command.PREPARE_CURRENT_EXAM_PACKAGE
             ): self.__command_change_current_exam_package_state,
             str(ktp_controller.messages.Command.CRASH_AGENT): self.__command_crash,
+            str(
+                ktp_controller.messages.Command.CREATE_STATUS_REPORT
+            ): self.__command_create_status_report,
         }
 
     @property
@@ -221,6 +224,17 @@ class Agent:
 
         return ktp_controller.messages.CommandResultData(
             command_uuid=command_uuid, command_status=command_status
+        )
+
+    async def __command_create_status_report(
+        self,
+        command_uuid: pydantic.UUID4,
+        command_data: ktp_controller.messages.CommandData,
+    ) -> ktp_controller.messages.CommandResultData:
+        self.__status_report_should_be_created.set()
+        return ktp_controller.messages.CommandResultData(
+            command_uuid=command_uuid,
+            command_status=ktp_controller.messages.CommandStatus.OK,
         )
 
     async def __command_crash(
