@@ -395,3 +395,24 @@ def logging_singleton_app(
         logger.exception("failed")
         raise
     sys.exit(status)
+
+def traverse_dict(
+    d: dict[str, typing.Any],
+) -> typing.Iterator[tuple[dict[str, typing.Any], str, typing.Any]]:
+    for key, value in d.items():
+        if isinstance(value, dict):
+            yield from traverse_dict(value)
+        else:
+            yield (d, key, value)
+
+
+def agofy_dict(
+    report: dict[str, typing.Any],
+    ago_func: typing.Callable[[str], str] = ago,
+) -> None:
+    for d, key, value in traverse_dict(report):
+        if key.endswith("_at"):
+            try:
+                d[key] += f" ({ago_func(value)})"
+            except ValueError:
+                continue
