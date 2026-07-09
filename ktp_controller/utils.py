@@ -15,6 +15,7 @@ import os.path
 import sys
 import typing
 import urllib.parse
+import warnings
 
 __all__ = [
     # Utils:
@@ -276,37 +277,37 @@ def singleton() -> typing.Iterator[None]:
         yield
 
 
-def ago(dt: str | datetime.datetime, *, now: datetime.datetime | None = None) -> str:
+def relatimestr(
+    dt: str | datetime.datetime, *, now: datetime.datetime | None = None
+) -> str:
     """
-    >>> ago(datetime.datetime(1970, 1, 1, 10, 0, 0), now=datetime.datetime(1970, 1, 1, 11, 5, 3))
+    >>> relatimestr(datetime.datetime(1970, 1, 1, 10, 0, 0), now=datetime.datetime(1970, 1, 1, 11, 5, 3))
     '1h 5m 3s ago'
 
-    >>> ago("1970-01-01T10:00:00", now=datetime.datetime(1970, 1, 1, 10, 0, 0))
+    >>> relatimestr("1970-01-01T10:00:00", now=datetime.datetime(1970, 1, 1, 10, 0, 0))
     'now'
 
-    >>> ago(datetime.datetime(1970, 1, 1, 10, 0, 0), now=datetime.datetime(1970, 2, 3, 11, 5, 3))
+    >>> relatimestr(datetime.datetime(1970, 1, 1, 10, 0, 0), now=datetime.datetime(1970, 2, 3, 11, 5, 3))
     '33d 1h 5m 3s ago'
 
-    >>> ago(datetime.datetime(1970, 1, 1, 10, 0, 0, tzinfo=datetime.UTC), now=datetime.datetime(1970, 2, 3, 11, 5, 3, tzinfo=datetime.UTC))
+    >>> relatimestr(datetime.datetime(1970, 1, 1, 10, 0, 0, tzinfo=datetime.UTC), now=datetime.datetime(1970, 2, 3, 11, 5, 3, tzinfo=datetime.UTC))
     '33d 1h 5m 3s ago'
 
-    >>> ago("1970-01-01T10:00:00Z", now=datetime.datetime(1970, 2, 3, 11, 5, 3, tzinfo=datetime.timezone(datetime.timedelta(seconds=7200), 'EET')))
+    >>> relatimestr("1970-01-01T10:00:00Z", now=datetime.datetime(1970, 2, 3, 11, 5, 3, tzinfo=datetime.timezone(datetime.timedelta(seconds=7200), 'EET')))
     '32d 23h 5m 3s ago'
 
-    >>> ago(datetime.datetime(1970, 1, 1, 10, 0, 0), now=datetime.datetime(1970, 2, 3, 11, 5, 3, tzinfo=datetime.UTC))
+    >>> relatimestr(datetime.datetime(1970, 1, 1, 10, 0, 0), now=datetime.datetime(1970, 2, 3, 11, 5, 3, tzinfo=datetime.UTC))
     Traceback (most recent call last):
     ...
     ValueError: dt and now must both be naive or have have time zone information
 
-    >>> ago(datetime.datetime(1970, 1, 1, 10, 0, 0, tzinfo=datetime.UTC), now="1970-02-03T11:05:03")
+    >>> relatimestr(datetime.datetime(1970, 1, 1, 10, 0, 0, tzinfo=datetime.UTC), now="1970-02-03T11:05:03")
     Traceback (most recent call last):
     ...
     ValueError: dt and now must both be naive or have have time zone information
 
-    >>> ago(datetime.datetime(1970, 1, 1, 10, 0, 0), now=datetime.datetime(1970, 1, 1, 9, 0, 0))
-    Traceback (most recent call last):
-    ...
-    ValueError: dt is in future
+    >>> relatimestr(datetime.datetime(1970, 1, 1, 10, 0, 0), now=datetime.datetime(1970, 1, 1, 9, 0, 0))
+    'in 1h 0m 0s'
     """
     if now is None:
         now = utcnow()
@@ -332,26 +333,40 @@ def ago(dt: str | datetime.datetime, *, now: datetime.datetime | None = None) ->
     now_local: datetime.datetime = now.astimezone()
     dt_local: datetime.datetime = dt.astimezone()
 
-    if dt_local > now_local:
-        raise ValueError("dt is in future")
-
     if dt_local == now_local:
         return "now"
 
     secs_ago: int = round((now_local - dt_local).total_seconds())
-    if secs_ago < 60:
-        return f"{secs_ago}s ago"
+    preposition = ""
+    postposition = " ago"
+    if secs_ago < 0:
+        preposition = "in "
+        postposition = ""
 
-    mins_ago, secs_ago = divmod(secs_ago, 60)
-    if mins_ago < 60:
-        return f"{mins_ago}m {secs_ago}s ago"
+    secs = abs(secs_ago)
 
-    hours_ago, mins_ago = divmod(mins_ago, 60)
-    if hours_ago < 24:
-        return f"{hours_ago}h {mins_ago}m {secs_ago}s ago"
+    if secs < 60:
+        return f"{preposition}{secs}s{postposition}"
 
-    days_ago, hours_ago = divmod(hours_ago, 24)
-    return f"{days_ago}d {hours_ago}h {mins_ago}m {secs_ago}s ago"
+    mins, secs = divmod(secs, 60)
+    if mins < 60:
+        return f"{preposition}{mins}m {secs}s{postposition}"
+
+    hours, mins = divmod(mins, 60)
+    if hours < 24:
+        return f"{preposition}{hours}h {mins}m {secs}s{postposition}"
+
+    days, hours = divmod(hours, 24)
+    return f"{preposition}{days}d {hours}h {mins}m {secs}s{postposition}"
+
+
+def ago(dt: str | datetime.datetime, *, now: datetime.datetime | None = None) -> str:
+    warnings.warn(
+        "ktp_controller.utils.ago() is deprecated, please use ktp_controller.utils.relatimestr() instead. ktp_controller.utils.ago() will be removed in near future.",
+        category=FutureWarning,
+        stacklevel=2,
+    )
+    return relatimestr(dt, now=now)
 
 
 def is_puavo_os() -> bool:
