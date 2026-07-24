@@ -33,6 +33,9 @@ class StudentAccessCode(ktp_controller.pydantic.BaseModel):
     key_code: pydantic.StrictStr = Field(examples=["1234"])
     verification_code: pydantic.StrictStr = Field(examples=["xx"])
 
+    def __str__(self) -> str:
+        return f"{self.key_code} {self.verification_code}"
+
 
 class CachedFile(ktp_controller.pydantic.BaseModel):
     path: pydantic.StrictStr = Field(
