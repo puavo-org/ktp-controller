@@ -24,7 +24,7 @@ if [ -e /dev/virtio-ports/com.redhat.spice.0 ]; then
     sudo systemctl start spice-vdagentd
 fi
 
-sudo rsync -rl --delete-after "$(git rev-parse --show-toplevel)/" /home/puavo-ers/ktp-controller/
+sudo rsync -rl --delete-after "${thisdir}/../" /home/puavo-ers/ktp-controller/
 sudo chown -R puavo-ers:puavo-ers /home/puavo-ers/ktp-controller
 
 for g in puavo; do
