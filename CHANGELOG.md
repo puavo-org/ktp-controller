@@ -54,6 +54,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Abitti2: use `POST /api/end-student-exam` instead of deprecated
+  `POST /api/end-student-session`.
+
 - Periodic cleanup of archived exam package files.
 
 - Loggers are now named after their module (`__name__`) instead of the
