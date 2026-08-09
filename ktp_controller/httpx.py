@@ -8,7 +8,7 @@ import httpx
 _LOGGER = logging.getLogger(__name__)
 
 NumberT: typing.TypeAlias = int | float
-TimeoutT: typing.TypeAlias = NumberT | None | tuple[NumberT, NumberT]
+TimeoutT: typing.TypeAlias = NumberT | tuple[NumberT, NumberT] | None
 
 DEFAULT_TIMEOUT: TimeoutT = (3.1, 60)
 

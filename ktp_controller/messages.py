@@ -29,7 +29,6 @@ __all__ = [
     "PingMessage",
     "PongMessage",
     "StatusReportMessage",
-    "Data",
     "Message",
 ]
 
