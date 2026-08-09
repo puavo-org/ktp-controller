@@ -18,7 +18,7 @@ dependencies = [
     "fastapi",
     "httpx",
     "uvicorn[standard]",
-    "alembic",
+    "alembic <1.19",
     "psutil",
     "pydantic-settings",
     "python-multipart",
