@@ -43,6 +43,9 @@ else
 fi
 
 case "$COMMAND" in
+    bash)
+        exec bash --noprofile --rcfile <(echo "PS1='KTP Controller Shell\n\u@\h $ '") -i "$@"
+        ;;
     cli)
         echo "WARNING: deprecated, run instead: $0 $@" >&2
         KTP_CONTROLLER_LOGGING_LEVEL=WARNING exec ktp-controller-cli "$@"
