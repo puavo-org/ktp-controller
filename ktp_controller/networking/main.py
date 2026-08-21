@@ -45,7 +45,7 @@ _LOGGER = logging.getLogger(_THIS_NAME)
 _DNSMASQ_PID_FILE = f"/run/{_THIS_NAME}-dnsmasq.pid"
 _DNSMASQ_LEASES_FILE = f"/var/lib/{_THIS_NAME}-dnsmasq.leases"
 _DNSMASQ_HOSTS_FILE = f"/var/lib/{_THIS_NAME}-dnsmasq.hosts"
-_LOCAL_DOMAIN = "ktp-controller.invalid"
+_LOCAL_DOMAIN = "koe.abitti.net"
 _NM_CONF_FILE = "/etc/NetworkManager/dnsmasq.d/puavo-ers.conf"
 
 
@@ -61,16 +61,16 @@ def _start_dhcp_dns_server(net: ktp_controller.net.Net) -> int:
         "dnsmasq",
         "--port=53",
         f"--listen-address={net.host_address}",
-        f"--domain={_LOCAL_DOMAIN},{net.network},local",
+        f"--domain={_LOCAL_DOMAIN},{net.network}",
         "--domain-needed",
         "--bogus-priv",
-        "--no-resolv",
         "--no-hosts",
-        "--expand-hosts",
         "--bind-interfaces",
+        "--except-interface=lo",
         f"--dhcp-leasefile={_DNSMASQ_LEASES_FILE}",
-        f"--dhcp-range={net.dhcp_hosts[0]},{net.dhcp_hosts[-1]},12h",
-        "--dhcp-option=option:router",  # Removes option:router from responses; there's no way out from this network
+        f"--dhcp-range={net.dhcp_hosts[0]},{net.dhcp_hosts[-1]},1h",
+        f"--dhcp-option=option:dns-server,{net.host_address}",
+        "--dhcp-option=option:domain-name",
         "--log-queries",
         "--log-dhcp",
         "--log-debug",
