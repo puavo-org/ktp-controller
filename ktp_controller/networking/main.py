@@ -148,6 +148,7 @@ def _configure_networkmanager() -> None:
     """Best-effort inclusion of the domain record in the local DNS controlled by NetworkManager"""
     try:
         with open(f"{_NM_CONF_FILE}.tmp", "w", encoding="utf-8") as nm_conf_file:
+            print(f"address=/{_LOCAL_DOMAIN}/::", file=nm_conf_file)
             print(f"addn-hosts={_DNSMASQ_HOSTS_FILE}", file=nm_conf_file)
             for koe_abitti_net_dns_server in _KOE_ABITTI_NET_DNS_SERVERS:
                 print(
