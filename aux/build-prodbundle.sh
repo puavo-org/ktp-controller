@@ -4,6 +4,9 @@
 
 set -euo pipefail
 
+THIS=$(readlink -e "$0")
+HERE=$(dirname "$THIS")
+
 on_exit()
 {
     set +e
@@ -20,24 +23,13 @@ exitval=1
 
 trap on_exit EXIT
 
-export UV_PYTHON=3.11.1
-export UV_MANAGED_PYTHON=1
-
-echo "📦 Building wheel..." >&2
-uv build --wheel
-
-echo "📄 Exporting dependencies..." >&2
-uv export --no-emit-project --no-dev --format requirements-txt >dist/requirements.txt
-
-echo "🚚 Collecting packages into bundle..." >&2
 version=$(uv version --short)
 dir="dist/ktp_controller-prodbundle-${version}"
 rm -rf "$dir"
 mkdir -p "$dir"
-uv pip install \
-    -r dist/requirements.txt \
-    dist/*.whl \
-    --prefix "$dir/ktp-controller/"
+
+"${HERE}/build-for-pyversion.sh" 3.11.1 "$dir/ktp-controller"
+"${HERE}/build-for-pyversion.sh" 3.13.5 "$dir/ktp-controller"
 
 echo "🚀 Installing launchers..." >&2
 cp -v supervisor/*-prod-run.conf "$dir/ktp-controller/"
