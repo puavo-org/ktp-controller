@@ -7,6 +7,7 @@ import datetime
 import enum
 import json
 import logging
+import math
 import os
 import os.path
 import pathlib
@@ -137,6 +138,9 @@ class Agent:
         self.__work_on_current_exam_package_lock = asyncio.Lock()
         self.__last_status_report_sent_to_examomatic_at: datetime.datetime | None = None
         self.__last_status_report: dict[str, typing.Any] | None = None
+        self.__last_student_access_code_change_request_at: datetime.datetime | None = (
+            None
+        )
         self.__cached_abitti2_version: str | None = None
         self.__os_release = ktp_controller.os.get_release()
         self.__status_report_should_be_created = asyncio.Event()
@@ -308,6 +312,65 @@ class Agent:
             command_uuid=command_uuid, command_status=command_status
         )
 
+    async def __change_student_access_code(self) -> bool:
+        utcnow = ktp_controller.utils.utcnow()
+
+        if self.__last_student_access_code_change_request_at is None:
+            seconds_since_last_change = math.inf
+        else:
+            seconds_since_last_change = (
+                utcnow - self.__last_student_access_code_change_request_at
+            ).total_seconds()
+
+        if seconds_since_last_change < 60:
+            _LOGGER.warning(
+                "NOT requesting Abitti2 to change student access code, "
+                "because it was requested %d seconds ago. It can be requested at most once per minute.",
+                int(seconds_since_last_change),
+            )
+            return False
+
+        _LOGGER.info(
+            "Requesting Abitti2 to change student access code to ensure students "
+            "cannot access exams with code (%r).",
+            self.__old_security_code,
+        )
+        await ktp_controller.abitti2.client.change_student_access_code()
+        self.__last_student_access_code_change_request_at = utcnow
+        return True
+
+    async def __change_student_access_code_in_state_transition(self) -> bool:
+        if not self.__is_auto_control_enabled:
+            return True  # We are never going to change it, so we are done.
+
+        if not SETTINGS.abitti2_change_student_access_code_automatically:
+            return True  # We are never going to change it, so we are done.
+
+        if self.__last_received_security_code is None:
+            return False  # No point to change until we know what the current is.
+
+        if self.__old_security_code is None:
+            self.__old_security_code = self.__last_received_security_code
+
+        if self.__old_security_code == self.__last_received_security_code:
+            await self.__change_student_access_code()
+            _LOGGER.info(
+                "Waiting until student access code has changed to ensure students "
+                "cannot access exams with code (%r).",
+                self.__old_security_code,
+            )
+            return False
+
+        _LOGGER.info(
+            "Access code has changed (%r => %r).",
+            self.__old_security_code,
+            self.__last_received_security_code,
+        )
+
+        self.__old_security_code = None
+
+        return True
+
     async def __prepare_current_exam_package(
         self,
         current_exam_package: dict[str, typing.Any],
@@ -333,40 +396,8 @@ class Agent:
             )
         self.__uploaded = True
 
-        if (
-            self.__is_auto_control_enabled
-            and SETTINGS.abitti2_change_student_access_code_automatically
-        ):
-            if self.__old_security_code is None:
-                self.__old_security_code = self.__last_received_security_code
-                _LOGGER.info(
-                    "Requesting Abitti2 to change the access code to ensure students "
-                    "cannot access new exams with the old code (%r).",
-                    self.__old_security_code,
-                )
-                await ktp_controller.abitti2.client.change_student_access_code()
-                return False
-
-            if self.__old_security_code == self.__last_received_security_code:
-                _LOGGER.info(
-                    "Waiting until access code has changed to ensure students "
-                    "cannot access new exams with the old code."
-                )
-                # Waiting until the security code is changed.
-                return False
-
-            _LOGGER.info(
-                "Access code has changed (%r => %r), continue starting the exam package.",
-                self.__old_security_code,
-                self.__last_received_security_code,
-            )
-
-            _LOGGER.info(
-                "API says the access code is: %r",
-                await ktp_controller.api.client.get_student_access_code(),
-            )
-
-        self.__old_security_code = None
+        if not await self.__change_student_access_code_in_state_transition():
+            return False
 
         _LOGGER.info(
             "Prepared current exam package %r successfully.",
@@ -433,20 +464,13 @@ class Agent:
             "Stopping current exam package %r...",
             current_exam_package["external_id"],
         )
-        await self.__stop_current_exam_package(current_exam_package)
-        return True  # Always proceed to the next state, we have started to stop the current exam.
+        # Change the student access code first to ensure students cannot enter anymore.
+        return await self.__change_student_access_code_in_state_transition()
 
     async def __stop_current_exam_package(
         self,
         current_exam_package: dict[str, typing.Any],
     ) -> bool:
-        if (
-            self.__is_auto_control_enabled
-            and SETTINGS.abitti2_change_student_access_code_automatically
-        ):
-            # Change the security code first to ensure students cannot enter anymore.
-            await ktp_controller.abitti2.client.change_student_access_code()
-
         if self.__last_status_report is None:
             return False
 
@@ -868,7 +892,8 @@ class Agent:
                         )
                         continue
                     try:
-                        await ktp_controller.abitti2.client.change_student_access_code()
+                        if not await self.__change_student_access_code():
+                            continue
                     except Exception:
                         _LOGGER.exception("Failed to changed student access code")
                         continue  # Failed requests are not acked
