@@ -474,10 +474,27 @@ class Agent:
         if self.__last_status_report is None:
             return False
 
+        exceptions = []
+
         for student in self.__last_status_report["abitti2"]["students"]:
-            await ktp_controller.abitti2.client.end_student_exam(
-                session_uuid=student["session_uuid"],
-                student_uuid=student["uuid"],
+            try:
+                await ktp_controller.abitti2.client.end_student_exam(
+                    session_uuid=student["session_uuid"],
+                    student_uuid=student["uuid"],
+                )
+            except Exception as e:
+                # Best-effort ending; exceptions will be raised as a
+                # group once we have tried to end ALL student
+                # sessions.
+                exceptions.append(e)
+                continue
+
+        if exceptions:
+            # Ensures next time we get to end student sessions, we are reading fresh data.
+            self.__last_status_report = None
+
+            raise ExceptionGroup(
+                "failed to end some of the student sessions", exceptions
             )
 
         is_stopped = (
