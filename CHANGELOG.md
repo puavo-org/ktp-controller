@@ -5,11 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [UNRELEASED]
+## [0.7.0] - 2026-09-07
 
 ### Added
 
 - In Puavo OS, `/opt/ktp-controller/ktp-controller bash` subcommand is back!
+
+- Add support for Puavo OS Trixie.
+
+- Add rate limit to student access code changes: now it can be changed
+  at most once per minute.
+
+### Changed
+
+- Modify DNS and DHCP server configuration to increase compatibility
+  with all different Abitti2 clients.
+
+- Minimize AAAA DNS request delays by responding immediately with
+  invalid answer to all AAAA requests on koe.abitti.net.
+
+- Student session ending is now more robust: when it's time to kick
+  out students, we try to kick them all out first, ignoring errors,
+  and handle all errors in conjunction afterwards. Which means that
+  one misbehaving or non-existent student session won't prevent
+  kicking out rest of the students.
 
 
 ## [0.6.0] - 2026-08-09
@@ -34,9 +53,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - cached exam files older than 30 days (last modified more than 30
     days ago). Last modified timestamps of cached exam files are also
     updated when KTP Controller would download them (cache-hit).
-  
+
   - all empty directories below `~/.local/share/ktp-controller`.
-  
+
   - all archived dirs, not just archived exam package dirs.
 
 ### Changed
@@ -45,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Archived exam packages and archived answers are NOT included in
   status reports (in `cached_files`) anymore.
-  
+
 - Removed redundant internal HTTP requests and started to cache
   Abitti2 server version.
 
@@ -57,7 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   archived and not uploaded after the final answers file is uploaded
   to Exam-O-Matic successfully. However, all intermediate answers
   files are still retained locally for two weeks.
-  
+
 
 ### Fixed
 
