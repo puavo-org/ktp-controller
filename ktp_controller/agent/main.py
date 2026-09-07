@@ -138,6 +138,7 @@ class Agent:
         self.__work_on_current_exam_package_lock = asyncio.Lock()
         self.__last_status_report_sent_to_examomatic_at: datetime.datetime | None = None
         self.__last_status_report: dict[str, typing.Any] | None = None
+        self.__has_last_status_report_expired: bool = False
         self.__last_student_access_code_change_request_at: datetime.datetime | None = (
             None
         )
@@ -474,6 +475,9 @@ class Agent:
         if self.__last_status_report is None:
             return False
 
+        if self.__has_last_status_report_expired:
+            return False
+
         exceptions = []
 
         for student in self.__last_status_report["abitti2"]["students"]:
@@ -491,7 +495,7 @@ class Agent:
 
         if exceptions:
             # Ensures next time we get to end student sessions, we are reading fresh data.
-            self.__last_status_report = None
+            self.__has_last_status_report_expired = True
 
             raise ExceptionGroup(
                 "failed to end some of the student sessions", exceptions
@@ -1254,6 +1258,7 @@ class Agent:
 
         await ktp_controller.api.client.save_status_report(status_report)
         self.__last_status_report = status_report
+        self.__has_last_status_report_expired = False
         _LOGGER.debug("sent status report to KTP Controller API")
 
     async def __handle_abitti2_exams_message(
