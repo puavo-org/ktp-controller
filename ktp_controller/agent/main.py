@@ -1023,6 +1023,11 @@ class Agent:
         received_at: datetime.datetime,
         message: dict[str, typing.Any],
     ) -> None:
+        try:
+            await ktp_controller.api.client.save_raw_abitti2_stats_message(message)
+        except Exception:
+            _LOGGER.exception("Failed to save raw Abitti2 stats message")
+
         ktp_controller.abitti2.utils.sanitize_stats_message(message)
         changed = False
 
