@@ -200,6 +200,9 @@ class Agent:
             str(
                 ktp_controller.messages.Command.CREATE_STATUS_REPORT
             ): self.__command_create_status_report,
+            str(
+                ktp_controller.messages.Command.CHANGE_STUDENT_ACCESS_CODE
+            ): self.__command_change_student_access_code,
         }
 
     @property
@@ -229,6 +232,27 @@ class Agent:
 
         return ktp_controller.messages.CommandResultData(
             command_uuid=command_uuid, command_status=command_status
+        )
+
+    async def __command_change_student_access_code(
+        self,
+        command_uuid: pydantic.UUID4,
+        command_data: ktp_controller.messages.CommandData,
+    ) -> ktp_controller.messages.CommandResultData:
+        try:
+            error_message = None
+            if await self.__change_student_access_code():
+                command_status = ktp_controller.messages.CommandStatus.OK
+            else:
+                command_status = ktp_controller.messages.CommandStatus.OK_NO_CHANGE
+        except Exception as exception:
+            error_message = str(exception)
+            command_status = ktp_controller.messages.CommandStatus.ERROR
+
+        return ktp_controller.messages.CommandResultData(
+            command_uuid=command_uuid,
+            command_status=command_status,
+            error_message=error_message,
         )
 
     async def __command_create_status_report(

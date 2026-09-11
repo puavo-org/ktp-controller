@@ -110,6 +110,7 @@ _COMMANDS: dict[
     "prepare_current_exam_package": _command_api_async_command,
     "crash_agent": _command_api_async_command,
     "status": _command_status,
+    "change_student_access_code": _command_api_async_command,
 }
 
 _COMMAND_ARGUMENTS: dict[str, tuple[tuple[str, ...], dict[str, typing.Any]]] = {
