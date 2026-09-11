@@ -253,3 +253,32 @@ async def _get_echo(request: fastapi.Request) -> dict[str, typing.Any]:
             "headers": headers,
         },
     }
+
+
+_RAW_ABITTI2_STATS_MESSAGES = ktp_controller.redis.CappedList(
+    "raw_abitti2_stats_message", 2
+)
+
+
+@router.post(
+    "/save_raw_abitti2_stats_message",
+    response_model=None,
+    summary="Save raw Abitti2 stats message",
+)
+async def _save_raw_abitti2_stats_message(
+    message: dict[str, typing.Any],
+    db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
+) -> None:
+    await _RAW_ABITTI2_STATS_MESSAGES.lpush(message)
+
+
+@router.post(
+    "/get_raw_abitti2_stats_messages",
+    response_model=list[dict[str, typing.Any]],
+    summary="Get raw Abitti2 stats messages",
+)
+async def _get_raw_abitti2_stats_messages(
+    message: dict[str, typing.Any],
+    db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
+) -> list[dict[str, typing.Any]]:
+    return await _RAW_ABITTI2_STATS_MESSAGES.getall()

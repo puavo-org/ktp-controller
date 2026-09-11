@@ -1,4 +1,5 @@
 # Standard library imports
+import json
 import logging
 import typing
 
@@ -108,6 +109,24 @@ def get_ui_websock_url() -> str:
 
 
 # API commands:
+
+
+async def get_raw_abitti2_stats_messages(
+    **kwargs: typing.Any,
+) -> list[dict[str, typing.Any]]:
+    return typing.cast(
+        "list[dict[str, typing.Any]]",
+        await _post("/api/v1/system/get_raw_abitti2_stats_messages", **kwargs),
+    )
+
+
+async def save_raw_abitti2_stats_message(
+    message: dict[str, typing.Any], **kwargs: typing.Any
+) -> typing.Any:
+    kwargs["content"] = json.dumps(message, ensure_ascii=True).encode("ascii")
+    kwargs["headers"] = {"Content-Type": "application/json"}
+
+    return await _post("/api/v1/system/save_raw_abitti2_stats_message", **kwargs)
 
 
 async def save_status_report(
