@@ -1,0 +1,41 @@
+{
+    "type": "stats",
+    "data": {
+        "students": [
+            {
+                "studentUuid": "37de9e8d-0c1a-4851-9f5f-9ba76c85e280",
+                "sessionUuid": "a318f9d8-d842-4a2e-8db7-ecbad85df044",
+                "firstNames": "Testi Pekka",
+                "lastName": "Testaaja",
+                "studentBd": "010107",
+                "examTitle": "Odotusaulakoe",
+                "examUuid": "390e7988-ff0e-42b4-a2e6-d13a969e7103",
+                "authorized": true,
+                "authorizedTimestamp": 1789225043289,
+                "examStarted": "2026-09-07T18:33:35.578Z",
+                "examFinishedAt": "2026-09-12T14:59:08.466Z",
+                "nsaLastHeartbeatTimestamp": null,
+                "sessionStatus": "exam_finished_by_student",
+                "casRestricted": false,
+                "casStatus": "allowed",
+                "updateTime": "2026-09-12T14:47:28.639Z",
+                "lastAccessedMedia": null,
+                "isAllowedToUseBrowser": true,
+                "loginInitiatedOnBrowser": true,
+                "studentStatus": "exam-finished-by-student",
+                "hostname": "johdanto-rivitys.koe.abitti.net",
+                "isConnected": true,
+                "disconnectionCount": 1,
+                "lastDisconnectedAt": null
+            }
+        ],
+        "refreshedCount": 0,
+        "examStatus": {
+            "hasStarted": true,
+            "startTime": "2026-09-07T18:33:35.578Z"
+        },
+        "answerPaperCount": 1,
+        "audioInSomeExam": false
+    }
+}
+
