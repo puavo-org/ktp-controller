@@ -68,3 +68,8 @@ class CappedList:
         async with redis.from_url("redis://127.0.0.1") as redis_client:
             json_strs = await redis_client.lrange(self.__key, 0, -1)
             return [json.loads(s) for s in json_strs]
+
+
+RAW_ABITTI2_STATS_MESSAGES = CappedList(
+    "raw_abitti2_stats_message", 2
+)

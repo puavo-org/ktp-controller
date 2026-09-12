@@ -255,11 +255,6 @@ async def _get_echo(request: fastapi.Request) -> dict[str, typing.Any]:
     }
 
 
-_RAW_ABITTI2_STATS_MESSAGES = ktp_controller.redis.CappedList(
-    "raw_abitti2_stats_message", 2
-)
-
-
 @router.post(
     "/save_raw_abitti2_stats_message",
     response_model=None,
@@ -269,7 +264,7 @@ async def _save_raw_abitti2_stats_message(
     message: dict[str, typing.Any],
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ) -> None:
-    await _RAW_ABITTI2_STATS_MESSAGES.lpush(message)
+    await ktp_controller.redis.RAW_ABITTI2_STATS_MESSAGES.lpush(message)
 
 
 @router.post(
@@ -281,4 +276,4 @@ async def _get_raw_abitti2_stats_messages(
     message: dict[str, typing.Any],
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ) -> list[dict[str, typing.Any]]:
-    return await _RAW_ABITTI2_STATS_MESSAGES.getall()
+    return await ktp_controller.redis.RAW_ABITTI2_STATS_MESSAGES.getall()
