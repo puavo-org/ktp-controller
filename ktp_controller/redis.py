@@ -70,6 +70,4 @@ class CappedList:
             return [json.loads(s) for s in json_strs]
 
 
-RAW_ABITTI2_STATS_MESSAGES = CappedList(
-    "raw_abitti2_stats_message", 2
-)
+RAW_ABITTI2_STATS_MESSAGES = CappedList("raw_abitti2_stats_message", 2)

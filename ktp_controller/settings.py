@@ -89,6 +89,8 @@ class Settings(BaseSettings):
     id: PositiveInt
     api_host: str = "127.0.0.1"
     api_port: PositiveInt = 8000
+    wui_host: str = "127.0.0.1"
+    wui_port: PositiveInt = 9999
     logging_level: str = "INFO"
     db_path: str = "ktp_controller.sqlite"
     abitti2_allow_students_to_use_browsers: StrictBool = False

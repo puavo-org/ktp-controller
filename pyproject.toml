@@ -17,6 +17,7 @@ dependencies = [
     "asyncinotify",
     "fastapi",
     "httpx",
+    "jinja2",
     "uvicorn[standard]",
     "alembic <1.19",
     "psutil",
@@ -38,6 +39,7 @@ ktp-controller-naksu2monitor = "ktp_controller.abitti2.naksu2monitor.main:run"
 ktp-controller-networking = "ktp_controller.networking.main:run"
 ktp-controller-supervisor-chainer = "ktp_controller.supervisor_chainer.main:run"
 ktp-controller-tui = "ktp_controller.tui.main:run"
+ktp-controller-wui = "ktp_controller.wui.main:run"
 
 [dependency-groups]
 dev = [

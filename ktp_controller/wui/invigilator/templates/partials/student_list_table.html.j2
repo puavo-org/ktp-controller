@@ -1,0 +1,25 @@
+<table id="student-list-table" border="1" style="border-collapse: collapse; width: 100%; text-align: left;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+        {% for column_key, column_label in columns %}
+            <th hx-get="?sort_by={{ column_key }}&order={{ order_next if sort_by == column_key else 'asc' }}"
+                hx-target="#student-list-table"
+                hx-swap="outerHTML"
+                style="cursor: pointer; padding: 8px;">
+                {{ column_label }}
+                {% if sort_by == column_key %}{{ '▲' if order_now == 'asc' else '▼' }}{% endif %}
+            </th>
+        {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for student_list_item in student_list_items %}
+        <tr>
+            <td style="padding: 8px;">{{ student_list_item.name }}</td>
+            <td style="padding: 8px;">{{ student_list_item.state }}</td>
+            <td style="padding: 8px;">{{ student_list_item.last_changed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td style="padding: 8px;">{{ student_list_item.exam_title }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
