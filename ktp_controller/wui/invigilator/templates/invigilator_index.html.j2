@@ -1,3 +1,4 @@
+{% autoescape true %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,7 +10,23 @@
 
     <h2>Students</h2>
     
+    <div id="filters" style="margin-bottom: 20px; display: flex; gap: 15px;">
+        <div>
+            <input type="text"
+                   id="name_birthday_filter"
+                   name="name_birthday_filter"
+                   value="{{ name_birthday_filter }}"
+                   placeholder="Filter by student name or birthday..."
+                   hx-get=""
+                   hx-trigger="keyup changed delay:350ms"
+                   hx-target="#student-list-table"
+                   hx-swap="outerHTML"
+                   hx-include="#filters">
+        </div>
+    </div>
+
     {% include "partials/student_list_table.html.j2" %}
 
 </body>
 </html>
+{% endautoescape %}
