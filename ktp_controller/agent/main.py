@@ -481,6 +481,8 @@ class Agent:
         exceptions = []
 
         for student in self.__last_status_report["abitti2"]["students"]:
+            if student["has_finished"]:
+                continue
             try:
                 await ktp_controller.abitti2.client.end_student_exam(
                     session_uuid=student["session_uuid"],
