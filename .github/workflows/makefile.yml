@@ -30,4 +30,4 @@ jobs:
       run: make check
 
     - name: Run tests
-      run: make pytest
+      run: uv run make .pytest
