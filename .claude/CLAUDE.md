@@ -2,19 +2,33 @@
 
 - See @README.md for project overview.
 
-- API: @ktp_controller/api/
-  - Key technology: Python3, FastAPI, Uvicorn, SQLAlchemy, Sqlite3, Alembic, Redis
-  - All SQLAlchemy ORM models: @ktp_controller/api/models.py
-  - All endpoints: @ktp_controller/api/routes.py
-  - Main responsibilities:
-    - permanent data storage for Agent-driven state machine
 
-- Agent: @ktp_controller/agent/
-  - Key technology: Python3, asyncio
-  - Main responsibilities:
-    - control Abitti2 (external web service) based on the information
-      received from Exam-O-Matic (another external web service)
-    - deliver status reports back to Exam-O-Matic
+## Component: API
+
+@ktp_controller/api/
+
+Key technology: Python3, FastAPI, Uvicorn, SQLAlchemy, Sqlite3, Alembic, Redis
+
+### Main responsibilities
+
+- Permanent data storage for Agent-driven state machine.
+- Async command dispatching to Agent via websockets.
+
+
+## Component: Agent
+
+@ktp_controller/agent/
+
+Key technology: Python3, asyncio
+
+### Main responsibilities
+
+- Control Abitti2 (external web service) based on the information
+  received from Exam-O-Matic (another external web service).
+
+- Execute commands received from API via websockets.
+
+- Deliver status reports back to Exam-O-Matic.
 
 
 # Git instructions
