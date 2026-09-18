@@ -432,3 +432,27 @@ def agofy_dict(
                 d[key] += f" ({ago_func(value)})"
             except ValueError:
                 continue
+
+
+def parse_ddmmyy(ddmmyy: str, /) -> datetime.date:
+    """
+    Parses a 'ddmmyy' string into a datetime.date object.
+
+    If yy < current year's last two digits, it resolves to the current century.
+    If yy >= current year's last two digits, it resolves to the previous century.
+    """
+    if len(ddmmyy) != 6 or not ddmmyy.isdigit():
+        raise ValueError("Input must be a 6-digit numeric string in 'ddmmyy' format.")
+
+    day = int(ddmmyy[:2])
+    month = int(ddmmyy[2:4])
+    yy = int(ddmmyy[4:])
+
+    current_year = datetime.datetime.now().year
+    current_century = (current_year // 100) * 100  # e.g., 2026 -> 2000 | 2226 -> 2200
+    current_yy = current_year % 100  # e.g., 2026 -> 26   | 2226 -> 26
+
+    year = current_century + yy if yy < current_yy else current_century - 100 + yy
+
+    # Handles leap years and invalid calendar dates natively via constructor
+    return datetime.datetime(year=year, month=month, day=day)
