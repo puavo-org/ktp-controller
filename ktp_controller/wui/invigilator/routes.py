@@ -27,43 +27,67 @@ _templates = fastapi.templating.Jinja2Templates(
 )
 _security = fastapi.security.HTTPBasic()
 
-_SAMPLE_DATA: list[schemas.StudentListItem] = [
-    schemas.StudentListItem(
-        name="Alice Smith",
-        birthday=datetime.date(1982, 2, 1),
-        state="Passed",
-        last_changed_at=datetime.datetime(2026, 3, 10, 14, 30, tzinfo=datetime.UTC),
-        exam_title="Python Professional",
-    ),
-    schemas.StudentListItem(
-        name="Bob Jones",
-        birthday=datetime.date(1956, 2, 1),
-        state="Pending",
-        last_changed_at=datetime.datetime(2026, 3, 12, 9, 15, tzinfo=datetime.UTC),
-        exam_title="AWS Cloud Practitioner",
-    ),
-    schemas.StudentListItem(
-        name="Charlie Brown",
-        birthday=datetime.date(1966, 12, 7),
-        state="Failed",
-        last_changed_at=datetime.datetime(2026, 3, 1, 11, 45, tzinfo=datetime.UTC),
-        exam_title="Data Science Fundamentals",
-    ),
-    schemas.StudentListItem(
-        name="Diana Prince",
-        birthday=datetime.date(2009, 9, 9),
-        state="Passed",
-        last_changed_at=datetime.datetime(2026, 3, 11, 16, 0, tzinfo=datetime.UTC),
-        exam_title="Cybersecurity Basics",
-    ),
-    schemas.StudentListItem(
-        name="Ethan Hunt",
-        birthday=datetime.date(1977, 11, 11),
-        state="In Review",
-        last_changed_at=datetime.datetime(2026, 3, 8, 8, 20, tzinfo=datetime.UTC),
-        exam_title="DevOps Fundamentals",
-    ),
-]
+
+async def _get_student_list_items() -> list[schemas.StudentListItem]:
+    raw_abitti2_stats_messages = (
+        await ktp_controller.api.client.get_raw_abitti2_stats_messages()
+    )
+    if len(raw_abitti2_stats_messages) == 0:
+        return []
+
+    last_raw_abitti2_stats_message = raw_abitti2_stats_messages[-1]
+
+    try:
+        raw_abitti2_students = last_raw_abitti2_stats_message["data"]["students"]
+    except KeyError:
+        return []
+
+    student_list_items = []
+
+    for raw_abitti2_student in raw_abitti2_students:
+        # TODO: What if studentBd does not exist or is invalid?
+        birthday_ddmmyy: str = raw_abitti2_student["studentBd"]
+        birthday: datetime.date = ktp_controller.utils.parse_ddmmyy(birthday_ddmmyy)
+        state: str = raw_abitti2_student["studentStatus"]
+        update_time: datetime.datetime | None = (
+            datetime.datetime.fromisoformat(
+                raw_abitti2_student["updateTime"]
+            ).astimezone()
+            if raw_abitti2_student["updateTime"] is not None
+            else None
+        )
+        exam_finished_at: datetime.datetime | None = (
+            datetime.datetime.fromisoformat(
+                raw_abitti2_student["examFinishedAt"]
+            ).astimezone()
+            if raw_abitti2_student["examFinishedAt"] is not None
+            else None
+        )
+        last_changed_at: datetime.datetime | None = None
+        if update_time is None and exam_finished_at is None:
+            last_changed_at = None
+        elif update_time is not None and exam_finished_at is not None:
+            last_changed_at = max(update_time, exam_finished_at)
+        elif update_time is None:
+            last_changed_at = exam_finished_at
+        elif exam_finished_at is None:
+            last_changed_at = update_time
+        else:
+            raise RuntimeError("impossible internal logic")
+
+        exam_title: str = raw_abitti2_student["examTitle"]
+
+        student_list_item = schemas.StudentListItem(
+            name=f"{raw_abitti2_student['firstNames']} {raw_abitti2_student['lastName']}",
+            birthday=birthday,
+            state=state,
+            last_changed_at=last_changed_at,
+            exam_title=exam_title,
+        )
+
+        student_list_items.append(student_list_item)
+
+    return student_list_items
 
 
 async def _authenticate_invigilator(
@@ -109,7 +133,7 @@ class _StudentListItemSortableField(enum.StrEnum):
 
 
 @router.get("/", response_class=fastapi.responses.HTMLResponse)
-def _get_invigilator(
+async def _get_invigilator(
     request: fastapi.Request,
     sort_by: _StudentListItemSortableField = _StudentListItemSortableField.NAME,
     order: _Order = _Order.ASC,
@@ -121,7 +145,7 @@ def _get_invigilator(
     sortable_keys = list(schemas.StudentListItem.schema()["properties"])
 
     student_list_items = sorted(
-        _SAMPLE_DATA,
+        await _get_student_list_items(),
         key=lambda x: getattr(x, sort_by),
         reverse=order == "desc",
     )
