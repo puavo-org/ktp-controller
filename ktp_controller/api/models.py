@@ -14,9 +14,12 @@ __all__ = [
     "Base",
     "ExamFileInfo",
     "ExamInfo",
+    "Permission",
+    "Role",
     "ScheduledExam",
     "ScheduledExamPackage",
     "StatusReport",
+    "User",
 ]
 
 
@@ -259,4 +262,123 @@ class StatusReport(Base):  # type: ignore
     raw_data: Mapped[dict[str, typing.Any]] = mapped_column(
         sqlalchemy.JSON,
         nullable=False,
+    )
+
+
+user_role = sqlalchemy.Table(
+    "user_role",
+    Base.metadata,
+    sqlalchemy.Column(
+        "user_dbid",
+        sqlalchemy.ForeignKey("users.dbid"),
+        primary_key=True,
+    ),
+    sqlalchemy.Column(
+        "role_dbid",
+        sqlalchemy.ForeignKey("roles.dbid"),
+        primary_key=True,
+    ),
+)
+
+
+role_permission = sqlalchemy.Table(
+    "role_permission",
+    Base.metadata,
+    sqlalchemy.Column(
+        "role_dbid",
+        sqlalchemy.ForeignKey("roles.dbid"),
+        primary_key=True,
+    ),
+    sqlalchemy.Column(
+        "permission_dbid",
+        sqlalchemy.ForeignKey("permissions.dbid"),
+        primary_key=True,
+    ),
+)
+
+
+class User(Base):  # type: ignore
+    __tablename__ = "users"
+
+    dbid: Mapped[int] = mapped_column(
+        sqlalchemy.Integer,
+        nullable=False,
+        primary_key=True,
+        autoincrement=True,
+    )
+    dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
+        sqlalchemy.DateTime,
+        default=datetime.datetime.utcnow,
+        nullable=False,
+        index=True,
+    )
+
+    username: Mapped[str] = mapped_column(
+        sqlalchemy.String,
+        nullable=False,
+        index=True,
+        unique=True,
+    )
+
+    roles: Mapped[list[Role]] = sqlalchemy.orm.relationship(
+        secondary=user_role, back_populates="users"
+    )
+
+
+class Role(Base):  # type: ignore
+    __tablename__ = "roles"
+
+    dbid: Mapped[int] = mapped_column(
+        sqlalchemy.Integer,
+        nullable=False,
+        primary_key=True,
+        autoincrement=True,
+    )
+    dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
+        sqlalchemy.DateTime,
+        default=datetime.datetime.utcnow,
+        nullable=False,
+        index=True,
+    )
+
+    name: Mapped[str] = mapped_column(
+        sqlalchemy.String,
+        nullable=False,
+        index=True,
+        unique=True,
+    )
+
+    users: Mapped[list[User]] = sqlalchemy.orm.relationship(
+        secondary=user_role, back_populates="roles"
+    )
+    permissions: Mapped[list[Permission]] = sqlalchemy.orm.relationship(
+        secondary=role_permission, back_populates="roles"
+    )
+
+
+class Permission(Base):  # type: ignore
+    __tablename__ = "permissions"
+
+    dbid: Mapped[int] = mapped_column(
+        sqlalchemy.Integer,
+        nullable=False,
+        primary_key=True,
+        autoincrement=True,
+    )
+    dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
+        sqlalchemy.DateTime,
+        default=datetime.datetime.utcnow,
+        nullable=False,
+        index=True,
+    )
+
+    name: Mapped[str] = mapped_column(
+        sqlalchemy.String,
+        nullable=False,
+        index=True,
+        unique=True,
+    )
+
+    roles: Mapped[list[Role]] = sqlalchemy.orm.relationship(
+        secondary=role_permission, back_populates="permissions"
     )
