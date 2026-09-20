@@ -95,6 +95,9 @@ class Settings(BaseSettings):
     db_path: str = "ktp_controller.sqlite"
     abitti2_allow_students_to_use_browsers: StrictBool = False
     abitti2_change_student_access_code_automatically: StrictBool = True
+    redis_url: str = "redis://127.0.0.1"
+    session_ttl_sec: PositiveInt = 28800
+    session_cookie_secure: StrictBool = True
 
     @field_validator("examomatic_use_tls", mode="before")
     @classmethod
@@ -133,6 +136,17 @@ class Settings(BaseSettings):
             raise ValueError(
                 "invalid abitti2_change_student_access_code_automatically value", v
             )
+        return v
+
+    @field_validator("session_cookie_secure", mode="before")
+    @classmethod
+    def _validate_session_cookie_secure(cls, v: typing.Any) -> typing.Any:
+        if isinstance(v, str):
+            if v.lower().strip() in ["yes", "y", "true", "1"]:
+                return True
+            if v.lower().strip() in ["no", "n", "false", "0"]:
+                return False
+            raise ValueError("invalid session_cookie_secure value", v)
         return v
 
     @classmethod
