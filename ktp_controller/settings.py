@@ -96,7 +96,7 @@ class Settings(BaseSettings):
     abitti2_allow_students_to_use_browsers: StrictBool = False
     abitti2_change_student_access_code_automatically: StrictBool = True
     redis_url: str = "redis://127.0.0.1"
-    session_ttl_sec: PositiveInt = 28800
+    session_ttl_sec: PositiveInt = 1800
     session_cookie_secure: StrictBool = True
 
     @field_validator("examomatic_use_tls", mode="before")
