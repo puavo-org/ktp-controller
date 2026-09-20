@@ -88,9 +88,7 @@ def parse_student(
         or student["sessionStatus"].startswith("exam_finished_by_")
     )
 
-    is_waiting_for_auth = student.get("studentStatus", "").startswith(
-        "waiting-for-auth"
-    )
+    is_waiting_for_auth = student["studentStatus"].startswith("waiting-for-auth")
 
     exam_title = student.get("examTitle")
 
