@@ -49,6 +49,8 @@ def test_invigilator_view_allowed_with_permission(wui_client, override_session, 
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
+    assert b"alice" in response.content
+    assert b'action="/logout"' in response.content
 
 
 def test_invigilator_view_forbidden_without_permission(wui_client, override_session):

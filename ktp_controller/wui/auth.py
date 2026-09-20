@@ -26,6 +26,7 @@ __all__ = [
     "create_session",
     "destroy_session",
     "get_current_session",
+    "get_optional_session",
     "require_permission",
 ]
 
@@ -88,14 +89,19 @@ async def destroy_session(session_id: str) -> None:
     await _SESSION_STORE.delete(session_id)
 
 
-async def get_current_session(request: fastapi.Request) -> Session:
+async def get_optional_session(request: fastapi.Request) -> Session | None:
+    """Like get_current_session(), but returns None instead of raising.
+
+    Meant for pages like /login that behave differently when a session
+    happens to be present, without themselves requiring one.
+    """
     session_id = request.cookies.get(SESSION_COOKIE_NAME)
     if session_id is None:
-        raise NotAuthenticatedError
+        return None
 
     data = await _SESSION_STORE.get(session_id)
     if data is None:
-        raise NotAuthenticatedError
+        return None
 
     await _SESSION_STORE.touch(session_id)
 
@@ -104,6 +110,13 @@ async def get_current_session(request: fastapi.Request) -> Session:
         username=data["username"],
         permissions=frozenset(data["permissions"]),
     )
+
+
+async def get_current_session(request: fastapi.Request) -> Session:
+    session = await get_optional_session(request)
+    if session is None:
+        raise NotAuthenticatedError
+    return session
 
 
 def require_permission(

@@ -8,6 +8,13 @@
 </head>
 <body style="font-family: Arial, sans-serif; margin: 40px;">
 
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>Logged in as <strong>{{ user }}</strong></div>
+        <form method="post" action="/logout" style="margin: 0;">
+            <button type="submit">Log out</button>
+        </form>
+    </div>
+
     <h2>Students</h2>
     
     <div id="filters" style="margin-bottom: 20px; display: flex; gap: 15px;">

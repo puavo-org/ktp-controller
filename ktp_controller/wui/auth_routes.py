@@ -40,9 +40,12 @@ _LOGIN_RATE_LIMITER = ktp_controller.redis.RateLimiter("login", 10, 300)
 async def _get_login(
     request: fastapi.Request,
     next: str = _DEFAULT_NEXT_PATH,
+    session: auth.Session | None = fastapi.Depends(auth.get_optional_session),
 ) -> fastapi.responses.HTMLResponse:
     return _templates.TemplateResponse(
-        request, name="login.html.j2", context={"next": next, "error": None}
+        request,
+        name="login.html.j2",
+        context={"next": next, "error": None, "session": session},
     )
 
 
@@ -65,7 +68,11 @@ async def _post_login(
         return _templates.TemplateResponse(
             request,
             name="login.html.j2",
-            context={"next": next, "error": "Incorrect username or password"},
+            context={
+                "next": next,
+                "error": "Incorrect username or password",
+                "session": None,
+            },
             status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
         )
 

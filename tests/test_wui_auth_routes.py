@@ -39,6 +39,27 @@ def test_get_login_renders_form(wui_client):
 
     assert response.status_code == 200
     assert b"<form" in response.content
+    assert b"/logout" not in response.content
+
+
+def test_get_login_shows_logged_in_state_with_valid_session(wui_client, mocker):
+    mocker.patch.object(
+        ktp_controller.api.client,
+        "get_or_create_user_permissions",
+        return_value=["wui.invigilator.view"],
+    )
+    session_id = asyncio.run(ktp_controller.wui.auth.create_session("alice"))
+    try:
+        response = wui_client.get(
+            "/login",
+            cookies={ktp_controller.wui.auth.SESSION_COOKIE_NAME: session_id},
+        )
+
+        assert response.status_code == 200
+        assert b"alice" in response.content
+        assert b'action="/logout"' in response.content
+    finally:
+        asyncio.run(ktp_controller.wui.auth.destroy_session(session_id))
 
 
 # A real browser sends an Origin header on POST form submissions, same-
