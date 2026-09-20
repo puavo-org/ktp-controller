@@ -3,13 +3,18 @@ import collections.abc
 import contextlib
 import logging
 import logging.config
+import urllib.parse
 
 # Third-party imports
 import fastapi
+import fastapi.responses
 import uvicorn
 
 # Internal imports
+import ktp_controller.wui.auth
+import ktp_controller.wui.auth_routes
 import ktp_controller.wui.invigilator.routes
+import ktp_controller.wui.middleware
 from ktp_controller import SETTINGS
 
 __all__ = [
@@ -33,7 +38,21 @@ async def _lifespan(app: fastapi.FastAPI) -> collections.abc.AsyncIterator[None]
 
 
 APP = fastapi.FastAPI(lifespan=_lifespan)
+APP.add_middleware(ktp_controller.wui.middleware.OriginCheckMiddleware)
+APP.add_middleware(ktp_controller.wui.middleware.SecurityHeadersMiddleware)
 APP.include_router(ktp_controller.wui.invigilator.routes.router, prefix="/invigilator")
+APP.include_router(ktp_controller.wui.auth_routes.router)
+
+
+@APP.exception_handler(ktp_controller.wui.auth.NotAuthenticatedError)
+async def _handle_not_authenticated(
+    request: fastapi.Request,
+    exc: ktp_controller.wui.auth.NotAuthenticatedError,
+) -> fastapi.responses.RedirectResponse:
+    next_qs = urllib.parse.urlencode({"next": request.url.path})
+    return fastapi.responses.RedirectResponse(
+        url=f"/login?{next_qs}", status_code=fastapi.status.HTTP_303_SEE_OTHER
+    )
 
 
 def run() -> int:

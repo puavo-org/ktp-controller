@@ -2,16 +2,15 @@
 import datetime
 import enum
 import os.path
-import secrets
 
 # Third-party imports
 import fastapi
 import fastapi.responses
-import fastapi.security
 import fastapi.templating
 
 # Internal imports
 import ktp_controller.api.client
+import ktp_controller.wui.auth
 
 # Relative imports
 from . import schemas
@@ -25,7 +24,6 @@ _thisdir = os.path.dirname(__file__)
 _templates = fastapi.templating.Jinja2Templates(
     directory=os.path.join(_thisdir, "templates")
 )
-_security = fastapi.security.HTTPBasic()
 
 
 async def _get_student_list_items() -> list[schemas.StudentListItem]:
@@ -90,35 +88,6 @@ async def _get_student_list_items() -> list[schemas.StudentListItem]:
     return student_list_items
 
 
-async def _authenticate_invigilator(
-    credentials: fastapi.security.HTTPBasicCredentials = fastapi.Depends(_security),
-) -> str:
-    """Validates HTTP Basic Auth credentials."""
-    last_status_report = await ktp_controller.api.client.get_last_status_report()
-    if (
-        last_status_report is None
-        or last_status_report["abitti2"]["supervisor_passphrase"] is None
-    ):
-        raise RuntimeError("invigilator's passphrase is unavailable")
-
-    # Use secrets.compare_digest to protect against timing attacks
-    is_correct_username = secrets.compare_digest(
-        credentials.username, last_status_report["abitti2"]["supervisor_username"]
-    )
-    is_correct_password = secrets.compare_digest(
-        credentials.password, last_status_report["abitti2"]["supervisor_passphrase"]
-    )
-
-    if not (is_correct_username and is_correct_password):
-        raise fastapi.HTTPException(
-            status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Basic"},
-        )
-
-    return credentials.username
-
-
 class _Order(enum.StrEnum):
     ASC = "asc"
     DESC = "desc"
@@ -133,14 +102,15 @@ class _StudentListItemSortableField(enum.StrEnum):
 
 
 @router.get("/", response_class=fastapi.responses.HTMLResponse)
+@ktp_controller.wui.auth.require_permission("wui.invigilator.view")
 async def _get_invigilator(
     request: fastapi.Request,
     sort_by: _StudentListItemSortableField = _StudentListItemSortableField.NAME,
     order: _Order = _Order.ASC,
     name_birthday_filter: str = "",
-    user: str = fastapi.Depends(
-        _authenticate_invigilator
-    ),  # Enforces Basic Auth with invigilator's credentials
+    session: ktp_controller.wui.auth.Session = fastapi.Depends(
+        ktp_controller.wui.auth.get_current_session
+    ),
 ) -> fastapi.responses.HTMLResponse:
     sortable_keys = list(schemas.StudentListItem.schema()["properties"])
 
@@ -169,7 +139,7 @@ async def _get_invigilator(
         "order_now": order,
         "order_next": order_next,
         "name_birthday_filter": name_birthday_filter,
-        "user": user,
+        "user": session.username,
     }
 
     # If the request comes from htmx, return only the table partial

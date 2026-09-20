@@ -74,6 +74,14 @@ def client(testdb):
 
 
 @pytest.fixture
+def anyio_backend():
+    # ktp_controller's async code (redis.asyncio, httpx) is asyncio-only;
+    # restrict anyio (already pulled in transitively via starlette) to
+    # that backend instead of also parametrizing over trio.
+    return "asyncio"
+
+
+@pytest.fixture
 def utcnow():
     return datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
 
