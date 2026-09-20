@@ -1,3 +1,5 @@
+import asyncio
+
 import fastapi.testclient
 import pytest
 
@@ -12,6 +14,15 @@ def wui_client():
     return fastapi.testclient.TestClient(
         ktp_controller.wui.main.APP, follow_redirects=False
     )
+
+
+@pytest.fixture(autouse=True)
+def _reset_login_rate_limit():
+    # TestClient's request.client.host is always "testclient", so
+    # every test in this module shares one rate-limit bucket in the
+    # real Redis backing it; reset it so tests stay order-independent
+    # regardless of hits accumulated by earlier runs/tests.
+    asyncio.run(ktp_controller.wui.auth_routes._LOGIN_RATE_LIMITER.reset("testclient"))
 
 
 def _status_report(username="invigilator1", passphrase="s3cret"):

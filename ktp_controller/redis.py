@@ -143,5 +143,10 @@ class RateLimiter:
                 await redis_client.expire(key, self.__window_sec)
         return count <= self.__max_hits
 
+    async def reset(self, subject: str, /) -> None:
+        key = f"{self.__prefix}:{subject}"
+        async with redis.from_url(SETTINGS.redis_url) as redis_client:
+            await redis_client.delete(key)
+
 
 RAW_ABITTI2_STATS_MESSAGES = CappedList("raw_abitti2_stats_message", 2)
