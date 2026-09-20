@@ -16,6 +16,7 @@ from ktp_controller import SETTINGS
 
 __all__ = [
     # Types:
+    "RateLimiter",
     "SessionStore",
     "CappedList",
     # Utils:
@@ -116,6 +117,31 @@ class SessionStore:
     async def delete(self, session_id: str, /) -> None:
         async with redis.from_url(SETTINGS.redis_url) as redis_client:
             await redis_client.delete(self.__key(session_id))
+
+
+class RateLimiter:
+    """Fixed-window rate limiter, e.g. to slow down login brute-forcing."""
+
+    def __init__(self, key: str, max_hits: int, window_sec: int, /) -> None:
+        if max_hits < 1:
+            raise ValueError("max_hits must be greater than zero")
+        if window_sec < 1:
+            raise ValueError("window_sec must be greater than zero")
+        self.__prefix = f"ktp_controller:RateLimiter:{key}"
+        self.__max_hits = max_hits
+        self.__window_sec = window_sec
+
+    async def hit(self, subject: str, /) -> bool:
+        """Records a hit for `subject`.
+
+        Returns whether `subject` is still within its rate limit.
+        """
+        key = f"{self.__prefix}:{subject}"
+        async with redis.from_url(SETTINGS.redis_url) as redis_client:
+            count = await redis_client.incr(key)
+            if count == 1:
+                await redis_client.expire(key, self.__window_sec)
+        return count <= self.__max_hits
 
 
 RAW_ABITTI2_STATS_MESSAGES = CappedList("raw_abitti2_stats_message", 2)

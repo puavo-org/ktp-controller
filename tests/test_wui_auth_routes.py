@@ -3,6 +3,7 @@ import pytest
 
 import ktp_controller.api.client
 import ktp_controller.wui.auth
+import ktp_controller.wui.auth_routes
 import ktp_controller.wui.main
 
 
@@ -87,6 +88,26 @@ def test_post_login_rejects_cross_origin_request(wui_client, mocker):
     )
 
     assert response.status_code == 403
+
+
+def test_post_login_is_rate_limited_per_client(wui_client, mocker):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=_status_report(),
+    )
+    mocker.patch.object(
+        ktp_controller.wui.auth_routes._LOGIN_RATE_LIMITER,
+        "hit",
+        return_value=False,
+    )
+
+    response = wui_client.post(
+        "/login",
+        data={"username": "invigilator1", "password": "wrong"},
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 429
 
 
 def test_logout_clears_session(wui_client, mocker):

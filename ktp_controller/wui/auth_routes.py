@@ -8,6 +8,7 @@ import fastapi.responses
 import fastapi.templating
 
 # Internal imports
+import ktp_controller.redis
 from ktp_controller import SETTINGS
 
 # Relative imports
@@ -29,6 +30,11 @@ _templates = fastapi.templating.Jinja2Templates(
 
 _DEFAULT_NEXT_PATH = "/invigilator/"
 
+# Slows down brute-forcing of the login form. Keyed by the immediate
+# peer address; this app isn't behind nginx yet (see architecture
+# notes), so there's no forwarded-for header to trust instead.
+_LOGIN_RATE_LIMITER = ktp_controller.redis.RateLimiter("login", 10, 300)
+
 
 @router.get("/login", response_class=fastapi.responses.HTMLResponse)
 async def _get_login(
@@ -47,6 +53,14 @@ async def _post_login(
     password: str = fastapi.Form(...),
     next: str = fastapi.Form(_DEFAULT_NEXT_PATH),
 ) -> fastapi.responses.Response:
+    client_ip = request.client.host if request.client is not None else "unknown"
+    if not await _LOGIN_RATE_LIMITER.hit(client_ip):
+        _LOGGER.warning("login rate limit exceeded for %r", client_ip)
+        return fastapi.responses.PlainTextResponse(
+            "Too many login attempts, please try again later.",
+            status_code=fastapi.status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+
     if not await auth.authenticate(username, password):
         return _templates.TemplateResponse(
             request,
