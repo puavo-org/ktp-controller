@@ -5,6 +5,7 @@ import typing
 
 import ktp_controller.api.exam.schemas
 import ktp_controller.api.system.schemas
+import ktp_controller.api.user.schemas
 
 # Internal imports
 import ktp_controller.httpx
@@ -24,6 +25,7 @@ __all__ = [
     "get_current_exam_package",
     "get_locked_exam_packages",
     "set_current_exam_package_state",
+    "get_or_create_user_permissions",
     "get_scheduled_exam",
     "get_scheduled_exam_package",
     "save_exam_info",
@@ -231,6 +233,19 @@ async def get_scheduled_exam_package(
     return typing.cast(
         "dict[str, typing.Any]",
         await _post("/api/v1/exam/get_scheduled_exam_package", **kwargs),
+    )
+
+
+async def get_or_create_user_permissions(
+    username: str, **kwargs: typing.Any
+) -> list[str]:
+    kwargs["json"] = ktp_controller.api.user.schemas.GetOrCreateUserPermissionsData(
+        username=username
+    ).model_dump()
+
+    return typing.cast(
+        "list[str]",
+        await _post("/api/v1/user/get_or_create_user_permissions", **kwargs),
     )
 
 

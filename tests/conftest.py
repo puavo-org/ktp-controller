@@ -13,6 +13,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Internal imports
+import ktp_controller.api.models
 import ktp_controller.schemas
 from ktp_controller.api.database import get_db
 from ktp_controller.api.main import APP
@@ -28,6 +29,22 @@ def db_engine():
         "sqlite:///:memory:", connect_args={"check_same_thread": False}
     )
     Base.metadata.create_all(bind=engine)
+    # Mirrors the seed data inserted by
+    # alembic/versions/bb0203ef063b_add_users_roles_and_permissions.py,
+    # which this in-memory schema bypasses.
+    with sessionmaker(bind=engine)() as db:
+        db.add(
+            ktp_controller.api.models.Role(
+                dbid=None,
+                name="invigilator",
+                permissions=[
+                    ktp_controller.api.models.Permission(
+                        dbid=None, name="wui.invigilator.view"
+                    )
+                ],
+            )
+        )
+        db.commit()
     yield engine
     Base.metadata.drop_all(bind=engine)
 

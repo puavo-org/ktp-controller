@@ -12,6 +12,7 @@ import uvicorn
 import ktp_controller.api.database
 import ktp_controller.api.exam.routes
 import ktp_controller.api.system.routes
+import ktp_controller.api.user.routes
 import ktp_controller.api.utils
 from ktp_controller import SETTINGS
 
@@ -56,6 +57,7 @@ APP = fastapi.FastAPI(lifespan=_lifespan)
 APP.state.pubsub_broadcaster = ktp_controller.api.utils.PubSubBroadcaster()
 APP.include_router(ktp_controller.api.exam.routes.router, prefix="/api/v1/exam")
 APP.include_router(ktp_controller.api.system.routes.router, prefix="/api/v1/system")
+APP.include_router(ktp_controller.api.user.routes.router, prefix="/api/v1/user")
 
 
 def run() -> int:
