@@ -64,11 +64,8 @@ def sanitize_stats_message(stats_message: dict[str, typing.Any]) -> bool:
     return changed
 
 
-def parse_student(
-    student: dict[str, typing.Any],
-    /,
-    *,
-    utcnow: datetime.datetime | None = None,
+def parse_student_state_info(
+    student: dict[str, typing.Any], /, *, utcnow: datetime.datetime | None = None
 ) -> dict[str, typing.Any]:
     if utcnow is None:
         utcnow = ktp_controller.utils.utcnow()
@@ -110,14 +107,31 @@ def parse_student(
         is_active = len(flags) == 0
 
     return {
+        "is_active": is_active,
+        "has_finished": has_finished,
+        "flags": flags,
+    }
+
+
+def parse_student(
+    student: dict[str, typing.Any],
+    /,
+    *,
+    utcnow: datetime.datetime | None = None,
+) -> dict[str, typing.Any]:
+    if utcnow is None:
+        utcnow = ktp_controller.utils.utcnow()
+
+    parsed_student = {
         "uuid": student["studentUuid"],
         "session_uuid": student["sessionUuid"],
         "status": student["studentStatus"],
-        "is_active": is_active,
-        "flags": flags,
-        "has_finished": has_finished,
-        "exam_title": exam_title,
+        "exam_title": student.get("examTitle"),
     }
+
+    parsed_student.update(parse_student_state_info(student), utcnow=utcnow)
+
+    return parsed_student
 
 
 def parse_students(
