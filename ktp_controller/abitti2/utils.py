@@ -64,68 +64,74 @@ def sanitize_stats_message(stats_message: dict[str, typing.Any]) -> bool:
     return changed
 
 
+def parse_student(
+    student: dict[str, typing.Any],
+    /,
+    *,
+    utcnow: datetime.datetime | None = None,
+) -> dict[str, typing.Any]:
+    if utcnow is None:
+        utcnow = ktp_controller.utils.utcnow()
+
+    is_connected = student.get("isConnected", True)
+
+    is_idle = False
+    update_time = student.get("updateTime")
+    if update_time is not None:
+        is_idle = (
+            utcnow - datetime.datetime.fromisoformat(update_time)
+        ).total_seconds() >= 30 * 60
+
+    has_finished = (
+        student.get("examFinished", False) is True
+        or student["sessionStatus"] == "session_ended"
+        or student["sessionStatus"].startswith("exam_finished_by_")
+    )
+
+    is_waiting_for_auth = student.get("studentStatus", "").startswith(
+        "waiting-for-auth"
+    )
+
+    exam_title = student.get("examTitle")
+
+    flags: set[ktp_controller.schemas.StudentFlag] = set()
+
+    if not is_connected:
+        flags.add(ktp_controller.schemas.StudentFlag.DISCONNECTED)
+    if is_waiting_for_auth:
+        flags.add(ktp_controller.schemas.StudentFlag.WAITING_FOR_AUTH)
+    if is_idle:
+        flags.add(ktp_controller.schemas.StudentFlag.IDLE)
+    if exam_title is None:
+        flags.add(ktp_controller.schemas.StudentFlag.UNDEFINED_EXAM)
+
+    if has_finished:
+        is_active = False
+        flags.clear()
+    else:
+        is_active = len(flags) == 0
+
+    return {
+        "uuid": student["studentUuid"],
+        "session_uuid": student["sessionUuid"],
+        "status": student["studentStatus"],
+        "is_active": is_active,
+        "flags": flags,
+        "has_finished": has_finished,
+        "exam_title": exam_title,
+    }
+
+
 def parse_students(
-    sanitized_stats_message: dict[str, typing.Any],
+    stats_message: dict[str, typing.Any],
+    /,
     *,
     utcnow: datetime.datetime | None = None,
 ) -> list[dict[str, typing.Any]]:
     if utcnow is None:
         utcnow = ktp_controller.utils.utcnow()
 
-    students = []
-
-    for student in sanitized_stats_message["data"]["students"]:
-        is_connected = student.get("isConnected", True)
-
-        is_idle = False
-        update_time = student.get("updateTime", None)
-        if update_time is not None:
-            is_idle = (
-                utcnow - datetime.datetime.fromisoformat(update_time)
-            ).total_seconds() >= 30 * 60
-
-        has_finished = (
-            student.get("examFinished", False) is True
-            or student["sessionStatus"] == "session_ended"
-            or student["sessionStatus"].startswith("exam_finished_by_")
-        )
-
-        is_waiting_for_auth = student.get("studentStatus", "").startswith(
-            "waiting-for-auth"
-        )
-
-        exam_title = student.get("examTitle", None)
-
-        flags: set[ktp_controller.schemas.StudentFlag] = set()
-
-        if not is_connected:
-            flags.add(ktp_controller.schemas.StudentFlag.DISCONNECTED)
-        if is_waiting_for_auth:
-            flags.add(ktp_controller.schemas.StudentFlag.WAITING_FOR_AUTH)
-        if is_idle:
-            flags.add(ktp_controller.schemas.StudentFlag.IDLE)
-        if exam_title is None:
-            flags.add(ktp_controller.schemas.StudentFlag.UNDEFINED_EXAM)
-
-        if has_finished:
-            is_active = False
-            flags.clear()
-        else:
-            is_active = len(flags) == 0
-
-        students.append(
-            {
-                "uuid": student["studentUuid"],
-                "session_uuid": student["sessionUuid"],
-                "status": student["studentStatus"],
-                "is_active": is_active,
-                "flags": flags,
-                "has_finished": has_finished,
-                "exam_title": exam_title,
-            }
-        )
-
-    return students
+    return [parse_student(s, utcnow=utcnow) for s in stats_message["data"]["students"]]
 
 
 def validate_security_code(security_code: dict[str, str]) -> None:
