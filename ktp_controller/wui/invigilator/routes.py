@@ -9,6 +9,7 @@ import fastapi.responses
 import fastapi.templating
 
 # Internal imports
+import ktp_controller.abitti2.utils
 import ktp_controller.api.client
 import ktp_controller.wui.auth
 
@@ -27,6 +28,8 @@ _templates = fastapi.templating.Jinja2Templates(
 
 
 async def _get_student_list_items() -> list[schemas.StudentListItem]:
+    utcnow = ktp_controller.utils.utcnow()
+
     raw_abitti2_stats_messages = (
         await ktp_controller.api.client.get_raw_abitti2_stats_messages()
     )
@@ -75,10 +78,22 @@ async def _get_student_list_items() -> list[schemas.StudentListItem]:
 
         exam_title: str = raw_abitti2_student["examTitle"]
 
+        state_info = ktp_controller.abitti2.utils.parse_student_state_info(
+            raw_abitti2_student,
+            utcnow=utcnow,
+        )
+        if state_info["has_finished"]:
+            state = schemas.StudentState.FINISHED
+        elif state_info["is_active"]:
+            state = schemas.StudentState.ACTIVE
+        else:
+            state = schemas.StudentState.FLAGGED
+
         student_list_item = schemas.StudentListItem(
             name=f"{raw_abitti2_student['firstNames']} {raw_abitti2_student['lastName']}",
             birthday=birthday,
             state=state,
+            flags=state_info["flags"],
             last_changed_at=last_changed_at,
             exam_title=exam_title,
         )
@@ -97,6 +112,7 @@ class _StudentListItemSortableField(enum.StrEnum):
     NAME = "name"
     BIRTHDAY = "birthday"
     STATE = "state"
+    FLAGS = "flags"
     LAST_CHANGED_AT = "last_changed_at"
     EXAM_TITLE = "exam_title"
 
@@ -130,7 +146,9 @@ async def _get_invigilator(
 
     order_next = "desc" if order == "asc" else "asc"  # Next time the order is reversed
 
-    columns = [(k, k.replace("_", " ").capitalize()) for k in sortable_keys]
+    columns = [(k, k.replace("_", " ").capitalize(), True) for k in sortable_keys] + [
+        (None, "Action", False)
+    ]
 
     context = {
         "student_list_items": student_list_items,
