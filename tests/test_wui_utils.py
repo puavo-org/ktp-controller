@@ -48,9 +48,9 @@ async def test_registry_notifies_registered_socket():
     websock = _FakeBrowserSocket()
     await registry.register(websock)
 
-    await registry.notify_status_report()
+    await registry.notify_all()
 
-    assert websock.sent == ["status_report"]
+    assert websock.sent == ["abitti2_stats_changed"]
 
 
 @pytest.mark.anyio
@@ -60,7 +60,7 @@ async def test_registry_unregister_stops_notifications():
     await registry.register(websock)
     await registry.unregister(websock)
 
-    await registry.notify_status_report()
+    await registry.notify_all()
 
     assert websock.sent == []
 
@@ -73,40 +73,16 @@ async def test_registry_failed_send_does_not_block_other_sockets():
     await registry.register(failing_websock)
     await registry.register(ok_websock)
 
-    await registry.notify_status_report()
+    await registry.notify_all()
 
-    assert ok_websock.sent == ["status_report"]
+    assert ok_websock.sent == ["abitti2_stats_changed"]
     assert failing_websock.closed_code == 1000
 
 
 @pytest.mark.anyio
-async def test_status_report_listener_notifies_only_on_status_report(mocker):
-    messages = [
-        json.dumps({"kind": "status_report"}),
-        json.dumps({"kind": "ping"}),
-    ]
-    mocker.patch(
-        "ktp_controller.wui.utils.websockets.connect",
-        return_value=_FakeWebsocketConnection(messages),
-    )
-    registry = mocker.Mock()
-    registry.notify_status_report = mocker.AsyncMock()
-
-    task = asyncio.create_task(
-        ktp_controller.wui.utils.status_report_listener(registry)
-    )
-    try:
-        await asyncio.sleep(0.05)
-    finally:
-        task.cancel()
-        with pytest.raises(asyncio.CancelledError):
-            await task
-
-    registry.notify_status_report.assert_awaited_once()
-
-
-@pytest.mark.anyio
-async def test_status_report_listener_notifies_on_abitti2_stats_changed(mocker):
+async def test_raw_abitti2_stats_message_listener_notifies_only_on_status_report(
+    mocker,
+):
     messages = [
         json.dumps({"kind": "abitti2_stats_changed"}),
         json.dumps({"kind": "ping"}),
@@ -116,10 +92,10 @@ async def test_status_report_listener_notifies_on_abitti2_stats_changed(mocker):
         return_value=_FakeWebsocketConnection(messages),
     )
     registry = mocker.Mock()
-    registry.notify_status_report = mocker.AsyncMock()
+    registry.notify_all = mocker.AsyncMock()
 
     task = asyncio.create_task(
-        ktp_controller.wui.utils.status_report_listener(registry)
+        ktp_controller.wui.utils.raw_abitti2_stats_message_listener(registry)
     )
     try:
         await asyncio.sleep(0.05)
@@ -128,11 +104,39 @@ async def test_status_report_listener_notifies_on_abitti2_stats_changed(mocker):
         with pytest.raises(asyncio.CancelledError):
             await task
 
-    registry.notify_status_report.assert_awaited_once()
+    registry.notify_all.assert_awaited_once()
 
 
 @pytest.mark.anyio
-async def test_status_report_listener_backs_off_exponentially(mocker):
+async def test_raw_abitti2_stats_message_listener_notifies_on_abitti2_stats_changed(
+    mocker,
+):
+    messages = [
+        json.dumps({"kind": "abitti2_stats_changed"}),
+        json.dumps({"kind": "ping"}),
+    ]
+    mocker.patch(
+        "ktp_controller.wui.utils.websockets.connect",
+        return_value=_FakeWebsocketConnection(messages),
+    )
+    registry = mocker.Mock()
+    registry.notify_all = mocker.AsyncMock()
+
+    task = asyncio.create_task(
+        ktp_controller.wui.utils.raw_abitti2_stats_message_listener(registry)
+    )
+    try:
+        await asyncio.sleep(0.05)
+    finally:
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+
+    registry.notify_all.assert_awaited_once()
+
+
+@pytest.mark.anyio
+async def test_raw_abitti2_stats_message_listener_backs_off_exponentially(mocker):
     delays = []
 
     async def fake_sleep(delay):
@@ -146,9 +150,9 @@ async def test_status_report_listener_backs_off_exponentially(mocker):
         side_effect=OSError("connection refused"),
     )
     registry = mocker.Mock()
-    registry.notify_status_report = mocker.AsyncMock()
+    registry.notify_all = mocker.AsyncMock()
 
     with pytest.raises(asyncio.CancelledError):
-        await ktp_controller.wui.utils.status_report_listener(registry)
+        await ktp_controller.wui.utils.raw_abitti2_stats_message_listener(registry)
 
     assert delays == [1, 2, 4]

@@ -13,21 +13,14 @@ import ktp_controller.utils
 
 __all__ = [
     "BrowserSocketRegistry",
-    "status_report_listener",
+    "raw_abitti2_stats_message_listener",
 ]
 
 _LOGGER = logging.getLogger(__name__)
 
-_NOTIFY_MESSAGE_KINDS = frozenset(
-    {
-        ktp_controller.messages.MessageKind.STATUS_REPORT,
-        ktp_controller.messages.MessageKind.ABITTI2_STATS_CHANGED,
-    }
-)
-
 
 class BrowserSocketRegistry:
-    """Tracks browser WebSocket connections and notifies them of new status reports.
+    """Tracks browser WebSocket connections and notifies them of new data.
 
     Deliberately minimal: unlike ktp_controller.api.utils.PubSubBroadcaster,
     there is exactly one kind of event to fan out, so no channel/pubsub
@@ -43,10 +36,10 @@ class BrowserSocketRegistry:
     async def unregister(self, websock: fastapi.WebSocket) -> None:
         self.__websocks.discard(websock)
 
-    async def notify_status_report(self) -> None:
+    async def notify_all(self) -> None:
         for websock in self.__websocks.copy():
             try:
-                await websock.send_text("status_report")
+                await websock.send_text("abitti2_stats_changed")
             except Exception as e:
                 _LOGGER.error(
                     "Failed to notify browser websocket %r, closing it: %s",
@@ -64,22 +57,16 @@ class BrowserSocketRegistry:
                     )
 
 
-async def status_report_listener(registry: BrowserSocketRegistry) -> None:
+async def raw_abitti2_stats_message_listener(registry: BrowserSocketRegistry) -> None:
     """Maintains a persistent connection to the API's ui_websocket and
-    notifies `registry` whenever the invigilator student list may need
-    a refresh: on status_report broadcasts, and on
+    notifies `registry` whenever UI may need a refresh: on
     abitti2_stats_changed broadcasts (emitted by the API right after
-    it saves a message into the Redis-backed RAW_ABITTI2_STATS_MESSAGES
-    list that the invigilator student list is actually built from).
+    it saves a message into the Redis-backed
+    RAW_ABITTI2_STATS_MESSAGES list that WUI uses for data views).
 
     Reconnects with exponential backoff on disconnect, mirroring
     ktp_controller.tui.messages.message_loop.
 
-    The registry/listener/browser-event names still say "status
-    report" even though an abitti2_stats_changed message is also a
-    trigger now; treat that as a generic "invigilator page should
-    refresh" signal rather than renaming across the browser JS,
-    templates and tests for what this docstring already covers.
     """
     reconnect_delay = 1
     max_reconnect_delay = 16
@@ -92,8 +79,11 @@ async def status_report_listener(registry: BrowserSocketRegistry) -> None:
                 reconnect_delay = 1
                 async for data in websock:
                     msg_dict = ktp_controller.utils.json_loads_dict(data)
-                    if msg_dict.get("kind") in _NOTIFY_MESSAGE_KINDS:
-                        await registry.notify_status_report()
+                    if (
+                        msg_dict.get("kind")
+                        == ktp_controller.messages.MessageKind.ABITTI2_STATS_CHANGED
+                    ):
+                        await registry.notify_all()
         except Exception as e:
             _LOGGER.warning(
                 "Lost connection to API ui_websocket, reconnecting in %ds: %s",

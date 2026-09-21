@@ -1,7 +1,7 @@
 {% autoescape true %}
 <table id="student-list-table"
        hx-get="?sort_by={{ sort_by }}&order={{ order_now }}"
-       hx-trigger="status-report-update from:body throttle:2s"
+       hx-trigger="student-list-update from:body throttle:2s"
        hx-target="this"
        hx-swap="outerHTML"
        hx-include="#filters"

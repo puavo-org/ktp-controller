@@ -35,7 +35,7 @@ async def _lifespan(app: fastapi.FastAPI) -> collections.abc.AsyncIterator[None]
     _LOGGER.info("Starting KTP Controller WUI...")
 
     status_report_listener_task = asyncio.create_task(
-        ktp_controller.wui.utils.status_report_listener(
+        ktp_controller.wui.utils.raw_abitti2_stats_message_listener(
             app.state.invigilator_ws_registry
         )
     )

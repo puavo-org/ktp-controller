@@ -10,7 +10,7 @@
       reconnectDelay = 1000;
     });
     sock.addEventListener("message", () => {
-      document.body.dispatchEvent(new Event("status-report-update"));
+      document.body.dispatchEvent(new Event("student-list-update"));
     });
     sock.addEventListener("close", () => {
       setTimeout(connect, reconnectDelay);
