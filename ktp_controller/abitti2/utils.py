@@ -129,7 +129,7 @@ def parse_student(
         "exam_title": student.get("examTitle"),
     }
 
-    parsed_student.update(parse_student_state_info(student), utcnow=utcnow)
+    parsed_student.update(parse_student_state_info(student, utcnow=utcnow))
 
     return parsed_student
 
