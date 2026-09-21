@@ -264,8 +264,13 @@ async def _save_raw_abitti2_stats_message(
     message: dict[str, typing.Any],
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ) -> None:
+    try:
+        last_message = await ktp_controller.redis.RAW_ABITTI2_STATS_MESSAGES.lindex(0)
+    except IndexError:
+        last_message = None
     await ktp_controller.redis.RAW_ABITTI2_STATS_MESSAGES.lpush(message)
-    await ktp_controller.ui.broadcast_abitti2_stats_changed()
+    if last_message != message:
+        await ktp_controller.ui.broadcast_abitti2_stats_changed()
 
 
 @router.post(
