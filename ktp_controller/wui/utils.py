@@ -63,6 +63,15 @@ async def status_report_listener(registry: BrowserSocketRegistry) -> None:
 
     Reconnects with exponential backoff on disconnect, mirroring
     ktp_controller.tui.messages.message_loop.
+
+    Note: this notifies on every status_report, but the invigilator
+    student list is actually built from a separate Redis-backed raw
+    Abitti2 stats pipeline (RAW_ABITTI2_STATS_MESSAGES), which isn't
+    updated 1:1 with status_report saves. So the list can be briefly
+    stale after a raw-stats update with no status_report yet, or
+    refresh with no visible change. This is an accepted tradeoff, not
+    a bug: fixing it would mean adding a new API-side broadcast tied
+    to save_raw_abitti2_stats_message instead.
     """
     reconnect_delay = 1
     max_reconnect_delay = 16
