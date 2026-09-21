@@ -24,6 +24,7 @@ __all__ = [
     "PongData",
     "StatusReportData",
     "Data",
+    "Abitti2StatsChangedMessage",
     "CommandMessage",
     "CommandResultMessage",
     "PingMessage",
@@ -70,6 +71,7 @@ class MessageKind(enum.StrEnum):
     COMMAND = "command"
     COMMAND_RESULT = "command_result"
     STATUS_REPORT = "status_report"
+    ABITTI2_STATS_CHANGED = "abitti2_stats_changed"
 
     def __str__(self) -> str:
         return self.value
@@ -130,10 +132,18 @@ class StatusReportMessage(_MessageBase):
     data: StatusReportData
 
 
+class Abitti2StatsChangedMessage(_MessageBase):
+    kind: typing.Literal[MessageKind.ABITTI2_STATS_CHANGED] = (
+        MessageKind.ABITTI2_STATS_CHANGED
+    )
+    data: None = None
+
+
 Message = (
     CommandMessage
     | CommandResultMessage
     | PingMessage
     | PongMessage
     | StatusReportMessage
+    | Abitti2StatsChangedMessage
 )

@@ -18,6 +18,13 @@ __all__ = [
 
 _LOGGER = logging.getLogger(__name__)
 
+_NOTIFY_MESSAGE_KINDS = frozenset(
+    {
+        ktp_controller.messages.MessageKind.STATUS_REPORT,
+        ktp_controller.messages.MessageKind.ABITTI2_STATS_CHANGED,
+    }
+)
+
 
 class BrowserSocketRegistry:
     """Tracks browser WebSocket connections and notifies them of new status reports.
@@ -59,19 +66,20 @@ class BrowserSocketRegistry:
 
 async def status_report_listener(registry: BrowserSocketRegistry) -> None:
     """Maintains a persistent connection to the API's ui_websocket and
-    notifies `registry` whenever a status_report message is broadcast.
+    notifies `registry` whenever the invigilator student list may need
+    a refresh: on status_report broadcasts, and on
+    abitti2_stats_changed broadcasts (emitted by the API right after
+    it saves a message into the Redis-backed RAW_ABITTI2_STATS_MESSAGES
+    list that the invigilator student list is actually built from).
 
     Reconnects with exponential backoff on disconnect, mirroring
     ktp_controller.tui.messages.message_loop.
 
-    Note: this notifies on every status_report, but the invigilator
-    student list is actually built from a separate Redis-backed raw
-    Abitti2 stats pipeline (RAW_ABITTI2_STATS_MESSAGES), which isn't
-    updated 1:1 with status_report saves. So the list can be briefly
-    stale after a raw-stats update with no status_report yet, or
-    refresh with no visible change. This is an accepted tradeoff, not
-    a bug: fixing it would mean adding a new API-side broadcast tied
-    to save_raw_abitti2_stats_message instead.
+    The registry/listener/browser-event names still say "status
+    report" even though an abitti2_stats_changed message is also a
+    trigger now; treat that as a generic "invigilator page should
+    refresh" signal rather than renaming across the browser JS,
+    templates and tests for what this docstring already covers.
     """
     reconnect_delay = 1
     max_reconnect_delay = 16
@@ -84,10 +92,7 @@ async def status_report_listener(registry: BrowserSocketRegistry) -> None:
                 reconnect_delay = 1
                 async for data in websock:
                     msg_dict = ktp_controller.utils.json_loads_dict(data)
-                    if (
-                        msg_dict.get("kind")
-                        == ktp_controller.messages.MessageKind.STATUS_REPORT
-                    ):
+                    if msg_dict.get("kind") in _NOTIFY_MESSAGE_KINDS:
                         await registry.notify_status_report()
         except Exception as e:
             _LOGGER.warning(

@@ -265,6 +265,7 @@ async def _save_raw_abitti2_stats_message(
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ) -> None:
     await ktp_controller.redis.RAW_ABITTI2_STATS_MESSAGES.lpush(message)
+    await ktp_controller.ui.broadcast_abitti2_stats_changed()
 
 
 @router.post(

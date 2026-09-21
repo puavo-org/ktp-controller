@@ -1,7 +1,9 @@
 # Standard library imports
+import asyncio
 import datetime
 
 import ktp_controller.messages
+import ktp_controller.redis
 
 # Third-party imports
 # import fastapi
@@ -1023,3 +1025,22 @@ def test_save_status_report__multiple_reports_many_more_than_max_count(
     assert_response(response, expected_status_code=200)
 
     assert response.json() == status_reports[-1]
+
+
+def test_save_raw_abitti2_stats_message(client, testdb, mocker):
+    broadcast_mock = mocker.patch(
+        "ktp_controller.ui.broadcast_abitti2_stats_changed",
+        new=mocker.AsyncMock(return_value="some-uuid"),
+    )
+
+    message = {"some": "raw-abitti2-stats-payload"}
+
+    response = client.post(
+        "/api/v1/system/save_raw_abitti2_stats_message", json=message
+    )
+    assert_response(response, expected_status_code=200)
+
+    stored = asyncio.run(ktp_controller.redis.RAW_ABITTI2_STATS_MESSAGES.getall())
+    assert stored[0] == message
+
+    broadcast_mock.assert_awaited_once_with()

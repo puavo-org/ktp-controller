@@ -13,6 +13,7 @@ import ktp_controller.schemas
 
 __all__ = [
     "PUBSUB_CHANNEL",
+    "broadcast_abitti2_stats_changed",
     "broadcast_status_report",
     "forward_command_message",
     "forward_command_result_message",
@@ -48,3 +49,11 @@ async def broadcast_status_report(status_report_dict: dict[str, typing.Any]) -> 
     )
 
     return await ktp_controller.redis.pubsub_send(status_report_message, PUBSUB_CHANNEL)
+
+
+async def broadcast_abitti2_stats_changed() -> str:
+    abitti2_stats_changed_message = ktp_controller.messages.Abitti2StatsChangedMessage()
+
+    return await ktp_controller.redis.pubsub_send(
+        abitti2_stats_changed_message, PUBSUB_CHANNEL
+    )

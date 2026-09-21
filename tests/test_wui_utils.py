@@ -106,6 +106,32 @@ async def test_status_report_listener_notifies_only_on_status_report(mocker):
 
 
 @pytest.mark.anyio
+async def test_status_report_listener_notifies_on_abitti2_stats_changed(mocker):
+    messages = [
+        json.dumps({"kind": "abitti2_stats_changed"}),
+        json.dumps({"kind": "ping"}),
+    ]
+    mocker.patch(
+        "ktp_controller.wui.utils.websockets.connect",
+        return_value=_FakeWebsocketConnection(messages),
+    )
+    registry = mocker.Mock()
+    registry.notify_status_report = mocker.AsyncMock()
+
+    task = asyncio.create_task(
+        ktp_controller.wui.utils.status_report_listener(registry)
+    )
+    try:
+        await asyncio.sleep(0.05)
+    finally:
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+
+    registry.notify_status_report.assert_awaited_once()
+
+
+@pytest.mark.anyio
 async def test_status_report_listener_backs_off_exponentially(mocker):
     delays = []
 
