@@ -2,6 +2,7 @@
 import datetime
 import enum
 import os.path
+import typing
 
 # Third-party imports
 import fastapi
@@ -12,6 +13,7 @@ import fastapi.templating
 import ktp_controller.abitti2.utils
 import ktp_controller.api.client
 import ktp_controller.wui.auth
+import ktp_controller.wui.utils
 
 # Relative imports
 from . import schemas
@@ -170,3 +172,38 @@ async def _get_invigilator(
     return _templates.TemplateResponse(
         request, name="invigilator_index.html.j2", context=context
     )
+
+
+@router.websocket("/ws")
+async def _invigilator_ws(websock: fastapi.WebSocket) -> None:
+    try:
+        # get_current_session() only reads .cookies, which fastapi.Request
+        # and fastapi.WebSocket both implement identically.
+        session = await ktp_controller.wui.auth.get_current_session(
+            typing.cast(fastapi.Request, websock)
+        )
+    except ktp_controller.wui.auth.NotAuthenticatedError:
+        await websock.close(code=4401)
+        return
+    if "wui.invigilator.view" not in session.permissions:
+        await websock.close(code=4403)
+        return
+
+    # TODO: validate the Origin header against Host (CSWSH defense-in-depth),
+    # reusing OriginCheckMiddleware's origin-parsing logic once extracted
+    # into a shared helper. Skipped for now: consistent with the API's own
+    # ui_websocket/agent_websocket endpoints, and the session cookie is
+    # already SameSite=Lax.
+    await websock.accept()
+    registry: ktp_controller.wui.utils.BrowserSocketRegistry = (
+        websock.app.state.invigilator_ws_registry
+    )
+    await registry.register(websock)
+    try:
+        while True:
+            # Clients send nothing; this just detects disconnects.
+            await websock.receive_text()
+    except fastapi.WebSocketDisconnect:
+        pass
+    finally:
+        await registry.unregister(websock)

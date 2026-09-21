@@ -1,5 +1,11 @@
 {% autoescape true %}
-<table id="student-list-table" border="1" style="border-collapse: collapse; width: 100%; text-align: left;">
+<table id="student-list-table"
+       hx-get="?sort_by={{ sort_by }}&order={{ order_now }}"
+       hx-trigger="status-report-update from:body throttle:2s"
+       hx-target="this"
+       hx-swap="outerHTML"
+       hx-include="#filters"
+       border="1" style="border-collapse: collapse; width: 100%; text-align: left;">
     <thead>
         <tr style="background-color: #f2f2f2;">
         {% for column_key, column_label, is_sortable in columns %}
