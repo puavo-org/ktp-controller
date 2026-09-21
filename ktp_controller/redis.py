@@ -70,6 +70,13 @@ class CappedList:
                 pipeline.ltrim(self.__key, 0, self.__max_size - 1)
                 await pipeline.execute()
 
+    async def lindex(self, index: int, /) -> typing.Any:
+        async with redis.from_url(SETTINGS.redis_url) as redis_client:
+            json_str = await redis_client.lindex(self.__key, index)
+            if json_str is None:
+                raise IndexError(index)
+            return json.loads(json_str)
+
     async def getall(self, /) -> list[typing.Any]:
         async with redis.from_url(SETTINGS.redis_url) as redis_client:
             json_strs = await redis_client.lrange(self.__key, 0, -1)
