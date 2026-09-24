@@ -54,7 +54,9 @@ async def _lifespan(app: fastapi.FastAPI) -> collections.abc.AsyncIterator[None]
 
 
 APP = fastapi.FastAPI(lifespan=_lifespan)
-APP.state.pubsub_broadcaster = ktp_controller.api.utils.PubSubBroadcaster()
+APP.state.pubsub_broadcaster = ktp_controller.api.utils.PubSubBroadcaster(
+    redis_url=SETTINGS.redis_url
+)
 APP.include_router(ktp_controller.api.exam.routes.router, prefix="/api/v1/exam")
 APP.include_router(ktp_controller.api.system.routes.router, prefix="/api/v1/system")
 APP.include_router(ktp_controller.api.user.routes.router, prefix="/api/v1/user")
