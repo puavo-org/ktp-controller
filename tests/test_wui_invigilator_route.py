@@ -54,6 +54,56 @@ def test_invigilator_view_allowed_with_permission(wui_client, override_session, 
     assert b'action="/logout"' in response.content
 
 
+_STUDENT_UUID = "0b7f4c5e-2a55-4c34-9a8c-7e4f0d3a1b21"
+_SESSION_UUID = "5d2e8f1a-6b3c-4d9e-8f7a-1c2b3d4e5f60"
+
+
+def _raw_abitti2_stats_messages():
+    return [
+        {
+            "data": {
+                "students": [
+                    {
+                        "studentUuid": _STUDENT_UUID,
+                        "sessionUuid": _SESSION_UUID,
+                        "firstNames": "Maija",
+                        "lastName": "Meikäläinen",
+                        "studentBd": "010105",
+                        "studentStatus": "exam-in-progress",
+                        "sessionStatus": "exam_in_progress",
+                        "updateTime": None,
+                        "examFinishedAt": None,
+                        "examTitle": "Matematiikka",
+                    }
+                ]
+            }
+        }
+    ]
+
+
+def test_invigilator_view_renders_student_without_uuid_columns(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages(),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert "Maija Meikäläinen" in response.text
+    assert "Student uuid" not in response.text
+    assert "Session uuid" not in response.text
+
+
 def test_invigilator_view_forbidden_without_permission(wui_client, override_session):
     override_session(
         ktp_controller.wui.auth.Session(

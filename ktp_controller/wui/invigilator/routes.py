@@ -98,6 +98,8 @@ async def _get_student_list_items() -> list[schemas.StudentListItem]:
             flags=state_info["flags"],
             last_changed_at=last_changed_at,
             exam_title=exam_title,
+            student_uuid=raw_abitti2_student["studentUuid"],
+            session_uuid=raw_abitti2_student["sessionUuid"],
         )
 
         student_list_items.append(student_list_item)
@@ -130,8 +132,6 @@ async def _get_invigilator(
         ktp_controller.wui.auth.get_current_session
     ),
 ) -> fastapi.responses.HTMLResponse:
-    sortable_keys = list(schemas.StudentListItem.schema()["properties"])
-
     student_list_items = sorted(
         await _get_student_list_items(),
         key=lambda x: getattr(x, sort_by),
@@ -148,9 +148,10 @@ async def _get_invigilator(
 
     order_next = "desc" if order == "asc" else "asc"  # Next time the order is reversed
 
-    columns = [(k, k.replace("_", " ").capitalize(), True) for k in sortable_keys] + [
-        (None, "Action", False)
-    ]
+    columns = [
+        (field.value, field.value.replace("_", " ").capitalize(), True)
+        for field in _StudentListItemSortableField
+    ] + [(None, "Action", False)]
 
     context = {
         "student_list_items": student_list_items,

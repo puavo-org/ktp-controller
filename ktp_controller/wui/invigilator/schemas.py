@@ -25,3 +25,5 @@ class StudentListItem(pydantic.BaseModel):
     flags: set[pydantic.StrictStr]
     last_changed_at: ktp_controller.pydantic.DateTime | None
     exam_title: pydantic.StrictStr | None
+    student_uuid: pydantic.StrictStr
+    session_uuid: pydantic.StrictStr
