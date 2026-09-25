@@ -33,7 +33,7 @@
             <td style="padding: 8px;">{{ student_list_item.flags | join(', ') or '-' }}</td>
             <td style="padding: 8px;">{{ '-' if not student_list_item.last_changed_at else student_list_item.last_changed_at.strftime('%Y-%m-%d %H:%M %Z') }}</td>
             <td style="padding: 8px;">{{ '-' if not student_list_item.exam_title else student_list_item.exam_title }}</td>
-            <td style="padding: 8px;">{% if student_list_item.state != 'finished' %}<button hx-post="/actions/end-exam" hx-vals='{}' hx-target="#student-list-table-body" hx-swap="innerHTML">End exam</button>{% endif %}</td>
+            <td style="padding: 8px;">{% if can_end_exam and student_list_item.state != 'finished' %}<button hx-post="/invigilator/actions/end-exam" hx-vals='{{ {"session_uuid": student_list_item.session_uuid, "student_uuid": student_list_item.student_uuid} | tojson }}' hx-confirm="End exam for {{ student_list_item.name }}?" hx-swap="none">End exam</button>{% else %}-{% endif %}</td>
         </tr>
         {% else %}
         <tr>

@@ -173,3 +173,164 @@ def test_invigilator_ws_registers_and_unregisters(wui_client, mocker):
 
     register_mock.assert_awaited_once()
     unregister_mock.assert_awaited_once()
+
+
+_SAME_ORIGIN_HEADERS = {"origin": "http://testserver"}
+_END_EXAM_FORM = {"session_uuid": _SESSION_UUID, "student_uuid": _STUDENT_UUID}
+
+
+def test_invigilator_view_shows_end_exam_button_with_permission(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages(),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view", "wui.invigilator.end-exam"}),
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert 'hx-post="/invigilator/actions/end-exam"' in response.text
+    assert _STUDENT_UUID in response.text
+    assert _SESSION_UUID in response.text
+
+
+def test_invigilator_view_hides_end_exam_button_without_permission(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages(),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert "/invigilator/actions/end-exam" not in response.text
+
+
+def test_end_exam_requires_login(wui_client, mocker):
+    end_student_exam_mock = mocker.patch(
+        "ktp_controller.abitti2.client.end_student_exam", new=mocker.AsyncMock()
+    )
+
+    response = wui_client.post(
+        "/invigilator/actions/end-exam",
+        data=_END_EXAM_FORM,
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"].startswith("/login")
+    end_student_exam_mock.assert_not_called()
+
+
+def test_end_exam_forbidden_without_permission(wui_client, override_session, mocker):
+    end_student_exam_mock = mocker.patch(
+        "ktp_controller.abitti2.client.end_student_exam", new=mocker.AsyncMock()
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+        )
+    )
+
+    response = wui_client.post(
+        "/invigilator/actions/end-exam",
+        data=_END_EXAM_FORM,
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 403
+    end_student_exam_mock.assert_not_called()
+
+
+def test_end_exam_calls_abitti2(wui_client, override_session, mocker):
+    end_student_exam_mock = mocker.patch(
+        "ktp_controller.abitti2.client.end_student_exam", new=mocker.AsyncMock()
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.end-exam"}),
+        )
+    )
+
+    response = wui_client.post(
+        "/invigilator/actions/end-exam",
+        data=_END_EXAM_FORM,
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 202
+    assert response.content == b""
+    end_student_exam_mock.assert_awaited_once_with(
+        session_uuid=_SESSION_UUID, student_uuid=_STUDENT_UUID
+    )
+
+
+def test_end_exam_rejects_invalid_uuid(wui_client, override_session, mocker):
+    end_student_exam_mock = mocker.patch(
+        "ktp_controller.abitti2.client.end_student_exam", new=mocker.AsyncMock()
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.end-exam"}),
+        )
+    )
+
+    response = wui_client.post(
+        "/invigilator/actions/end-exam",
+        data={**_END_EXAM_FORM, "student_uuid": "not-a-uuid"},
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 422
+    end_student_exam_mock.assert_not_called()
+
+
+def test_end_exam_logs_abitti2_failure(wui_client, override_session, mocker, caplog):
+    mocker.patch(
+        "ktp_controller.abitti2.client.end_student_exam",
+        new=mocker.AsyncMock(side_effect=RuntimeError("abitti2 is down")),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.end-exam"}),
+        )
+    )
+
+    response = wui_client.post(
+        "/invigilator/actions/end-exam",
+        data=_END_EXAM_FORM,
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 202
+    assert any(
+        record.levelname == "ERROR"
+        and "Failed to end exam" in record.getMessage()
+        and record.exc_info is not None
+        for record in caplog.records
+    )

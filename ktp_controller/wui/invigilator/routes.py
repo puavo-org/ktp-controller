@@ -1,8 +1,10 @@
 # Standard library imports
 import datetime
 import enum
+import logging
 import os.path
 import typing
+import uuid
 
 # Third-party imports
 import fastapi
@@ -10,6 +12,7 @@ import fastapi.responses
 import fastapi.templating
 
 # Internal imports
+import ktp_controller.abitti2.client
 import ktp_controller.abitti2.utils
 import ktp_controller.api.client
 import ktp_controller.wui.auth
@@ -21,6 +24,8 @@ from . import schemas
 __all__ = [
     "router",
 ]
+
+_LOGGER = logging.getLogger(__name__)
 
 router = fastapi.APIRouter(tags=["htmx"])
 _thisdir = os.path.dirname(__file__)
@@ -161,6 +166,7 @@ async def _get_invigilator(
         "order_next": order_next,
         "name_birthday_filter": name_birthday_filter,
         "user": session.username,
+        "can_end_exam": "wui.invigilator.end-exam" in session.permissions,
     }
 
     # If the request comes from htmx, return only the table partial
@@ -173,6 +179,56 @@ async def _get_invigilator(
     return _templates.TemplateResponse(
         request, name="invigilator_index.html.j2", context=context
     )
+
+
+async def _end_student_exam(
+    *, session_uuid: str, student_uuid: str, username: str
+) -> None:
+    _LOGGER.info(
+        "User %r is ending exam of student %s (session %s)...",
+        username,
+        student_uuid,
+        session_uuid,
+    )
+    try:
+        await ktp_controller.abitti2.client.end_student_exam(
+            session_uuid=session_uuid, student_uuid=student_uuid
+        )
+    except Exception:
+        # Runs after the response has been sent, so there is nobody to
+        # report the failure to but the log.
+        _LOGGER.exception(
+            "Failed to end exam of student %s (session %s)",
+            student_uuid,
+            session_uuid,
+        )
+        return
+    _LOGGER.info("Ended exam of student %s (session %s).", student_uuid, session_uuid)
+
+
+@router.post(
+    "/actions/end-exam",
+    status_code=fastapi.status.HTTP_202_ACCEPTED,
+    response_class=fastapi.responses.Response,
+)
+@ktp_controller.wui.auth.require_permission("wui.invigilator.end-exam")
+async def _post_end_exam(
+    background_tasks: fastapi.BackgroundTasks,
+    session_uuid: uuid.UUID = fastapi.Form(...),
+    student_uuid: uuid.UUID = fastapi.Form(...),
+    session: ktp_controller.wui.auth.Session = fastapi.Depends(
+        ktp_controller.wui.auth.get_current_session
+    ),
+) -> fastapi.responses.Response:
+    # Fire-and-forget: the student list refreshes itself via
+    # /invigilator/ws once Abitti2 reports the change.
+    background_tasks.add_task(
+        _end_student_exam,
+        session_uuid=str(session_uuid),
+        student_uuid=str(student_uuid),
+        username=session.username,
+    )
+    return fastapi.responses.Response(status_code=fastapi.status.HTTP_202_ACCEPTED)
 
 
 @router.websocket("/ws")
