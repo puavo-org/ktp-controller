@@ -30,7 +30,8 @@ def db_engine():
     )
     Base.metadata.create_all(bind=engine)
     # Mirrors the seed data inserted by
-    # alembic/versions/bb0203ef063b_add_users_roles_and_permissions.py,
+    # alembic/versions/bb0203ef063b_add_users_roles_and_permissions.py and
+    # alembic/versions/90f7a03d459e_add_wui_invigilator_end_exam_permission.py,
     # which this in-memory schema bypasses.
     with sessionmaker(bind=engine)() as db:
         db.add(
@@ -40,7 +41,10 @@ def db_engine():
                 permissions=[
                     ktp_controller.api.models.Permission(
                         dbid=None, name="wui.invigilator.view"
-                    )
+                    ),
+                    ktp_controller.api.models.Permission(
+                        dbid=None, name="wui.invigilator.end-exam"
+                    ),
                 ],
             )
         )

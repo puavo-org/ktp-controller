@@ -8,7 +8,10 @@ def test_get_or_create_user_permissions_creates_user_with_default_role(client, t
     )
 
     assert response.status_code == 200
-    assert response.json() == ["wui.invigilator.view"]
+    assert response.json() == [
+        "wui.invigilator.end-exam",
+        "wui.invigilator.view",
+    ]
 
     db_user = testdb.query(models.User).filter_by(username="alice").one()
     assert [role.name for role in db_user.roles] == ["invigilator"]
