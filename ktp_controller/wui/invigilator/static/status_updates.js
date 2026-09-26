@@ -23,6 +23,10 @@
     });
     sock.addEventListener("close", () => {
       hasDisconnected = true;
+      const overlay = document.getElementById("connection-lost-overlay");
+      if (overlay !== null) {
+        overlay.classList.add("is-visible");
+      }
       setTimeout(connect, reconnectDelay);
       reconnectDelay = Math.min(reconnectDelay * 2, maxReconnectDelay);
     });

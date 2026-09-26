@@ -4,11 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ _("Invigilator's view") }}</title>
+    <style>
+      #connection-lost-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(5px);
+        background: rgba(0, 0, 0, 0.75);
+        color: white;
+        font-size: 1.5em;
+        text-align: center;
+        z-index: 1000;
+      }
+      #connection-lost-overlay.is-visible {
+        display: flex;
+      }
+    </style>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="/invigilator/static/status_updates.js"></script>
     <script src="/invigilator/static/locale_switcher.js"></script>
 </head>
 <body style="font-family: Arial, sans-serif; margin: 40px;">
+
+    <div id="connection-lost-overlay">{{ _("Connection lost. The page will reload automatically once it's back.") }}</div>
 
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>{% trans user=user %}Logged in as <strong>{{ user }}</strong>{% endtrans %}</div>

@@ -23,15 +23,6 @@ Unify/merge `ktp_controller.wui.utils.BrowserSocketRegistry` with
 `ktp_controller.api.utils.PubSubBroadcaster` and place it for example
 in `ktp_controller.redis`. Naturally, adapt all call sites.
 
-## TODO4
-
-WUI: Show simple and elegant "connection lost (a bit more descriptive
-short text instead, I just couldn't come up with something
-immediately)" overlay on all invigilator index page when the websocket
-connection is lost. The overlay should be somewhat transparent to give
-the user a hint that there's more to the page but it's temporarily
-unavailable.
-
 ## TODO5
 
 WUI: hx-confirm on end-exam button action seems very sluggish and is

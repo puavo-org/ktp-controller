@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-26 19:02+0300\n"
+"POT-Creation-Date: 2026-09-26 21:19+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -86,21 +86,25 @@ msgstr "Tuntematon koe"
 msgid "Invigilator's view"
 msgstr "Valvojan näkymä"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:13
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:30
+msgid "Connection lost. The page will reload automatically once it's back."
+msgstr "Yhteys katkesi. Sivu latautuu automaattisesti uudelleen, kun yhteys palautuu."
+
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:33
 #, python-format
 msgid "Logged in as <strong>%(user)s</strong>"
 msgstr "Kirjautuneena käyttäjänä <strong>%(user)s</strong>"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:16
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:36
 #: ktp_controller/wui/templates/login.html.j2:23
 msgid "Log out"
 msgstr "Kirjaudu ulos"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:28
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:48
 msgid "Students"
 msgstr "Kokelaat"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:36
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:56
 msgid "Filter by student name or birthday..."
 msgstr "Suodata nimen tai syntymäajan mukaan..."
 
@@ -144,3 +148,4 @@ msgstr "Käyttäjätunnus"
 #: ktp_controller/wui/templates/login.html.j2:40
 msgid "Password"
 msgstr "Salasana"
+
