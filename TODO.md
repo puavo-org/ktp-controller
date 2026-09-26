@@ -23,15 +23,6 @@ Unify/merge `ktp_controller.wui.utils.BrowserSocketRegistry` with
 `ktp_controller.api.utils.PubSubBroadcaster` and place it for example
 in `ktp_controller.redis`. Naturally, adapt all call sites.
 
-## TODO3
-
-WUI: Reload the whole page when /invigilator/ws websocket connection
-is re-established.
-
-Reasoning: if the websocket is disconnected, it might be cause the app
-server has been restarted. In that case, there's probably new code
-available. Reload is required.
-
 ## TODO4
 
 WUI: Show simple and elegant "connection lost (a bit more descriptive
