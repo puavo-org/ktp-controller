@@ -1,5 +1,5 @@
 (function () {
-  document.body.addEventListener("click", (event) => {
+  document.addEventListener("click", (event) => {
     const trigger = event.target.closest(".end-exam-button, .end-exam-confirm-no");
     if (trigger === null) {
       return;
