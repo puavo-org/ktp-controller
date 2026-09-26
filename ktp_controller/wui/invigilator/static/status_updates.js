@@ -8,10 +8,22 @@
   // likely means the app server restarted (new code available), so
   // reload instead of silently resuming.
   let hasDisconnected = false;
+  // Showing the overlay is delayed and cancellable: a normal page
+  // navigation (e.g. the locale switcher's form submit) also closes
+  // the socket as the page unloads, which would otherwise flash the
+  // overlay for one frame right before the new page loads. Delaying
+  // it lets that kind of momentary close resolve (page gone, or
+  // socket back open) before the overlay ever gets a chance to paint.
+  const overlayShowDelayMs = 500;
+  let overlayShowTimer = null;
 
   function connect() {
     const sock = new WebSocket(wsUrl);
     sock.addEventListener("open", () => {
+      if (overlayShowTimer !== null) {
+        clearTimeout(overlayShowTimer);
+        overlayShowTimer = null;
+      }
       if (hasDisconnected) {
         location.reload();
         return;
@@ -23,10 +35,12 @@
     });
     sock.addEventListener("close", () => {
       hasDisconnected = true;
-      const overlay = document.getElementById("connection-lost-overlay");
-      if (overlay !== null) {
-        overlay.classList.add("is-visible");
-      }
+      overlayShowTimer = setTimeout(() => {
+        const overlay = document.getElementById("connection-lost-overlay");
+        if (overlay !== null) {
+          overlay.classList.add("is-visible");
+        }
+      }, overlayShowDelayMs);
       setTimeout(connect, reconnectDelay);
       reconnectDelay = Math.min(reconnectDelay * 2, maxReconnectDelay);
     });
