@@ -6,6 +6,7 @@
     <title>{{ _("Invigilator's view") }}</title>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="/invigilator/static/status_updates.js"></script>
+    <script src="/invigilator/static/locale_switcher.js"></script>
 </head>
 <body style="font-family: Arial, sans-serif; margin: 40px;">
 
@@ -17,9 +18,9 @@
             </form>
             <form method="post" action="/locale" style="margin: 0;">
                 <input type="hidden" name="next" value="{{ request.url.path }}">
-                <select name="locale" onchange="this.form.submit()" style="margin-left: 10px;">
-                    <option value="fi" {{ "selected" if locale == "fi" }}>Suomi</option>
-                    <option value="en" {{ "selected" if locale == "en" }}>English</option>
+                <select name="locale" style="margin-left: 10px;">
+                    <option value="fi" {{ "selected" if locale == "fi" else "" }}>Suomi</option>
+                    <option value="en" {{ "selected" if locale == "en" else "" }}>English</option>
                 </select>
             </form>
         </div>

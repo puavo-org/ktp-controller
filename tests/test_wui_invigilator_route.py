@@ -125,6 +125,35 @@ def test_invigilator_view_uses_session_locale(wui_client, override_session, mock
     assert "Birthday" in response.text
 
 
+def test_invigilator_view_locale_switcher_has_no_inline_script(
+    wui_client, override_session, mocker
+):
+    # The page's CSP has no 'unsafe-inline' in script-src, so the
+    # language switcher must not rely on an inline event-handler
+    # attribute (e.g. onchange="..."), which browsers silently drop.
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert 'action="/locale"' in response.text
+    assert "onchange=" not in response.text
+    assert '<script src="/invigilator/static/locale_switcher.js">' in response.text
+
+    static_response = wui_client.get("/invigilator/static/locale_switcher.js")
+    assert static_response.status_code == 200
+
+
 def test_invigilator_view_forbidden_without_permission(wui_client, override_session):
     override_session(
         ktp_controller.wui.auth.Session(
