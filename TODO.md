@@ -23,9 +23,3 @@ Unify/merge `ktp_controller.wui.utils.BrowserSocketRegistry` with
 `ktp_controller.api.utils.PubSubBroadcaster` and place it for example
 in `ktp_controller.redis`. Naturally, adapt all call sites.
 
-## TODO5
-
-WUI: hx-confirm on end-exam button action seems very sluggish and is
-quite ugly also. Replace it with: "when end-exam button is clicked,
-render a text: 'Really end exam?' and two buttons Yes and No in the
-same cell.
