@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-26 21:19+0300\n"
+"POT-Creation-Date: 2026-09-26 21:47+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -86,36 +86,46 @@ msgstr "Tuntematon koe"
 msgid "Invigilator's view"
 msgstr "Valvojan näkymä"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:30
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:31
 msgid "Connection lost. The page will reload automatically once it's back."
-msgstr "Yhteys katkesi. Sivu latautuu automaattisesti uudelleen, kun yhteys palautuu."
+msgstr ""
+"Yhteys katkesi. Sivu latautuu automaattisesti uudelleen, kun yhteys "
+"palautuu."
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:33
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:34
 #, python-format
 msgid "Logged in as <strong>%(user)s</strong>"
 msgstr "Kirjautuneena käyttäjänä <strong>%(user)s</strong>"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:36
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:37
 #: ktp_controller/wui/templates/login.html.j2:23
 msgid "Log out"
 msgstr "Kirjaudu ulos"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:48
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:49
 msgid "Students"
 msgstr "Kokelaat"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:56
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:57
 msgid "Filter by student name or birthday..."
 msgstr "Suodata nimen tai syntymäajan mukaan..."
 
 #: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:36
-#, python-format
-msgid "End exam for %(name)s?"
-msgstr "Päätetäänkö kokelaan %(name)s koe?"
-
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:36
 msgid "End exam"
 msgstr "Päätä koe"
+
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:36
+#, python-format
+msgid "Really end exam for %(name)s?"
+msgstr "Päätetäänkö varmasti kokelaan %(name)s koe?"
+
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:36
+msgid "Yes"
+msgstr "Kyllä"
+
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:36
+msgid "No"
+msgstr "Ei"
 
 #: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:40
 #, python-format
@@ -148,4 +158,7 @@ msgstr "Käyttäjätunnus"
 #: ktp_controller/wui/templates/login.html.j2:40
 msgid "Password"
 msgstr "Salasana"
+
+#~ msgid "End exam for %(name)s?"
+#~ msgstr "Päätetäänkö kokelaan %(name)s koe?"
 
