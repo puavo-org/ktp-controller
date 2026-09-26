@@ -28,6 +28,7 @@ dependencies = [
     "validators",
     "textual",
     "websockets",
+    "babel>=2.18.0",
 ]
 repository = "https://github.com/puavo-org/ktp-controller"
 
