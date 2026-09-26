@@ -99,7 +99,7 @@ All fields are always present.
 
 | Field                     | Type                                                | Description                                                                                   | Example                          | Notes             |
 | ------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------- | ----------------- |
-| `version`                 | `string`                                            |                                                                                               |                                  | const: `0.6.0rc1` |
+| `version`                 | `string`                                            |                                                                                               |                                  | const: `0.8.0rc1` |
 | `started_at`              | `datetime`                                          | When the program has started.                                                                 | `"2026-05-03T16:28:51.975+0000"` |                   |
 | `is_auto_control_enabled` | `boolean`                                           |                                                                                               | `true`                           |                   |
 | `cached_files`            | [CachedFiles](#cachedfiles)                         |                                                                                               |                                  |                   |
@@ -151,25 +151,32 @@ Enum — one of: `ready`, `running`, `stopping`, `stopped`, `archived`
 
 All fields are always present.
 
-| Field                                              | Type      | Description | Example | Notes        |
-| -------------------------------------------------- | --------- | ----------- | ------- | ------------ |
-| `examomatic_host`                                  | `string`  |             |         |              |
-| `examomatic_username`                              | `string`  |             |         |              |
-| `examomatic_password_file`                         | `string`  |             |         |              |
-| `examomatic_use_tls`                               | `boolean` |             |         |              |
-| `examomatic_ping_interval_sec`                     | `integer` |             |         |              |
-| `examomatic_min_status_report_interval_sec`        | `integer` |             |         | minimum: `0` |
-| `answer_transfer_interval_sec`                     | `integer` |             |         |              |
-| `refresh_exams_interval_sec`                       | `integer` |             |         |              |
-| `domain`                                           | `string`  |             |         |              |
-| `hostname`                                         | `string`  |             |         |              |
-| `id`                                               | `integer` |             |         |              |
-| `api_host`                                         | `string`  |             |         |              |
-| `api_port`                                         | `integer` |             |         |              |
-| `logging_level`                                    | `string`  |             |         |              |
-| `db_path`                                          | `string`  |             |         |              |
-| `abitti2_allow_students_to_use_browsers`           | `boolean` |             |         |              |
-| `abitti2_change_student_access_code_automatically` | `boolean` |             |         |              |
+| Field                                              | Type                | Description | Example | Notes        |
+| -------------------------------------------------- | ------------------- | ----------- | ------- | ------------ |
+| `examomatic_host`                                  | `string`            |             |         |              |
+| `examomatic_username`                              | `string`            |             |         |              |
+| `examomatic_password_file`                         | `string`            |             |         |              |
+| `examomatic_use_tls`                               | `boolean`           |             |         |              |
+| `examomatic_ping_interval_sec`                     | `integer`           |             |         |              |
+| `examomatic_min_status_report_interval_sec`        | `integer`           |             |         | minimum: `0` |
+| `answer_transfer_interval_sec`                     | `integer`           |             |         |              |
+| `refresh_exams_interval_sec`                       | `integer`           |             |         |              |
+| `domain`                                           | `string`            |             |         |              |
+| `hostname`                                         | `string`            |             |         |              |
+| `id`                                               | `integer`           |             |         |              |
+| `api_host`                                         | `string`            |             |         |              |
+| `api_port`                                         | `integer`           |             |         |              |
+| `wui_host`                                         | `string`            |             |         |              |
+| `wui_port`                                         | `integer`           |             |         |              |
+| `logging_level`                                    | `string`            |             |         |              |
+| `db_path`                                          | `string`            |             |         |              |
+| `abitti2_allow_students_to_use_browsers`           | `boolean`           |             |         |              |
+| `abitti2_change_student_access_code_automatically` | `boolean`           |             |         |              |
+| `redis_url`                                        | `string`            |             |         |              |
+| `session_ttl_sec`                                  | `integer`           |             |         |              |
+| `session_cookie_secure`                            | `boolean`           |             |         |              |
+| `default_locale`                                   | `string`            |             |         |              |
+| `supported_locales`                                | `array` of `string` |             |         |              |
 
 #### KTPControllerStats
 
