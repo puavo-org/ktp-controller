@@ -21,6 +21,11 @@
       #connection-lost-overlay.is-visible {
         display: flex;
       }
+      .connection-lost-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
     </style>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="/invigilator/static/status_updates.js"></script>
@@ -29,7 +34,12 @@
 </head>
 <body style="font-family: Arial, sans-serif; margin: 40px;">
 
-    <div id="connection-lost-overlay">{{ _("Connection lost. The page will reload automatically once it's back.") }}</div>
+    <div id="connection-lost-overlay">
+        <div class="connection-lost-content">
+            <p>{{ _("Connection lost at") }} <span id="connection-lost-timestamp"></span></p>
+            <p>{{ _("The page will reload automatically once it's back.") }}</p>
+        </div>
+    </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>{% trans user=user %}Logged in as <strong>{{ user }}</strong>{% endtrans %}</div>

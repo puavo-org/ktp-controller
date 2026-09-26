@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-26 21:47+0300\n"
+"POT-Creation-Date: 2026-09-26 23:08+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -86,25 +86,29 @@ msgstr "Undefined exam"
 msgid "Invigilator's view"
 msgstr "Invigilator's view"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:31
-msgid "Connection lost. The page will reload automatically once it's back."
-msgstr "Connection lost. The page will reload automatically once it's back."
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:39
+msgid "Connection lost at"
+msgstr "Connection lost at"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:34
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:40
+msgid "The page will reload automatically once it's back."
+msgstr "The page will reload automatically once it's back."
+
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:45
 #, python-format
 msgid "Logged in as <strong>%(user)s</strong>"
 msgstr "Logged in as <strong>%(user)s</strong>"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:37
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:48
 #: ktp_controller/wui/templates/login.html.j2:23
 msgid "Log out"
 msgstr "Log out"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:49
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:60
 msgid "Students"
 msgstr "Students"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:57
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:68
 msgid "Filter by student name or birthday..."
 msgstr "Filter by student name or birthday..."
 
