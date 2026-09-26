@@ -5,7 +5,7 @@ TODO2 and so on. When an item is done, remove it from this document.
 
 When adding new items, always update the following line to define the
 ID of the next TODO item.
-Next ID: TODO6
+Next ID: TODO7
 
 ## TODO1
 Examine and handle currently unhandled messages from Abitti2 1.37.1:
@@ -23,3 +23,6 @@ Unify/merge `ktp_controller.wui.utils.BrowserSocketRegistry` with
 `ktp_controller.api.utils.PubSubBroadcaster` and place it for example
 in `ktp_controller.redis`. Naturally, adapt all call sites.
 
+## TODO6
+
+WUI: Add Swedish translations
