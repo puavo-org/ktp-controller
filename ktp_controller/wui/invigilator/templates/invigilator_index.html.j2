@@ -1,30 +1,39 @@
 {% autoescape true %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ locale }}">
 <head>
     <meta charset="UTF-8">
-    <title>Invigilator's view</title>
+    <title>{{ _("Invigilator's view") }}</title>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="/invigilator/static/status_updates.js"></script>
 </head>
 <body style="font-family: Arial, sans-serif; margin: 40px;">
 
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div>Logged in as <strong>{{ user }}</strong></div>
-        <form method="post" action="/logout" style="margin: 0;">
-            <button type="submit">Log out</button>
-        </form>
+        <div>{% trans user=user %}Logged in as <strong>{{ user }}</strong>{% endtrans %}</div>
+        <div style="display: flex; align-items: center;">
+            <form method="post" action="/logout" style="margin: 0;">
+                <button type="submit">{{ _("Log out") }}</button>
+            </form>
+            <form method="post" action="/locale" style="margin: 0;">
+                <input type="hidden" name="next" value="{{ request.url.path }}">
+                <select name="locale" onchange="this.form.submit()" style="margin-left: 10px;">
+                    <option value="fi" {{ "selected" if locale == "fi" }}>Suomi</option>
+                    <option value="en" {{ "selected" if locale == "en" }}>English</option>
+                </select>
+            </form>
+        </div>
     </div>
 
-    <h2>Students</h2>
-    
+    <h2>{{ _("Students") }}</h2>
+
     <div id="filters" style="margin-bottom: 20px; display: flex; gap: 15px;">
         <div>
             <input type="text"
                    id="name_birthday_filter"
                    name="name_birthday_filter"
                    value="{{ name_birthday_filter }}"
-                   placeholder="Filter by student name or birthday..."
+                   placeholder="{{ _('Filter by student name or birthday...') }}"
                    style="min-width: 32ch;"
                    hx-get=""
                    hx-trigger="keyup changed delay:350ms"

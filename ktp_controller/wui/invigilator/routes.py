@@ -15,7 +15,9 @@ import fastapi.templating
 import ktp_controller.abitti2.client
 import ktp_controller.abitti2.utils
 import ktp_controller.api.client
+import ktp_controller.schemas
 import ktp_controller.wui.auth
+import ktp_controller.wui.i18n
 import ktp_controller.wui.utils
 
 # Relative imports
@@ -30,8 +32,14 @@ _LOGGER = logging.getLogger(__name__)
 router = fastapi.APIRouter(tags=["htmx"])
 _thisdir = os.path.dirname(__file__)
 _templates = fastapi.templating.Jinja2Templates(
-    directory=os.path.join(_thisdir, "templates")
+    directory=os.path.join(_thisdir, "templates"),
+    context_processors=[ktp_controller.wui.i18n.template_context_processor],
 )
+_templates.env.add_extension("jinja2.ext.i18n")
+_templates.env.install_null_translations(newstyle=True)  # type: ignore[attr-defined]
+_templates.env.filters["localize_date"] = ktp_controller.wui.i18n.localize_date
+_templates.env.filters["localize_datetime"] = ktp_controller.wui.i18n.localize_datetime
+_templates.env.filters["translate_labels"] = ktp_controller.wui.i18n.translate_labels
 
 
 async def _get_student_list_items() -> list[schemas.StudentListItem]:
@@ -153,14 +161,39 @@ async def _get_invigilator(
 
     order_next = "desc" if order == "asc" else "asc"  # Next time the order is reversed
 
+    request.state.locale = session.locale
+    _ = ktp_controller.wui.i18n.get_gettext(session.locale)
+
+    column_labels = {
+        _StudentListItemSortableField.NAME: _("Name"),
+        _StudentListItemSortableField.BIRTHDAY: _("Birthday"),
+        _StudentListItemSortableField.STATE: _("State"),
+        _StudentListItemSortableField.FLAGS: _("Flags"),
+        _StudentListItemSortableField.LAST_CHANGED_AT: _("Last changed at"),
+        _StudentListItemSortableField.EXAM_TITLE: _("Exam title"),
+    }
     columns = [
-        (field.value, field.value.replace("_", " ").capitalize(), True)
+        (field.value, column_labels[field], True)
         for field in _StudentListItemSortableField
-    ] + [(None, "Action", False)]
+    ] + [(None, _("Action"), False)]
+
+    state_labels = {
+        schemas.StudentState.FINISHED: _("Finished"),
+        schemas.StudentState.ACTIVE: _("Active"),
+        schemas.StudentState.FLAGGED: _("Flagged"),
+    }
+    flag_labels = {
+        ktp_controller.schemas.StudentFlag.DISCONNECTED: _("Disconnected"),
+        ktp_controller.schemas.StudentFlag.IDLE: _("Idle"),
+        ktp_controller.schemas.StudentFlag.WAITING_FOR_AUTH: _("Waiting for auth"),
+        ktp_controller.schemas.StudentFlag.UNDEFINED_EXAM: _("Undefined exam"),
+    }
 
     context = {
         "student_list_items": student_list_items,
         "columns": columns,
+        "state_labels": state_labels,
+        "flag_labels": flag_labels,
         "sort_by": sort_by,
         "order_now": order,
         "order_next": order_next,

@@ -28,16 +28,16 @@
         {% for student_list_item in student_list_items %}
         <tr>
             <td style="padding: 8px;">{{ student_list_item.name }}</td>
-            <td style="padding: 8px;">{{ student_list_item.birthday.isoformat() }}</td>
-            <td style="padding: 8px;">{{ student_list_item.state.capitalize() }}</td>
-            <td style="padding: 8px;">{{ student_list_item.flags | join(', ') or '-' }}</td>
-            <td style="padding: 8px;">{{ '-' if not student_list_item.last_changed_at else student_list_item.last_changed_at.strftime('%Y-%m-%d %H:%M %Z') }}</td>
+            <td style="padding: 8px;">{{ student_list_item.birthday | localize_date(locale) }}</td>
+            <td style="padding: 8px;">{{ state_labels[student_list_item.state] }}</td>
+            <td style="padding: 8px;">{{ student_list_item.flags | translate_labels(flag_labels) }}</td>
+            <td style="padding: 8px;">{{ '-' if not student_list_item.last_changed_at else student_list_item.last_changed_at | localize_datetime(locale) }}</td>
             <td style="padding: 8px;">{{ '-' if not student_list_item.exam_title else student_list_item.exam_title }}</td>
-            <td style="padding: 8px;">{% if can_end_exam and student_list_item.state != 'finished' %}<button hx-post="/invigilator/actions/end-exam" hx-vals='{{ {"session_uuid": student_list_item.session_uuid, "student_uuid": student_list_item.student_uuid} | tojson }}' hx-confirm="End exam for {{ student_list_item.name }}?" hx-swap="none">End exam</button>{% else %}-{% endif %}</td>
+            <td style="padding: 8px;">{% if can_end_exam and student_list_item.state != 'finished' %}<button hx-post="/invigilator/actions/end-exam" hx-vals='{{ {"session_uuid": student_list_item.session_uuid, "student_uuid": student_list_item.student_uuid} | tojson }}' hx-confirm="{% trans name=student_list_item.name %}End exam for {{ name }}?{% endtrans %}" hx-swap="none">{{ _("End exam") }}</button>{% else %}-{% endif %}</td>
         </tr>
         {% else %}
         <tr>
-            <td colspan="{{ columns | length }}" style="padding: 16px; text-align: center; color: #666;">No students{% if name_birthday_filter %}{{ " matching '" ~ name_birthday_filter ~ "'" }}{% endif %}</td>
+            <td colspan="{{ columns | length }}" style="padding: 16px; text-align: center; color: #666;">{% if name_birthday_filter %}{{ _("No students matching '%(query)s'", query=name_birthday_filter) }}{% else %}{{ _("No students") }}{% endif %}</td>
         </tr>
         {% endfor %}
     </tbody>

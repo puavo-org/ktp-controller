@@ -104,6 +104,27 @@ def test_invigilator_view_renders_student_without_uuid_columns(
     assert "Session uuid" not in response.text
 
 
+def test_invigilator_view_uses_session_locale(wui_client, override_session, mocker):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert '<html lang="en">' in response.text
+    assert "Birthday" in response.text
+
+
 def test_invigilator_view_forbidden_without_permission(wui_client, override_session):
     override_session(
         ktp_controller.wui.auth.Session(
