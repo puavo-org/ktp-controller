@@ -98,6 +98,15 @@ class Settings(BaseSettings):
     redis_url: str = "redis://127.0.0.1"
     session_ttl_sec: PositiveInt = 1800
     session_cookie_secure: StrictBool = True
+    default_locale: str = "fi"
+    supported_locales: list[str] = ["fi", "en"]
+
+    @field_validator("supported_locales", mode="before")
+    @classmethod
+    def _validate_supported_locales(cls, v: typing.Any) -> typing.Any:
+        if isinstance(v, str):
+            return [x.strip() for x in v.split(",") if x.strip()]
+        return v
 
     @field_validator("examomatic_use_tls", mode="before")
     @classmethod

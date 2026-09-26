@@ -110,6 +110,14 @@ class SessionStore:
             )
         return session_id
 
+    async def set(self, session_id: str, data: dict[str, typing.Any], /) -> None:
+        async with redis.from_url(SETTINGS.redis_url) as redis_client:
+            await redis_client.set(
+                self.__key(session_id),
+                json.dumps(data, ensure_ascii=True),
+                ex=self.__ttl_sec,
+            )
+
     async def get(self, session_id: str, /) -> dict[str, typing.Any] | None:
         async with redis.from_url(SETTINGS.redis_url) as redis_client:
             json_str = await redis_client.get(self.__key(session_id))

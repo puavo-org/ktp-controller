@@ -77,9 +77,13 @@ async def test_create_session_stores_permissions_from_api(mocker):
         return_value=["wui.invigilator.view"],
     )
 
-    session_id = await auth.create_session("alice")
+    session_id = await auth.create_session("alice", locale="fi")
     try:
         data = await auth._SESSION_STORE.get(session_id)
-        assert data == {"username": "alice", "permissions": ["wui.invigilator.view"]}
+        assert data == {
+            "username": "alice",
+            "permissions": ["wui.invigilator.view"],
+            "locale": "fi",
+        }
     finally:
         await auth.destroy_session(session_id)

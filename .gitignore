@@ -11,3 +11,4 @@ flycheck_*
 /chain_result.tmp
 /dump.rdb
 /.python-version
+/ktp_controller/wui/locale/messages.pot

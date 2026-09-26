@@ -1,22 +1,29 @@
 {% autoescape true %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ locale }}">
 <head>
     <meta charset="UTF-8">
-    <title>Log in</title>
+    <title>{{ _("Log in") }}</title>
 </head>
 <body style="font-family: Arial, sans-serif; margin: 40px; max-width: 320px;">
 
-    {% if session %}
-    <h2>Logged in</h2>
+    {% if not session %}
+    <div style="margin-bottom: 10px; font-size: 0.9em;">
+        <a href="/login?next={{ next | urlencode }}&lang=fi">Suomi</a> |
+        <a href="/login?next={{ next | urlencode }}&lang=en">English</a>
+    </div>
+    {% endif %}
 
-    <p>Logged in as <strong>{{ session.username }}</strong>.</p>
+    {% if session %}
+    <h2>{{ _("Logged in") }}</h2>
+
+    <p>{% trans username=session.username %}Logged in as <strong>{{ username }}</strong>.{% endtrans %}</p>
 
     <form method="post" action="/logout">
-        <button type="submit">Log out</button>
+        <button type="submit">{{ _("Log out") }}</button>
     </form>
     {% else %}
-    <h2>Log in</h2>
+    <h2>{{ _("Log in") }}</h2>
 
     {% if error %}
     <p style="color: red;">{{ error }}</p>
@@ -24,15 +31,16 @@
 
     <form method="post" action="/login">
         <input type="hidden" name="next" value="{{ next }}">
+        <input type="hidden" name="lang" value="{{ locale }}">
         <div style="margin-bottom: 10px;">
-            <label for="username">Username</label><br>
+            <label for="username">{{ _("Username") }}</label><br>
             <input type="text" id="username" name="username" required autofocus>
         </div>
         <div style="margin-bottom: 10px;">
-            <label for="password">Password</label><br>
+            <label for="password">{{ _("Password") }}</label><br>
             <input type="password" id="password" name="password" required>
         </div>
-        <button type="submit">Log in</button>
+        <button type="submit">{{ _("Log in") }}</button>
     </form>
     {% endif %}
 

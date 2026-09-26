@@ -28,6 +28,7 @@ __all__ = [
     "get_current_session",
     "get_optional_session",
     "require_permission",
+    "set_session_locale",
 ]
 
 
@@ -50,6 +51,7 @@ class Session(typing.NamedTuple):
     session_id: str
     username: str
     permissions: frozenset[str]
+    locale: str = SETTINGS.default_locale
 
 
 # Utils:
@@ -76,17 +78,25 @@ async def authenticate(username: str, password: str) -> bool:
     return is_correct_username and is_correct_password
 
 
-async def create_session(username: str) -> str:
+async def create_session(username: str, *, locale: str) -> str:
     permissions = await ktp_controller.api.client.get_or_create_user_permissions(
         username
     )
     return await _SESSION_STORE.create(
-        {"username": username, "permissions": permissions}
+        {"username": username, "permissions": permissions, "locale": locale}
     )
 
 
 async def destroy_session(session_id: str) -> None:
     await _SESSION_STORE.delete(session_id)
+
+
+async def set_session_locale(session_id: str, locale: str) -> None:
+    data = await _SESSION_STORE.get(session_id)
+    if data is None:
+        return
+    data["locale"] = locale
+    await _SESSION_STORE.set(session_id, data)
 
 
 async def get_optional_session(request: fastapi.Request) -> Session | None:
@@ -109,6 +119,7 @@ async def get_optional_session(request: fastapi.Request) -> Session | None:
         session_id=session_id,
         username=data["username"],
         permissions=frozenset(data["permissions"]),
+        locale=data.get("locale", SETTINGS.default_locale),
     )
 
 

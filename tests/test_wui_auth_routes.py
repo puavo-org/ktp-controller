@@ -48,7 +48,9 @@ def test_get_login_shows_logged_in_state_with_valid_session(wui_client, mocker):
         "get_or_create_user_permissions",
         return_value=["wui.invigilator.view"],
     )
-    session_id = asyncio.run(ktp_controller.wui.auth.create_session("alice"))
+    session_id = asyncio.run(
+        ktp_controller.wui.auth.create_session("alice", locale="fi")
+    )
     try:
         response = wui_client.get(
             "/login",
@@ -140,6 +142,57 @@ def test_post_login_is_rate_limited_per_client(wui_client, mocker):
     )
 
     assert response.status_code == 429
+
+
+def test_login_page_lang_query_param_overrides_accept_language(wui_client):
+    response = wui_client.get("/login?lang=en", headers={"Accept-Language": "fi"})
+
+    assert response.status_code == 200
+    assert b'<html lang="en">' in response.content
+    assert b"Log in" in response.content
+
+
+def test_post_locale_persists_choice_in_session(wui_client, mocker):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=_status_report(),
+    )
+    mocker.patch.object(
+        ktp_controller.api.client,
+        "get_or_create_user_permissions",
+        return_value=["wui.invigilator.view"],
+    )
+
+    login_response = wui_client.post(
+        "/login",
+        data={"username": "invigilator1", "password": "s3cret"},
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+    session_cookie = login_response.cookies[ktp_controller.wui.auth.SESSION_COOKIE_NAME]
+
+    locale_response = wui_client.post(
+        "/locale",
+        data={"locale": "en", "next": "/login"},
+        cookies={ktp_controller.wui.auth.SESSION_COOKIE_NAME: session_cookie},
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+    assert locale_response.status_code == 303
+
+    response = wui_client.get(
+        "/login",
+        cookies={ktp_controller.wui.auth.SESSION_COOKIE_NAME: session_cookie},
+    )
+    assert b'<html lang="en">' in response.content
+
+
+def test_post_locale_rejects_unsupported_locale(wui_client):
+    response = wui_client.post(
+        "/locale",
+        data={"locale": "de", "next": "/login"},
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 422
 
 
 def test_logout_clears_session(wui_client, mocker):

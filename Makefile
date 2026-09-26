@@ -22,8 +22,26 @@ check-alembic:
 check-types:
 	uv run mypy
 
+.PHONY: i18n-extract
+i18n-extract:
+	uv run pybabel extract -F ktp_controller/wui/babel.cfg \
+		-o ktp_controller/wui/locale/messages.pot ktp_controller/wui
+
+.PHONY: i18n-update
+i18n-update: i18n-extract
+	uv run pybabel update -i ktp_controller/wui/locale/messages.pot \
+		-d ktp_controller/wui/locale -D messages --no-fuzzy-matching
+
+.PHONY: i18n-compile
+i18n-compile:
+	uv run pybabel compile -d ktp_controller/wui/locale -D messages --statistics
+
+.PHONY: check-i18n
+check-i18n: i18n-compile
+	git diff --exit-code ktp_controller/wui/locale
+
 .PHONY: check
-check: check-format check-alembic check-types
+check: check-format check-alembic check-types check-i18n
 	uv run ruff check
 
 .PHONY: .pytest
