@@ -43,7 +43,7 @@ async def _get_student_list_items() -> list[schemas.StudentListItem]:
     if len(raw_abitti2_stats_messages) == 0:
         return []
 
-    last_raw_abitti2_stats_message = raw_abitti2_stats_messages[-1]
+    last_raw_abitti2_stats_message = raw_abitti2_stats_messages[0]
 
     try:
         raw_abitti2_students = last_raw_abitti2_stats_message["data"]["students"]
