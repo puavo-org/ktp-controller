@@ -2,7 +2,7 @@
   const scheme = location.protocol === "https:" ? "wss" : "ws";
   const wsUrl = `${scheme}://${location.host}/invigilator/ws`;
   let reconnectDelay = 1000;
-  const maxReconnectDelay = 16000;
+  const maxReconnectDelay = 8000;
   // Set once the socket has disconnected at least once. Distinguishes
   // a reconnect from the initial page-load connection: a reconnect
   // likely means the app server restarted (new code available), so

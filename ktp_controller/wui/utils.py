@@ -69,7 +69,7 @@ async def raw_abitti2_stats_message_listener(registry: BrowserSocketRegistry) ->
 
     """
     reconnect_delay = 1
-    max_reconnect_delay = 16
+    max_reconnect_delay = 8
 
     while True:
         try:
