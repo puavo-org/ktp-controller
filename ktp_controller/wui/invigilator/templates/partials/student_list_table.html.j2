@@ -32,7 +32,7 @@
             <td>{{ (student_list_item.flags | translate_labels(flag_labels)) if student_list_item.state == "flagged" else state_labels[student_list_item.state] }}</td>
             <td>{{ '-' if not student_list_item.last_changed_at else student_list_item.last_changed_at | localize_datetime(locale) }}</td>
             <td>{{ '-' if not student_list_item.exam_title else student_list_item.exam_title }}</td>
-            <td>{% if can_end_exam and student_list_item.state != 'finished' %}<span class="end-exam-cell"><button type="button" class="end-exam-button">{{ _("End exam") }}</button><span class="end-exam-confirm-box" hidden>{% trans name=student_list_item.name %}Really end exam for {{ name }}?{% endtrans %} <button class="end-exam-confirm-yes" hx-post="/invigilator/actions/end-exam" hx-vals='{{ {"session_uuid": student_list_item.session_uuid, "student_uuid": student_list_item.student_uuid} | tojson }}' hx-swap="none">{{ _("Yes") }}</button> <button type="button" class="end-exam-confirm-no">{{ _("No") }}</button></span></span>{% else %}-{% endif %}</td>
+            <td>{% if can_end_exam and student_list_item.state != 'finished' %}<button type="button" class="end-exam-button" data-name="{{ student_list_item.name }}" data-session-uuid="{{ student_list_item.session_uuid }}" data-student-uuid="{{ student_list_item.student_uuid }}">{{ _("End exam") }}</button>{% else %}-{% endif %}</td>
         </tr>
         {% else %}
         <tr>

@@ -269,10 +269,10 @@ def test_invigilator_view_shows_end_exam_button_with_permission(
 
     assert response.status_code == 200
     assert 'hx-post="/invigilator/actions/end-exam"' in response.text
-    assert _STUDENT_UUID in response.text
-    assert _SESSION_UUID in response.text
+    assert f'data-session-uuid="{_SESSION_UUID}"' in response.text
+    assert f'data-student-uuid="{_STUDENT_UUID}"' in response.text
     assert "hx-confirm" not in response.text
-    assert 'class="end-exam-confirm-box"' in response.text
+    assert 'id="end-exam-confirm-overlay"' in response.text
     assert 'class="end-exam-confirm-yes"' in response.text
     assert 'class="end-exam-confirm-no"' in response.text
 

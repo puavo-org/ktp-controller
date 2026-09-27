@@ -7,7 +7,7 @@
     <title>{{ _("Invigilator's view") }}</title>
     <link rel="stylesheet" href="/static/pico.min.css">
     <style>
-      #connection-lost-overlay {
+      .modal-overlay {
         display: none;
         position: fixed;
         inset: 0;
@@ -15,18 +15,26 @@
         justify-content: center;
         backdrop-filter: blur(5px);
         background: rgba(0, 0, 0, 0.75);
-        color: white;
-        font-size: 1.5em;
         text-align: center;
         z-index: 1000;
       }
-      #connection-lost-overlay.is-visible {
+      .modal-overlay.is-visible {
         display: flex;
       }
-      .connection-lost-content {
+      .modal-overlay-content {
         display: flex;
         flex-direction: column;
         align-items: center;
+      }
+      #connection-lost-overlay {
+        color: white;
+        font-size: 1.5em;
+      }
+      #end-exam-confirm-overlay .modal-overlay-content {
+        background: var(--pico-card-background-color);
+        color: var(--pico-color);
+        padding: var(--pico-spacing) calc(var(--pico-spacing) * 2);
+        border-radius: var(--pico-border-radius);
       }
       header nav {
         align-items: center;
@@ -52,12 +60,25 @@
 </head>
 <body>
 
-    <div id="connection-lost-overlay">
-        <div class="connection-lost-content">
+    <div id="connection-lost-overlay" class="modal-overlay">
+        <div class="modal-overlay-content">
             <p>{{ _("Connection lost at") }} <span id="connection-lost-timestamp"></span></p>
             <p>{{ _("The page will reload automatically once it's back.") }}</p>
         </div>
     </div>
+
+    {% if can_end_exam %}
+    <div id="end-exam-confirm-overlay" class="modal-overlay">
+        <div class="modal-overlay-content">
+            <p>{% trans %}Really end exam for <strong id="end-exam-confirm-name"></strong>?{% endtrans %}</p>
+            <button class="end-exam-confirm-yes"
+                    hx-post="/invigilator/actions/end-exam"
+                    hx-vals="js:{session_uuid: document.getElementById('end-exam-confirm-overlay').dataset.sessionUuid, student_uuid: document.getElementById('end-exam-confirm-overlay').dataset.studentUuid}"
+                    hx-swap="none">{{ _("Yes") }}</button>
+            <button type="button" class="end-exam-confirm-no">{{ _("No") }}</button>
+        </div>
+    </div>
+    {% endif %}
 
     <header class="container">
         <nav>

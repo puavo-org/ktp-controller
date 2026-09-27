@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-27 20:43+0300\n"
+"POT-Creation-Date: 2026-09-27 21:10+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -82,52 +82,51 @@ msgstr "Tuntematon ongelma"
 msgid "Invigilator's view"
 msgstr "Valvojan näkymä"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:57
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:65
 msgid "Connection lost at"
 msgstr "Yhteys katkesi"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:58
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:66
 msgid "The page will reload automatically once it's back."
 msgstr "Sivu latautuu automaattisesti uudelleen, kun yhteys palautuu."
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:65
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:73
+msgid "Really end exam for <strong id=\"end-exam-confirm-name\"></strong>?"
+msgstr "Päätetäänkö varmasti kokelaan <strong id=\"end-exam-confirm-name\"></strong> koe?"
+
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:77
+msgid "Yes"
+msgstr "Kyllä"
+
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:78
+msgid "No"
+msgstr "Ei"
+
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:86
 #, python-format
 msgid "Logged in as <strong>%(user)s</strong>"
 msgstr "Kirjautuneena käyttäjänä <strong>%(user)s</strong>"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:71
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:92
 msgid "Language"
 msgstr "Kieli"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:80
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:101
 #: ktp_controller/wui/templates/login.html.j2:34
 msgid "Log out"
 msgstr "Kirjaudu ulos"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:89
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:110
 msgid "Students"
 msgstr "Kokelaat"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:96
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:117
 msgid "Filter by student name or birthday..."
 msgstr "Suodata nimen tai syntymäajan mukaan..."
 
 #: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:35
 msgid "End exam"
 msgstr "Päätä koe"
-
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:35
-#, python-format
-msgid "Really end exam for %(name)s?"
-msgstr "Päätetäänkö varmasti kokelaan %(name)s koe?"
-
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:35
-msgid "Yes"
-msgstr "Kyllä"
-
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:35
-msgid "No"
-msgstr "Ei"
 
 #: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:39
 #, python-format
@@ -169,4 +168,7 @@ msgstr "Salasana"
 
 #~ msgid "Flagged"
 #~ msgstr "Vaatii huomiota"
+
+#~ msgid "Really end exam for %(name)s?"
+#~ msgstr "Päätetäänkö varmasti kokelaan %(name)s koe?"
 
