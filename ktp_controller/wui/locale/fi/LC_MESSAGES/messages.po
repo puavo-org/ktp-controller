@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-27 17:35+0300\n"
+"POT-Creation-Date: 2026-09-27 20:43+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -78,33 +78,37 @@ msgstr "Tuntematon koe"
 msgid "Unknown issue"
 msgstr "Tuntematon ongelma"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:6
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:7
 msgid "Invigilator's view"
 msgstr "Valvojan näkymä"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:39
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:57
 msgid "Connection lost at"
 msgstr "Yhteys katkesi"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:40
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:58
 msgid "The page will reload automatically once it's back."
 msgstr "Sivu latautuu automaattisesti uudelleen, kun yhteys palautuu."
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:45
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:65
 #, python-format
 msgid "Logged in as <strong>%(user)s</strong>"
 msgstr "Kirjautuneena käyttäjänä <strong>%(user)s</strong>"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:48
-#: ktp_controller/wui/templates/login.html.j2:23
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:71
+msgid "Language"
+msgstr "Kieli"
+
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:80
+#: ktp_controller/wui/templates/login.html.j2:34
 msgid "Log out"
 msgstr "Kirjaudu ulos"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:60
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:89
 msgid "Students"
 msgstr "Kokelaat"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:68
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:96
 msgid "Filter by student name or birthday..."
 msgstr "Suodata nimen tai syntymäajan mukaan..."
 
@@ -134,26 +138,26 @@ msgstr "Ei hakua '%(query)s' vastaavia kokelaita"
 msgid "No students"
 msgstr "Ei kokelaita"
 
-#: ktp_controller/wui/templates/login.html.j2:6
-#: ktp_controller/wui/templates/login.html.j2:26
-#: ktp_controller/wui/templates/login.html.j2:43
+#: ktp_controller/wui/templates/login.html.j2:7
+#: ktp_controller/wui/templates/login.html.j2:37
+#: ktp_controller/wui/templates/login.html.j2:50
 msgid "Log in"
 msgstr "Kirjaudu sisään"
 
-#: ktp_controller/wui/templates/login.html.j2:18
+#: ktp_controller/wui/templates/login.html.j2:29
 msgid "Logged in"
 msgstr "Kirjauduttu sisään"
 
-#: ktp_controller/wui/templates/login.html.j2:20
+#: ktp_controller/wui/templates/login.html.j2:31
 #, python-format
 msgid "Logged in as <strong>%(username)s</strong>."
 msgstr "Kirjautuneena käyttäjänä <strong>%(username)s</strong>."
 
-#: ktp_controller/wui/templates/login.html.j2:36
+#: ktp_controller/wui/templates/login.html.j2:46
 msgid "Username"
 msgstr "Käyttäjätunnus"
 
-#: ktp_controller/wui/templates/login.html.j2:40
+#: ktp_controller/wui/templates/login.html.j2:48
 msgid "Password"
 msgstr "Salasana"
 

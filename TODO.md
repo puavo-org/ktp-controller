@@ -22,7 +22,3 @@ Sep 26 2026 17:03:29 testvirtkan1 supervisord: ktp-controller-agent WARNING:2026
 Unify/merge `ktp_controller.wui.utils.BrowserSocketRegistry` with
 `ktp_controller.api.utils.PubSubBroadcaster` and place it for example
 in `ktp_controller.redis`. Naturally, adapt all call sites.
-
-## TODO6
-
-WUI: Add Swedish translations

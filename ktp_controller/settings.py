@@ -99,7 +99,7 @@ class Settings(BaseSettings):
     session_ttl_sec: PositiveInt = 1800
     session_cookie_secure: StrictBool = True
     default_locale: str = "fi"
-    supported_locales: list[str] = ["fi", "en"]
+    supported_locales: list[str] = ["fi", "en", "sv"]
 
     @field_validator("supported_locales", mode="before")
     @classmethod

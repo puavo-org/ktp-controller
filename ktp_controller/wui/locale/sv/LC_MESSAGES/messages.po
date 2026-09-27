@@ -1,4 +1,4 @@
-# English translations for PROJECT.
+# Swedish translations for PROJECT.
 # Copyright (C) 2026 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
@@ -8,10 +8,10 @@ msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-09-27 20:43+0300\n"
-"PO-Revision-Date: 2026-09-26 19:02+0300\n"
+"PO-Revision-Date: 2026-09-27 20:42+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
-"Language-Team: en <LL@li.org>\n"
+"Language: sv\n"
+"Language-Team: sv <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -20,153 +20,143 @@ msgstr ""
 
 #: ktp_controller/wui/auth_routes.py:70
 msgid "Too many login attempts, please try again later."
-msgstr "Too many login attempts, please try again later."
+msgstr "För många inloggningsförsök, försök igen senare."
 
 #: ktp_controller/wui/auth_routes.py:80
 msgid "Incorrect username or password"
-msgstr "Incorrect username or password"
+msgstr "Fel användarnamn eller lösenord"
 
 #: ktp_controller/wui/invigilator/routes.py:167
 msgid "Name"
-msgstr "Name"
+msgstr "Namn"
 
 #: ktp_controller/wui/invigilator/routes.py:168
 msgid "Birthday"
-msgstr "Birthday"
+msgstr "Födelsedatum"
 
 #: ktp_controller/wui/invigilator/routes.py:169
 msgid "State"
-msgstr "State"
+msgstr "Status"
 
 #: ktp_controller/wui/invigilator/routes.py:170
 msgid "Last changed at"
-msgstr "Last changed at"
+msgstr "Senast ändrad"
 
 #: ktp_controller/wui/invigilator/routes.py:171
 msgid "Exam title"
-msgstr "Exam title"
+msgstr "Provets namn"
 
 #: ktp_controller/wui/invigilator/routes.py:176
 msgid "Action"
-msgstr "Action"
+msgstr "Åtgärd"
 
 #: ktp_controller/wui/invigilator/routes.py:179
 msgid "Finished"
-msgstr "Finished"
+msgstr "Avslutad"
 
 #: ktp_controller/wui/invigilator/routes.py:180
 msgid "Active"
-msgstr "Active"
+msgstr "Aktiv"
 
 #: ktp_controller/wui/invigilator/routes.py:183
 msgid "Disconnected"
-msgstr "Disconnected"
+msgstr "Frånkopplad"
 
 #: ktp_controller/wui/invigilator/routes.py:184
 msgid "Idle"
-msgstr "Idle"
+msgstr "Inaktiv"
 
 #: ktp_controller/wui/invigilator/routes.py:185
 msgid "Waiting for auth"
-msgstr "Waiting for auth"
+msgstr "Väntar på autentisering"
 
 #: ktp_controller/wui/invigilator/routes.py:186
 msgid "Undefined exam"
-msgstr "Undefined exam"
+msgstr "Odefinierat prov"
 
 #: ktp_controller/wui/invigilator/routes.py:187
 msgid "Unknown issue"
-msgstr "Unknown issue"
+msgstr "Okänt problem"
 
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:7
 msgid "Invigilator's view"
-msgstr "Invigilator's view"
+msgstr "Övervakarens vy"
 
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:57
 msgid "Connection lost at"
-msgstr "Connection lost at"
+msgstr "Anslutningen bröts"
 
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:58
 msgid "The page will reload automatically once it's back."
-msgstr "The page will reload automatically once it's back."
+msgstr "Sidan laddas om automatiskt när anslutningen återställts."
 
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:65
 #, python-format
 msgid "Logged in as <strong>%(user)s</strong>"
-msgstr "Logged in as <strong>%(user)s</strong>"
+msgstr "Inloggad som <strong>%(user)s</strong>"
 
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:71
 msgid "Language"
-msgstr "Language"
+msgstr "Språk"
 
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:80
 #: ktp_controller/wui/templates/login.html.j2:34
 msgid "Log out"
-msgstr "Log out"
+msgstr "Logga ut"
 
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:89
 msgid "Students"
-msgstr "Students"
+msgstr "Studerande"
 
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:96
 msgid "Filter by student name or birthday..."
-msgstr "Filter by student name or birthday..."
+msgstr "Filtrera enligt namn eller födelsedatum..."
 
 #: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:35
 msgid "End exam"
-msgstr "End exam"
+msgstr "Avsluta prov"
 
 #: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:35
 #, python-format
 msgid "Really end exam for %(name)s?"
-msgstr "Really end exam for %(name)s?"
+msgstr "Avsluta verkligen provet för %(name)s?"
 
 #: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:35
 msgid "Yes"
-msgstr "Yes"
+msgstr "Ja"
 
 #: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:35
 msgid "No"
-msgstr "No"
+msgstr "Nej"
 
 #: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:39
 #, python-format
 msgid "No students matching '%(query)s'"
-msgstr "No students matching '%(query)s'"
+msgstr "Inga studerande matchar '%(query)s'"
 
 #: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:39
 msgid "No students"
-msgstr "No students"
+msgstr "Inga studerande"
 
 #: ktp_controller/wui/templates/login.html.j2:7
 #: ktp_controller/wui/templates/login.html.j2:37
 #: ktp_controller/wui/templates/login.html.j2:50
 msgid "Log in"
-msgstr "Log in"
+msgstr "Logga in"
 
 #: ktp_controller/wui/templates/login.html.j2:29
 msgid "Logged in"
-msgstr "Logged in"
+msgstr "Inloggad"
 
 #: ktp_controller/wui/templates/login.html.j2:31
 #, python-format
 msgid "Logged in as <strong>%(username)s</strong>."
-msgstr "Logged in as <strong>%(username)s</strong>."
+msgstr "Inloggad som <strong>%(username)s</strong>."
 
 #: ktp_controller/wui/templates/login.html.j2:46
 msgid "Username"
-msgstr "Username"
+msgstr "Användarnamn"
 
 #: ktp_controller/wui/templates/login.html.j2:48
 msgid "Password"
-msgstr "Password"
-
-#~ msgid "End exam for %(name)s?"
-#~ msgstr "End exam for %(name)s?"
-
-#~ msgid "Flags"
-#~ msgstr "Remarks"
-
-#~ msgid "Flagged"
-#~ msgstr "Requires attention"
-
+msgstr "Lösenord"
