@@ -30,6 +30,13 @@
         padding: var(--pico-spacing) calc(var(--pico-spacing) * 2);
         border-radius: var(--pico-border-radius);
       }
+      .modal-overlay-actions {
+        display: flex;
+        gap: var(--pico-spacing);
+      }
+      .modal-overlay-actions button {
+        width: auto;
+      }
       header nav {
         align-items: center;
       }
@@ -65,11 +72,13 @@
     <div id="end-exam-confirm-overlay" class="modal-overlay">
         <div class="modal-overlay-content">
             <p>{% trans %}Really end exam for <strong id="end-exam-confirm-name"></strong>?{% endtrans %}</p>
-            <button class="end-exam-confirm-yes"
-                    hx-post="/invigilator/actions/end-exam"
-                    hx-vals="js:{session_uuid: document.getElementById('end-exam-confirm-overlay').dataset.sessionUuid, student_uuid: document.getElementById('end-exam-confirm-overlay').dataset.studentUuid}"
-                    hx-swap="none">{{ _("Yes") }}</button>
-            <button type="button" class="end-exam-confirm-no">{{ _("No") }}</button>
+            <div class="modal-overlay-actions">
+                <button class="end-exam-confirm-yes"
+                        hx-post="/invigilator/actions/end-exam"
+                        hx-vals="js:{session_uuid: document.getElementById('end-exam-confirm-overlay').dataset.sessionUuid, student_uuid: document.getElementById('end-exam-confirm-overlay').dataset.studentUuid}"
+                        hx-swap="none">{{ _("Yes") }}</button>
+                <button type="button" class="end-exam-confirm-no">{{ _("No") }}</button>
+            </div>
         </div>
     </div>
     {% endif %}
