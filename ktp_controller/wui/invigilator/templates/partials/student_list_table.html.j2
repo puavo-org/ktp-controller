@@ -1,25 +1,25 @@
 {% autoescape true %}
 <table id="student-list-table"
+       class="striped"
        hx-get="?sort_by={{ sort_by }}&order={{ order_now }}"
        hx-trigger="student-list-update from:body throttle:2s"
        hx-target="this"
        hx-swap="outerHTML"
-       hx-include="#filters"
-       border="1" style="border-collapse: collapse; width: 100%; text-align: left;">
+       hx-include="#filters">
     <thead>
-        <tr style="background-color: #f2f2f2;">
+        <tr>
         {% for column_key, column_label, is_sortable in columns %}
         {% if is_sortable %}
             <th hx-get="?sort_by={{ column_key }}&order={{ order_next if sort_by == column_key else 'asc' }}"
                 hx-target="#student-list-table"
                 hx-swap="outerHTML"
                 hx-include="#filters"
-                style="cursor: pointer; padding: 8px;">
+                style="cursor: pointer;">
                 {{ column_label }}
                 {% if sort_by == column_key %}{{ '▲' if order_now == 'asc' else '▼' }}{% endif %}
             </th>
         {% else %}
-            <th style="padding: 8px;">{{ column_label }}</th>
+            <th>{{ column_label }}</th>
         {% endif %}
         {% endfor %}
         </tr>
@@ -27,16 +27,16 @@
     <tbody id="student-list-table-body">
         {% for student_list_item in student_list_items %}
         <tr>
-            <td style="padding: 8px;">{{ student_list_item.name }}</td>
-            <td style="padding: 8px;">{{ student_list_item.birthday | localize_date(locale) }}</td>
-            <td style="padding: 8px;">{{ (student_list_item.flags | translate_labels(flag_labels) | join(', ')) if student_list_item.state == "flagged" else state_labels[student_list_item.state] }}</td>
-            <td style="padding: 8px;">{{ '-' if not student_list_item.last_changed_at else student_list_item.last_changed_at | localize_datetime(locale) }}</td>
-            <td style="padding: 8px;">{{ '-' if not student_list_item.exam_title else student_list_item.exam_title }}</td>
-            <td style="padding: 8px;">{% if can_end_exam and student_list_item.state != 'finished' %}<span class="end-exam-cell"><button type="button" class="end-exam-button">{{ _("End exam") }}</button><span class="end-exam-confirm-box" hidden>{% trans name=student_list_item.name %}Really end exam for {{ name }}?{% endtrans %} <button class="end-exam-confirm-yes" hx-post="/invigilator/actions/end-exam" hx-vals='{{ {"session_uuid": student_list_item.session_uuid, "student_uuid": student_list_item.student_uuid} | tojson }}' hx-swap="none">{{ _("Yes") }}</button> <button type="button" class="end-exam-confirm-no">{{ _("No") }}</button></span></span>{% else %}-{% endif %}</td>
+            <td>{{ student_list_item.name }}</td>
+            <td>{{ student_list_item.birthday | localize_date(locale) }}</td>
+            <td>{{ (student_list_item.flags | translate_labels(flag_labels) | join(', ')) if student_list_item.state == "flagged" else state_labels[student_list_item.state] }}</td>
+            <td>{{ '-' if not student_list_item.last_changed_at else student_list_item.last_changed_at | localize_datetime(locale) }}</td>
+            <td>{{ '-' if not student_list_item.exam_title else student_list_item.exam_title }}</td>
+            <td>{% if can_end_exam and student_list_item.state != 'finished' %}<span class="end-exam-cell"><button type="button" class="end-exam-button">{{ _("End exam") }}</button><span class="end-exam-confirm-box" hidden>{% trans name=student_list_item.name %}Really end exam for {{ name }}?{% endtrans %} <button class="end-exam-confirm-yes" hx-post="/invigilator/actions/end-exam" hx-vals='{{ {"session_uuid": student_list_item.session_uuid, "student_uuid": student_list_item.student_uuid} | tojson }}' hx-swap="none">{{ _("Yes") }}</button> <button type="button" class="end-exam-confirm-no">{{ _("No") }}</button></span></span>{% else %}-{% endif %}</td>
         </tr>
         {% else %}
         <tr>
-            <td colspan="{{ columns | length }}" style="padding: 16px; text-align: center; color: #666;">{% if name_birthday_filter %}{{ _("No students matching '%(query)s'", query=name_birthday_filter) }}{% else %}{{ _("No students") }}{% endif %}</td>
+            <td colspan="{{ columns | length }}" style="text-align: center;">{% if name_birthday_filter %}{{ _("No students matching '%(query)s'", query=name_birthday_filter) }}{% else %}{{ _("No students") }}{% endif %}</td>
         </tr>
         {% endfor %}
     </tbody>

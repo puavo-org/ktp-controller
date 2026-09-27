@@ -3,15 +3,25 @@
 <html lang="{{ locale }}">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ _("Log in") }}</title>
+    <link rel="stylesheet" href="/static/pico.min.css">
+    <style>
+      main.container {
+        max-width: 24rem;
+      }
+    </style>
 </head>
-<body style="font-family: Arial, sans-serif; margin: 40px; max-width: 320px;">
+<body>
+<main class="container">
 
     {% if not session %}
-    <div style="margin-bottom: 10px; font-size: 0.9em;">
-        <a href="/login?next={{ next | urlencode }}&lang=fi">Suomi</a> |
-        <a href="/login?next={{ next | urlencode }}&lang=en">English</a>
-    </div>
+    <nav>
+        <ul>
+            <li><a href="/login?next={{ next | urlencode }}&lang=fi">Suomi</a></li>
+            <li><a href="/login?next={{ next | urlencode }}&lang=en">English</a></li>
+        </ul>
+    </nav>
     {% endif %}
 
     {% if session %}
@@ -26,24 +36,21 @@
     <h2>{{ _("Log in") }}</h2>
 
     {% if error %}
-    <p style="color: red;">{{ error }}</p>
+    <p style="color: var(--pico-del-color);">{{ error }}</p>
     {% endif %}
 
     <form method="post" action="/login">
         <input type="hidden" name="next" value="{{ next }}">
         <input type="hidden" name="lang" value="{{ locale }}">
-        <div style="margin-bottom: 10px;">
-            <label for="username">{{ _("Username") }}</label><br>
-            <input type="text" id="username" name="username" required autofocus>
-        </div>
-        <div style="margin-bottom: 10px;">
-            <label for="password">{{ _("Password") }}</label><br>
-            <input type="password" id="password" name="password" required>
-        </div>
+        <label for="username">{{ _("Username") }}</label>
+        <input type="text" id="username" name="username" required autofocus>
+        <label for="password">{{ _("Password") }}</label>
+        <input type="password" id="password" name="password" required>
         <button type="submit">{{ _("Log in") }}</button>
     </form>
     {% endif %}
 
+</main>
 </body>
 </html>
 {% endautoescape %}

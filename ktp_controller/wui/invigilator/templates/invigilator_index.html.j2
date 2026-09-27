@@ -3,7 +3,9 @@
 <html lang="{{ locale }}">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ _("Invigilator's view") }}</title>
+    <link rel="stylesheet" href="/static/pico.min.css">
     <style>
       #connection-lost-overlay {
         display: none;
@@ -26,13 +28,29 @@
         flex-direction: column;
         align-items: center;
       }
+      header nav {
+        align-items: center;
+      }
+      header form {
+        margin-bottom: 0;
+      }
+      header button,
+      header select {
+        width: auto;
+      }
+      #filters {
+        margin-bottom: 20px;
+      }
+      #name_birthday_filter {
+        max-width: 32ch;
+      }
     </style>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="/static/status_updates.js"></script>
     <script src="/static/locale_switcher.js"></script>
     <script src="/static/end_exam_confirm.js"></script>
 </head>
-<body style="font-family: Arial, sans-serif; margin: 40px;">
+<body>
 
     <div id="connection-lost-overlay">
         <div class="connection-lost-content">
@@ -41,41 +59,50 @@
         </div>
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div>{% trans user=user %}Logged in as <strong>{{ user }}</strong>{% endtrans %}</div>
-        <div style="display: flex; align-items: center;">
-            <form method="post" action="/logout" style="margin: 0;">
-                <button type="submit">{{ _("Log out") }}</button>
-            </form>
-            <form method="post" action="/locale" style="margin: 0;">
-                <input type="hidden" name="next" value="{{ request.url.path }}">
-                <select name="locale" style="margin-left: 10px;">
-                    <option value="fi" {{ "selected" if locale == "fi" else "" }}>Suomi</option>
-                    <option value="en" {{ "selected" if locale == "en" else "" }}>English</option>
-                </select>
-            </form>
-        </div>
-    </div>
+    <header class="container">
+        <nav>
+            <ul>
+                <li>{% trans user=user %}Logged in as <strong>{{ user }}</strong>{% endtrans %}</li>
+            </ul>
+            <ul>
+                <li>
+                    <form method="post" action="/locale">
+                        <input type="hidden" name="next" value="{{ request.url.path }}">
+                        <select name="locale" aria-label="{{ _('Language') }}">
+                            <option value="fi" {{ "selected" if locale == "fi" else "" }}>Suomi</option>
+                            <option value="en" {{ "selected" if locale == "en" else "" }}>English</option>
+                        </select>
+                    </form>
+                </li>
+                <li>
+                    <form method="post" action="/logout">
+                        <button type="submit" class="secondary">{{ _("Log out") }}</button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+    </header>
 
-    <h2>{{ _("Students") }}</h2>
+    <main class="container">
 
-    <div id="filters" style="margin-bottom: 20px; display: flex; gap: 15px;">
-        <div>
+        <h2>{{ _("Students") }}</h2>
+
+        <div id="filters">
             <input type="text"
                    id="name_birthday_filter"
                    name="name_birthday_filter"
                    value="{{ name_birthday_filter }}"
                    placeholder="{{ _('Filter by student name or birthday...') }}"
-                   style="min-width: 32ch;"
                    hx-get=""
                    hx-trigger="keyup changed delay:350ms"
                    hx-target="#student-list-table"
                    hx-swap="outerHTML"
                    hx-include="#filters">
         </div>
-    </div>
 
-    {% include "partials/student_list_table.html.j2" %}
+        {% include "partials/student_list_table.html.j2" %}
+
+    </main>
 
 </body>
 </html>
