@@ -17,8 +17,19 @@
   const overlayShowDelayMs = 500;
   let overlayShowTimer = null;
   let lostAt = null;
+  // Set once the page starts navigating away (logout, locale switch,
+  // or this script's own login-redirect/reload below), so a retry
+  // that was already scheduled doesn't try to open a new socket or
+  // fetch in a document that's being torn down.
+  let isUnloading = false;
+  window.addEventListener("pagehide", () => {
+    isUnloading = true;
+  });
 
   function connect() {
+    if (isUnloading) {
+      return;
+    }
     const sock = new WebSocket(wsUrl);
     sock.addEventListener("open", () => {
       if (overlayShowTimer !== null) {
@@ -52,10 +63,37 @@
           overlay.classList.add("is-visible");
         }
       }, overlayShowDelayMs);
-      setTimeout(connect, reconnectDelay);
+      setTimeout(reconnect, reconnectDelay);
       reconnectDelay = Math.min(reconnectDelay * 2, maxReconnectDelay);
     });
     sock.addEventListener("error", () => sock.close());
+  }
+
+  // A closed websocket carries no reliable reason: a real network outage
+  // and a rejected handshake (e.g. the session expired while disconnected)
+  // both surface identically as a generic abnormal closure. Plain HTTP
+  // doesn't have that limitation, so before retrying the socket, probe
+  // the page itself and let the server's existing auth handling (login
+  // redirect / 403) answer the question directly.
+  async function reconnect() {
+    if (isUnloading) {
+      return;
+    }
+    try {
+      const res = await fetch(location.pathname);
+      if (res.redirected && new URL(res.url).pathname === "/login") {
+        location.href = res.url;
+        return;
+      }
+      if (res.status === 403) {
+        location.reload();
+        return;
+      }
+    } catch {
+      // Real network/server outage: fall through and keep retrying the
+      // websocket as before.
+    }
+    connect();
   }
 
   connect();
