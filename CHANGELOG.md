@@ -7,9 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- New web-based invigilator view (WUI): a browser alternative for
+  monitoring students and exam sessions.
+
+  - The student list refreshes itself automatically as exam status
+    changes; no manual reload needed.
+
+  - If the live connection drops, the page shows a "connection lost"
+    notice and recovers automatically, including after a server
+    restart or an expired login session.
+
+  - Available in Finnish, Swedish and English.
+
+  - Currently only accessible at http://localhost:9999
+
 ### Changed
 
 - Updated all dependencies.
+
+
+## [0.7.1] - 2026-09-14
+
+### Fixed
+
+- Do not try to stop already finished student sessions. This fixes an
+  issue where Abitti2 responds, in some unspecified situations,
+  constantly with 409 error for such already finished sessions. Any
+  error in student session stopping still prevents stopping the exam
+  package; this fix just avoids getting an error for already finished
+  sessions.
+
 
 ## [0.7.0] - 2026-09-07
 
