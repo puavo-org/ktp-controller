@@ -12,8 +12,10 @@
     if (overlay === null) {
       return;
     }
-    overlay.dataset.sessionUuid = trigger.dataset.sessionUuid;
-    overlay.dataset.studentUuid = trigger.dataset.studentUuid;
+    document.getElementById("end-exam-confirm-session-uuid").value =
+      trigger.dataset.sessionUuid;
+    document.getElementById("end-exam-confirm-student-uuid").value =
+      trigger.dataset.studentUuid;
     const name = document.getElementById("end-exam-confirm-name");
     if (name !== null) {
       name.textContent = trigger.dataset.name;
