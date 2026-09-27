@@ -58,13 +58,11 @@ APP.add_middleware(ktp_controller.wui.middleware.SecurityHeadersMiddleware)
 APP.include_router(ktp_controller.wui.invigilator.routes.router, prefix="/invigilator")
 APP.include_router(ktp_controller.wui.auth_routes.router)
 APP.mount(
-    "/invigilator/static",
+    "/static",
     fastapi.staticfiles.StaticFiles(
-        directory=os.path.join(
-            os.path.dirname(ktp_controller.wui.invigilator.routes.__file__), "static"
-        )
+        directory=os.path.join(os.path.dirname(ktp_controller.wui.__file__), "static")
     ),
-    name="invigilator-static",
+    name="static",
 )
 
 

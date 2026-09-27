@@ -169,9 +169,9 @@ def test_invigilator_view_locale_switcher_has_no_inline_script(
     assert response.status_code == 200
     assert 'action="/locale"' in response.text
     assert "onchange=" not in response.text
-    assert '<script src="/invigilator/static/locale_switcher.js">' in response.text
+    assert '<script src="/static/locale_switcher.js">' in response.text
 
-    static_response = wui_client.get("/invigilator/static/locale_switcher.js")
+    static_response = wui_client.get("/static/locale_switcher.js")
     assert static_response.status_code == 200
 
 
