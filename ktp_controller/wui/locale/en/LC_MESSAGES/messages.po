@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-27 10:41+0300\n"
+"POT-Creation-Date: 2026-09-27 17:35+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -26,61 +26,57 @@ msgstr "Too many login attempts, please try again later."
 msgid "Incorrect username or password"
 msgstr "Incorrect username or password"
 
-#: ktp_controller/wui/invigilator/routes.py:168
+#: ktp_controller/wui/invigilator/routes.py:167
 msgid "Name"
 msgstr "Name"
 
-#: ktp_controller/wui/invigilator/routes.py:169
+#: ktp_controller/wui/invigilator/routes.py:168
 msgid "Birthday"
 msgstr "Birthday"
 
-#: ktp_controller/wui/invigilator/routes.py:170
+#: ktp_controller/wui/invigilator/routes.py:169
 msgid "State"
 msgstr "State"
 
-#: ktp_controller/wui/invigilator/routes.py:171
-msgid "Flags"
-msgstr "Remarks"
-
-#: ktp_controller/wui/invigilator/routes.py:172
+#: ktp_controller/wui/invigilator/routes.py:170
 msgid "Last changed at"
 msgstr "Last changed at"
 
-#: ktp_controller/wui/invigilator/routes.py:173
+#: ktp_controller/wui/invigilator/routes.py:171
 msgid "Exam title"
 msgstr "Exam title"
 
-#: ktp_controller/wui/invigilator/routes.py:178
+#: ktp_controller/wui/invigilator/routes.py:176
 msgid "Action"
 msgstr "Action"
 
-#: ktp_controller/wui/invigilator/routes.py:181
+#: ktp_controller/wui/invigilator/routes.py:179
 msgid "Finished"
 msgstr "Finished"
 
-#: ktp_controller/wui/invigilator/routes.py:182
+#: ktp_controller/wui/invigilator/routes.py:180
 msgid "Active"
 msgstr "Active"
 
 #: ktp_controller/wui/invigilator/routes.py:183
-msgid "Flagged"
-msgstr "Requires attention"
-
-#: ktp_controller/wui/invigilator/routes.py:186
 msgid "Disconnected"
 msgstr "Disconnected"
 
-#: ktp_controller/wui/invigilator/routes.py:187
+#: ktp_controller/wui/invigilator/routes.py:184
 msgid "Idle"
 msgstr "Idle"
 
-#: ktp_controller/wui/invigilator/routes.py:188
+#: ktp_controller/wui/invigilator/routes.py:185
 msgid "Waiting for auth"
 msgstr "Waiting for auth"
 
-#: ktp_controller/wui/invigilator/routes.py:189
+#: ktp_controller/wui/invigilator/routes.py:186
 msgid "Undefined exam"
 msgstr "Undefined exam"
+
+#: ktp_controller/wui/invigilator/routes.py:187
+msgid "Unknown issue"
+msgstr "Unknown issue"
 
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:6
 msgid "Invigilator's view"
@@ -112,29 +108,29 @@ msgstr "Students"
 msgid "Filter by student name or birthday..."
 msgstr "Filter by student name or birthday..."
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:36
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:35
 msgid "End exam"
 msgstr "End exam"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:36
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:35
 #, python-format
 msgid "Really end exam for %(name)s?"
 msgstr "Really end exam for %(name)s?"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:36
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:35
 msgid "Yes"
 msgstr "Yes"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:36
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:35
 msgid "No"
 msgstr "No"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:40
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:39
 #, python-format
 msgid "No students matching '%(query)s'"
 msgstr "No students matching '%(query)s'"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:40
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:39
 msgid "No students"
 msgstr "No students"
 
@@ -163,4 +159,10 @@ msgstr "Password"
 
 #~ msgid "End exam for %(name)s?"
 #~ msgstr "End exam for %(name)s?"
+
+#~ msgid "Flags"
+#~ msgstr "Remarks"
+
+#~ msgid "Flagged"
+#~ msgstr "Requires attention"
 

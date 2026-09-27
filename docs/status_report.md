@@ -91,7 +91,7 @@ All fields are always present.
 
 ##### StudentFlag
 
-Enum — one of: `disconnected`, `idle`, `waiting-for-auth`, `undefined-exam`
+Enum — one of: `disconnected`, `idle`, `waiting-for-auth`, `undefined-exam`, `unknown-issue`
 
 ### KTPController
 

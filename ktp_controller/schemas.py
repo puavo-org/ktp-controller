@@ -27,6 +27,7 @@ class StudentFlag(enum.StrEnum):
     IDLE = "idle"
     WAITING_FOR_AUTH = "waiting-for-auth"
     UNDEFINED_EXAM = "undefined-exam"
+    UNKNOWN_ISSUE = "unknown-issue"
 
 
 class StudentAccessCode(ktp_controller.pydantic.BaseModel):

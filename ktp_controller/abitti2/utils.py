@@ -106,6 +106,9 @@ def parse_student_state_info(
     else:
         is_active = len(flags) == 0
 
+    if not is_active and not has_finished and len(flags) == 0:
+        flags.add(ktp_controller.schemas.StudentFlag.UNKNOWN_ISSUE)
+
     return {
         "is_active": is_active,
         "has_finished": has_finished,

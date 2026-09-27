@@ -129,7 +129,6 @@ class _StudentListItemSortableField(enum.StrEnum):
     NAME = "name"
     BIRTHDAY = "birthday"
     STATE = "state"
-    FLAGS = "flags"
     LAST_CHANGED_AT = "last_changed_at"
     EXAM_TITLE = "exam_title"
 
@@ -168,7 +167,6 @@ async def _get_invigilator(
         _StudentListItemSortableField.NAME: _("Name"),
         _StudentListItemSortableField.BIRTHDAY: _("Birthday"),
         _StudentListItemSortableField.STATE: _("State"),
-        _StudentListItemSortableField.FLAGS: _("Flags"),
         _StudentListItemSortableField.LAST_CHANGED_AT: _("Last changed at"),
         _StudentListItemSortableField.EXAM_TITLE: _("Exam title"),
     }
@@ -180,13 +178,13 @@ async def _get_invigilator(
     state_labels = {
         schemas.StudentState.FINISHED: _("Finished"),
         schemas.StudentState.ACTIVE: _("Active"),
-        schemas.StudentState.FLAGGED: _("Flagged"),
     }
     flag_labels = {
         ktp_controller.schemas.StudentFlag.DISCONNECTED: _("Disconnected"),
         ktp_controller.schemas.StudentFlag.IDLE: _("Idle"),
         ktp_controller.schemas.StudentFlag.WAITING_FOR_AUTH: _("Waiting for auth"),
         ktp_controller.schemas.StudentFlag.UNDEFINED_EXAM: _("Undefined exam"),
+        ktp_controller.schemas.StudentFlag.UNKNOWN_ISSUE: _("Unknown issue"),
     }
 
     context = {
