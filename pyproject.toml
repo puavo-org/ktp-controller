@@ -46,6 +46,7 @@ ktp-controller-wui = "ktp_controller.wui.main:run"
 dev = [
     "pytest",
     "pytest-mock",
+    "coverage",
     "httpx",
     "selenium",
     "ruff",
@@ -119,3 +120,22 @@ ignore_missing_imports = true
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
+
+[tool.coverage.run]
+source = ["ktp_controller"]
+branch = true
+relative_files = true
+data_file = ".coverage"
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+precision = 1
+exclude_also = [
+    "if typing.TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+fail_under = 0
+
+[tool.coverage.html]
+directory = "htmlcov"

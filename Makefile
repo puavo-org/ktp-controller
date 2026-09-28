@@ -44,9 +44,13 @@ check-i18n: i18n-compile
 check: check-format check-alembic check-types check-i18n
 	uv run ruff check
 
+.PHONY: check-coverage
+check-coverage:
+	uv run coverage report
+
 .PHONY: .pytest
 .pytest:
-	pytest -rA --ignore-glob=tests/integration_test_case*.py --show-capture=all --ff -x --log-level=WARNING --doctest-modules -vv tests/ ktp_controller/
+	coverage run -m pytest -rA --ignore-glob=tests/integration_test_case*.py --show-capture=all --ff -x --log-level=WARNING --doctest-modules -vv tests/ ktp_controller/
 
 .PHONY: .pytest-integration
 .pytest-integration:

@@ -12,3 +12,7 @@ flycheck_*
 /dump.rdb
 /.python-version
 /ktp_controller/wui/locale/messages.pot
+/.coverage
+/.coverage.*
+/htmlcov/
+/coverage.xml
