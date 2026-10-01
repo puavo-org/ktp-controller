@@ -105,11 +105,36 @@ async def download_answers_file(
     )
 
     download_start_time_monotonic = time.monotonic()
-
-    sha256sum = await ktp_controller.abitti2.client.download_answers_file(
-        answers_file_path,
-        timeout=(6.1, 200),
-    )
+    try:
+        sha256sum = await ktp_controller.abitti2.client.download_answers_file(
+            answers_file_path,
+            timeout=(6.1, 200),
+        )
+    except TimeoutError:
+        _LOGGER.warning(
+            "I tried to download answers file '%s' from Abitti2, "
+            "but encountered timeout after %.1f seconds. Next I'll "
+            "try to cleanup all rotated Naksu2 logs and then retry downloading."
+        )
+        deleted_log_filepaths: set[str] = set()
+        try:
+            ktp_controller.abitti2.naksu2.cleanup_rotated_logs(
+                deleted_log_filepaths=deleted_log_filepaths
+            )
+        except Exception as delete_logs_error:
+            _LOGGER.error(
+                "Failed to delete some of the rotated Naksu2 log files: %s",
+                delete_logs_error,
+            )
+        else:
+            _LOGGER.info(
+                "Deleted %d rotated Naksu2 log files.", len(deleted_log_filepaths)
+            )
+        download_start_time_monotonic = time.monotonic()
+        sha256sum = await ktp_controller.abitti2.client.download_answers_file(
+            answers_file_path,
+            timeout=(6.1, 200),
+        )
 
     download_duration = time.monotonic() - download_start_time_monotonic
 
