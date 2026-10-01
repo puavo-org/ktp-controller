@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [0.7.2] - 2026-10-01
+
+### Added
+
+- Naksu2/Abitti2 log cleanups:
+
+  1. If downloading answers from Abitti2 times out (200s currently),
+     delete all rotated Naksu2/Abitti2 log files and retry downloading
+     once. Abitti2 seems to include **all** existing log files into
+     the answers file, which bloats the answers file unnecessarily and
+     in some cases (high log volume setups) makes Abitti2 unable to
+     respond to download requests in a timely manner.
+
+  2. Delete all rotated Naksu2/Abitti2 logs also when preparing a new
+     exam package. Naksu2/Abitti2 logs of old, already archived, exam
+     packages are not interesting and are just dead weight.
+
+
 ## [0.7.1] - 2026-09-14
 
 ### Fixed
