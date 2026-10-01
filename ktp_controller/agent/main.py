@@ -410,6 +410,21 @@ class Agent:
                 current_exam_package
             )
 
+            deleted_log_filepaths: set[str] = set()
+            _LOGGER.info("Deleting rotated Naksu2 log files...")
+            try:
+                ktp_controller.abitti2.naksu2.cleanup_rotated_logs(
+                    deleted_log_filepaths=deleted_log_filepaths
+                )
+            except Exception as e:
+                _LOGGER.error(
+                    "Failed to delete some of the rotated Naksu2 log files: %s", e
+                )
+            else:
+                _LOGGER.info(
+                    "Deleted %d rotated Naksu2 log files.", len(deleted_log_filepaths)
+                )
+
             exam_filenames = await ktp_controller.abitti2.client.prepare_exam_package(
                 exam_package_filepath, decrypt_codes
             )
