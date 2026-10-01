@@ -111,10 +111,13 @@ async def download_answers_file(
             timeout=(6.1, 200),
         )
     except TimeoutError:
+        download_duration = time.monotonic() - download_start_time_monotonic
         _LOGGER.warning(
             "I tried to download answers file '%s' from Abitti2, "
             "but encountered timeout after %.1f seconds. Next I'll "
-            "try to cleanup all rotated Naksu2 logs and then retry downloading."
+            "try to cleanup all rotated Naksu2 logs and then retry downloading.",
+            answers_file_path,
+            download_duration,
         )
         deleted_log_filepaths: set[str] = set()
         try:
