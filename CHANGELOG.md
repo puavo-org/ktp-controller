@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.7.2] - 2026-10-01
+## [0.7.3] - 2026-10-01
 
 ### Added
 
@@ -22,6 +22,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   2. Delete all rotated Naksu2/Abitti2 logs also when preparing a new
      exam package. Naksu2/Abitti2 logs of old, already archived, exam
      packages are not interesting and are just dead weight.
+
+
+## [0.7.2] - 2026-10-01 [YANKED]
+
+Yanked because of a buggy logging statement noticed right after the
+release.
 
 
 ## [0.7.1] - 2026-09-14
