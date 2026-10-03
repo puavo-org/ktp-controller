@@ -69,6 +69,10 @@
     <header class="container">
         <nav>
             <ul>
+                <li><a href="/invigilator/" {% if request.url.path == "/invigilator/" %}aria-current="page"{% endif %}>{{ _("Students") }}</a></li>
+                <li><a href="/invigilator/student_access_code" {% if request.url.path == "/invigilator/student_access_code" %}aria-current="page"{% endif %}>{{ _("Student access code") }}</a></li>
+            </ul>
+            <ul>
                 <li>{% trans user=user %}Logged in as <strong>{{ user }}</strong>{% endtrans %}</li>
             </ul>
             <ul>

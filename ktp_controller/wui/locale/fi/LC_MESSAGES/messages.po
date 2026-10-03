@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-03 15:08+0300\n"
+"POT-Creation-Date: 2026-10-03 15:16+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -87,15 +87,26 @@ msgid "The page will reload automatically once it's back."
 msgstr "Sivu latautuu automaattisesti uudelleen, kun yhteys palautuu."
 
 #: ktp_controller/wui/invigilator/templates/_base.html.j2:72
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:41
+msgid "Students"
+msgstr "Kokelaat"
+
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:73
+#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
+#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:39
+msgid "Student access code"
+msgstr "Kokelaan pääsykoodi"
+
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:76
 #, python-format
 msgid "Logged in as <strong>%(user)s</strong>"
 msgstr "Kirjautuneena käyttäjänä <strong>%(user)s</strong>"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:78
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:82
 msgid "Language"
 msgstr "Kieli"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:87
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:91
 #: ktp_controller/wui/templates/login.html.j2:34
 msgid "Log out"
 msgstr "Kirjaudu ulos"
@@ -120,18 +131,9 @@ msgstr "Kyllä"
 msgid "No"
 msgstr "Ei"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:41
-msgid "Students"
-msgstr "Kokelaat"
-
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:48
 msgid "Filter by student name or birthday..."
 msgstr "Suodata nimen tai syntymäajan mukaan..."
-
-#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
-#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:39
-msgid "Student access code"
-msgstr "Kokelaan pääsykoodi"
 
 #: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:25
 msgid ""

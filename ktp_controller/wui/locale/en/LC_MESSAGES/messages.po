@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-03 15:08+0300\n"
+"POT-Creation-Date: 2026-10-03 15:16+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -87,15 +87,26 @@ msgid "The page will reload automatically once it's back."
 msgstr "The page will reload automatically once it's back."
 
 #: ktp_controller/wui/invigilator/templates/_base.html.j2:72
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:41
+msgid "Students"
+msgstr "Students"
+
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:73
+#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
+#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:39
+msgid "Student access code"
+msgstr "Student access code"
+
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:76
 #, python-format
 msgid "Logged in as <strong>%(user)s</strong>"
 msgstr "Logged in as <strong>%(user)s</strong>"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:78
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:82
 msgid "Language"
 msgstr "Language"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:87
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:91
 #: ktp_controller/wui/templates/login.html.j2:34
 msgid "Log out"
 msgstr "Log out"
@@ -118,18 +129,9 @@ msgstr "Yes"
 msgid "No"
 msgstr "No"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:41
-msgid "Students"
-msgstr "Students"
-
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:48
 msgid "Filter by student name or birthday..."
 msgstr "Filter by student name or birthday..."
-
-#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
-#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:39
-msgid "Student access code"
-msgstr "Student access code"
 
 #: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:25
 msgid ""

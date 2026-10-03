@@ -54,6 +54,27 @@ def test_invigilator_view_allowed_with_permission(wui_client, override_session, 
     assert b'action="/logout"' in response.content
 
 
+def test_invigilator_view_shows_student_access_code_nav_link(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert 'href="/invigilator/student_access_code"' in response.text
+
+
 def test_invigilator_view_renders_connection_lost_overlay(
     wui_client, override_session, mocker
 ):

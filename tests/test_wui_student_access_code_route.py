@@ -62,6 +62,24 @@ def test_student_access_code_view_allowed_with_permission(
     assert b"alice" in response.content
 
 
+def test_student_access_code_view_shows_students_nav_link(
+    wui_client, override_session, mocker
+):
+    mocker.patch("ktp_controller.api.client.get_student_access_code", return_value=None)
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+        )
+    )
+
+    response = wui_client.get("/invigilator/student_access_code")
+
+    assert response.status_code == 200
+    assert 'href="/invigilator/"' in response.text
+
+
 def test_student_access_code_view_shows_placeholder_without_code(
     wui_client, override_session, mocker
 ):

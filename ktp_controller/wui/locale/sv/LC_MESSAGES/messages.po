@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-03 15:08+0300\n"
+"POT-Creation-Date: 2026-10-03 15:16+0300\n"
 "PO-Revision-Date: 2026-09-27 20:42+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv\n"
@@ -87,15 +87,26 @@ msgid "The page will reload automatically once it's back."
 msgstr "Sidan laddas om automatiskt när anslutningen återställts."
 
 #: ktp_controller/wui/invigilator/templates/_base.html.j2:72
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:41
+msgid "Students"
+msgstr "Studerande"
+
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:73
+#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
+#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:39
+msgid "Student access code"
+msgstr "Studerandes åtkomstkod"
+
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:76
 #, python-format
 msgid "Logged in as <strong>%(user)s</strong>"
 msgstr "Inloggad som <strong>%(user)s</strong>"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:78
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:82
 msgid "Language"
 msgstr "Språk"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:87
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:91
 #: ktp_controller/wui/templates/login.html.j2:34
 msgid "Log out"
 msgstr "Logga ut"
@@ -120,26 +131,17 @@ msgstr "Ja"
 msgid "No"
 msgstr "Nej"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:41
-msgid "Students"
-msgstr "Studerande"
-
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:48
 msgid "Filter by student name or birthday..."
 msgstr "Filtrera enligt namn eller födelsedatum..."
-
-#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
-#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:39
-msgid "Student access code"
-msgstr "Studerandes åtkomstkod"
 
 #: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:25
 msgid ""
 "Really change the student access code? The current code will stop working"
 " for every student using it."
 msgstr ""
-"Vill du verkligen byta studerandes åtkomstkod? Den nuvarande koden slutar "
-"fungera för alla studerande som använder den."
+"Vill du verkligen byta studerandes åtkomstkod? Den nuvarande koden slutar"
+" fungera för alla studerande som använder den."
 
 #: ktp_controller/wui/invigilator/templates/partials/student_access_code_display.html.j2:7
 msgid "No access code available"
