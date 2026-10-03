@@ -15,6 +15,7 @@ import fastapi.templating
 import ktp_controller.abitti2.client
 import ktp_controller.abitti2.utils
 import ktp_controller.api.client
+import ktp_controller.messages
 import ktp_controller.schemas
 import ktp_controller.wui.auth
 import ktp_controller.wui.i18n
@@ -233,6 +234,9 @@ async def _get_student_access_code(
     context = {
         "student_access_code": student_access_code,
         "user": session.username,
+        "can_change_access_code": (
+            "wui.invigilator.change-student-access-code" in session.permissions
+        ),
     }
 
     # If the request comes from htmx, return only the code display partial
@@ -296,6 +300,40 @@ async def _post_end_exam(
         student_uuid=str(student_uuid),
         username=session.username,
     )
+    return fastapi.responses.Response(status_code=fastapi.status.HTTP_202_ACCEPTED)
+
+
+async def _change_student_access_code(*, username: str) -> None:
+    _LOGGER.info("User %r is changing the student access code...", username)
+    try:
+        await ktp_controller.api.client.async_command(
+            ktp_controller.messages.Command.CHANGE_STUDENT_ACCESS_CODE
+        )
+    except Exception:
+        # Runs after the response has been sent, so there is nobody to
+        # report the failure to but the log.
+        _LOGGER.exception("Failed to request a new student access code")
+        return
+    _LOGGER.info("Requested a new student access code.")
+
+
+@router.post(
+    "/actions/change-student-access-code",
+    status_code=fastapi.status.HTTP_202_ACCEPTED,
+    response_class=fastapi.responses.Response,
+)
+@ktp_controller.wui.auth.require_permission(
+    "wui.invigilator.change-student-access-code"
+)
+async def _post_change_student_access_code(
+    background_tasks: fastapi.BackgroundTasks,
+    session: ktp_controller.wui.auth.Session = fastapi.Depends(
+        ktp_controller.wui.auth.get_current_session
+    ),
+) -> fastapi.responses.Response:
+    # Fire-and-forget: the page refreshes itself via /invigilator/ws
+    # once the agent reports the new code in a status report.
+    background_tasks.add_task(_change_student_access_code, username=session.username)
     return fastapi.responses.Response(status_code=fastapi.status.HTTP_202_ACCEPTED)
 
 

@@ -14,6 +14,26 @@
     </style>
 {% endblock %}
 
+{% block extra_scripts %}
+    <script src="/static/change_access_code_confirm.js"></script>
+{% endblock %}
+
+{% block modals %}
+    {% if can_change_access_code %}
+    <div id="change-access-code-confirm-overlay" class="modal-overlay">
+        <div class="modal-overlay-content">
+            <p>{{ _("Really change the student access code? The current code will stop working for every student using it.") }}</p>
+            <div class="modal-overlay-actions">
+                <button class="change-access-code-confirm-yes"
+                        hx-post="/invigilator/actions/change-student-access-code"
+                        hx-swap="none">{{ _("Yes") }}</button>
+                <button type="button" class="change-access-code-confirm-no">{{ _("No") }}</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}
+
 {% block content %}
 
     <h2>{{ _("Student access code") }}</h2>
