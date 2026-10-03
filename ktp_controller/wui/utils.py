@@ -57,12 +57,24 @@ class BrowserSocketRegistry:
                     )
 
 
+_NOTIFY_ON_MESSAGE_KINDS = frozenset(
+    {
+        # Emitted by the API right after it saves a message into the
+        # Redis-backed RAW_ABITTI2_STATS_MESSAGES list that WUI uses
+        # for the student list view.
+        ktp_controller.messages.MessageKind.ABITTI2_STATS_CHANGED,
+        # Emitted whenever the agent saves a new status report, which
+        # is also the only place the current student access code is
+        # available (it isn't part of the raw stats messages above).
+        ktp_controller.messages.MessageKind.STATUS_REPORT,
+    }
+)
+
+
 async def raw_abitti2_stats_message_listener(registry: BrowserSocketRegistry) -> None:
     """Maintains a persistent connection to the API's ui_websocket and
-    notifies `registry` whenever UI may need a refresh: on
-    abitti2_stats_changed broadcasts (emitted by the API right after
-    it saves a message into the Redis-backed
-    RAW_ABITTI2_STATS_MESSAGES list that WUI uses for data views).
+    notifies `registry` whenever UI may need a refresh: on any message
+    kind in _NOTIFY_ON_MESSAGE_KINDS.
 
     Reconnects with exponential backoff on disconnect, mirroring
     ktp_controller.tui.messages.message_loop.
@@ -79,10 +91,7 @@ async def raw_abitti2_stats_message_listener(registry: BrowserSocketRegistry) ->
                 reconnect_delay = 1
                 async for data in websock:
                     msg_dict = ktp_controller.utils.json_loads_dict(data)
-                    if (
-                        msg_dict.get("kind")
-                        == ktp_controller.messages.MessageKind.ABITTI2_STATS_CHANGED
-                    ):
+                    if msg_dict.get("kind") in _NOTIFY_ON_MESSAGE_KINDS:
                         await registry.notify_all()
         except Exception as e:
             _LOGGER.warning(
