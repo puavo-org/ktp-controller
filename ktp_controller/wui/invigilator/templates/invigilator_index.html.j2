@@ -1,54 +1,9 @@
-{% autoescape true %}
-<!DOCTYPE html>
-<html lang="{{ locale }}">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ _("Invigilator's view") }}</title>
-    <link rel="stylesheet" href="/static/pico.min.css">
+{% extends "_base.html.j2" %}
+
+{% block title %}{{ _("Invigilator's view") }}{% endblock %}
+
+{% block extra_styles %}
     <style>
-      .modal-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(5px);
-        background: rgba(0, 0, 0, 0.75);
-        text-align: center;
-        z-index: 1000;
-      }
-      .modal-overlay.is-visible {
-        display: flex;
-      }
-      .modal-overlay-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        background: var(--pico-card-background-color);
-        color: var(--pico-color);
-        padding: var(--pico-spacing) calc(var(--pico-spacing) * 2);
-        border-radius: var(--pico-border-radius);
-      }
-      .modal-overlay-actions {
-        display: flex;
-        align-items: center;
-        gap: var(--pico-spacing);
-      }
-      .modal-overlay-actions button {
-        width: auto;
-        margin-bottom: 0;
-      }
-      header nav {
-        align-items: center;
-      }
-      header form {
-        margin-bottom: 0;
-      }
-      header button,
-      header select {
-        width: auto;
-      }
       #filters {
         margin-bottom: 20px;
       }
@@ -56,20 +11,13 @@
         max-width: 32ch;
       }
     </style>
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script src="/static/status_updates.js"></script>
-    <script src="/static/locale_switcher.js"></script>
+{% endblock %}
+
+{% block extra_scripts %}
     <script src="/static/end_exam_confirm.js"></script>
-</head>
-<body>
+{% endblock %}
 
-    <div id="connection-lost-overlay" class="modal-overlay">
-        <div class="modal-overlay-content">
-            <p>{{ _("Connection lost at") }} <span id="connection-lost-timestamp"></span></p>
-            <p>{{ _("The page will reload automatically once it's back.") }}</p>
-        </div>
-    </div>
-
+{% block modals %}
     {% if can_end_exam %}
     <div id="end-exam-confirm-overlay" class="modal-overlay">
         <div class="modal-overlay-content">
@@ -86,53 +34,25 @@
         </div>
     </div>
     {% endif %}
+{% endblock %}
 
-    <header class="container">
-        <nav>
-            <ul>
-                <li>{% trans user=user %}Logged in as <strong>{{ user }}</strong>{% endtrans %}</li>
-            </ul>
-            <ul>
-                <li>
-                    <form method="post" action="/locale">
-                        <input type="hidden" name="next" value="{{ request.url.path }}">
-                        <select name="locale" aria-label="{{ _('Language') }}">
-                            <option value="fi" {{ "selected" if locale == "fi" else "" }}>Suomi</option>
-                            <option value="en" {{ "selected" if locale == "en" else "" }}>English</option>
-                            <option value="sv" {{ "selected" if locale == "sv" else "" }}>Svenska</option>
-                        </select>
-                    </form>
-                </li>
-                <li>
-                    <form method="post" action="/logout">
-                        <button type="submit" class="secondary">{{ _("Log out") }}</button>
-                    </form>
-                </li>
-            </ul>
-        </nav>
-    </header>
+{% block content %}
 
-    <main class="container">
+    <h2>{{ _("Students") }}</h2>
 
-        <h2>{{ _("Students") }}</h2>
+    <div id="filters">
+        <input type="text"
+               id="name_birthday_filter"
+               name="name_birthday_filter"
+               value="{{ name_birthday_filter }}"
+               placeholder="{{ _('Filter by student name or birthday...') }}"
+               hx-get=""
+               hx-trigger="keyup changed delay:350ms"
+               hx-target="#student-list-table"
+               hx-swap="outerHTML"
+               hx-include="#filters">
+    </div>
 
-        <div id="filters">
-            <input type="text"
-                   id="name_birthday_filter"
-                   name="name_birthday_filter"
-                   value="{{ name_birthday_filter }}"
-                   placeholder="{{ _('Filter by student name or birthday...') }}"
-                   hx-get=""
-                   hx-trigger="keyup changed delay:350ms"
-                   hx-target="#student-list-table"
-                   hx-swap="outerHTML"
-                   hx-include="#filters">
-        </div>
+    {% include "partials/student_list_table.html.j2" %}
 
-        {% include "partials/student_list_table.html.j2" %}
-
-    </main>
-
-</body>
-</html>
-{% endautoescape %}
+{% endblock %}

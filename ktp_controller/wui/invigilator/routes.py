@@ -35,6 +35,11 @@ _templates = fastapi.templating.Jinja2Templates(
     directory=os.path.join(_thisdir, "templates"),
     context_processors=[ktp_controller.wui.i18n.template_context_processor],
 )
+# jinja2.select_autoescape()'s default extensions don't match our
+# "*.html.j2" filenames, and {% extends %} must be the first top-level
+# statement in a template, so it can't be wrapped in a per-file
+# {% autoescape %} block like our non-inheriting templates are.
+_templates.env.autoescape = True
 _templates.env.add_extension("jinja2.ext.i18n")
 _templates.env.install_null_translations(newstyle=True)  # type: ignore[attr-defined]
 _templates.env.filters["localize_date"] = ktp_controller.wui.i18n.localize_date
