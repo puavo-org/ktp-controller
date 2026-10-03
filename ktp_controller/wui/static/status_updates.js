@@ -43,7 +43,7 @@
       reconnectDelay = 1000;
     });
     sock.addEventListener("message", () => {
-      document.body.dispatchEvent(new Event("student-list-update"));
+      document.body.dispatchEvent(new Event("invigilator-live-update"));
     });
     sock.addEventListener("close", () => {
       hasDisconnected = true;
