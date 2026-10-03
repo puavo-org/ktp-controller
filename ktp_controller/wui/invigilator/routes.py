@@ -217,6 +217,38 @@ async def _get_invigilator(
     )
 
 
+@router.get("/student_access_code", response_class=fastapi.responses.HTMLResponse)
+@ktp_controller.wui.auth.require_permission("wui.invigilator.view")
+async def _get_student_access_code(
+    request: fastapi.Request,
+    session: ktp_controller.wui.auth.Session = fastapi.Depends(
+        ktp_controller.wui.auth.get_current_session
+    ),
+) -> fastapi.responses.HTMLResponse:
+    student_access_code = await ktp_controller.api.client.get_student_access_code()
+
+    request.state.locale = session.locale
+    _ = ktp_controller.wui.i18n.get_gettext(session.locale)
+
+    context = {
+        "student_access_code": student_access_code,
+        "user": session.username,
+    }
+
+    # If the request comes from htmx, return only the code display partial
+    if request.headers.get("HX-Request"):
+        return _templates.TemplateResponse(
+            request,
+            name="partials/student_access_code_display.html.j2",
+            context=context,
+        )
+
+    # Otherwise return the full page
+    return _templates.TemplateResponse(
+        request, name="student_access_code.html.j2", context=context
+    )
+
+
 async def _end_student_exam(
     *, session_uuid: str, student_uuid: str, username: str
 ) -> None:

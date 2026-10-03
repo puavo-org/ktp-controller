@@ -1,0 +1,23 @@
+{% extends "_base.html.j2" %}
+
+{% block title %}{{ _("Student access code") }}{% endblock %}
+
+{% block extra_styles %}
+    <style>
+      #student-access-code-value {
+        font-size: 6rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-align: center;
+        margin: 2rem 0;
+      }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <h2>{{ _("Student access code") }}</h2>
+
+    {% include "partials/student_access_code_display.html.j2" %}
+
+{% endblock %}

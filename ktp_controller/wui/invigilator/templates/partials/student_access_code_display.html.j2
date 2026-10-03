@@ -1,0 +1,9 @@
+<div id="student-access-code"
+     hx-get="/invigilator/student_access_code"
+     hx-trigger="invigilator-live-update from:body throttle:2s"
+     hx-target="this"
+     hx-swap="outerHTML">
+    <p id="student-access-code-value">
+        {{ student_access_code if student_access_code else _("No access code available") }}
+    </p>
+</div>
