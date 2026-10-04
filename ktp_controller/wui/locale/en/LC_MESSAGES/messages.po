@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-03 15:16+0300\n"
+"POT-Creation-Date: 2026-10-04 15:35+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -26,55 +26,59 @@ msgstr "Too many login attempts, please try again later."
 msgid "Incorrect username or password"
 msgstr "Incorrect username or password"
 
-#: ktp_controller/wui/invigilator/routes.py:173
+#: ktp_controller/wui/invigilator/routes.py:174
 msgid "Name"
 msgstr "Name"
 
-#: ktp_controller/wui/invigilator/routes.py:174
+#: ktp_controller/wui/invigilator/routes.py:175
 msgid "Birthday"
 msgstr "Birthday"
 
-#: ktp_controller/wui/invigilator/routes.py:175
+#: ktp_controller/wui/invigilator/routes.py:176
 msgid "State"
 msgstr "State"
 
-#: ktp_controller/wui/invigilator/routes.py:176
+#: ktp_controller/wui/invigilator/routes.py:177
 msgid "Last changed at"
 msgstr "Last changed at"
 
-#: ktp_controller/wui/invigilator/routes.py:177
+#: ktp_controller/wui/invigilator/routes.py:178
 msgid "Exam title"
 msgstr "Exam title"
 
-#: ktp_controller/wui/invigilator/routes.py:182
+#: ktp_controller/wui/invigilator/routes.py:184
+msgid "Allowed to use browsers"
+msgstr "Allowed to use browsers"
+
+#: ktp_controller/wui/invigilator/routes.py:185
 msgid "Action"
 msgstr "Action"
 
-#: ktp_controller/wui/invigilator/routes.py:185
+#: ktp_controller/wui/invigilator/routes.py:189
 msgid "Finished"
 msgstr "Finished"
 
-#: ktp_controller/wui/invigilator/routes.py:186
+#: ktp_controller/wui/invigilator/routes.py:190
 msgid "Active"
 msgstr "Active"
 
-#: ktp_controller/wui/invigilator/routes.py:189
+#: ktp_controller/wui/invigilator/routes.py:193
 msgid "Disconnected"
 msgstr "Disconnected"
 
-#: ktp_controller/wui/invigilator/routes.py:190
+#: ktp_controller/wui/invigilator/routes.py:194
 msgid "Idle"
 msgstr "Idle"
 
-#: ktp_controller/wui/invigilator/routes.py:191
+#: ktp_controller/wui/invigilator/routes.py:195
 msgid "Waiting for auth"
 msgstr "Waiting for auth"
 
-#: ktp_controller/wui/invigilator/routes.py:192
+#: ktp_controller/wui/invigilator/routes.py:196
 msgid "Undefined exam"
 msgstr "Undefined exam"
 
-#: ktp_controller/wui/invigilator/routes.py:193
+#: ktp_controller/wui/invigilator/routes.py:197
 msgid "Unknown issue"
 msgstr "Unknown issue"
 
@@ -149,16 +153,16 @@ msgstr "No access code available"
 msgid "Change access code"
 msgstr "Change access code"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:34
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:45
 msgid "End exam"
 msgstr "End exam"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:38
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:49
 #, python-format
 msgid "No students matching '%(query)s'"
 msgstr "No students matching '%(query)s'"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:38
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:49
 msgid "No students"
 msgstr "No students"
 

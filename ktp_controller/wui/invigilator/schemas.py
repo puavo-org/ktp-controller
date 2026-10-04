@@ -27,3 +27,4 @@ class StudentListItem(pydantic.BaseModel):
     exam_title: pydantic.StrictStr | None
     student_uuid: pydantic.StrictStr
     session_uuid: pydantic.StrictStr
+    is_allowed_to_use_browser: pydantic.StrictBool | None

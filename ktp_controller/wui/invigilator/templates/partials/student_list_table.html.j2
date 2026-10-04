@@ -31,6 +31,17 @@
             <td>{{ (student_list_item.flags | translate_labels(flag_labels)) if student_list_item.state == "flagged" else state_labels[student_list_item.state] }}</td>
             <td>{{ '-' if not student_list_item.last_changed_at else student_list_item.last_changed_at | localize_datetime(locale) }}</td>
             <td>{{ '-' if not student_list_item.exam_title else student_list_item.exam_title }}</td>
+            <td>{% if student_list_item.is_allowed_to_use_browser is none %}???{% else %}<input type="hidden"
+                       id="browser-permission-session-uuid-{{ student_list_item.session_uuid }}"
+                       name="session_uuid"
+                       value="{{ student_list_item.session_uuid }}"><input type="checkbox"
+                       name="allow"
+                       class="browser-permission-checkbox"
+                       hx-post="/invigilator/actions/set-exam-session-permission-to-use-browsers"
+                       hx-include="#browser-permission-session-uuid-{{ student_list_item.session_uuid }}"
+                       hx-swap="none"
+                       {{ "checked" if student_list_item.is_allowed_to_use_browser else "" }}
+                       {{ "" if can_set_browser_permission else "disabled" }}>{% endif %}</td>
             <td>{% if can_end_exam and student_list_item.state != 'finished' %}<button type="button" class="end-exam-button" data-name="{{ student_list_item.name }}" data-session-uuid="{{ student_list_item.session_uuid }}" data-student-uuid="{{ student_list_item.student_uuid }}">{{ _("End exam") }}</button>{% else %}-{% endif %}</td>
         </tr>
         {% else %}

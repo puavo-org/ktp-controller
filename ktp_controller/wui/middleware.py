@@ -38,7 +38,8 @@ class SecurityHeadersMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             "script-src 'self' https://unpkg.com; "
-            "style-src 'self' 'unsafe-inline'"
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:"
         )
         if SETTINGS.session_cookie_secure:
             # A no-op until nginx terminates TLS in front of this app, but

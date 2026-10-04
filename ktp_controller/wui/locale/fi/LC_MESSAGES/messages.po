@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-03 15:16+0300\n"
+"POT-Creation-Date: 2026-10-04 15:35+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -26,55 +26,59 @@ msgstr "Liian monta kirjautumisyritystä, yritä myöhemmin uudelleen."
 msgid "Incorrect username or password"
 msgstr "Väärä käyttäjätunnus tai salasana"
 
-#: ktp_controller/wui/invigilator/routes.py:173
+#: ktp_controller/wui/invigilator/routes.py:174
 msgid "Name"
 msgstr "Nimi"
 
-#: ktp_controller/wui/invigilator/routes.py:174
+#: ktp_controller/wui/invigilator/routes.py:175
 msgid "Birthday"
 msgstr "Syntymäaika"
 
-#: ktp_controller/wui/invigilator/routes.py:175
+#: ktp_controller/wui/invigilator/routes.py:176
 msgid "State"
 msgstr "Tila"
 
-#: ktp_controller/wui/invigilator/routes.py:176
+#: ktp_controller/wui/invigilator/routes.py:177
 msgid "Last changed at"
 msgstr "Viimeksi muuttunut"
 
-#: ktp_controller/wui/invigilator/routes.py:177
+#: ktp_controller/wui/invigilator/routes.py:178
 msgid "Exam title"
 msgstr "Kokeen nimi"
 
-#: ktp_controller/wui/invigilator/routes.py:182
+#: ktp_controller/wui/invigilator/routes.py:184
+msgid "Allowed to use browsers"
+msgstr "Saa käyttää selainta"
+
+#: ktp_controller/wui/invigilator/routes.py:185
 msgid "Action"
 msgstr "Toiminto"
 
-#: ktp_controller/wui/invigilator/routes.py:185
+#: ktp_controller/wui/invigilator/routes.py:189
 msgid "Finished"
 msgstr "Valmis"
 
-#: ktp_controller/wui/invigilator/routes.py:186
+#: ktp_controller/wui/invigilator/routes.py:190
 msgid "Active"
 msgstr "Aktiivinen"
 
-#: ktp_controller/wui/invigilator/routes.py:189
+#: ktp_controller/wui/invigilator/routes.py:193
 msgid "Disconnected"
 msgstr "Yhteys katkennut"
 
-#: ktp_controller/wui/invigilator/routes.py:190
+#: ktp_controller/wui/invigilator/routes.py:194
 msgid "Idle"
 msgstr "Jouten"
 
-#: ktp_controller/wui/invigilator/routes.py:191
+#: ktp_controller/wui/invigilator/routes.py:195
 msgid "Waiting for auth"
 msgstr "Odottaa tunnistautumista"
 
-#: ktp_controller/wui/invigilator/routes.py:192
+#: ktp_controller/wui/invigilator/routes.py:196
 msgid "Undefined exam"
 msgstr "Tuntematon koe"
 
-#: ktp_controller/wui/invigilator/routes.py:193
+#: ktp_controller/wui/invigilator/routes.py:197
 msgid "Unknown issue"
 msgstr "Tuntematon ongelma"
 
@@ -151,16 +155,16 @@ msgstr "Pääsykoodia ei ole saatavilla"
 msgid "Change access code"
 msgstr "Vaihda pääsykoodi"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:34
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:45
 msgid "End exam"
 msgstr "Päätä koe"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:38
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:49
 #, python-format
 msgid "No students matching '%(query)s'"
 msgstr "Ei hakua '%(query)s' vastaavia kokelaita"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:38
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:49
 msgid "No students"
 msgstr "Ei kokelaita"
 

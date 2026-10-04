@@ -119,6 +119,7 @@ async def _get_student_list_items() -> list[schemas.StudentListItem]:
             exam_title=exam_title,
             student_uuid=raw_abitti2_student["studentUuid"],
             session_uuid=raw_abitti2_student["sessionUuid"],
+            is_allowed_to_use_browser=raw_abitti2_student.get("isAllowedToUseBrowser"),
         )
 
         student_list_items.append(student_list_item)
@@ -179,7 +180,10 @@ async def _get_invigilator(
     columns = [
         (field.value, column_labels[field], True)
         for field in _StudentListItemSortableField
-    ] + [(None, _("Action"), False)]
+    ] + [
+        (None, _("Allowed to use browsers"), False),
+        (None, _("Action"), False),
+    ]
 
     state_labels = {
         schemas.StudentState.FINISHED: _("Finished"),
@@ -204,6 +208,10 @@ async def _get_invigilator(
         "name_birthday_filter": name_birthday_filter,
         "user": session.username,
         "can_end_exam": "wui.invigilator.end-exam" in session.permissions,
+        "can_set_browser_permission": (
+            "wui.invigilator.set-exam-session-permission-to-use-browsers"
+            in session.permissions
+        ),
     }
 
     # If the request comes from htmx, return only the table partial
@@ -334,6 +342,63 @@ async def _post_change_student_access_code(
     # Fire-and-forget: the page refreshes itself via /invigilator/ws
     # once the agent reports the new code in a status report.
     background_tasks.add_task(_change_student_access_code, username=session.username)
+    return fastapi.responses.Response(status_code=fastapi.status.HTTP_202_ACCEPTED)
+
+
+async def _set_exam_session_permission_to_use_browsers(
+    *, session_uuid: str, allow: bool, username: str
+) -> None:
+    _LOGGER.info(
+        "User %r is setting browser-use permission for session %s to %s...",
+        username,
+        session_uuid,
+        allow,
+    )
+    try:
+        await ktp_controller.api.client.async_command(
+            ktp_controller.messages.Command.SET_EXAM_SESSION_PERMISSION_TO_USE_BROWSERS,
+            session_uuid=session_uuid,
+            allow=allow,
+        )
+    except Exception:
+        # Runs after the response has been sent, so there is nobody to
+        # report the failure to but the log.
+        _LOGGER.exception(
+            "Failed to set browser-use permission for session %s", session_uuid
+        )
+        return
+    _LOGGER.info(
+        "Requested browser-use permission change for session %s.", session_uuid
+    )
+
+
+@router.post(
+    "/actions/set-exam-session-permission-to-use-browsers",
+    status_code=fastapi.status.HTTP_202_ACCEPTED,
+    response_class=fastapi.responses.Response,
+)
+@ktp_controller.wui.auth.require_permission(
+    "wui.invigilator.set-exam-session-permission-to-use-browsers"
+)
+async def _post_set_exam_session_permission_to_use_browsers(
+    background_tasks: fastapi.BackgroundTasks,
+    session_uuid: uuid.UUID = fastapi.Form(...),
+    # A checkbox is only submitted when checked, per standard HTML form
+    # semantics (which htmx follows for its own triggering element), so a
+    # missing "allow" field means the checkbox was unchecked.
+    allow: bool = fastapi.Form(False),
+    session: ktp_controller.wui.auth.Session = fastapi.Depends(
+        ktp_controller.wui.auth.get_current_session
+    ),
+) -> fastapi.responses.Response:
+    # Fire-and-forget: the student list refreshes itself via
+    # /invigilator/ws once Abitti2 reports the change.
+    background_tasks.add_task(
+        _set_exam_session_permission_to_use_browsers,
+        session_uuid=str(session_uuid),
+        allow=allow,
+        username=session.username,
+    )
     return fastapi.responses.Response(status_code=fastapi.status.HTTP_202_ACCEPTED)
 
 
