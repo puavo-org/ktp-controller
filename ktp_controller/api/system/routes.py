@@ -70,7 +70,7 @@ async def _handle_websocket(
     try:
         await websock.app.state.pubsub_broadcaster.register_websocket(websock, channel)
         await _send_async_command(
-            ktp_controller.messages.CommandData(
+            ktp_controller.messages.SimpleCommandData(
                 command=ktp_controller.messages.Command.CREATE_STATUS_REPORT
             )
         )

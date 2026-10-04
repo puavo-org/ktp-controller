@@ -20,6 +20,9 @@ __all__ = [
     "MessageKind",
     # Types:
     "CommandData",
+    "CommandDataAdapter",
+    "SimpleCommandData",
+    "SetExamSessionPermissionToUseBrowsersCommandData",
     "CommandResultData",
     "PongData",
     "StatusReportData",
@@ -47,6 +50,9 @@ class Command(enum.StrEnum):
     CRASH_AGENT = "crash_agent"
     CREATE_STATUS_REPORT = "create_status_report"
     CHANGE_STUDENT_ACCESS_CODE = "change_student_access_code"
+    SET_EXAM_SESSION_PERMISSION_TO_USE_BROWSERS = (
+        "set_exam_session_permission_to_use_browsers"
+    )
 
     def __str__(self) -> str:
         return self.value
@@ -80,8 +86,37 @@ class MessageKind(enum.StrEnum):
 # Types:
 
 
-class CommandData(ktp_controller.pydantic.BaseModel):
-    command: Command
+class SimpleCommandData(ktp_controller.pydantic.BaseModel):
+    """CommandData for every command that takes no parameters."""
+
+    command: typing.Literal[
+        Command.ENABLE_AUTO_CONTROL,
+        Command.DISABLE_AUTO_CONTROL,
+        Command.STOP_CURRENT_EXAM_PACKAGE,
+        Command.START_CURRENT_EXAM_PACKAGE,
+        Command.ARCHIVE_CURRENT_EXAM_PACKAGE,
+        Command.PREPARE_CURRENT_EXAM_PACKAGE,
+        Command.CRASH_AGENT,
+        Command.CREATE_STATUS_REPORT,
+        Command.CHANGE_STUDENT_ACCESS_CODE,
+    ]
+
+
+class SetExamSessionPermissionToUseBrowsersCommandData(
+    ktp_controller.pydantic.BaseModel
+):
+    command: typing.Literal[Command.SET_EXAM_SESSION_PERMISSION_TO_USE_BROWSERS] = (
+        Command.SET_EXAM_SESSION_PERMISSION_TO_USE_BROWSERS
+    )
+    session_uuid: str
+    allow: bool
+
+
+CommandData = typing.Annotated[
+    SimpleCommandData | SetExamSessionPermissionToUseBrowsersCommandData,
+    pydantic.Field(discriminator="command"),
+]
+CommandDataAdapter: pydantic.TypeAdapter[typing.Any] = pydantic.TypeAdapter(CommandData)
 
 
 class CommandResultData(ktp_controller.pydantic.BaseModel):

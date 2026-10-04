@@ -203,6 +203,9 @@ class Agent:
             str(
                 ktp_controller.messages.Command.CHANGE_STUDENT_ACCESS_CODE
             ): self.__command_change_student_access_code,
+            str(
+                ktp_controller.messages.Command.SET_EXAM_SESSION_PERMISSION_TO_USE_BROWSERS
+            ): self.__command_set_exam_session_permission_to_use_browsers,
         }
 
     @property
@@ -245,6 +248,32 @@ class Agent:
                 command_status = ktp_controller.messages.CommandStatus.OK
             else:
                 command_status = ktp_controller.messages.CommandStatus.OK_NO_CHANGE
+        except Exception as exception:
+            error_message = str(exception)
+            command_status = ktp_controller.messages.CommandStatus.ERROR
+
+        return ktp_controller.messages.CommandResultData(
+            command_uuid=command_uuid,
+            command_status=command_status,
+            error_message=error_message,
+        )
+
+    async def __command_set_exam_session_permission_to_use_browsers(
+        self,
+        command_uuid: pydantic.UUID4,
+        command_data: ktp_controller.messages.CommandData,
+    ) -> ktp_controller.messages.CommandResultData:
+        assert isinstance(
+            command_data,
+            ktp_controller.messages.SetExamSessionPermissionToUseBrowsersCommandData,
+        )
+        try:
+            await ktp_controller.abitti2.client.set_exam_session_permission_to_use_browsers(
+                session_uuid=command_data.session_uuid,
+                is_allowed_to_use_browsers=command_data.allow,
+            )
+            command_status = ktp_controller.messages.CommandStatus.OK
+            error_message = None
         except Exception as exception:
             error_message = str(exception)
             command_status = ktp_controller.messages.CommandStatus.ERROR
@@ -860,7 +889,7 @@ class Agent:
                 if message_kind == "command":
                     try:
                         command_data = (
-                            ktp_controller.messages.CommandData.model_validate(
+                            ktp_controller.messages.CommandDataAdapter.validate_python(
                                 message["data"]
                             )
                         )
