@@ -5,7 +5,7 @@ TODO2 and so on. When an item is done, remove it from this document.
 
 When adding new items, always update the following line to define the
 ID of the next TODO item.
-Next ID: TODO10
+Next ID: TODO11
 
 ## TODO1
 Examine and handle currently unhandled messages from Abitti2 1.37.1:
@@ -29,3 +29,8 @@ in `ktp_controller.redis`. Naturally, adapt all call sites.
 WUI: get rid of external htmx (unpkg.com) dependency and vendor it in:
 allows us to get rid of unpkg.com in script-src CSP, which must be
 updated in this TODO also.
+
+
+## TODO10
+
+WUI: get rid of unsafe-line in style-src CSP.
