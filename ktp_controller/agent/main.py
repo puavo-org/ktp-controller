@@ -272,6 +272,11 @@ class Agent:
                 session_uuid=command_data.session_uuid,
                 is_allowed_to_use_browsers=command_data.allow,
             )
+            if not command_data.allow:
+                await ktp_controller.abitti2.client.end_student_exam(
+                    session_uuid=command_data.session_uuid,
+                    student_uuid=command_data.student_uuid,
+                )
             command_status = ktp_controller.messages.CommandStatus.OK
             error_message = None
         except Exception as exception:

@@ -346,7 +346,7 @@ async def _post_change_student_access_code(
 
 
 async def _set_exam_session_permission_to_use_browsers(
-    *, session_uuid: str, allow: bool, username: str
+    *, session_uuid: str, student_uuid: str, allow: bool, username: str
 ) -> None:
     _LOGGER.info(
         "User %r is setting browser-use permission for session %s to %s...",
@@ -358,6 +358,7 @@ async def _set_exam_session_permission_to_use_browsers(
         await ktp_controller.api.client.async_command(
             ktp_controller.messages.Command.SET_EXAM_SESSION_PERMISSION_TO_USE_BROWSERS,
             session_uuid=session_uuid,
+            student_uuid=student_uuid,
             allow=allow,
         )
     except Exception:
@@ -383,6 +384,7 @@ async def _set_exam_session_permission_to_use_browsers(
 async def _post_set_exam_session_permission_to_use_browsers(
     background_tasks: fastapi.BackgroundTasks,
     session_uuid: uuid.UUID = fastapi.Form(...),
+    student_uuid: uuid.UUID = fastapi.Form(...),
     # A checkbox is only submitted when checked, per standard HTML form
     # semantics (which htmx follows for its own triggering element), so a
     # missing "allow" field means the checkbox was unchecked.
@@ -396,6 +398,7 @@ async def _post_set_exam_session_permission_to_use_browsers(
     background_tasks.add_task(
         _set_exam_session_permission_to_use_browsers,
         session_uuid=str(session_uuid),
+        student_uuid=str(student_uuid),
         allow=allow,
         username=session.username,
     )

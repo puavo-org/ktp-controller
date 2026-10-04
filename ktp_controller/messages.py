@@ -109,6 +109,7 @@ class SetExamSessionPermissionToUseBrowsersCommandData(
         Command.SET_EXAM_SESSION_PERMISSION_TO_USE_BROWSERS
     )
     session_uuid: str
+    student_uuid: str
     allow: bool
 
 

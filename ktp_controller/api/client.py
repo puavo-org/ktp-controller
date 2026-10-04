@@ -221,12 +221,15 @@ async def async_command(
     command: ktp_controller.messages.Command,
     *,
     session_uuid: str | None = None,
+    student_uuid: str | None = None,
     allow: bool | None = None,
     **kwargs: typing.Any,
 ) -> str:
     json_body: dict[str, typing.Any] = {"command": command}
     if session_uuid is not None:
         json_body["session_uuid"] = session_uuid
+    if student_uuid is not None:
+        json_body["student_uuid"] = student_uuid
     if allow is not None:
         json_body["allow"] = allow
     kwargs["json"] = json_body

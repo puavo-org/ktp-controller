@@ -537,7 +537,11 @@ def test_invigilator_view_disables_browser_permission_checkbox_without_permissio
     assert "disabled" in response.text
 
 
-_SET_BROWSER_PERMISSION_FORM = {"session_uuid": _SESSION_UUID, "allow": "true"}
+_SET_BROWSER_PERMISSION_FORM = {
+    "session_uuid": _SESSION_UUID,
+    "student_uuid": _STUDENT_UUID,
+    "allow": "true",
+}
 
 
 def test_set_exam_session_permission_to_use_browsers_requires_login(wui_client, mocker):
@@ -607,6 +611,7 @@ def test_set_exam_session_permission_to_use_browsers_calls_api(
     async_command_mock.assert_awaited_once_with(
         ktp_controller.messages.Command.SET_EXAM_SESSION_PERMISSION_TO_USE_BROWSERS,
         session_uuid=_SESSION_UUID,
+        student_uuid=_STUDENT_UUID,
         allow=True,
     )
 
@@ -632,7 +637,7 @@ def test_set_exam_session_permission_to_use_browsers_unchecked_means_disallow(
 
     response = wui_client.post(
         "/invigilator/actions/set-exam-session-permission-to-use-browsers",
-        data={"session_uuid": _SESSION_UUID},
+        data={"session_uuid": _SESSION_UUID, "student_uuid": _STUDENT_UUID},
         headers=_SAME_ORIGIN_HEADERS,
     )
 
@@ -640,6 +645,7 @@ def test_set_exam_session_permission_to_use_browsers_unchecked_means_disallow(
     async_command_mock.assert_awaited_once_with(
         ktp_controller.messages.Command.SET_EXAM_SESSION_PERMISSION_TO_USE_BROWSERS,
         session_uuid=_SESSION_UUID,
+        student_uuid=_STUDENT_UUID,
         allow=False,
     )
 
@@ -662,7 +668,11 @@ def test_set_exam_session_permission_to_use_browsers_rejects_invalid_uuid(
 
     response = wui_client.post(
         "/invigilator/actions/set-exam-session-permission-to-use-browsers",
-        data={"session_uuid": "not-a-uuid", "allow": "true"},
+        data={
+            "session_uuid": "not-a-uuid",
+            "student_uuid": _STUDENT_UUID,
+            "allow": "true",
+        },
         headers=_SAME_ORIGIN_HEADERS,
     )
 

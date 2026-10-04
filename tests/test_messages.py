@@ -52,6 +52,7 @@ def test_command_data_adapter_discriminates_set_exam_session_permission_command(
                 ktp_controller.messages.Command.SET_EXAM_SESSION_PERMISSION_TO_USE_BROWSERS
             ),
             "session_uuid": "some-uuid",
+            "student_uuid": "some-student-uuid",
             "allow": True,
         }
     )
@@ -61,7 +62,21 @@ def test_command_data_adapter_discriminates_set_exam_session_permission_command(
         ktp_controller.messages.SetExamSessionPermissionToUseBrowsersCommandData,
     )
     assert command_data.session_uuid == "some-uuid"
+    assert command_data.student_uuid == "some-student-uuid"
     assert command_data.allow is True
+
+
+def test_set_exam_session_permission_to_use_browsers_command_data_requires_student_uuid():
+    with pytest.raises(pydantic.ValidationError):
+        ktp_controller.messages.SetExamSessionPermissionToUseBrowsersCommandData.model_validate(
+            {
+                "command": (
+                    ktp_controller.messages.Command.SET_EXAM_SESSION_PERMISSION_TO_USE_BROWSERS
+                ),
+                "session_uuid": "some-uuid",
+                "allow": True,
+            }
+        )
 
 
 def test_command_data_adapter_rejects_unknown_command():
