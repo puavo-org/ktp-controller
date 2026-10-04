@@ -31,10 +31,11 @@ def db_engine():
     Base.metadata.create_all(bind=engine)
     # Mirrors the seed data inserted by
     # alembic/versions/bb0203ef063b_add_users_roles_and_permissions.py,
-    # alembic/versions/90f7a03d459e_add_wui_invigilator_end_exam_permission.py
-    # and
+    # alembic/versions/90f7a03d459e_add_wui_invigilator_end_exam_permission.py,
     # alembic/versions/b84e65b5f7d7_add_wui_invigilator_change_student_.py,
-    # which this in-memory schema bypasses.
+    # alembic/versions/203a49866db9_add_wui_invigilator_set_exam_session_.py
+    # and the subsequent wui.actions.* permission-rename migration, which
+    # this in-memory schema bypasses.
     with sessionmaker(bind=engine)() as db:
         db.add(
             ktp_controller.api.models.Role(
@@ -45,10 +46,14 @@ def db_engine():
                         dbid=None, name="wui.invigilator.view"
                     ),
                     ktp_controller.api.models.Permission(
-                        dbid=None, name="wui.invigilator.end-exam"
+                        dbid=None, name="wui.actions.end-exam"
                     ),
                     ktp_controller.api.models.Permission(
-                        dbid=None, name="wui.invigilator.change-student-access-code"
+                        dbid=None, name="wui.actions.change-student-access-code"
+                    ),
+                    ktp_controller.api.models.Permission(
+                        dbid=None,
+                        name="wui.actions.set-exam-session-permission-to-use-browsers",
                     ),
                 ],
             )

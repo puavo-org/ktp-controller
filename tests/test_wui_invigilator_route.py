@@ -2,7 +2,6 @@ import fastapi.testclient
 import pytest
 import starlette.testclient
 
-import ktp_controller.messages
 import ktp_controller.wui.auth
 import ktp_controller.wui.main
 
@@ -307,10 +306,6 @@ def test_invigilator_ws_registers_and_unregisters(wui_client, mocker):
     unregister_mock.assert_awaited_once()
 
 
-_SAME_ORIGIN_HEADERS = {"origin": "http://testserver"}
-_END_EXAM_FORM = {"session_uuid": _SESSION_UUID, "student_uuid": _STUDENT_UUID}
-
-
 def test_invigilator_view_shows_end_exam_button_with_permission(
     wui_client, override_session, mocker
 ):
@@ -322,14 +317,14 @@ def test_invigilator_view_shows_end_exam_button_with_permission(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
             username="alice",
-            permissions=frozenset({"wui.invigilator.view", "wui.invigilator.end-exam"}),
+            permissions=frozenset({"wui.invigilator.view", "wui.actions.end-exam"}),
         )
     )
 
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert 'hx-post="/invigilator/actions/end-exam"' in response.text
+    assert 'hx-post="/actions/end-exam"' in response.text
     assert f'data-session-uuid="{_SESSION_UUID}"' in response.text
     assert f'data-student-uuid="{_STUDENT_UUID}"' in response.text
     assert "hx-confirm" not in response.text
@@ -356,120 +351,7 @@ def test_invigilator_view_hides_end_exam_button_without_permission(
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert "/invigilator/actions/end-exam" not in response.text
-
-
-def test_end_exam_requires_login(wui_client, mocker):
-    end_student_exam_mock = mocker.patch(
-        "ktp_controller.abitti2.client.end_student_exam", new=mocker.AsyncMock()
-    )
-
-    response = wui_client.post(
-        "/invigilator/actions/end-exam",
-        data=_END_EXAM_FORM,
-        headers=_SAME_ORIGIN_HEADERS,
-    )
-
-    assert response.status_code == 303
-    assert response.headers["location"].startswith("/login")
-    end_student_exam_mock.assert_not_called()
-
-
-def test_end_exam_forbidden_without_permission(wui_client, override_session, mocker):
-    end_student_exam_mock = mocker.patch(
-        "ktp_controller.abitti2.client.end_student_exam", new=mocker.AsyncMock()
-    )
-    override_session(
-        ktp_controller.wui.auth.Session(
-            session_id="test-session",
-            username="alice",
-            permissions=frozenset({"wui.invigilator.view"}),
-        )
-    )
-
-    response = wui_client.post(
-        "/invigilator/actions/end-exam",
-        data=_END_EXAM_FORM,
-        headers=_SAME_ORIGIN_HEADERS,
-    )
-
-    assert response.status_code == 403
-    end_student_exam_mock.assert_not_called()
-
-
-def test_end_exam_calls_abitti2(wui_client, override_session, mocker):
-    end_student_exam_mock = mocker.patch(
-        "ktp_controller.abitti2.client.end_student_exam", new=mocker.AsyncMock()
-    )
-    override_session(
-        ktp_controller.wui.auth.Session(
-            session_id="test-session",
-            username="alice",
-            permissions=frozenset({"wui.invigilator.end-exam"}),
-        )
-    )
-
-    response = wui_client.post(
-        "/invigilator/actions/end-exam",
-        data=_END_EXAM_FORM,
-        headers=_SAME_ORIGIN_HEADERS,
-    )
-
-    assert response.status_code == 202
-    assert response.content == b""
-    end_student_exam_mock.assert_awaited_once_with(
-        session_uuid=_SESSION_UUID, student_uuid=_STUDENT_UUID
-    )
-
-
-def test_end_exam_rejects_invalid_uuid(wui_client, override_session, mocker):
-    end_student_exam_mock = mocker.patch(
-        "ktp_controller.abitti2.client.end_student_exam", new=mocker.AsyncMock()
-    )
-    override_session(
-        ktp_controller.wui.auth.Session(
-            session_id="test-session",
-            username="alice",
-            permissions=frozenset({"wui.invigilator.end-exam"}),
-        )
-    )
-
-    response = wui_client.post(
-        "/invigilator/actions/end-exam",
-        data={**_END_EXAM_FORM, "student_uuid": "not-a-uuid"},
-        headers=_SAME_ORIGIN_HEADERS,
-    )
-
-    assert response.status_code == 422
-    end_student_exam_mock.assert_not_called()
-
-
-def test_end_exam_logs_abitti2_failure(wui_client, override_session, mocker, caplog):
-    mocker.patch(
-        "ktp_controller.abitti2.client.end_student_exam",
-        new=mocker.AsyncMock(side_effect=RuntimeError("abitti2 is down")),
-    )
-    override_session(
-        ktp_controller.wui.auth.Session(
-            session_id="test-session",
-            username="alice",
-            permissions=frozenset({"wui.invigilator.end-exam"}),
-        )
-    )
-
-    response = wui_client.post(
-        "/invigilator/actions/end-exam",
-        data=_END_EXAM_FORM,
-        headers=_SAME_ORIGIN_HEADERS,
-    )
-
-    assert response.status_code == 202
-    assert any(
-        record.levelname == "ERROR"
-        and "Failed to end exam" in record.getMessage()
-        and record.exc_info is not None
-        for record in caplog.records
-    )
+    assert "/actions/end-exam" not in response.text
 
 
 def test_invigilator_view_renders_question_marks_when_browser_permission_missing(
@@ -486,7 +368,7 @@ def test_invigilator_view_renders_question_marks_when_browser_permission_missing
             permissions=frozenset(
                 {
                     "wui.invigilator.view",
-                    "wui.invigilator.set-exam-session-permission-to-use-browsers",
+                    "wui.actions.set-exam-session-permission-to-use-browsers",
                 }
             ),
         )
@@ -513,7 +395,7 @@ def test_invigilator_view_renders_checked_browser_permission_checkbox(
             permissions=frozenset(
                 {
                     "wui.invigilator.view",
-                    "wui.invigilator.set-exam-session-permission-to-use-browsers",
+                    "wui.actions.set-exam-session-permission-to-use-browsers",
                 }
             ),
         )
@@ -526,7 +408,7 @@ def test_invigilator_view_renders_checked_browser_permission_checkbox(
     assert "checked" in response.text
     assert "disabled" not in response.text
     assert (
-        'hx-post="/invigilator/actions/set-exam-session-permission-to-use-browsers"'
+        'hx-post="/actions/set-exam-session-permission-to-use-browsers"'
         in response.text
     )
 
@@ -545,7 +427,7 @@ def test_invigilator_view_renders_unchecked_browser_permission_checkbox(
             permissions=frozenset(
                 {
                     "wui.invigilator.view",
-                    "wui.invigilator.set-exam-session-permission-to-use-browsers",
+                    "wui.actions.set-exam-session-permission-to-use-browsers",
                 }
             ),
         )
@@ -579,178 +461,3 @@ def test_invigilator_view_disables_browser_permission_checkbox_without_permissio
     assert response.status_code == 200
     assert 'class="browser-permission-checkbox"' in response.text
     assert "disabled" in response.text
-
-
-_SET_BROWSER_PERMISSION_FORM = {
-    "session_uuid": _SESSION_UUID,
-    "student_uuid": _STUDENT_UUID,
-    "allow": "true",
-}
-
-
-def test_set_exam_session_permission_to_use_browsers_requires_login(wui_client, mocker):
-    async_command_mock = mocker.patch(
-        "ktp_controller.api.client.async_command", new=mocker.AsyncMock()
-    )
-
-    response = wui_client.post(
-        "/invigilator/actions/set-exam-session-permission-to-use-browsers",
-        data=_SET_BROWSER_PERMISSION_FORM,
-        headers=_SAME_ORIGIN_HEADERS,
-    )
-
-    assert response.status_code == 303
-    assert response.headers["location"].startswith("/login")
-    async_command_mock.assert_not_called()
-
-
-def test_set_exam_session_permission_to_use_browsers_forbidden_without_permission(
-    wui_client, override_session, mocker
-):
-    async_command_mock = mocker.patch(
-        "ktp_controller.api.client.async_command", new=mocker.AsyncMock()
-    )
-    override_session(
-        ktp_controller.wui.auth.Session(
-            session_id="test-session",
-            username="alice",
-            permissions=frozenset({"wui.invigilator.view"}),
-        )
-    )
-
-    response = wui_client.post(
-        "/invigilator/actions/set-exam-session-permission-to-use-browsers",
-        data=_SET_BROWSER_PERMISSION_FORM,
-        headers=_SAME_ORIGIN_HEADERS,
-    )
-
-    assert response.status_code == 403
-    async_command_mock.assert_not_called()
-
-
-def test_set_exam_session_permission_to_use_browsers_calls_api(
-    wui_client, override_session, mocker
-):
-    async_command_mock = mocker.patch(
-        "ktp_controller.api.client.async_command", new=mocker.AsyncMock()
-    )
-    override_session(
-        ktp_controller.wui.auth.Session(
-            session_id="test-session",
-            username="alice",
-            permissions=frozenset(
-                {"wui.invigilator.set-exam-session-permission-to-use-browsers"}
-            ),
-        )
-    )
-
-    response = wui_client.post(
-        "/invigilator/actions/set-exam-session-permission-to-use-browsers",
-        data=_SET_BROWSER_PERMISSION_FORM,
-        headers=_SAME_ORIGIN_HEADERS,
-    )
-
-    assert response.status_code == 202
-    assert response.content == b""
-    async_command_mock.assert_awaited_once_with(
-        ktp_controller.messages.Command.SET_EXAM_SESSION_PERMISSION_TO_USE_BROWSERS,
-        session_uuid=_SESSION_UUID,
-        student_uuid=_STUDENT_UUID,
-        allow=True,
-    )
-
-
-def test_set_exam_session_permission_to_use_browsers_unchecked_means_disallow(
-    wui_client, override_session, mocker
-):
-    # A checkbox is only submitted when checked, per standard HTML form
-    # semantics, so unchecking it means the "allow" field is simply absent
-    # from the request.
-    async_command_mock = mocker.patch(
-        "ktp_controller.api.client.async_command", new=mocker.AsyncMock()
-    )
-    override_session(
-        ktp_controller.wui.auth.Session(
-            session_id="test-session",
-            username="alice",
-            permissions=frozenset(
-                {"wui.invigilator.set-exam-session-permission-to-use-browsers"}
-            ),
-        )
-    )
-
-    response = wui_client.post(
-        "/invigilator/actions/set-exam-session-permission-to-use-browsers",
-        data={"session_uuid": _SESSION_UUID, "student_uuid": _STUDENT_UUID},
-        headers=_SAME_ORIGIN_HEADERS,
-    )
-
-    assert response.status_code == 202
-    async_command_mock.assert_awaited_once_with(
-        ktp_controller.messages.Command.SET_EXAM_SESSION_PERMISSION_TO_USE_BROWSERS,
-        session_uuid=_SESSION_UUID,
-        student_uuid=_STUDENT_UUID,
-        allow=False,
-    )
-
-
-def test_set_exam_session_permission_to_use_browsers_rejects_invalid_uuid(
-    wui_client, override_session, mocker
-):
-    async_command_mock = mocker.patch(
-        "ktp_controller.api.client.async_command", new=mocker.AsyncMock()
-    )
-    override_session(
-        ktp_controller.wui.auth.Session(
-            session_id="test-session",
-            username="alice",
-            permissions=frozenset(
-                {"wui.invigilator.set-exam-session-permission-to-use-browsers"}
-            ),
-        )
-    )
-
-    response = wui_client.post(
-        "/invigilator/actions/set-exam-session-permission-to-use-browsers",
-        data={
-            "session_uuid": "not-a-uuid",
-            "student_uuid": _STUDENT_UUID,
-            "allow": "true",
-        },
-        headers=_SAME_ORIGIN_HEADERS,
-    )
-
-    assert response.status_code == 422
-    async_command_mock.assert_not_called()
-
-
-def test_set_exam_session_permission_to_use_browsers_logs_api_failure(
-    wui_client, override_session, mocker, caplog
-):
-    mocker.patch(
-        "ktp_controller.api.client.async_command",
-        side_effect=RuntimeError("boom"),
-    )
-    override_session(
-        ktp_controller.wui.auth.Session(
-            session_id="test-session",
-            username="alice",
-            permissions=frozenset(
-                {"wui.invigilator.set-exam-session-permission-to-use-browsers"}
-            ),
-        )
-    )
-
-    response = wui_client.post(
-        "/invigilator/actions/set-exam-session-permission-to-use-browsers",
-        data=_SET_BROWSER_PERMISSION_FORM,
-        headers=_SAME_ORIGIN_HEADERS,
-    )
-
-    assert response.status_code == 202
-    assert any(
-        record.levelname == "ERROR"
-        and "Failed to set browser-use permission" in record.getMessage()
-        and record.exc_info is not None
-        for record in caplog.records
-    )

@@ -40,7 +40,7 @@
                        value="{{ student_list_item.student_uuid }}"><input type="checkbox"
                        name="allow"
                        class="browser-permission-checkbox"
-                       hx-post="/invigilator/actions/set-exam-session-permission-to-use-browsers"
+                       hx-post="/actions/set-exam-session-permission-to-use-browsers"
                        hx-include="#browser-permission-session-uuid-{{ student_list_item.session_uuid }}, #browser-permission-student-uuid-{{ student_list_item.student_uuid }}"
                        hx-swap="none"
                        {{ "checked" if student_list_item.is_allowed_to_use_browser else "" }}

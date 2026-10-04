@@ -14,6 +14,7 @@ import fastapi.staticfiles
 import uvicorn
 
 # Internal imports
+import ktp_controller.wui.actions.routes
 import ktp_controller.wui.auth
 import ktp_controller.wui.auth_routes
 import ktp_controller.wui.invigilator.routes
@@ -56,6 +57,7 @@ APP.state.invigilator_ws_registry = ktp_controller.wui.utils.BrowserSocketRegist
 APP.add_middleware(ktp_controller.wui.middleware.OriginCheckMiddleware)
 APP.add_middleware(ktp_controller.wui.middleware.SecurityHeadersMiddleware)
 APP.include_router(ktp_controller.wui.invigilator.routes.router, prefix="/invigilator")
+APP.include_router(ktp_controller.wui.actions.routes.router, prefix="/actions")
 APP.include_router(ktp_controller.wui.auth_routes.router)
 APP.mount(
     "/static",

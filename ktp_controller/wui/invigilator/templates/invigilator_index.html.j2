@@ -15,7 +15,7 @@
             <input type="hidden" id="end-exam-confirm-student-uuid" name="student_uuid">
             <div class="modal-overlay-actions">
                 <button class="end-exam-confirm-yes"
-                        hx-post="/invigilator/actions/end-exam"
+                        hx-post="/actions/end-exam"
                         hx-include="#end-exam-confirm-session-uuid, #end-exam-confirm-student-uuid"
                         hx-swap="none">{{ _("Yes") }}</button>
                 <button type="button" class="end-exam-confirm-no">{{ _("No") }}</button>

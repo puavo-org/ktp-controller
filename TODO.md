@@ -23,18 +23,3 @@ Unify/merge `ktp_controller.wui.utils.BrowserSocketRegistry` with
 `ktp_controller.api.utils.PubSubBroadcaster` and place it for example
 in `ktp_controller.redis`. Naturally, adapt all call sites.
 
-
-## TODO11
-
-WUI: Just like all /invigilator/* endpoints are in
-`ktp_controller/wui/invigilator` dir, all /actions/* endpoints should
-ne in `ktp_controller/wui/actions` dir.
-
-Moreover, currently permission names are bit confusing too and they do
-not resemble this same logical division. Rename all permissions, so
-that all permissions required by `/actions/*` endpoints have
-`wui.actions.` perfix and all all permissions required by
-`/invigilator/*` endpoints have `wui.invigilator.` prefix.
-
-Do not modify existing alembic migrations, but add new one to make
-necessary changes.

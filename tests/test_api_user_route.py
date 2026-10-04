@@ -9,8 +9,9 @@ def test_get_or_create_user_permissions_creates_user_with_default_role(client, t
 
     assert response.status_code == 200
     assert response.json() == [
-        "wui.invigilator.change-student-access-code",
-        "wui.invigilator.end-exam",
+        "wui.actions.change-student-access-code",
+        "wui.actions.end-exam",
+        "wui.actions.set-exam-session-permission-to-use-browsers",
         "wui.invigilator.view",
     ]
 
