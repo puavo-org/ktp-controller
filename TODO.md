@@ -5,7 +5,7 @@ TODO2 and so on. When an item is done, remove it from this document.
 
 When adding new items, always update the following line to define the
 ID of the next TODO item.
-Next ID: TODO11
+Next ID: TODO12
 
 ## TODO1
 Examine and handle currently unhandled messages from Abitti2 1.37.1:
@@ -30,3 +30,18 @@ WUI: get rid of external htmx (unpkg.com) dependency and vendor it in:
 allows us to get rid of unpkg.com in script-src CSP, which must be
 updated in this TODO also.
 
+
+## TODO11
+
+WUI: Just like all /invigilator/* endpoints are in
+`ktp_controller/wui/invigilator` dir, all /actions/* endpoints should
+ne in `ktp_controller/wui/actions` dir.
+
+Moreover, currently permission names are bit confusing too and they do
+not resemble this same logical division. Rename all permissions, so
+that all permissions required by `/actions/*` endpoints have
+`wui.actions.` perfix and all all permissions required by
+`/invigilator/*` endpoints have `wui.invigilator.` prefix.
+
+Do not modify existing alembic migrations, but add new one to make
+necessary changes.
