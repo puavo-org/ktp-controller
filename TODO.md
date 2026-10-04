@@ -5,7 +5,7 @@ TODO2 and so on. When an item is done, remove it from this document.
 
 When adding new items, always update the following line to define the
 ID of the next TODO item.
-Next ID: TODO8
+Next ID: TODO10
 
 ## TODO1
 Examine and handle currently unhandled messages from Abitti2 1.37.1:
@@ -23,3 +23,47 @@ Unify/merge `ktp_controller.wui.utils.BrowserSocketRegistry` with
 `ktp_controller.api.utils.PubSubBroadcaster` and place it for example
 in `ktp_controller.redis`. Naturally, adapt all call sites.
 
+
+## TODO8
+
+WUI: get rid of external htmx (unpkg.com) dependency and vendor it in:
+allows us to get rid of unpkg.com in script-src CSP, which must be
+updated in this TODO also.
+
+
+## TODO9
+
+WUI: Add an extra column to Invigilator's student item list: "Allowed
+to use browsers" (bool, rendered as simple checkbox). It gets its
+value from Abitti2 raw stats message, from `isAllowedToUseBrowser`
+field. If it happens that `isAllowedToUseBrowser` does not exist or is
+null, then `???` should be rendered instead of
+checkbox. `docs/raw_abitti2_stats_message*.json` have examples of raw
+Abitti2 stats messages.
+
+When the checkbox is toggled, client must call
+
+`POST
+/invigilator/actions/set-exam-session-permission-to-use-browsers`
+which accepts data:
+
+```
+{
+    session_uuid: str,
+    allow: bool,
+}
+```
+
+`allow` is the new value of the checkbox.
+
+`POST
+/invigilator/actions/set-exam-session-permission-to-use-browsers` must
+require
+`invigilator.actions.set-exam-session-permission-to-use-browsers`
+permission, which must be granted to `invigilator` role.
+
+`POST
+/invigilator/actions/set-exam-session-permission-to-user-browsers` is
+still unimplemented and must implemented too in this TODO item. It
+must send an async `SET_EXAM_SESSION_PERMISSION_TO_USE_BROWSERS`
+request to agent via API POST `/api/v1/system/async_command` endpoint.
