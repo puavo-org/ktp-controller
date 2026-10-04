@@ -13,7 +13,7 @@
                 hx-target="#student-list-table"
                 hx-swap="outerHTML"
                 hx-include="#filters"
-                style="cursor: pointer;">
+                class="sortable-column">
                 {{ column_label }}
                 {% if sort_by == column_key %}{{ '▲' if order_now == 'asc' else '▼' }}{% endif %}
             </th>
@@ -49,7 +49,7 @@
         </tr>
         {% else %}
         <tr>
-            <td colspan="{{ columns | length }}" style="text-align: center;">{% if name_birthday_filter %}{{ _("No students matching '%(query)s'", query=name_birthday_filter) }}{% else %}{{ _("No students") }}{% endif %}</td>
+            <td colspan="{{ columns | length }}" class="text-center">{% if name_birthday_filter %}{{ _("No students matching '%(query)s'", query=name_birthday_filter) }}{% else %}{{ _("No students") }}{% endif %}</td>
         </tr>
         {% endfor %}
     </tbody>

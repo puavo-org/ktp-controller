@@ -1,0 +1,76 @@
+/* Shared across all invigilator pages (formerly _base.html.j2 <style>) */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+  background: rgba(0, 0, 0, 0.75);
+  text-align: center;
+  z-index: 1000;
+}
+.modal-overlay.is-visible {
+  display: flex;
+}
+.modal-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--pico-card-background-color);
+  color: var(--pico-color);
+  padding: var(--pico-spacing) calc(var(--pico-spacing) * 2);
+  border-radius: var(--pico-border-radius);
+}
+.modal-overlay-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--pico-spacing);
+}
+.modal-overlay-actions button {
+  width: auto;
+  margin-bottom: 0;
+}
+header nav {
+  align-items: center;
+}
+header form {
+  margin-bottom: 0;
+}
+header button,
+header select {
+  width: auto;
+}
+
+/* invigilator_index.html.j2 */
+#filters {
+  margin-bottom: 20px;
+}
+#name_birthday_filter {
+  max-width: 32ch;
+}
+
+/* student_access_code.html.j2 */
+#student-access-code-value {
+  font-size: 6rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+/* student_list_table.html.j2 */
+.sortable-column {
+  cursor: pointer;
+}
+.text-center {
+  text-align: center;
+}
+
+/* login.html.j2 */
+.login-container {
+  max-width: 24rem;
+}
+.login-error {
+  color: var(--pico-del-color);
+}

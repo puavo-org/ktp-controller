@@ -5,51 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="/static/pico.min.css">
-    <style>
-      .modal-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(5px);
-        background: rgba(0, 0, 0, 0.75);
-        text-align: center;
-        z-index: 1000;
-      }
-      .modal-overlay.is-visible {
-        display: flex;
-      }
-      .modal-overlay-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        background: var(--pico-card-background-color);
-        color: var(--pico-color);
-        padding: var(--pico-spacing) calc(var(--pico-spacing) * 2);
-        border-radius: var(--pico-border-radius);
-      }
-      .modal-overlay-actions {
-        display: flex;
-        align-items: center;
-        gap: var(--pico-spacing);
-      }
-      .modal-overlay-actions button {
-        width: auto;
-        margin-bottom: 0;
-      }
-      header nav {
-        align-items: center;
-      }
-      header form {
-        margin-bottom: 0;
-      }
-      header button,
-      header select {
-        width: auto;
-      }
-    </style>
-    {% block extra_styles %}{% endblock %}
+    <link rel="stylesheet" href="/static/app.css">
+    <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="/static/status_updates.js"></script>
     <script src="/static/locale_switcher.js"></script>

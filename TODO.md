@@ -30,7 +30,3 @@ WUI: get rid of external htmx (unpkg.com) dependency and vendor it in:
 allows us to get rid of unpkg.com in script-src CSP, which must be
 updated in this TODO also.
 
-
-## TODO10
-
-WUI: get rid of unsafe-line in style-src CSP.

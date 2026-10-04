@@ -6,14 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ _("Log in") }}</title>
     <link rel="stylesheet" href="/static/pico.min.css">
-    <style>
-      main.container {
-        max-width: 24rem;
-      }
-    </style>
+    <link rel="stylesheet" href="/static/app.css">
 </head>
 <body>
-<main class="container">
+<main class="container login-container">
 
     {% if not session %}
     <nav>
@@ -37,7 +33,7 @@
     <h2>{{ _("Log in") }}</h2>
 
     {% if error %}
-    <p style="color: var(--pico-del-color);">{{ error }}</p>
+    <p class="login-error">{{ error }}</p>
     {% endif %}
 
     <form method="post" action="/login">
