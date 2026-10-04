@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-04 15:35+0300\n"
+"POT-Creation-Date: 2026-10-04 22:15+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -82,36 +82,36 @@ msgstr "Undefined exam"
 msgid "Unknown issue"
 msgstr "Unknown issue"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:62
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:19
 msgid "Connection lost at"
 msgstr "Connection lost at"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:63
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:20
 msgid "The page will reload automatically once it's back."
 msgstr "The page will reload automatically once it's back."
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:72
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:41
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:29
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:30
 msgid "Students"
 msgstr "Students"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:73
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:30
 #: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
-#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:39
+#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:27
 msgid "Student access code"
 msgstr "Student access code"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:76
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:33
 #, python-format
 msgid "Logged in as <strong>%(user)s</strong>"
 msgstr "Logged in as <strong>%(user)s</strong>"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:82
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:39
 msgid "Language"
 msgstr "Language"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:91
-#: ktp_controller/wui/templates/login.html.j2:34
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:48
+#: ktp_controller/wui/templates/login.html.j2:30
 msgid "Log out"
 msgstr "Log out"
 
@@ -119,25 +119,25 @@ msgstr "Log out"
 msgid "Invigilator's view"
 msgstr "Invigilator's view"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:24
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:13
 msgid "Really end exam for <strong id=\"end-exam-confirm-name\"></strong>?"
 msgstr "Really end exam for <strong id=\"end-exam-confirm-name\"></strong>?"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:31
-#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:29
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:20
+#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:17
 msgid "Yes"
 msgstr "Yes"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:32
-#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:30
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:21
+#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:18
 msgid "No"
 msgstr "No"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:48
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:37
 msgid "Filter by student name or birthday..."
 msgstr "Filter by student name or birthday..."
 
-#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:25
+#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:13
 msgid ""
 "Really change the student access code? The current code will stop working"
 " for every student using it."
@@ -153,39 +153,39 @@ msgstr "No access code available"
 msgid "Change access code"
 msgstr "Change access code"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:45
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:48
 msgid "End exam"
 msgstr "End exam"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:49
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:52
 #, python-format
 msgid "No students matching '%(query)s'"
 msgstr "No students matching '%(query)s'"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:49
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:52
 msgid "No students"
 msgstr "No students"
 
 #: ktp_controller/wui/templates/login.html.j2:7
-#: ktp_controller/wui/templates/login.html.j2:37
-#: ktp_controller/wui/templates/login.html.j2:50
+#: ktp_controller/wui/templates/login.html.j2:33
+#: ktp_controller/wui/templates/login.html.j2:46
 msgid "Log in"
 msgstr "Log in"
 
-#: ktp_controller/wui/templates/login.html.j2:29
+#: ktp_controller/wui/templates/login.html.j2:25
 msgid "Logged in"
 msgstr "Logged in"
 
-#: ktp_controller/wui/templates/login.html.j2:31
+#: ktp_controller/wui/templates/login.html.j2:27
 #, python-format
 msgid "Logged in as <strong>%(username)s</strong>."
 msgstr "Logged in as <strong>%(username)s</strong>."
 
-#: ktp_controller/wui/templates/login.html.j2:46
+#: ktp_controller/wui/templates/login.html.j2:42
 msgid "Username"
 msgstr "Username"
 
-#: ktp_controller/wui/templates/login.html.j2:48
+#: ktp_controller/wui/templates/login.html.j2:44
 msgid "Password"
 msgstr "Password"
 
