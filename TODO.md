@@ -24,13 +24,6 @@ Unify/merge `ktp_controller.wui.utils.BrowserSocketRegistry` with
 in `ktp_controller.redis`. Naturally, adapt all call sites.
 
 
-## TODO8
-
-WUI: get rid of external htmx (unpkg.com) dependency and vendor it in:
-allows us to get rid of unpkg.com in script-src CSP, which must be
-updated in this TODO also.
-
-
 ## TODO11
 
 WUI: Just like all /invigilator/* endpoints are in

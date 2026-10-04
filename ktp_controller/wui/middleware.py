@@ -37,7 +37,7 @@ class SecurityHeadersMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
         response.headers["Referrer-Policy"] = "same-origin"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' https://unpkg.com; "
+            "script-src 'self'; "
             "style-src 'self'; "
             "img-src 'self' data:"
         )

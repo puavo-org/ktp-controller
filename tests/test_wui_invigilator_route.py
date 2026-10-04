@@ -192,6 +192,50 @@ def test_invigilator_view_locale_switcher_has_no_inline_script(
     assert static_response.status_code == 200
 
 
+def test_invigilator_view_loads_vendored_htmx(wui_client, override_session, mocker):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert '<script src="/static/htmx.min.js">' in response.text
+    assert "unpkg.com" not in response.text
+
+    static_response = wui_client.get("/static/htmx.min.js")
+    assert static_response.status_code == 200
+
+
+def test_invigilator_view_csp_has_no_unpkg(wui_client, override_session, mocker):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    csp = response.headers["content-security-policy"]
+    assert "unpkg.com" not in csp
+    assert "script-src 'self';" in csp
+
+
 def test_invigilator_view_forbidden_without_permission(wui_client, override_session):
     override_session(
         ktp_controller.wui.auth.Session(
