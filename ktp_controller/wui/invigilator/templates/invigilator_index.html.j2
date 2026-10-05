@@ -45,6 +45,8 @@
 
     <h2>{{ _("Students") }}</h2>
 
+    {% include "partials/student_state_counts.html.j2" %}
+
     <div id="filters">
         <input type="text"
                id="name_birthday_filter"

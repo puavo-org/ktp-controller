@@ -1,4 +1,5 @@
 # Standard library imports
+import collections
 import datetime
 import enum
 import logging
@@ -167,6 +168,8 @@ async def _get_invigilator(
 
     can_reset_audio = any(item.last_audio is not None for item in student_list_items)
 
+    state_counts = collections.Counter(item.state for item in student_list_items)
+
     if name_birthday_filter:
         query = name_birthday_filter.lower()
         student_list_items = [
@@ -228,6 +231,9 @@ async def _get_invigilator(
         "can_allow_audio_replay": (
             "wui.actions.allow-audio-replay" in session.permissions
         ),
+        "finished_count": state_counts[schemas.StudentState.FINISHED],
+        "active_count": state_counts[schemas.StudentState.ACTIVE],
+        "requires_attention_count": state_counts[schemas.StudentState.FLAGGED],
     }
 
     # If the request comes from htmx, return only the table partial
