@@ -1,0 +1,40 @@
+{
+  "type": "stats",
+  "data": {
+    "students": [
+      {
+        "studentUuid": "9a0c0ea1-f52f-4555-8c70-1382b2e5d191",
+        "sessionUuid": "82a7dd37-ca10-4bd6-b329-28e2cb153e1a",
+        "firstNames": "Testi Pekka",
+        "lastName": "Testaaja",
+        "studentBd": "010107",
+        "examTitle": "Odotusaulakoe â�� kaikki vastaustyypit",
+        "examUuid": "598668e8-dea0-4ef4-b4b7-474c45368289",
+        "authorized": true,
+        "authorizedTimestamp": 1791217879701,
+        "examStarted": "2026-10-05T16:31:42.967Z",
+        "examFinishedAt": null,
+        "nsaLastHeartbeatTimestamp": null,
+        "sessionStatus": "ok",
+        "casRestricted": true,
+        "casStatus": "forbidden",
+        "updateTime": "2026-10-05T16:34:12.382Z",
+        "lastAccessedMedia": "1",
+        "isAllowedToUseBrowser": true,
+        "loginInitiatedOnBrowser": true,
+        "studentStatus": "in-exam-browser",
+        "hostname": "johdanto-rivitys.koe.abitti.net",
+        "isConnected": true,
+        "disconnectionCount": 1,
+        "lastDisconnectedAt": null
+      }
+    ],
+    "refreshedCount": 0,
+    "examStatus": {
+      "hasStarted": true,
+      "startTime": "2026-10-05T16:31:42.967Z"
+    },
+    "answerPaperCount": 1,
+    "audioInSomeExam": true
+  }
+}
