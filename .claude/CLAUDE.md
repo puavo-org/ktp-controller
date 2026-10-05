@@ -53,6 +53,21 @@ Key technology: Python3, FastAPI, Uvicorn, htmx, Redis
 
 - Provide responsive web UI for exam monitoring and controlling tasks.
 
+### Conventions
+
+- Every `POST /actions/<name>` endpoint (in `ktp_controller/wui/actions/`)
+  is gated by its own `wui.actions.<name>` permission, checked via the
+  `require_permission` decorator and granted to roles through its own
+  Alembic migration (see `alembic/versions/*_add_wui_actions_*`). The
+  invigilator template also gets a matching `can_<name>` context flag
+  (set in `ktp_controller/wui/invigilator/routes.py`) controlling
+  whether the corresponding button/control renders at all.
+
+- Translatable strings (`_()`/`{% trans %}` in Python and `.j2`
+  templates) require running `make i18n-extract`, `make i18n-update`,
+  and `make i18n-compile` (in that order) to add/refresh the `fi`/`sv`/`en`
+  `.po`/`.mo` files before `make check`'s `check-i18n` target will pass.
+
 
 # Git instructions
 
