@@ -4,6 +4,7 @@
 
 {% block extra_scripts %}
     <script src="/static/end_exam_confirm.js"></script>
+    <script src="/static/allow_audio_replay_confirm.js"></script>
 {% endblock %}
 
 {% block modals %}
@@ -19,6 +20,21 @@
                         hx-include="#end-exam-confirm-session-uuid, #end-exam-confirm-student-uuid"
                         hx-swap="none">{{ _("Yes") }}</button>
                 <button type="button" class="end-exam-confirm-no">{{ _("No") }}</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if can_allow_audio_replay %}
+    <div id="allow-audio-replay-confirm-overlay" class="modal-overlay">
+        <div class="modal-overlay-content">
+            <p>{% trans %}Allow student <strong id="allow-audio-replay-confirm-name"></strong> to replay audio <strong id="allow-audio-replay-confirm-last-audio"></strong> in exam <strong id="allow-audio-replay-confirm-exam-title"></strong>?{% endtrans %}</p>
+            <input type="hidden" id="allow-audio-replay-confirm-student-uuid" name="student_uuid">
+            <div class="modal-overlay-actions">
+                <button class="allow-audio-replay-confirm-yes"
+                        hx-post="/actions/allow-audio-replay"
+                        hx-include="#allow-audio-replay-confirm-student-uuid"
+                        hx-swap="none">{{ _("Allow") }}</button>
+                <button type="button" class="allow-audio-replay-confirm-no">{{ _("Cancel") }}</button>
             </div>
         </div>
     </div>
