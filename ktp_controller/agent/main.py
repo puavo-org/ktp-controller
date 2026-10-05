@@ -206,6 +206,9 @@ class Agent:
             str(
                 ktp_controller.messages.Command.SET_EXAM_SESSION_PERMISSION_TO_USE_BROWSERS
             ): self.__command_set_exam_session_permission_to_use_browsers,
+            str(
+                ktp_controller.messages.Command.ALLOW_AUDIO_REPLAY
+            ): self.__command_allow_audio_replay,
         }
 
     @property
@@ -277,6 +280,30 @@ class Agent:
                     session_uuid=command_data.session_uuid,
                     student_uuid=command_data.student_uuid,
                 )
+            command_status = ktp_controller.messages.CommandStatus.OK
+            error_message = None
+        except Exception as exception:
+            error_message = str(exception)
+            command_status = ktp_controller.messages.CommandStatus.ERROR
+
+        return ktp_controller.messages.CommandResultData(
+            command_uuid=command_uuid,
+            command_status=command_status,
+            error_message=error_message,
+        )
+
+    async def __command_allow_audio_replay(
+        self,
+        command_uuid: pydantic.UUID4,
+        command_data: ktp_controller.messages.CommandData,
+    ) -> ktp_controller.messages.CommandResultData:
+        assert isinstance(
+            command_data, ktp_controller.messages.AllowAudioReplayCommandData
+        )
+        try:
+            await ktp_controller.abitti2.client.reset_last_audio(
+                student_uuid=command_data.student_uuid,
+            )
             command_status = ktp_controller.messages.CommandStatus.OK
             error_message = None
         except Exception as exception:
