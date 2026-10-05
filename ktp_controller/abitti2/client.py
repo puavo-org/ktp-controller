@@ -33,6 +33,7 @@ __all__ = [
     "reset",
     "end_student_exam",
     "download_answers_file",
+    "reset_last_audio",
 ]
 
 
