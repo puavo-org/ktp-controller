@@ -238,3 +238,10 @@ async def set_exam_session_permission_to_use_browsers(
         "/api/allow-all-browsers",
         json={"allow": is_allowed_to_use_browsers, "sessionUuid": session_uuid},
     )
+
+
+async def reset_last_audio(student_uuid: str) -> None:
+    await _post(
+        "/api/reset-last-audio",
+        json={"studentUuid": student_uuid},
+    )
