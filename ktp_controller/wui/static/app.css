@@ -50,6 +50,31 @@ header select {
   max-width: 32ch;
 }
 
+/* student_state_counts.html.j2 */
+#student-state-counts {
+  margin: 0.25rem 0 1.25rem;
+  font-size: 0.85rem;
+}
+.pill {
+  display: inline-block;
+  padding: 0.15rem 0.65rem;
+  border-radius: 1rem;
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+.pill-attention {
+  background-color: #fff3cd;
+  color: #7a5d00;
+}
+.pill-active {
+  background-color: #d4edda;
+  color: #155724;
+}
+.pill-finished {
+  background-color: #cfe2ff;
+  color: #1b4f8f;
+}
+
 /* student_access_code.html.j2 */
 #student-access-code-value {
   font-size: 6rem;
