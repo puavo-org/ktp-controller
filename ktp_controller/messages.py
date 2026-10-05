@@ -23,6 +23,7 @@ __all__ = [
     "CommandDataAdapter",
     "SimpleCommandData",
     "SetExamSessionPermissionToUseBrowsersCommandData",
+    "AllowAudioReplayCommandData",
     "CommandResultData",
     "PongData",
     "StatusReportData",
@@ -53,6 +54,7 @@ class Command(enum.StrEnum):
     SET_EXAM_SESSION_PERMISSION_TO_USE_BROWSERS = (
         "set_exam_session_permission_to_use_browsers"
     )
+    ALLOW_AUDIO_REPLAY = "allow_audio_replay"
 
     def __str__(self) -> str:
         return self.value
@@ -113,8 +115,15 @@ class SetExamSessionPermissionToUseBrowsersCommandData(
     allow: bool
 
 
+class AllowAudioReplayCommandData(ktp_controller.pydantic.BaseModel):
+    command: typing.Literal[Command.ALLOW_AUDIO_REPLAY] = Command.ALLOW_AUDIO_REPLAY
+    student_uuid: str
+
+
 CommandData = typing.Annotated[
-    SimpleCommandData | SetExamSessionPermissionToUseBrowsersCommandData,
+    SimpleCommandData
+    | SetExamSessionPermissionToUseBrowsersCommandData
+    | AllowAudioReplayCommandData,
     pydantic.Field(discriminator="command"),
 ]
 CommandDataAdapter: pydantic.TypeAdapter[typing.Any] = pydantic.TypeAdapter(CommandData)

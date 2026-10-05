@@ -84,3 +84,29 @@ def test_command_data_adapter_rejects_unknown_command():
         ktp_controller.messages.CommandDataAdapter.validate_python(
             {"command": "not_a_real_command"}
         )
+
+
+def test_simple_command_data_rejects_allow_audio_replay_command():
+    with pytest.raises(pydantic.ValidationError):
+        ktp_controller.messages.SimpleCommandData.model_validate(
+            {"command": ktp_controller.messages.Command.ALLOW_AUDIO_REPLAY}
+        )
+
+
+def test_allow_audio_replay_command_data_requires_student_uuid():
+    with pytest.raises(pydantic.ValidationError):
+        ktp_controller.messages.AllowAudioReplayCommandData.model_validate(
+            {"command": ktp_controller.messages.Command.ALLOW_AUDIO_REPLAY}
+        )
+
+
+def test_command_data_adapter_discriminates_allow_audio_replay_command():
+    command_data = ktp_controller.messages.CommandDataAdapter.validate_python(
+        {
+            "command": ktp_controller.messages.Command.ALLOW_AUDIO_REPLAY,
+            "student_uuid": "some-student-uuid",
+        }
+    )
+
+    assert isinstance(command_data, ktp_controller.messages.AllowAudioReplayCommandData)
+    assert command_data.student_uuid == "some-student-uuid"
