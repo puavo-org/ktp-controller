@@ -75,6 +75,29 @@ Key technology: Python3, FastAPI, Uvicorn, htmx, Redis
 - Always ensure `make check` and `make test` succeeds before committing.
 - Prefer many smaller logical commits than one massive.
 
+## Layered commit order for multi-file features
+
+Structure a feature that touches several files/layers as a bottom-up
+sequence of commits, each a logical step toward the final solution and
+each independently passing `make check`/`make test`:
+
+1. **Capability commits.** Add new capability — library/client
+   functions, schema or data-model additions, new enum values, etc. —
+   without changing any existing behavior yet. One new
+   feature/capability per commit. Dead code (not yet called from
+   anywhere) is fine at this stage.
+2. **Plumbing commits.** Wire the new capability into the surrounding
+   system — dispatch tables, routes, intermediate layers. Split this
+   into multiple logically separated commits too, rather than one
+   big plumbing commit, where the plumbing has distinct layers of its
+   own.
+3. **Final connecting commit.** The last step that actually makes the
+   feature work end-to-end (e.g. UI wiring, flipping a flag). Since
+   everything underneath is already in place, this is normally a small
+   diff.
+4. **Tests.** Commit test changes separately from the implementation
+   they cover, preferably as their own commit(s).
+
 
 # Summary instructions
 
