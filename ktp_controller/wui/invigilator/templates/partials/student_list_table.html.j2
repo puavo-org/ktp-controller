@@ -55,4 +55,11 @@
         {% endfor %}
     </tbody>
 </table>
+{# This partial is also {% include %}'d from invigilator_index.html.j2,
+   which already renders the counts once right after the Students h2. Only
+   emit the out-of-band counts update here when this template is the direct
+   htmx response for a table refresh (filter, sort, live update) - otherwise
+   the counts would be duplicated in the initial full-page HTML. #}
+{% if request.headers.get("HX-Request") %}
 {% include "partials/student_state_counts.html.j2" %}
+{% endif %}
