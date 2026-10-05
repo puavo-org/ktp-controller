@@ -161,3 +161,43 @@ async def _post_set_exam_session_permission_to_use_browsers(
         username=session.username,
     )
     return fastapi.responses.Response(status_code=fastapi.status.HTTP_202_ACCEPTED)
+
+
+async def _allow_audio_replay(*, student_uuid: str, username: str) -> None:
+    _LOGGER.info(
+        "User %r is allowing audio replay for student %s...", username, student_uuid
+    )
+    try:
+        await ktp_controller.api.client.async_command(
+            ktp_controller.messages.Command.ALLOW_AUDIO_REPLAY,
+            student_uuid=student_uuid,
+        )
+    except Exception:
+        # Runs after the response has been sent, so there is nobody to
+        # report the failure to but the log.
+        _LOGGER.exception("Failed to allow audio replay for student %s", student_uuid)
+        return
+    _LOGGER.info("Requested audio replay allowance for student %s.", student_uuid)
+
+
+@router.post(
+    "/allow-audio-replay",
+    status_code=fastapi.status.HTTP_202_ACCEPTED,
+    response_class=fastapi.responses.Response,
+)
+@ktp_controller.wui.auth.require_permission("wui.actions.allow-audio-replay")
+async def _post_allow_audio_replay(
+    background_tasks: fastapi.BackgroundTasks,
+    student_uuid: uuid.UUID = fastapi.Form(...),
+    session: ktp_controller.wui.auth.Session = fastapi.Depends(
+        ktp_controller.wui.auth.get_current_session
+    ),
+) -> fastapi.responses.Response:
+    # Fire-and-forget: the student list refreshes itself via
+    # /invigilator/ws once Abitti2 reports the change.
+    background_tasks.add_task(
+        _allow_audio_replay,
+        student_uuid=str(student_uuid),
+        username=session.username,
+    )
+    return fastapi.responses.Response(status_code=fastapi.status.HTTP_202_ACCEPTED)

@@ -404,3 +404,124 @@ def test_set_exam_session_permission_to_use_browsers_logs_api_failure(
         and record.exc_info is not None
         for record in caplog.records
     )
+
+
+_ALLOW_AUDIO_REPLAY_FORM = {"student_uuid": _STUDENT_UUID}
+
+
+def test_allow_audio_replay_requires_login(wui_client, mocker):
+    async_command_mock = mocker.patch(
+        "ktp_controller.api.client.async_command", new=mocker.AsyncMock()
+    )
+
+    response = wui_client.post(
+        "/actions/allow-audio-replay",
+        data=_ALLOW_AUDIO_REPLAY_FORM,
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"].startswith("/login")
+    async_command_mock.assert_not_called()
+
+
+def test_allow_audio_replay_forbidden_without_permission(
+    wui_client, override_session, mocker
+):
+    async_command_mock = mocker.patch(
+        "ktp_controller.api.client.async_command", new=mocker.AsyncMock()
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+        )
+    )
+
+    response = wui_client.post(
+        "/actions/allow-audio-replay",
+        data=_ALLOW_AUDIO_REPLAY_FORM,
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 403
+    async_command_mock.assert_not_called()
+
+
+def test_allow_audio_replay_calls_api(wui_client, override_session, mocker):
+    async_command_mock = mocker.patch(
+        "ktp_controller.api.client.async_command", new=mocker.AsyncMock()
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.actions.allow-audio-replay"}),
+        )
+    )
+
+    response = wui_client.post(
+        "/actions/allow-audio-replay",
+        data=_ALLOW_AUDIO_REPLAY_FORM,
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 202
+    assert response.content == b""
+    async_command_mock.assert_awaited_once_with(
+        ktp_controller.messages.Command.ALLOW_AUDIO_REPLAY,
+        student_uuid=_STUDENT_UUID,
+    )
+
+
+def test_allow_audio_replay_rejects_invalid_uuid(wui_client, override_session, mocker):
+    async_command_mock = mocker.patch(
+        "ktp_controller.api.client.async_command", new=mocker.AsyncMock()
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.actions.allow-audio-replay"}),
+        )
+    )
+
+    response = wui_client.post(
+        "/actions/allow-audio-replay",
+        data={"student_uuid": "not-a-uuid"},
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 422
+    async_command_mock.assert_not_called()
+
+
+def test_allow_audio_replay_logs_api_failure(
+    wui_client, override_session, mocker, caplog
+):
+    mocker.patch(
+        "ktp_controller.api.client.async_command",
+        side_effect=RuntimeError("boom"),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.actions.allow-audio-replay"}),
+        )
+    )
+
+    response = wui_client.post(
+        "/actions/allow-audio-replay",
+        data=_ALLOW_AUDIO_REPLAY_FORM,
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 202
+    assert any(
+        record.levelname == "ERROR"
+        and "Failed to allow audio replay" in record.getMessage()
+        and record.exc_info is not None
+        for record in caplog.records
+    )
