@@ -581,3 +581,129 @@ def test_invigilator_view_hides_allow_audio_replay_button_without_permission(
     # permission-gated, like the "End exam" button.
     assert "Last played audio" in response.text
     assert "allow-audio-replay-button" not in response.text
+
+
+def _raw_abitti2_stats_messages_with_states():
+    active_student = {
+        "studentUuid": "11111111-1111-1111-1111-111111111111",
+        "sessionUuid": "21111111-1111-1111-1111-111111111111",
+        "firstNames": "Aino",
+        "lastName": "Aktiivinen",
+        "studentBd": "010105",
+        "studentStatus": "exam-in-progress",
+        "sessionStatus": "exam_in_progress",
+        "updateTime": None,
+        "examFinishedAt": None,
+        "examTitle": "Matematiikka",
+    }
+    finished_student = {
+        "studentUuid": "22222222-2222-2222-2222-222222222222",
+        "sessionUuid": "22222222-2222-2222-2222-222222222223",
+        "firstNames": "Feeri",
+        "lastName": "Finito",
+        "studentBd": "020205",
+        "studentStatus": "exam-in-progress",
+        "sessionStatus": "session_ended",
+        "updateTime": None,
+        "examFinishedAt": None,
+        "examTitle": "Matematiikka",
+    }
+    flagged_student = {
+        "studentUuid": "33333333-3333-3333-3333-333333333333",
+        "sessionUuid": "33333333-3333-3333-3333-333333333334",
+        "firstNames": "Hupsu",
+        "lastName": "Huomio",
+        "studentBd": "030305",
+        "studentStatus": "exam-in-progress",
+        "sessionStatus": "exam_in_progress",
+        "updateTime": None,
+        "examFinishedAt": None,
+        "examTitle": None,
+    }
+    data = {"students": [active_student, finished_student, flagged_student]}
+    return [{"data": data}]
+
+
+def test_invigilator_view_renders_student_state_counts(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages_with_states(),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert 'id="student-state-counts"' in response.text
+    assert '<span class="pill pill-attention">Requires attention 1</span>' in (
+        response.text
+    )
+    assert '<span class="pill pill-active">Active 1</span>' in response.text
+    assert '<span class="pill pill-finished">Finished 1</span>' in response.text
+
+
+def test_invigilator_view_student_state_counts_ignore_name_birthday_filter(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages_with_states(),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get(
+        "/invigilator/", params={"name_birthday_filter": "Aktiivinen"}
+    )
+
+    assert response.status_code == 200
+    assert "Aino Aktiivinen" in response.text
+    assert "Feeri Finito" not in response.text
+    assert "Hupsu Huomio" not in response.text
+    assert '<span class="pill pill-attention">Requires attention 1</span>' in (
+        response.text
+    )
+    assert '<span class="pill pill-active">Active 1</span>' in response.text
+    assert '<span class="pill pill-finished">Finished 1</span>' in response.text
+
+
+def test_invigilator_view_student_state_counts_present_in_htmx_partial(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages_with_states(),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/", headers={"HX-Request": "true"})
+
+    assert response.status_code == 200
+    assert 'id="student-state-counts" hx-swap-oob="true"' in response.text
+    assert '<span class="pill pill-attention">Requires attention 1</span>' in (
+        response.text
+    )
+    assert '<span class="pill pill-active">Active 1</span>' in response.text
+    assert '<span class="pill pill-finished">Finished 1</span>' in response.text
