@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-04 22:15+0300\n"
+"POT-Creation-Date: 2026-10-05 22:21+0300\n"
 "PO-Revision-Date: 2026-09-27 20:42+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv\n"
@@ -26,59 +26,63 @@ msgstr "För många inloggningsförsök, försök igen senare."
 msgid "Incorrect username or password"
 msgstr "Fel användarnamn eller lösenord"
 
-#: ktp_controller/wui/invigilator/routes.py:174
+#: ktp_controller/wui/invigilator/routes.py:184
 msgid "Name"
 msgstr "Namn"
 
-#: ktp_controller/wui/invigilator/routes.py:175
+#: ktp_controller/wui/invigilator/routes.py:185
 msgid "Birthday"
 msgstr "Födelsedatum"
 
-#: ktp_controller/wui/invigilator/routes.py:176
+#: ktp_controller/wui/invigilator/routes.py:186
 msgid "State"
 msgstr "Status"
 
-#: ktp_controller/wui/invigilator/routes.py:177
+#: ktp_controller/wui/invigilator/routes.py:187
 msgid "Last changed at"
 msgstr "Senast ändrad"
 
-#: ktp_controller/wui/invigilator/routes.py:178
+#: ktp_controller/wui/invigilator/routes.py:188
 msgid "Exam title"
 msgstr "Provets namn"
 
-#: ktp_controller/wui/invigilator/routes.py:184
+#: ktp_controller/wui/invigilator/routes.py:195
 msgid "Allowed to use browsers"
 msgstr "Tillåten att använda webbläsare"
 
-#: ktp_controller/wui/invigilator/routes.py:185
+#: ktp_controller/wui/invigilator/routes.py:196
+msgid "Last played audio"
+msgstr "Den senast lyssnade inspelningen"
+
+#: ktp_controller/wui/invigilator/routes.py:197
 msgid "Action"
 msgstr "Åtgärd"
 
-#: ktp_controller/wui/invigilator/routes.py:189
+#: ktp_controller/wui/invigilator/routes.py:201
 msgid "Finished"
 msgstr "Avslutad"
 
-#: ktp_controller/wui/invigilator/routes.py:190
+#: ktp_controller/wui/invigilator/routes.py:202
 msgid "Active"
 msgstr "Aktiv"
 
-#: ktp_controller/wui/invigilator/routes.py:193
+#: ktp_controller/wui/invigilator/routes.py:205
 msgid "Disconnected"
 msgstr "Frånkopplad"
 
-#: ktp_controller/wui/invigilator/routes.py:194
+#: ktp_controller/wui/invigilator/routes.py:206
 msgid "Idle"
 msgstr "Inaktiv"
 
-#: ktp_controller/wui/invigilator/routes.py:195
+#: ktp_controller/wui/invigilator/routes.py:207
 msgid "Waiting for auth"
 msgstr "Väntar på autentisering"
 
-#: ktp_controller/wui/invigilator/routes.py:196
+#: ktp_controller/wui/invigilator/routes.py:208
 msgid "Undefined exam"
 msgstr "Odefinierat prov"
 
-#: ktp_controller/wui/invigilator/routes.py:197
+#: ktp_controller/wui/invigilator/routes.py:209
 msgid "Unknown issue"
 msgstr "Okänt problem"
 
@@ -91,7 +95,7 @@ msgid "The page will reload automatically once it's back."
 msgstr "Sidan laddas om automatiskt när anslutningen återställts."
 
 #: ktp_controller/wui/invigilator/templates/_base.html.j2:29
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:30
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:46
 msgid "Students"
 msgstr "Studerande"
 
@@ -119,23 +123,43 @@ msgstr "Logga ut"
 msgid "Invigilator's view"
 msgstr "Övervakarens vy"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:13
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:14
 msgid "Really end exam for <strong id=\"end-exam-confirm-name\"></strong>?"
 msgstr ""
 "Avsluta verkligen provet för <strong id=\"end-exam-confirm-"
 "name\"></strong>?"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:20
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:21
 #: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:17
 msgid "Yes"
 msgstr "Ja"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:21
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:22
 #: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:18
 msgid "No"
 msgstr "Nej"
 
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:30
+msgid ""
+"Allow student <strong id=\"allow-audio-replay-confirm-name\"></strong> to"
+" replay audio <strong id=\"allow-audio-replay-confirm-last-"
+"audio\"></strong> in exam <strong id=\"allow-audio-replay-confirm-exam-"
+"title\"></strong>?"
+msgstr ""
+"Ska man tillåta examinand <strong id=\"allow-audio-replay-confirm-"
+"name\"></strong> att spela upp inspelningen <strong id=\"allow-audio-"
+"replay-confirm-last-audio\"></strong> igen i provet <strong id=\"allow-"
+"audio-replay-confirm-exam-title\"></strong>?"
+
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:36
+msgid "Allow"
+msgstr "Tillåt"
+
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:37
+msgid "Cancel"
+msgstr "Avbryt"
+
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:53
 msgid "Filter by student name or birthday..."
 msgstr "Filtrera enligt namn eller födelsedatum..."
 
@@ -156,15 +180,20 @@ msgid "Change access code"
 msgstr "Byt åtkomstkod"
 
 #: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:48
+#, python-format
+msgid "Allow replaying audio %(n)s"
+msgstr "Tillåt omspelning av inspelningen %(n)s"
+
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:49
 msgid "End exam"
 msgstr "Avsluta prov"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:52
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:53
 #, python-format
 msgid "No students matching '%(query)s'"
 msgstr "Inga studerande matchar '%(query)s'"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:52
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:53
 msgid "No students"
 msgstr "Inga studerande"
 
