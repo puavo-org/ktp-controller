@@ -61,6 +61,10 @@ async def _get_student_list_items() -> list[schemas.StudentListItem]:
     except KeyError:
         return []
 
+    audio_in_some_exam: bool = last_raw_abitti2_stats_message["data"].get(
+        "audioInSomeExam", False
+    )
+
     student_list_items = []
 
     for raw_abitti2_student in raw_abitti2_students:
@@ -96,6 +100,12 @@ async def _get_student_list_items() -> list[schemas.StudentListItem]:
 
         exam_title: str = raw_abitti2_student["examTitle"]
 
+        last_audio: int | None = (
+            int(raw_abitti2_student.get("lastAccessedMedia") or 0)
+            if audio_in_some_exam
+            else None
+        )
+
         state_info = ktp_controller.abitti2.utils.parse_student_state_info(
             raw_abitti2_student,
             utcnow=utcnow,
@@ -117,6 +127,7 @@ async def _get_student_list_items() -> list[schemas.StudentListItem]:
             student_uuid=raw_abitti2_student["studentUuid"],
             session_uuid=raw_abitti2_student["sessionUuid"],
             is_allowed_to_use_browser=raw_abitti2_student.get("isAllowedToUseBrowser"),
+            last_audio=last_audio,
         )
 
         student_list_items.append(student_list_item)
@@ -154,6 +165,8 @@ async def _get_invigilator(
         reverse=order == "desc",
     )
 
+    can_reset_audio = any(item.last_audio is not None for item in student_list_items)
+
     if name_birthday_filter:
         query = name_birthday_filter.lower()
         student_list_items = [
@@ -174,13 +187,15 @@ async def _get_invigilator(
         _StudentListItemSortableField.LAST_CHANGED_AT: _("Last changed at"),
         _StudentListItemSortableField.EXAM_TITLE: _("Exam title"),
     }
-    columns = [
-        (field.value, column_labels[field], True)
-        for field in _StudentListItemSortableField
-    ] + [
-        (None, _("Allowed to use browsers"), False),
-        (None, _("Action"), False),
-    ]
+    columns = (
+        [
+            (field.value, column_labels[field], True)
+            for field in _StudentListItemSortableField
+        ]
+        + [(None, _("Allowed to use browsers"), False)]
+        + ([(None, _("Last played audio"), False)] if can_reset_audio else [])
+        + [(None, _("Action"), False)]
+    )
 
     state_labels = {
         schemas.StudentState.FINISHED: _("Finished"),
@@ -208,6 +223,10 @@ async def _get_invigilator(
         "can_set_browser_permission": (
             "wui.actions.set-exam-session-permission-to-use-browsers"
             in session.permissions
+        ),
+        "can_reset_audio": can_reset_audio,
+        "can_allow_audio_replay": (
+            "wui.actions.allow-audio-replay" in session.permissions
         ),
     }
 
