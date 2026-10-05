@@ -100,7 +100,12 @@ _STUDENT_UUID = "0b7f4c5e-2a55-4c34-9a8c-7e4f0d3a1b21"
 _SESSION_UUID = "5d2e8f1a-6b3c-4d9e-8f7a-1c2b3d4e5f60"
 
 
-def _raw_abitti2_stats_messages(*, is_allowed_to_use_browser=None):
+def _raw_abitti2_stats_messages(
+    *,
+    is_allowed_to_use_browser=None,
+    audio_in_some_exam=None,
+    last_accessed_media=None,
+):
     student = {
         "studentUuid": _STUDENT_UUID,
         "sessionUuid": _SESSION_UUID,
@@ -115,7 +120,12 @@ def _raw_abitti2_stats_messages(*, is_allowed_to_use_browser=None):
     }
     if is_allowed_to_use_browser is not None:
         student["isAllowedToUseBrowser"] = is_allowed_to_use_browser
-    return [{"data": {"students": [student]}}]
+    if last_accessed_media is not None:
+        student["lastAccessedMedia"] = last_accessed_media
+    data = {"students": [student]}
+    if audio_in_some_exam is not None:
+        data["audioInSomeExam"] = audio_in_some_exam
+    return [{"data": data}]
 
 
 def test_invigilator_view_renders_student_without_uuid_columns(
@@ -461,3 +471,113 @@ def test_invigilator_view_disables_browser_permission_checkbox_without_permissio
     assert response.status_code == 200
     assert 'class="browser-permission-checkbox"' in response.text
     assert "disabled" in response.text
+
+
+def test_invigilator_view_hides_last_audio_column_when_no_audio_in_exam(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages(audio_in_some_exam=False),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset(
+                {"wui.invigilator.view", "wui.actions.allow-audio-replay"}
+            ),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert "Last played audio" not in response.text
+    assert "allow-audio-replay-button" not in response.text
+
+
+def test_invigilator_view_shows_empty_cell_when_last_audio_is_zero(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages(
+            audio_in_some_exam=True, last_accessed_media=None
+        ),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset(
+                {"wui.invigilator.view", "wui.actions.allow-audio-replay"}
+            ),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert "Last played audio" in response.text
+    assert "allow-audio-replay-button" not in response.text
+
+
+def test_invigilator_view_shows_allow_audio_replay_button_with_permission(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages(
+            audio_in_some_exam=True, last_accessed_media="3"
+        ),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset(
+                {"wui.invigilator.view", "wui.actions.allow-audio-replay"}
+            ),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert "Last played audio" in response.text
+    assert "Allow replaying audio 3" in response.text
+    assert f'data-student-uuid="{_STUDENT_UUID}"' in response.text
+    assert 'data-last-audio="3"' in response.text
+    assert 'data-exam-title="Matematiikka"' in response.text
+    assert "allow-audio-replay-confirm-overlay" in response.text
+
+
+def test_invigilator_view_hides_allow_audio_replay_button_without_permission(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages(
+            audio_in_some_exam=True, last_accessed_media="3"
+        ),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    # Column is still shown (data-driven), but the button itself is
+    # permission-gated, like the "End exam" button.
+    assert "Last played audio" in response.text
+    assert "allow-audio-replay-button" not in response.text
