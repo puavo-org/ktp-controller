@@ -7,7 +7,6 @@ import fastapi
 import fastapi.responses
 
 # Internal imports
-import ktp_controller.abitti2.client
 import ktp_controller.api.client
 import ktp_controller.messages
 import ktp_controller.wui.auth
@@ -31,8 +30,10 @@ async def _end_student_exam(
         session_uuid,
     )
     try:
-        await ktp_controller.abitti2.client.end_student_exam(
-            session_uuid=session_uuid, student_uuid=student_uuid
+        await ktp_controller.api.client.async_command(
+            ktp_controller.messages.Command.END_STUDENT_EXAM,
+            session_uuid=session_uuid,
+            student_uuid=student_uuid,
         )
     except Exception:
         # Runs after the response has been sent, so there is nobody to

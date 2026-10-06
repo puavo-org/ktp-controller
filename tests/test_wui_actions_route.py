@@ -34,8 +34,8 @@ _END_EXAM_FORM = {"session_uuid": _SESSION_UUID, "student_uuid": _STUDENT_UUID}
 
 
 def test_end_exam_requires_login(wui_client, mocker):
-    end_student_exam_mock = mocker.patch(
-        "ktp_controller.abitti2.client.end_student_exam", new=mocker.AsyncMock()
+    async_command_mock = mocker.patch(
+        "ktp_controller.api.client.async_command", new=mocker.AsyncMock()
     )
 
     response = wui_client.post(
@@ -46,12 +46,12 @@ def test_end_exam_requires_login(wui_client, mocker):
 
     assert response.status_code == 303
     assert response.headers["location"].startswith("/login")
-    end_student_exam_mock.assert_not_called()
+    async_command_mock.assert_not_called()
 
 
 def test_end_exam_forbidden_without_permission(wui_client, override_session, mocker):
-    end_student_exam_mock = mocker.patch(
-        "ktp_controller.abitti2.client.end_student_exam", new=mocker.AsyncMock()
+    async_command_mock = mocker.patch(
+        "ktp_controller.api.client.async_command", new=mocker.AsyncMock()
     )
     override_session(
         ktp_controller.wui.auth.Session(
@@ -68,12 +68,12 @@ def test_end_exam_forbidden_without_permission(wui_client, override_session, moc
     )
 
     assert response.status_code == 403
-    end_student_exam_mock.assert_not_called()
+    async_command_mock.assert_not_called()
 
 
-def test_end_exam_calls_abitti2(wui_client, override_session, mocker):
-    end_student_exam_mock = mocker.patch(
-        "ktp_controller.abitti2.client.end_student_exam", new=mocker.AsyncMock()
+def test_end_exam_calls_api(wui_client, override_session, mocker):
+    async_command_mock = mocker.patch(
+        "ktp_controller.api.client.async_command", new=mocker.AsyncMock()
     )
     override_session(
         ktp_controller.wui.auth.Session(
@@ -91,14 +91,16 @@ def test_end_exam_calls_abitti2(wui_client, override_session, mocker):
 
     assert response.status_code == 202
     assert response.content == b""
-    end_student_exam_mock.assert_awaited_once_with(
-        session_uuid=_SESSION_UUID, student_uuid=_STUDENT_UUID
+    async_command_mock.assert_awaited_once_with(
+        ktp_controller.messages.Command.END_STUDENT_EXAM,
+        session_uuid=_SESSION_UUID,
+        student_uuid=_STUDENT_UUID,
     )
 
 
 def test_end_exam_rejects_invalid_uuid(wui_client, override_session, mocker):
-    end_student_exam_mock = mocker.patch(
-        "ktp_controller.abitti2.client.end_student_exam", new=mocker.AsyncMock()
+    async_command_mock = mocker.patch(
+        "ktp_controller.api.client.async_command", new=mocker.AsyncMock()
     )
     override_session(
         ktp_controller.wui.auth.Session(
@@ -115,13 +117,13 @@ def test_end_exam_rejects_invalid_uuid(wui_client, override_session, mocker):
     )
 
     assert response.status_code == 422
-    end_student_exam_mock.assert_not_called()
+    async_command_mock.assert_not_called()
 
 
-def test_end_exam_logs_abitti2_failure(wui_client, override_session, mocker, caplog):
+def test_end_exam_logs_api_failure(wui_client, override_session, mocker, caplog):
     mocker.patch(
-        "ktp_controller.abitti2.client.end_student_exam",
-        new=mocker.AsyncMock(side_effect=RuntimeError("abitti2 is down")),
+        "ktp_controller.api.client.async_command",
+        side_effect=RuntimeError("abitti2 is down"),
     )
     override_session(
         ktp_controller.wui.auth.Session(
