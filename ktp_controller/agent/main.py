@@ -493,7 +493,7 @@ class Agent:
         if self.__has_last_status_report_expired:
             return False
 
-        exceptions = []
+        exceptions: list[Exception] = []
 
         for student in self.__last_status_report["abitti2"]["students"]:
             if student["has_finished"]:
@@ -503,6 +503,17 @@ class Agent:
                     session_uuid=student["session_uuid"],
                     student_uuid=student["uuid"],
                 )
+            except httpx.HTTPStatusError as http_status_error:
+                if http_status_error.response.status_code == 409 and (
+                    ktp_controller.schemas.StudentFlag.DISCONNECTED in student["flags"]
+                ):
+                    _LOGGER.warning(
+                        "Abitti2 failed to end a disconnected exam session. Error is ignored to not prevent stopping the current exam package. Student: %s",
+                        student,
+                    )
+                else:
+                    exceptions.append(http_status_error)
+                continue
             except Exception as e:
                 # Best-effort ending; exceptions will be raised as a
                 # group once we have tried to end ALL student
