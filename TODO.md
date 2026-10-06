@@ -75,39 +75,3 @@ Required changes (commit bottom-up, same convention as TODO12 used):
 
 No permission/migration change needed — `wui.actions.end-exam` already
 exists and keeps gating the endpoint.
-
-
-## TODO14
-
-WUI: add three counters to the main invigilator student list view:
-
-1.
-"Requires attention" (en)
-"Vaatii huomiota" (fi)
-Implementer chooses suitable Swedish translation (sv)
-
-2.
-"Active" (en)
-"Aktiivinen" (fi)
-"Aktiv" (sv)
-
-3.
-"Finished" (en)
-"Päättänyt" (fi)
-"Avslutat" (sv)
-
-Each label is followed by a number (0 or greater)
-
-Finished is the total number of students in state Finished
-
-Active is the total number of students in state Active
-
-Requires attention is the total number of students not in state Finished or Active
-
-Counts must be calculated from the whole data, even if there are table
-filters. Hence, counts must be also rendered sufficiently apart from
-and above the table. Just below the Students h2 and with a bit smaller
-font than normally. Moreover, if pico.css has readily availabe style
-class for such labeled counts, use it. I'm thinking some kind of small
-pills whith color coding: Requires attention is yellow, Active is
-green and Finished blue.
