@@ -190,7 +190,7 @@ async def _delete_exam_info(
 
     delete_subquery = (
         db.query(models.ExamInfo.dbid)
-        .order_by(sqlalchemy.asc(models.ExamInfo.dbrow_created_at))
+        .order_by(models.ExamInfo.dbrow_created_at.asc())
         .filter(
             sqlalchemy.func.date(models.ExamInfo.dbrow_created_at) <= older_than_date
         )
@@ -296,8 +296,8 @@ async def _get_locked_exam_packages(
         )
         .filter(models.ScheduledExamPackage.end_time >= utcnow)
         .order_by(
-            sqlalchemy.sql.asc(models.ScheduledExamPackage.start_time),
-            sqlalchemy.sql.asc(models.ScheduledExamPackage.dbid),
+            models.ScheduledExamPackage.start_time.asc(),
+            models.ScheduledExamPackage.dbid.asc(),
         )
         .all()
     )

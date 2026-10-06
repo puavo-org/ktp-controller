@@ -146,7 +146,7 @@ async def _save_status_report(
     if status_report_count >= _get_status_report_max_count():
         delete_subquery = (
             db.query(models.StatusReport.dbid)
-            .order_by(sqlalchemy.asc(models.StatusReport.dbrow_created_at))
+            .order_by(models.StatusReport.dbrow_created_at.asc())
             .limit(status_report_count - _get_status_report_preserve_count())
             .subquery()
         )
@@ -178,7 +178,7 @@ async def _get_last_status_report(
 ) -> schemas.StatusReport | None:
     db_status_report = (
         db.query(models.StatusReport)
-        .order_by(sqlalchemy.sql.desc(models.StatusReport.dbrow_created_at))
+        .order_by(models.StatusReport.dbrow_created_at.desc())
         .limit(1)
         .one_or_none()
     )
