@@ -110,3 +110,41 @@ def test_command_data_adapter_discriminates_allow_audio_replay_command():
 
     assert isinstance(command_data, ktp_controller.messages.AllowAudioReplayCommandData)
     assert command_data.student_uuid == "some-student-uuid"
+
+
+def test_simple_command_data_rejects_end_student_exam_command():
+    with pytest.raises(pydantic.ValidationError):
+        ktp_controller.messages.SimpleCommandData.model_validate(
+            {"command": ktp_controller.messages.Command.END_STUDENT_EXAM}
+        )
+
+
+def test_end_student_exam_command_data_requires_payload():
+    with pytest.raises(pydantic.ValidationError):
+        ktp_controller.messages.EndStudentExamCommandData.model_validate(
+            {"command": ktp_controller.messages.Command.END_STUDENT_EXAM}
+        )
+
+
+def test_end_student_exam_command_data_requires_student_uuid():
+    with pytest.raises(pydantic.ValidationError):
+        ktp_controller.messages.EndStudentExamCommandData.model_validate(
+            {
+                "command": ktp_controller.messages.Command.END_STUDENT_EXAM,
+                "session_uuid": "some-uuid",
+            }
+        )
+
+
+def test_command_data_adapter_discriminates_end_student_exam_command():
+    command_data = ktp_controller.messages.CommandDataAdapter.validate_python(
+        {
+            "command": ktp_controller.messages.Command.END_STUDENT_EXAM,
+            "session_uuid": "some-uuid",
+            "student_uuid": "some-student-uuid",
+        }
+    )
+
+    assert isinstance(command_data, ktp_controller.messages.EndStudentExamCommandData)
+    assert command_data.session_uuid == "some-uuid"
+    assert command_data.student_uuid == "some-student-uuid"
