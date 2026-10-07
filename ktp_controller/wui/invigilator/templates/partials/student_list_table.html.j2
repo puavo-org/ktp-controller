@@ -1,16 +1,10 @@
-<table id="student-list-table"
-       class="striped"
-       hx-get="?sort_by={{ sort_by }}&order={{ order_now }}"
-       hx-trigger="invigilator-live-update from:body throttle:2s"
-       hx-target="this"
-       hx-swap="outerHTML"
-       hx-include="#filters">
+<table class="striped">
     <thead>
         <tr>
         {% for column_key, column_label, is_sortable in columns %}
         {% if is_sortable %}
             <th hx-get="?sort_by={{ column_key }}&order={{ order_next if sort_by == column_key else 'asc' }}"
-                hx-target="#student-list-table"
+                hx-target="#student-list-groups"
                 hx-swap="outerHTML"
                 hx-include="#filters"
                 class="sortable-column">
@@ -23,14 +17,13 @@
         {% endfor %}
         </tr>
     </thead>
-    <tbody id="student-list-table-body">
+    <tbody>
         {% for student_list_item in student_list_items %}
         <tr>
             <td>{{ student_list_item.name }}</td>
             <td>{{ student_list_item.birthday | localize_date(locale) }}</td>
             <td><span class="pill {{ state_pill_classes[student_list_item.state] }}">{{ (student_list_item.flags | translate_labels(flag_labels)) if student_list_item.state == "flagged" else state_labels[student_list_item.state] }}</span></td>
             <td>{{ '-' if not student_list_item.last_changed_at else student_list_item.last_changed_at | localize_datetime(locale) }}</td>
-            <td>{{ '-' if not student_list_item.exam_title else student_list_item.exam_title }}</td>
             <td>{% if student_list_item.is_allowed_to_use_browser is none %}???{% else %}
               <input type="hidden"
                      id="browser-permission-session-uuid-{{ student_list_item.session_uuid }}"
@@ -82,11 +75,3 @@
         {% endfor %}
     </tbody>
 </table>
-{# This partial is also {% include %}'d from invigilator_index.html.j2,
-   which already renders the counts once right after the Students h2. Only
-   emit the out-of-band counts update here when this template is the direct
-   htmx response for a table refresh (filter, sort, live update) - otherwise
-   the counts would be duplicated in the initial full-page HTML. #}
-{% if request.headers.get("HX-Request") %}
-{% include "partials/student_state_counts.html.j2" %}
-{% endif %}

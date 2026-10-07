@@ -1,0 +1,24 @@
+<div id="student-list-groups"
+     hx-get="?sort_by={{ sort_by }}&order={{ order_now }}"
+     hx-trigger="invigilator-live-update from:body throttle:2s"
+     hx-target="this"
+     hx-swap="outerHTML"
+     hx-include="#filters">
+    {% for exam_title, student_list_items in grouped_student_list_items.items() %}
+    <details class="exam-group" open>
+        <summary>{{ exam_title }}</summary>
+        {% include "partials/student_list_table.html.j2" %}
+    </details>
+    {% else %}
+    {% set student_list_items = [] %}
+    {% include "partials/student_list_table.html.j2" %}
+    {% endfor %}
+</div>
+{# This partial is also {% include %}'d from invigilator_index.html.j2,
+   which already renders the counts once right after the Students h2. Only
+   emit the out-of-band counts update here when this template is the direct
+   htmx response for a table refresh (filter, sort, live update) - otherwise
+   the counts would be duplicated in the initial full-page HTML. #}
+{% if request.headers.get("HX-Request") %}
+{% include "partials/student_state_counts.html.j2" %}
+{% endif %}

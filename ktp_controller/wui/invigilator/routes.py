@@ -146,7 +146,17 @@ class _StudentListItemSortableField(enum.StrEnum):
     BIRTHDAY = "birthday"
     STATE = "state"
     LAST_CHANGED_AT = "last_changed_at"
-    EXAM_TITLE = "exam_title"
+
+
+def _group_student_list_items_by_exam_title(
+    student_list_items: list[schemas.StudentListItem],
+) -> dict[str, list[schemas.StudentListItem]]:
+    grouped: dict[str, list[schemas.StudentListItem]] = {}
+    for student_list_item in student_list_items:
+        grouped.setdefault(student_list_item.exam_title or "???", []).append(
+            student_list_item
+        )
+    return dict(sorted(grouped.items()))
 
 
 @router.get("/", response_class=fastapi.responses.HTMLResponse)
@@ -180,6 +190,10 @@ async def _get_invigilator(
 
     order_next = "desc" if order == "asc" else "asc"  # Next time the order is reversed
 
+    grouped_student_list_items = _group_student_list_items_by_exam_title(
+        student_list_items
+    )
+
     request.state.locale = session.locale
     _ = ktp_controller.wui.i18n.get_gettext(session.locale)
 
@@ -188,7 +202,6 @@ async def _get_invigilator(
         _StudentListItemSortableField.BIRTHDAY: _("Birthday"),
         _StudentListItemSortableField.STATE: _("State"),
         _StudentListItemSortableField.LAST_CHANGED_AT: _("Last changed at"),
-        _StudentListItemSortableField.EXAM_TITLE: _("Exam title"),
     }
     columns = (
         [
@@ -218,7 +231,7 @@ async def _get_invigilator(
     }
 
     context = {
-        "student_list_items": student_list_items,
+        "grouped_student_list_items": grouped_student_list_items,
         "columns": columns,
         "state_labels": state_labels,
         "state_pill_classes": state_pill_classes,
@@ -245,7 +258,7 @@ async def _get_invigilator(
     # If the request comes from htmx, return only the table partial
     if request.headers.get("HX-Request"):
         return _templates.TemplateResponse(
-            request, name="partials/student_list_table.html.j2", context=context
+            request, name="partials/student_list_groups.html.j2", context=context
         )
 
     # Otherwise return the full page

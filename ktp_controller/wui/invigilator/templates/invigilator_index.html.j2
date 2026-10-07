@@ -55,11 +55,11 @@
                placeholder="{{ _('Filter by student name or birthday...') }}"
                hx-get=""
                hx-trigger="keyup changed delay:350ms"
-               hx-target="#student-list-table"
+               hx-target="#student-list-groups"
                hx-swap="outerHTML"
                hx-include="#filters">
     </div>
 
-    {% include "partials/student_list_table.html.j2" %}
+    {% include "partials/student_list_groups.html.j2" %}
 
 {% endblock %}
