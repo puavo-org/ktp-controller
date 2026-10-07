@@ -22,13 +22,3 @@ Sep 26 2026 17:03:29 testvirtkan1 supervisord: ktp-controller-agent WARNING:2026
 Unify/merge `ktp_controller.wui.utils.BrowserSocketRegistry` with
 `ktp_controller.api.utils.PubSubBroadcaster` and place it for example
 in `ktp_controller.redis`. Naturally, adapt all call sites.
-
-## TODO15
-
-WUI: State column values in student list table must display same
-colors as in `student_state_counts.html.j2`, but the value itself must
-not be in a pill, but show a filled circle on left side of the value
-text. E.g. if the state is Finished, then there must a filled circle
-next to the text "Finished" with the same color as in .pill-finished
-class. Active state with a filled circle having the same color as in
-.pill-active and all other state values with .pill-attention.
