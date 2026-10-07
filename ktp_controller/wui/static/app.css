@@ -91,25 +91,6 @@ header select {
 .text-center {
   text-align: center;
 }
-.state-dot {
-  display: inline-block;
-  width: 0.6em;
-  height: 0.6em;
-  border-radius: 50%;
-  margin-right: 0.4em;
-  vertical-align: middle;
-}
-/* Colors mirror the text color of the matching .pill-* class above —
-   keep them in sync. */
-.state-dot-finished {
-  background-color: #1b4f8f;
-}
-.state-dot-active {
-  background-color: #155724;
-}
-.state-dot-attention {
-  background-color: #7a5d00;
-}
 
 /* login.html.j2 */
 .login-container {
