@@ -5,6 +5,7 @@
 {% block extra_scripts %}
     <script src="/static/end_exam_confirm.js"></script>
     <script src="/static/allow_audio_replay_confirm.js"></script>
+    <script src="/static/toggle_exam_groups.js"></script>
 {% endblock %}
 
 {% block modals %}
@@ -58,6 +59,10 @@
                hx-target="#student-list-groups"
                hx-swap="outerHTML"
                hx-include="#filters">
+        <button type="button"
+                id="toggle-exam-groups-button"
+                data-expand-label="{{ _('Expand all') }}"
+                data-collapse-label="{{ _('Collapse all') }}">{{ _('Collapse all') }}</button>
     </div>
 
     {% include "partials/student_list_groups.html.j2" %}
