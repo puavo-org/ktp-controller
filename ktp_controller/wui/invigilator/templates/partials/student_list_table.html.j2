@@ -44,7 +44,7 @@
                        hx-include="#browser-permission-session-uuid-{{ student_list_item.session_uuid }}, #browser-permission-student-uuid-{{ student_list_item.student_uuid }}"
                        hx-swap="none"
                        {{ "checked" if student_list_item.is_allowed_to_use_browser else "" }}
-                       {{ "" if can_set_browser_permission else "disabled" }}>{% endif %}</td>
+                       {{ "" if can_set_browser_permission and student_list_item.state != 'finished' else "disabled" }}>{% endif %}</td>
             {% if can_reset_audio %}<td>{% if student_list_item.last_audio and can_allow_audio_replay %}<button type="button" class="allow-audio-replay-button" data-name="{{ student_list_item.name }}" data-student-uuid="{{ student_list_item.student_uuid }}" data-last-audio="{{ student_list_item.last_audio }}" data-exam-title="{{ student_list_item.exam_title or '' }}">{{ _("Allow replaying audio %(n)s", n=student_list_item.last_audio) }}</button>{% endif %}</td>{% endif %}
             <td>{% if can_end_exam and student_list_item.state != 'finished' %}<button type="button" class="end-exam-button" data-name="{{ student_list_item.name }}" data-session-uuid="{{ student_list_item.session_uuid }}" data-student-uuid="{{ student_list_item.student_uuid }}">{{ _("End exam") }}</button>{% else %}-{% endif %}</td>
         </tr>
