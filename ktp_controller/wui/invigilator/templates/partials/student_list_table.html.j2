@@ -28,7 +28,7 @@
         <tr>
             <td>{{ student_list_item.name }}</td>
             <td>{{ student_list_item.birthday | localize_date(locale) }}</td>
-            <td>{{ (student_list_item.flags | translate_labels(flag_labels)) if student_list_item.state == "flagged" else state_labels[student_list_item.state] }}</td>
+            <td><span class="state-dot {{ state_dot_classes[student_list_item.state] }}"></span>{{ (student_list_item.flags | translate_labels(flag_labels)) if student_list_item.state == "flagged" else state_labels[student_list_item.state] }}</td>
             <td>{{ '-' if not student_list_item.last_changed_at else student_list_item.last_changed_at | localize_datetime(locale) }}</td>
             <td>{{ '-' if not student_list_item.exam_title else student_list_item.exam_title }}</td>
             <td>{% if student_list_item.is_allowed_to_use_browser is none %}???{% else %}
