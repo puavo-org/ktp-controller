@@ -685,6 +685,60 @@ def test_invigilator_view_student_state_counts_ignore_name_birthday_filter(
     assert '<span class="pill pill-finished">Finished 1</span>' in response.text
 
 
+def test_invigilator_view_renders_student_list_table_state_dots(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages_with_states(),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert '<span class="state-dot state-dot-active"></span>Active' in response.text
+    assert '<span class="state-dot state-dot-finished"></span>Finished' in response.text
+    assert (
+        '<span class="state-dot state-dot-attention"></span>Undefined exam'
+        in response.text
+    )
+
+
+def test_invigilator_view_renders_student_list_table_state_dots_in_htmx_partial(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages_with_states(),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/", headers={"HX-Request": "true"})
+
+    assert response.status_code == 200
+    assert '<span class="state-dot state-dot-active"></span>Active' in response.text
+    assert '<span class="state-dot state-dot-finished"></span>Finished' in response.text
+    assert (
+        '<span class="state-dot state-dot-attention"></span>Undefined exam'
+        in response.text
+    )
+
+
 def test_invigilator_view_student_state_counts_present_in_htmx_partial(
     wui_client, override_session, mocker
 ):
