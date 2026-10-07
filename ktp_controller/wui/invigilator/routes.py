@@ -209,6 +209,11 @@ async def _get_invigilator(
         schemas.StudentState.ACTIVE: "state-dot-active",
         schemas.StudentState.FLAGGED: "state-dot-attention",
     }
+    state_pill_classes = {
+        schemas.StudentState.FINISHED: "pill-finished",
+        schemas.StudentState.ACTIVE: "pill-active",
+        schemas.StudentState.FLAGGED: "pill-attention",
+    }
     flag_labels = {
         ktp_controller.schemas.StudentFlag.DISCONNECTED: _("Disconnected"),
         ktp_controller.schemas.StudentFlag.IDLE: _("Idle"),
@@ -222,6 +227,7 @@ async def _get_invigilator(
         "columns": columns,
         "state_labels": state_labels,
         "state_dot_classes": state_dot_classes,
+        "state_pill_classes": state_pill_classes,
         "flag_labels": flag_labels,
         "sort_by": sort_by,
         "order_now": order,
