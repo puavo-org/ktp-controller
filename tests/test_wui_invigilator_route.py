@@ -899,3 +899,175 @@ def test_invigilator_view_student_state_counts_present_in_htmx_partial(
     )
     assert '<span class="pill pill-active">Active 1</span>' in response.text
     assert '<span class="pill pill-finished">Finished 1</span>' in response.text
+
+
+def _raw_abitti2_stats_messages_with_exam_titles(exam_titles):
+    students = [
+        {
+            "studentUuid": f"{index:08d}-1111-1111-1111-111111111111",
+            "sessionUuid": f"{index:08d}-2222-2222-2222-222222222222",
+            "firstNames": f"Student{index}",
+            "lastName": "Testinen",
+            "studentBd": "010105",
+            "studentStatus": "exam-in-progress",
+            "sessionStatus": "exam_in_progress",
+            "updateTime": None,
+            "examFinishedAt": None,
+            "examTitle": exam_title,
+        }
+        for index, exam_title in enumerate(exam_titles)
+    ]
+    return [{"data": {"students": students}}]
+
+
+def test_invigilator_view_groups_students_by_exam_title(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages_with_exam_titles(
+            ["Matematiikka", "Englanti"]
+        ),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert response.text.count('<details class="exam-group" open>') == 2
+    assert "<summary>Matematiikka</summary>" in response.text
+    assert "<summary>Englanti</summary>" in response.text
+    assert "Exam title" not in response.text
+
+
+def test_invigilator_view_groups_student_with_missing_exam_title_as_question_marks(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages(exam_title=None),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert "<summary>???</summary>" in response.text
+
+
+def test_invigilator_view_shows_no_students_row_with_headers_when_list_empty(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert response.text.count("<table") == 1
+    assert "<details" not in response.text
+    assert "No students" in response.text
+
+
+def test_invigilator_view_shows_no_students_matching_filter_message(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages(),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get(
+        "/invigilator/", params={"name_birthday_filter": "Nonexistent"}
+    )
+
+    assert response.status_code == 200
+    assert response.text.count("<table") == 1
+    assert "<details" not in response.text
+    assert "No students matching 'Nonexistent'" in response.text
+
+
+def test_invigilator_view_shows_expand_collapse_all_button(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert 'id="toggle-exam-groups-button"' in response.text
+    assert 'data-expand-label="Expand all"' in response.text
+    assert 'data-collapse-label="Collapse all"' in response.text
+    assert ">Collapse all</button>" in response.text
+    assert '<script src="/static/toggle_exam_groups.js">' in response.text
+
+    static_response = wui_client.get("/static/toggle_exam_groups.js")
+    assert static_response.status_code == 200
+
+
+def test_invigilator_view_sortable_columns_and_filter_target_student_list_groups(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages(),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert 'id="student-list-groups"' in response.text
+    # 1 from the name/birthday filter input, 4 from the sortable columns
+    # (name, birthday, state, last changed at).
+    assert response.text.count('hx-target="#student-list-groups"') == 5
