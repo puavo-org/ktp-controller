@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-05 23:06+0300\n"
+"POT-Creation-Date: 2026-10-07 21:56+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -26,65 +26,61 @@ msgstr "Liian monta kirjautumisyritystä, yritä myöhemmin uudelleen."
 msgid "Incorrect username or password"
 msgstr "Väärä käyttäjätunnus tai salasana"
 
-#: ktp_controller/wui/invigilator/routes.py:187
+#: ktp_controller/wui/invigilator/routes.py:201
 msgid "Name"
 msgstr "Nimi"
 
-#: ktp_controller/wui/invigilator/routes.py:188
+#: ktp_controller/wui/invigilator/routes.py:202
 msgid "Birthday"
 msgstr "Syntymäaika"
 
-#: ktp_controller/wui/invigilator/routes.py:189
+#: ktp_controller/wui/invigilator/routes.py:203
 msgid "State"
 msgstr "Tila"
 
-#: ktp_controller/wui/invigilator/routes.py:190
+#: ktp_controller/wui/invigilator/routes.py:204
 msgid "Last changed at"
 msgstr "Viimeksi muuttunut"
 
-#: ktp_controller/wui/invigilator/routes.py:191
-msgid "Exam title"
-msgstr "Kokeen nimi"
-
-#: ktp_controller/wui/invigilator/routes.py:198
+#: ktp_controller/wui/invigilator/routes.py:211
 msgid "Allowed to use browsers"
 msgstr "Saa käyttää selainta"
 
-#: ktp_controller/wui/invigilator/routes.py:199
+#: ktp_controller/wui/invigilator/routes.py:212
 msgid "Last played audio"
 msgstr "Viimeksi kuunneltu äänite"
 
-#: ktp_controller/wui/invigilator/routes.py:200
+#: ktp_controller/wui/invigilator/routes.py:213
 msgid "Action"
 msgstr "Toiminto"
 
-#: ktp_controller/wui/invigilator/routes.py:204
+#: ktp_controller/wui/invigilator/routes.py:217
 #: ktp_controller/wui/invigilator/templates/partials/student_state_counts.html.j2:4
 msgid "Finished"
 msgstr "Valmis"
 
-#: ktp_controller/wui/invigilator/routes.py:205
+#: ktp_controller/wui/invigilator/routes.py:218
 #: ktp_controller/wui/invigilator/templates/partials/student_state_counts.html.j2:3
 msgid "Active"
 msgstr "Aktiivinen"
 
-#: ktp_controller/wui/invigilator/routes.py:208
+#: ktp_controller/wui/invigilator/routes.py:226
 msgid "Disconnected"
 msgstr "Yhteys katkennut"
 
-#: ktp_controller/wui/invigilator/routes.py:209
+#: ktp_controller/wui/invigilator/routes.py:227
 msgid "Idle"
 msgstr "Jouten"
 
-#: ktp_controller/wui/invigilator/routes.py:210
+#: ktp_controller/wui/invigilator/routes.py:228
 msgid "Waiting for auth"
 msgstr "Odottaa tunnistautumista"
 
-#: ktp_controller/wui/invigilator/routes.py:211
+#: ktp_controller/wui/invigilator/routes.py:229
 msgid "Undefined exam"
 msgstr "Tuntematon koe"
 
-#: ktp_controller/wui/invigilator/routes.py:212
+#: ktp_controller/wui/invigilator/routes.py:230
 msgid "Unknown issue"
 msgstr "Tuntematon ongelma"
 
@@ -97,7 +93,7 @@ msgid "The page will reload automatically once it's back."
 msgstr "Sivu latautuu automaattisesti uudelleen, kun yhteys palautuu."
 
 #: ktp_controller/wui/invigilator/templates/_base.html.j2:29
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:46
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:47
 msgid "Students"
 msgstr "Kokelaat"
 
@@ -125,23 +121,23 @@ msgstr "Kirjaudu ulos"
 msgid "Invigilator's view"
 msgstr "Valvojan näkymä"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:14
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:15
 msgid "Really end exam for <strong id=\"end-exam-confirm-name\"></strong>?"
 msgstr ""
 "Päätetäänkö varmasti kokelaan <strong id=\"end-exam-confirm-"
 "name\"></strong> koe?"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:21
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:22
 #: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:17
 msgid "Yes"
 msgstr "Kyllä"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:22
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:23
 #: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:18
 msgid "No"
 msgstr "Ei"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:30
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:31
 msgid ""
 "Allow student <strong id=\"allow-audio-replay-confirm-name\"></strong> to"
 " replay audio <strong id=\"allow-audio-replay-confirm-last-"
@@ -153,17 +149,25 @@ msgstr ""
 "audio\"></strong> uudelleenkuuntelu kokeessa <strong id=\"allow-audio-"
 "replay-confirm-exam-title\"></strong>?"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:36
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:37
 msgid "Allow"
 msgstr "Salli"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:37
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:38
 msgid "Cancel"
 msgstr "Peruuta"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:55
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:56
 msgid "Filter by student name or birthday..."
 msgstr "Suodata nimen tai syntymäajan mukaan..."
+
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:64
+msgid "Expand all"
+msgstr "Laajenna kaikki"
+
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:65
+msgid "Collapse all"
+msgstr "Pienennä kaikki"
 
 #: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:13
 msgid ""
@@ -181,21 +185,21 @@ msgstr "Pääsykoodia ei ole saatavilla"
 msgid "Change access code"
 msgstr "Vaihda pääsykoodi"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:48
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:55
 #, python-format
 msgid "Allow replaying audio %(n)s"
 msgstr "Salli äänitteen %(n)s uudelleenkuuntelu"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:49
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:67
 msgid "End exam"
 msgstr "Päätä koe"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:53
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:73
 #, python-format
 msgid "No students matching '%(query)s'"
 msgstr "Ei hakua '%(query)s' vastaavia kokelaita"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:53
+#: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:73
 msgid "No students"
 msgstr "Ei kokelaita"
 
@@ -237,4 +241,7 @@ msgstr "Salasana"
 
 #~ msgid "Really end exam for %(name)s?"
 #~ msgstr "Päätetäänkö varmasti kokelaan %(name)s koe?"
+
+#~ msgid "Exam title"
+#~ msgstr "Kokeen nimi"
 
