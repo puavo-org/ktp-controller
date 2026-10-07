@@ -22,32 +22,3 @@ Sep 26 2026 17:03:29 testvirtkan1 supervisord: ktp-controller-agent WARNING:2026
 Unify/merge `ktp_controller.wui.utils.BrowserSocketRegistry` with
 `ktp_controller.api.utils.PubSubBroadcaster` and place it for example
 in `ktp_controller.redis`. Naturally, adapt all call sites.
-
-
-## TODO16
-
-WUI: Add exam title filtering to student list view.
-
-But not directly to the single table #student-list-table. Instead, add
-one `<details>` element per each unique exam title. `<summary>` element
-contains just the exam title. The body of `<details>` contains the
-actual table.
-
-So, instead of one table, there will be multiple tables, one per exam
-title, wrapped inside `<details>` element.
-
-`<details>` elements must fill the parent horizontally.
-
-There must be a minor empty vertical space between subsequent
-`<details>` elements.
-
-In addition, Exam title column must be removed from the tables; it's
-redundant.
-
-The context object passed to the template should probably include
-student list items grouped by exam titles, to avoid clumsy processing
-in the Jinja template. `dict[str, list[StudentListItem]]` is probably
-the way to go, where keys are exam titles.
-
-All `<details>` elements must expanded by default, but there must be a
-toggle button, which expands/collapses all `<details>`.
