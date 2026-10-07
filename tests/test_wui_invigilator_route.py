@@ -1,3 +1,4 @@
+import datetime
 import re
 
 import fastapi.testclient
@@ -13,6 +14,12 @@ def _browser_permission_checkbox_tag(html):
         r'<input[^>]*class="browser-permission-checkbox"[^>]*>', html, re.DOTALL
     )
     assert match, "browser-permission-checkbox input not found in response"
+    return match.group(0)
+
+
+def _end_exam_button_tag(html):
+    match = re.search(r'<button[^>]*class="end-exam-button"[^>]*>', html, re.DOTALL)
+    assert match, "end-exam-button button not found in response"
     return match.group(0)
 
 
@@ -115,6 +122,10 @@ def _raw_abitti2_stats_messages(
     is_allowed_to_use_browser=None,
     audio_in_some_exam=None,
     last_accessed_media=None,
+    session_status="exam_in_progress",
+    update_time=None,
+    student_status="exam-in-progress",
+    exam_title="Matematiikka",
 ):
     student = {
         "studentUuid": _STUDENT_UUID,
@@ -122,11 +133,11 @@ def _raw_abitti2_stats_messages(
         "firstNames": "Maija",
         "lastName": "Meikäläinen",
         "studentBd": "010105",
-        "studentStatus": "exam-in-progress",
-        "sessionStatus": "exam_in_progress",
-        "updateTime": None,
+        "studentStatus": student_status,
+        "sessionStatus": session_status,
+        "updateTime": update_time,
         "examFinishedAt": None,
-        "examTitle": "Matematiikka",
+        "examTitle": exam_title,
     }
     if is_allowed_to_use_browser is not None:
         student["isAllowedToUseBrowser"] = is_allowed_to_use_browser
@@ -374,6 +385,97 @@ def test_invigilator_view_hides_end_exam_button_without_permission(
     assert "/actions/end-exam" not in response.text
 
 
+def test_invigilator_view_enables_end_exam_button_for_active_student(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages(),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view", "wui.actions.end-exam"}),
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert "disabled" not in _end_exam_button_tag(response.text)
+
+
+def test_invigilator_view_enables_end_exam_button_for_idle_student(
+    wui_client, override_session, mocker
+):
+    idle_update_time = (
+        datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=31)
+    ).isoformat()
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages(update_time=idle_update_time),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view", "wui.actions.end-exam"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert '<span class="pill pill-attention">Idle</span>' in response.text
+    assert "disabled" not in _end_exam_button_tag(response.text)
+
+
+def test_invigilator_view_disables_end_exam_button_for_finished_student(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages(session_status="session_ended"),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view", "wui.actions.end-exam"}),
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert "disabled" in _end_exam_button_tag(response.text)
+
+
+def test_invigilator_view_disables_end_exam_button_for_student_with_other_flags(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages(exam_title=None),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view", "wui.actions.end-exam"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert '<span class="pill pill-attention">Undefined exam</span>' in response.text
+    assert "disabled" in _end_exam_button_tag(response.text)
+
+
 def test_invigilator_view_renders_question_marks_when_browser_permission_missing(
     wui_client, override_session, mocker
 ):
@@ -473,6 +575,35 @@ def test_invigilator_view_disables_browser_permission_checkbox_without_permissio
             session_id="test-session",
             username="alice",
             permissions=frozenset({"wui.invigilator.view"}),
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    checkbox_tag = _browser_permission_checkbox_tag(response.text)
+    assert "disabled" in checkbox_tag
+
+
+def test_invigilator_view_disables_browser_permission_checkbox_for_finished_student(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=_raw_abitti2_stats_messages(
+            is_allowed_to_use_browser=True, session_status="session_ended"
+        ),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset(
+                {
+                    "wui.invigilator.view",
+                    "wui.actions.set-exam-session-permission-to-use-browsers",
+                }
+            ),
         )
     )
 
