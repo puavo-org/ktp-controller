@@ -92,6 +92,14 @@ header select {
   text-align: center;
 }
 
+/* student_list_groups.html.j2 */
+.exam-group {
+  width: 100%;
+}
+.exam-group + .exam-group {
+  margin-top: 1rem;
+}
+
 /* login.html.j2 */
 .login-container {
   max-width: 24rem;
