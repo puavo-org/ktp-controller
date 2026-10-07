@@ -1,9 +1,19 @@
+import re
+
 import fastapi.testclient
 import pytest
 import starlette.testclient
 
 import ktp_controller.wui.auth
 import ktp_controller.wui.main
+
+
+def _browser_permission_checkbox_tag(html):
+    match = re.search(
+        r'<input[^>]*class="browser-permission-checkbox"[^>]*>', html, re.DOTALL
+    )
+    assert match, "browser-permission-checkbox input not found in response"
+    return match.group(0)
 
 
 @pytest.fixture
@@ -414,9 +424,9 @@ def test_invigilator_view_renders_checked_browser_permission_checkbox(
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert 'class="browser-permission-checkbox"' in response.text
-    assert "checked" in response.text
-    assert "disabled" not in response.text
+    checkbox_tag = _browser_permission_checkbox_tag(response.text)
+    assert "checked" in checkbox_tag
+    assert "disabled" not in checkbox_tag
     assert (
         'hx-post="/actions/set-exam-session-permission-to-use-browsers"'
         in response.text
@@ -446,9 +456,9 @@ def test_invigilator_view_renders_unchecked_browser_permission_checkbox(
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert 'class="browser-permission-checkbox"' in response.text
-    assert "checked" not in response.text
-    assert "disabled" not in response.text
+    checkbox_tag = _browser_permission_checkbox_tag(response.text)
+    assert "checked" not in checkbox_tag
+    assert "disabled" not in checkbox_tag
 
 
 def test_invigilator_view_disables_browser_permission_checkbox_without_permission(
@@ -469,8 +479,8 @@ def test_invigilator_view_disables_browser_permission_checkbox_without_permissio
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert 'class="browser-permission-checkbox"' in response.text
-    assert "disabled" in response.text
+    checkbox_tag = _browser_permission_checkbox_tag(response.text)
+    assert "disabled" in checkbox_tag
 
 
 def test_invigilator_view_hides_last_audio_column_when_no_audio_in_exam(
