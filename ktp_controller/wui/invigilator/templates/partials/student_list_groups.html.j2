@@ -5,7 +5,7 @@
      hx-swap="outerHTML"
      hx-include="#filters">
     {% for exam_title, student_list_items in grouped_student_list_items.items() %}
-    <details class="exam-group" open>
+    <details class="exam-group" data-exam-title="{{ exam_title }}" open>
         <summary>{{ exam_title }}</summary>
         {% include "partials/student_list_table.html.j2" %}
     </details>

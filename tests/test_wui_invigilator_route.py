@@ -941,7 +941,13 @@ def test_invigilator_view_groups_students_by_exam_title(
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert response.text.count('<details class="exam-group" open>') == 2
+    assert response.text.count('<details class="exam-group" data-exam-title=') == 2
+    assert '<details class="exam-group" data-exam-title="Matematiikka" open>' in (
+        response.text
+    )
+    assert '<details class="exam-group" data-exam-title="Englanti" open>' in (
+        response.text
+    )
     assert "<summary>Matematiikka</summary>" in response.text
     assert "<summary>Englanti</summary>" in response.text
     assert "Exam title" not in response.text
