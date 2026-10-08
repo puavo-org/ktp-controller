@@ -51,6 +51,13 @@ def test_invigilator_view_requires_login(wui_client):
     assert response.headers["location"].startswith("/login")
 
 
+def test_invigilator_view_htmx_requires_login_sends_hx_redirect(wui_client):
+    response = wui_client.get("/invigilator/", headers={"HX-Request": "true"})
+
+    assert response.status_code == 200
+    assert response.headers["HX-Redirect"].startswith("/login")
+
+
 def test_invigilator_view_allowed_with_permission(wui_client, override_session, mocker):
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
