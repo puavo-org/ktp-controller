@@ -90,6 +90,13 @@ async def _handle_not_authenticated(
     )
 
 
+@APP.get("/")
+def _get_root() -> fastapi.responses.RedirectResponse:
+    return fastapi.responses.RedirectResponse(
+        url="/invigilator", status_code=fastapi.status.HTTP_303_SEE_OTHER
+    )
+
+
 def run() -> int:
     uvicorn.run(
         "ktp_controller.wui.main:APP",
