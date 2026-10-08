@@ -72,10 +72,21 @@ APP.mount(
 async def _handle_not_authenticated(
     request: fastapi.Request,
     exc: ktp_controller.wui.auth.NotAuthenticatedError,
-) -> fastapi.responses.RedirectResponse:
+) -> fastapi.Response:
     next_qs = urllib.parse.urlencode({"next": request.url.path})
+    login_url = f"/login?{next_qs}"
+
+    if request.headers.get("HX-Request") == "true":
+        # htmx follows a 303 itself and swaps the resulting login page
+        # into whatever small hx-target triggered the request (e.g. the
+        # live-update poll), producing a broken partial render. HX-Redirect
+        # tells htmx to perform a real browser navigation instead.
+        return fastapi.Response(
+            status_code=fastapi.status.HTTP_200_OK, headers={"HX-Redirect": login_url}
+        )
+
     return fastapi.responses.RedirectResponse(
-        url=f"/login?{next_qs}", status_code=fastapi.status.HTTP_303_SEE_OTHER
+        url=login_url, status_code=fastapi.status.HTTP_303_SEE_OTHER
     )
 
 
