@@ -44,6 +44,8 @@ header select {
 
 /* invigilator_index.html.j2 */
 #filters {
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 20px;
 }
 #name_birthday_filter {
