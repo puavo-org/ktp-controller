@@ -30,23 +30,27 @@
                 <li><a href="/invigilator/student_access_code" {% if request.url.path == "/invigilator/student_access_code" %}aria-current="page"{% endif %}>{{ _("Student access code") }}</a></li>
             </ul>
             <ul>
-                <li>{% trans user=user %}Logged in as <strong>{{ user }}</strong>{% endtrans %}</li>
-            </ul>
-            <ul>
                 <li>
-                    <form method="post" action="/locale">
-                        <input type="hidden" name="next" value="{{ request.url.path }}">
-                        <select name="locale" aria-label="{{ _('Language') }}">
-                            <option value="fi" {{ "selected" if locale == "fi" else "" }}>Suomi</option>
-                            <option value="en" {{ "selected" if locale == "en" else "" }}>English</option>
-                            <option value="sv" {{ "selected" if locale == "sv" else "" }}>Svenska</option>
-                        </select>
-                    </form>
-                </li>
-                <li>
-                    <form method="post" action="/logout">
-                        <button type="submit" class="secondary">{{ _("Log out") }}</button>
-                    </form>
+                    <details class="dropdown">
+                        <summary>{{ user }}</summary>
+                        <ul>
+                            <li>
+                                <form method="post" action="/locale">
+                                    <input type="hidden" name="next" value="{{ request.url.path }}">
+                                    <select name="locale" aria-label="{{ _('Language') }}">
+                                        <option value="fi" {{ "selected" if locale == "fi" else "" }}>Suomi</option>
+                                        <option value="en" {{ "selected" if locale == "en" else "" }}>English</option>
+                                        <option value="sv" {{ "selected" if locale == "sv" else "" }}>Svenska</option>
+                                    </select>
+                                </form>
+                            </li>
+                            <li>
+                                <form method="post" action="/logout">
+                                    <button type="submit" class="secondary">{{ _("Log out") }}</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </details>
                 </li>
             </ul>
         </nav>

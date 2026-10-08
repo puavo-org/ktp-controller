@@ -1002,7 +1002,7 @@ def test_invigilator_view_shows_no_students_row_with_headers_when_list_empty(
 
     assert response.status_code == 200
     assert response.text.count("<table") == 1
-    assert "<details" not in response.text
+    assert '<details class="exam-group"' not in response.text
     assert "No students" in response.text
 
 
@@ -1028,7 +1028,7 @@ def test_invigilator_view_shows_no_students_matching_filter_message(
 
     assert response.status_code == 200
     assert response.text.count("<table") == 1
-    assert "<details" not in response.text
+    assert '<details class="exam-group"' not in response.text
     assert "No students matching 'Nonexistent'" in response.text
 
 
