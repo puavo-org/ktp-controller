@@ -1,7 +1,7 @@
 (function () {
   let collapsedExamTitles = null;
 
-  document.body.addEventListener("htmx:beforeSwap", (event) => {
+  document.addEventListener("htmx:beforeSwap", (event) => {
     if (event.detail.target.id !== "student-list-groups") {
       return;
     }
@@ -12,7 +12,7 @@
     );
   });
 
-  document.body.addEventListener("htmx:afterSwap", () => {
+  document.addEventListener("htmx:afterSwap", () => {
     if (collapsedExamTitles === null) {
       return;
     }
