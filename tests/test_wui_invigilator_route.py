@@ -1037,7 +1037,7 @@ def test_invigilator_view_shows_expand_collapse_all_button(
 ):
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=[],
+        return_value=_raw_abitti2_stats_messages_with_exam_titles(["Matematiikka"]),
     )
     override_session(
         ktp_controller.wui.auth.Session(
@@ -1055,10 +1055,37 @@ def test_invigilator_view_shows_expand_collapse_all_button(
     assert 'data-expand-label="Expand all"' in response.text
     assert 'data-collapse-label="Collapse all"' in response.text
     assert ">Collapse all</button>" in response.text
+    assert (
+        "disabled"
+        not in response.text.split('id="toggle-exam-groups-button"')[1].split(">")[0]
+    )
     assert '<script src="/static/toggle_exam_groups.js">' in response.text
 
     static_response = wui_client.get("/static/toggle_exam_groups.js")
     assert static_response.status_code == 200
+
+
+def test_invigilator_view_disables_expand_collapse_all_button_when_no_students(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    button_tag = response.text.split('id="toggle-exam-groups-button"')[1].split(">")[0]
+    assert "disabled" in button_tag
 
 
 def test_invigilator_view_loads_preserve_exam_group_state_script(
