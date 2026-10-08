@@ -1054,6 +1054,31 @@ def test_invigilator_view_shows_expand_collapse_all_button(
     assert static_response.status_code == 200
 
 
+def test_invigilator_view_loads_preserve_exam_group_state_script(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert '<script src="/static/preserve_exam_group_state.js">' in response.text
+
+    static_response = wui_client.get("/static/preserve_exam_group_state.js")
+    assert static_response.status_code == 200
+
+
 def test_invigilator_view_sortable_columns_and_filter_target_student_list_groups(
     wui_client, override_session, mocker
 ):
