@@ -46,6 +46,53 @@ def test_open_atomic_write_does_not_leave_tmp_file_behind(testdir):
     assert os.listdir(testdir) == ["dest.txt"]
 
 
+def test_open_atomic_write_fsyncs_written_data_before_commit(testdir, mocker):
+    dest_filepath = os.path.join(testdir, "dest.txt")
+    fsync_spy = mocker.spy(ktp_controller.utils.os, "fsync")
+
+    with ktp_controller.utils.open_atomic_write(
+        dest_filepath, encoding="utf-8"
+    ) as dest_file:
+        dest_file.write("hello")
+        tmp_fd = dest_file.fileno()
+
+    assert mocker.call(tmp_fd) in fsync_spy.call_args_list
+
+
+def test_open_atomic_write_fsyncs_dest_dir_after_commit(testdir, mocker):
+    dest_filepath = os.path.join(testdir, "dest.txt")
+    open_spy = mocker.spy(ktp_controller.utils.os, "open")
+    fsync_spy = mocker.spy(ktp_controller.utils.os, "fsync")
+
+    with ktp_controller.utils.open_atomic_write(
+        dest_filepath, encoding="utf-8"
+    ) as dest_file:
+        dest_file.write("hello")
+
+    dir_open_calls = [
+        call for call in open_spy.call_args_list if call.args == (testdir, os.O_RDONLY)
+    ]
+    assert len(dir_open_calls) == 1
+    dir_fd = open_spy.spy_return
+    assert mocker.call(dir_fd) in fsync_spy.call_args_list
+
+
+def test_open_atomic_write_exclusive_fsyncs_dest_dir_after_commit(testdir, mocker):
+    dest_filepath = os.path.join(testdir, "dest.txt")
+    fsync_spy = mocker.spy(ktp_controller.utils.os, "fsync")
+
+    with ktp_controller.utils.open_atomic_write(
+        dest_filepath, exclusive=True, encoding="utf-8"
+    ) as dest_file:
+        dest_file.write("hello")
+        tmp_fd = dest_file.fileno()
+
+    with open(dest_filepath, encoding="utf-8") as f:
+        assert f.read() == "hello"
+    assert fsync_spy.call_count == 2
+    assert mocker.call(tmp_fd) in fsync_spy.call_args_list
+
+
 def _write_and_raise(dest_filepath):
     with ktp_controller.utils.open_atomic_write(
         dest_filepath, encoding="utf-8"
