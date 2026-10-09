@@ -2,7 +2,7 @@ import os
 import os.path
 import subprocess
 
-import ktp_controller.utils
+import ktp_controller.nginx
 
 
 def _patch_nginx_dirs(monkeypatch, testdir):
@@ -13,12 +13,12 @@ def _patch_nginx_dirs(monkeypatch, testdir):
     os.makedirs(sites_available_dirpath)
     os.makedirs(sites_enabled_dirpath)
 
-    monkeypatch.setattr(ktp_controller.utils, "NGINX_DIRPATH", nginx_dirpath)
+    monkeypatch.setattr(ktp_controller.nginx, "NGINX_DIRPATH", nginx_dirpath)
     monkeypatch.setattr(
-        ktp_controller.utils, "NGINX_SITES_AVAILABLE_DIRPATH", sites_available_dirpath
+        ktp_controller.nginx, "NGINX_SITES_AVAILABLE_DIRPATH", sites_available_dirpath
     )
     monkeypatch.setattr(
-        ktp_controller.utils, "NGINX_SITES_ENABLED_DIRPATH", sites_enabled_dirpath
+        ktp_controller.nginx, "NGINX_SITES_ENABLED_DIRPATH", sites_enabled_dirpath
     )
 
     return nginx_dirpath, sites_available_dirpath, sites_enabled_dirpath
@@ -40,11 +40,11 @@ def test_setup_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
     _write(key_filepath, "dummy-key")
 
     run_mock = mocker.patch(
-        "ktp_controller.utils.subprocess.run",
+        "ktp_controller.nginx.subprocess.run",
         return_value=subprocess.CompletedProcess(args=[], returncode=0),
     )
 
-    ktp_controller.utils.setup_nginx_wui_tls_reverse_proxy(
+    ktp_controller.nginx.setup_nginx_wui_tls_reverse_proxy(
         "exam.example.invalid", 8443, crt_filepath, key_filepath
     )
 
@@ -95,11 +95,11 @@ def test_setup_nginx_wui_tls_reverse_proxy_replaces_existing_symlink(
     os.symlink(stale_target_filepath, enabled_symlink_filepath)
 
     mocker.patch(
-        "ktp_controller.utils.subprocess.run",
+        "ktp_controller.nginx.subprocess.run",
         return_value=subprocess.CompletedProcess(args=[], returncode=0),
     )
 
-    ktp_controller.utils.setup_nginx_wui_tls_reverse_proxy(
+    ktp_controller.nginx.setup_nginx_wui_tls_reverse_proxy(
         "exam.example.invalid", 8443, crt_filepath, key_filepath
     )
 
@@ -118,14 +118,14 @@ def test_setup_nginx_wui_tls_reverse_proxy_logs_warning_on_reload_failure(
     _write(key_filepath, "dummy-key")
 
     mocker.patch(
-        "ktp_controller.utils.subprocess.run",
+        "ktp_controller.nginx.subprocess.run",
         return_value=subprocess.CompletedProcess(
             args=[], returncode=1, stderr=b"nginx: configuration file test failed"
         ),
     )
-    warning_mock = mocker.patch.object(ktp_controller.utils._LOGGER, "warning")
+    warning_mock = mocker.patch.object(ktp_controller.nginx._LOGGER, "warning")
 
-    ktp_controller.utils.setup_nginx_wui_tls_reverse_proxy(
+    ktp_controller.nginx.setup_nginx_wui_tls_reverse_proxy(
         "exam.example.invalid", 8443, crt_filepath, key_filepath
     )
 
