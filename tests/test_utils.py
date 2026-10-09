@@ -1,0 +1,145 @@
+import os
+import os.path
+
+import pytest
+
+import ktp_controller.utils
+
+
+def test_open_atomic_write_creates_dest_file(testdir):
+    dest_filepath = os.path.join(testdir, "dest.txt")
+
+    with ktp_controller.utils.open_atomic_write(
+        dest_filepath, encoding="utf-8"
+    ) as dest_file:
+        dest_file.write("hello")
+
+    with open(dest_filepath, encoding="utf-8") as f:
+        assert f.read() == "hello"
+
+
+def test_open_atomic_write_replaces_existing_dest_file(testdir):
+    dest_filepath = os.path.join(testdir, "dest.txt")
+    with open(dest_filepath, "w", encoding="utf-8") as f:
+        f.write("old")
+
+    with ktp_controller.utils.open_atomic_write(
+        dest_filepath, encoding="utf-8"
+    ) as dest_file:
+        dest_file.write("new")
+
+    with open(dest_filepath, encoding="utf-8") as f:
+        assert f.read() == "new"
+
+
+def test_open_atomic_write_does_not_leave_tmp_file_behind(testdir):
+    dest_filepath = os.path.join(testdir, "dest.txt")
+
+    with ktp_controller.utils.open_atomic_write(
+        dest_filepath, encoding="utf-8"
+    ) as dest_file:
+        dest_file.write("hello")
+
+    assert os.listdir(testdir) == ["dest.txt"]
+
+
+def _write_and_raise(dest_filepath):
+    with ktp_controller.utils.open_atomic_write(
+        dest_filepath, encoding="utf-8"
+    ) as dest_file:
+        dest_file.write("new")
+        raise RuntimeError("boom")
+
+
+def test_open_atomic_write_does_not_touch_dest_file_on_error(testdir):
+    dest_filepath = os.path.join(testdir, "dest.txt")
+    with open(dest_filepath, "w", encoding="utf-8") as f:
+        f.write("old")
+
+    with pytest.raises(RuntimeError):
+        _write_and_raise(dest_filepath)
+
+    with open(dest_filepath, encoding="utf-8") as f:
+        assert f.read() == "old"
+    assert os.listdir(testdir) == ["dest.txt"]
+
+
+def test_open_atomic_write_exclusive_raises_if_dest_file_exists(testdir):
+    dest_filepath = os.path.join(testdir, "dest.txt")
+    with open(dest_filepath, "w", encoding="utf-8") as f:
+        f.write("old")
+
+    with pytest.raises(FileExistsError):
+        with ktp_controller.utils.open_atomic_write(
+            dest_filepath, exclusive=True, encoding="utf-8"
+        ) as dest_file:
+            dest_file.write("new")
+
+    with open(dest_filepath, encoding="utf-8") as f:
+        assert f.read() == "old"
+
+
+def _write_with_racing_creator(dest_filepath):
+    # Simulate a second, racing writer finishing first: it creates
+    # dest_filepath while this writer is still inside the `with`
+    # block, i.e. after open_atomic_write's upfront os.path.exists()
+    # check already passed.
+    with ktp_controller.utils.open_atomic_write(
+        dest_filepath, exclusive=True, encoding="utf-8"
+    ) as dest_file:
+        dest_file.write("new")
+        with open(dest_filepath, "w", encoding="utf-8") as racer_file:
+            racer_file.write("racer")
+
+
+def test_open_atomic_write_exclusive_raises_if_dest_file_created_during_write(testdir):
+    dest_filepath = os.path.join(testdir, "dest.txt")
+
+    with pytest.raises(FileExistsError):
+        _write_with_racing_creator(dest_filepath)
+
+    with open(dest_filepath, encoding="utf-8") as f:
+        assert f.read() == "racer"
+
+
+def test_open_atomic_write_concurrent_writers_do_not_share_tmp_file(testdir):
+    # Two overlapping open_atomic_write() calls for the same
+    # dest_filepath must use distinct temp files. If they shared one
+    # (keyed only on dest_filepath), the second writer's open(tmp, "x")
+    # would fail, or a non-exclusive open would truncate/corrupt the
+    # first writer's in-progress temp file and its final os.rename()
+    # would then hit a FileNotFoundError, since the other writer
+    # already renamed that path away.
+    dest_filepath = os.path.join(testdir, "dest.txt")
+
+    cm_a = ktp_controller.utils.open_atomic_write(dest_filepath, encoding="utf-8")
+    dest_file_a = cm_a.__enter__()
+    dest_file_a.write("a" * 10)
+    dest_file_a.flush()
+
+    cm_b = ktp_controller.utils.open_atomic_write(dest_filepath, encoding="utf-8")
+    with cm_b as dest_file_b:
+        dest_file_b.write("b" * 10)
+
+    with open(dest_filepath, encoding="utf-8") as f:
+        assert f.read() == "b" * 10
+
+    cm_a.__exit__(None, None, None)
+
+    with open(dest_filepath, encoding="utf-8") as f:
+        assert f.read() == "a" * 10
+
+
+def test_copy_atomic_copies_file_contents(testdir):
+    src_filepath = os.path.join(testdir, "src.bin")
+    dest_filepath = os.path.join(testdir, "dest.bin")
+    with open(src_filepath, "wb") as f:
+        f.write(b"\x00\x01binary-data" * 1000)
+
+    ktp_controller.utils.copy_atomic(src_filepath, dest_filepath)
+
+    with open(src_filepath, "rb") as f:
+        src_data = f.read()
+    with open(dest_filepath, "rb") as f:
+        dest_data = f.read()
+    assert dest_data == src_data
