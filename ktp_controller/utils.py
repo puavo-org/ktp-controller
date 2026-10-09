@@ -123,6 +123,12 @@ def copy_atomic(src_filepath: str, dest_filepath: str, exclusive: bool = False) 
             dest_filepath, exclusive=exclusive, encoding=None
         ) as dest_file,
     ):
+        # Advisory shared lock: blocks until a writer holding a
+        # matching fcntl.LOCK_EX on src_filepath releases it, so this
+        # doesn't copy a torn, partially-written snapshot of the
+        # source. Only effective against writers that also use
+        # flock() on src_filepath.
+        fcntl.flock(src_file, fcntl.LOCK_SH)
         while True:
             data = src_file.read(4096)
             if not data:
