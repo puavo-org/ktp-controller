@@ -15,6 +15,7 @@ import os.path
 import sys
 import typing
 import urllib.parse
+import uuid
 import warnings
 
 __all__ = [
@@ -76,7 +77,7 @@ def open_atomic_write(
     if exclusive and os.path.exists(dest_filepath):
         raise FileExistsError(dest_filepath)
 
-    tmpfilemode = "w"
+    tmpfilemode = "x"
 
     if encoding is None:
         tmpfilemode = f"{tmpfilemode}b"
@@ -88,11 +89,26 @@ def open_atomic_write(
         except FileExistsError:
             pass
 
-    tmp_dest_filepath = f"{dest_filepath}.ktp_controller_open_atomic_write_tmp"
+    # The temp file name must be unique per call: two concurrent writers
+    # to the same dest_filepath must never share a temp file, or they'd
+    # corrupt each other's writes.
+    tmp_dest_filepath = (
+        f"{dest_filepath}.{uuid.uuid4().hex}.ktp_controller_open_atomic_write_tmp"
+    )
     try:
         with open(tmp_dest_filepath, tmpfilemode, encoding=encoding) as tmp_dest_file:
             yield tmp_dest_file
-        os.rename(tmp_dest_filepath, dest_filepath)
+        if exclusive:
+            # os.rename() would silently replace a dest_filepath created
+            # by a racing writer after the exists() check above. Hard
+            # linking is atomic and fails with FileExistsError if
+            # dest_filepath already exists, closing that race.
+            try:
+                os.link(tmp_dest_filepath, dest_filepath)
+            except FileExistsError:
+                raise FileExistsError(dest_filepath) from None
+        else:
+            os.rename(tmp_dest_filepath, dest_filepath)
     finally:
         try:
             os.unlink(tmp_dest_filepath)
