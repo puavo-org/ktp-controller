@@ -15,4 +15,4 @@ def test_get_root_redirects_to_invigilator(wui_client):
     response = wui_client.get("/")
 
     assert response.status_code == 303
-    assert response.headers["location"] == "/invigilator"
+    assert response.headers["location"] == "/invigilator/"

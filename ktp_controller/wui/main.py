@@ -92,8 +92,16 @@ async def _handle_not_authenticated(
 
 @APP.get("/")
 def _get_root() -> fastapi.responses.RedirectResponse:
+    # Redirect straight to the trailing-slash form. Redirecting to
+    # "/invigilator" instead would make Starlette's own
+    # redirect_slashes handling issue a second, *absolute* redirect
+    # to add the slash, built from the request's Host header instead
+    # of the relative path the browser is already on. Behind a
+    # reverse proxy that forwards Host without its port (see
+    # ktp_controller.utils.setup_nginx_wui_tls_reverse_proxy), that
+    # second redirect drops the port.
     return fastapi.responses.RedirectResponse(
-        url="/invigilator", status_code=fastapi.status.HTTP_303_SEE_OTHER
+        url="/invigilator/", status_code=fastapi.status.HTTP_303_SEE_OTHER
     )
 
 

@@ -63,6 +63,10 @@ def test_setup_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
     assert f"ssl_certificate {dest_crt_filepath};" in config
     assert f"ssl_certificate_key {dest_key_filepath};" in config
     assert "proxy_pass http://127.0.0.1:9999;" in config
+    # $host strips the port from the forwarded Host header, which
+    # breaks absolute redirects (e.g. Starlette's trailing-slash
+    # redirect) when WUI is served on a non-standard port.
+    assert "proxy_set_header Host $http_host;" in config
 
     enabled_symlink_filepath = os.path.join(sites_enabled_dirpath, "ktp-controller-wui")
     assert os.path.islink(enabled_symlink_filepath)
