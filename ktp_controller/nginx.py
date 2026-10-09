@@ -85,4 +85,4 @@ server {{
         ["systemctl", "reload", "nginx"], capture_output=True
     )
     if completed_process.returncode != 0:
-        _LOGGER.warning("failed to reload nginx: %s", completed_process.stderr.decode())
+        _LOGGER.error("failed to reload nginx: %s", completed_process.stderr.decode())

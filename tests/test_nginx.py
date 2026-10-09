@@ -107,7 +107,7 @@ def test_setup_nginx_wui_tls_reverse_proxy_replaces_existing_symlink(
     assert os.path.realpath(enabled_symlink_filepath) == os.path.realpath(site_filepath)
 
 
-def test_setup_nginx_wui_tls_reverse_proxy_logs_warning_on_reload_failure(
+def test_setup_nginx_wui_tls_reverse_proxy_logs_error_on_reload_failure(
     monkeypatch, mocker, testdir
 ):
     _patch_nginx_dirs(monkeypatch, testdir)
@@ -123,10 +123,10 @@ def test_setup_nginx_wui_tls_reverse_proxy_logs_warning_on_reload_failure(
             args=[], returncode=1, stderr=b"nginx: configuration file test failed"
         ),
     )
-    warning_mock = mocker.patch.object(ktp_controller.nginx._LOGGER, "warning")
+    error_mock = mocker.patch.object(ktp_controller.nginx._LOGGER, "error")
 
     ktp_controller.nginx.setup_nginx_wui_tls_reverse_proxy(
         "exam.example.invalid", 8443, crt_filepath, key_filepath
     )
 
-    warning_mock.assert_called_once()
+    error_mock.assert_called_once()
