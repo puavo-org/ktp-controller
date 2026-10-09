@@ -82,8 +82,9 @@ def open_atomic_write(
     if encoding is None:
         tmpfilemode = f"{tmpfilemode}b"
 
+    dest_dirpath = os.path.dirname(dest_filepath) or "."
+
     if do_makedirs:
-        dest_dirpath = os.path.dirname(dest_filepath)
         try:
             os.makedirs(dest_dirpath)
         except FileExistsError:
@@ -98,6 +99,12 @@ def open_atomic_write(
     try:
         with open(tmp_dest_filepath, tmpfilemode, encoding=encoding) as tmp_dest_file:
             yield tmp_dest_file
+            # Force the written bytes to disk before the rename/link
+            # below makes them visible under dest_filepath, so a crash
+            # right after can't leave dest_filepath pointing at data
+            # that was never actually persisted.
+            tmp_dest_file.flush()
+            os.fsync(tmp_dest_file.fileno())
         if exclusive:
             # os.rename() would silently replace a dest_filepath created
             # by a racing writer after the exists() check above. Hard
@@ -109,6 +116,16 @@ def open_atomic_write(
                 raise FileExistsError(dest_filepath) from None
         else:
             os.rename(tmp_dest_filepath, dest_filepath)
+
+        # The rename/link itself needs its own fsync: a crash before the
+        # directory entry update reaches disk can leave dest_filepath
+        # absent, or still pointing at its old content, even though the
+        # rename/link call above already returned successfully.
+        dest_dir_fd = os.open(dest_dirpath, os.O_RDONLY)
+        try:
+            os.fsync(dest_dir_fd)
+        finally:
+            os.close(dest_dir_fd)
     finally:
         try:
             os.unlink(tmp_dest_filepath)
