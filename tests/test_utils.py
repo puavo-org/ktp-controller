@@ -1,5 +1,8 @@
+import fcntl
 import os
 import os.path
+import threading
+import time
 
 import pytest
 
@@ -143,3 +146,48 @@ def test_copy_atomic_copies_file_contents(testdir):
     with open(dest_filepath, "rb") as f:
         dest_data = f.read()
     assert dest_data == src_data
+
+
+def test_copy_atomic_takes_shared_lock_on_src_file(testdir, mocker):
+    src_filepath = os.path.join(testdir, "src.bin")
+    dest_filepath = os.path.join(testdir, "dest.bin")
+    with open(src_filepath, "wb") as f:
+        f.write(b"data")
+
+    flock_mock = mocker.patch("ktp_controller.utils.fcntl.flock")
+
+    ktp_controller.utils.copy_atomic(src_filepath, dest_filepath)
+
+    flock_mock.assert_called_once()
+    (_lock_target, lock_op) = flock_mock.call_args.args
+    assert lock_op == fcntl.LOCK_SH
+
+
+def test_copy_atomic_waits_for_src_file_exclusive_lock_to_be_released(testdir):
+    src_filepath = os.path.join(testdir, "src.bin")
+    dest_filepath = os.path.join(testdir, "dest.bin")
+    with open(src_filepath, "wb") as f:
+        f.write(b"locked-content")
+
+    def _release_lock_soon(lock_file):
+        time.sleep(0.2)
+        fcntl.flock(lock_file, fcntl.LOCK_UN)
+
+    # flock() locks belong to the open file description, not the
+    # process, so a second, independent open() of the same path
+    # within this same test process still conflicts with this one.
+    with open(src_filepath, "rb") as lock_file:
+        fcntl.flock(lock_file, fcntl.LOCK_EX)
+
+        releaser = threading.Thread(target=_release_lock_soon, args=(lock_file,))
+        releaser.start()
+        try:
+            start = time.monotonic()
+            ktp_controller.utils.copy_atomic(src_filepath, dest_filepath)
+            elapsed = time.monotonic() - start
+        finally:
+            releaser.join()
+
+    assert elapsed >= 0.2
+    with open(dest_filepath, "rb") as f:
+        assert f.read() == b"locked-content"
