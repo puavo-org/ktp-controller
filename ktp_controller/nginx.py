@@ -46,7 +46,6 @@ def setup_nginx_wui_tls_reverse_proxy(
     config = f"""\
 server {{
     listen {port} ssl;
-    listen [::]:{port} ssl;
     server_name {domain_name};
 
     ssl_certificate {dest_crt_filepath};
