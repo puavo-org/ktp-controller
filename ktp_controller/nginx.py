@@ -19,14 +19,35 @@ __all__ = [
 
 _LOGGER = logging.getLogger(__name__)
 
-NGINX_DIRPATH = "/etc/nginx"
-NGINX_SITES_AVAILABLE_DIRPATH = os.path.join(NGINX_DIRPATH, "sites-available")
-NGINX_SITES_ENABLED_DIRPATH = os.path.join(NGINX_DIRPATH, "sites-enabled")
-NGINX_WUI_SITE_NAME = "ktp-controller-wui"
-NGINX_WUI_CRT_FILEPATH = os.path.join(NGINX_DIRPATH, "ktp-controller-wui.crt")
-NGINX_WUI_KEY_FILEPATH = os.path.join(NGINX_DIRPATH, "ktp-controller-wui.key")
-
 WUI_UPSTREAM_URL = "http://127.0.0.1:9999"
+
+
+class _Paths:
+    def __init__(self, *, root_conf_dirpath: str = "/etc/nginx"):
+        self.root_conf_dirpath = root_conf_dirpath
+        self.sites_available_dirpath = os.path.join(
+            root_conf_dirpath, "sites-available"
+        )
+        self.sites_enabled_dirpath = os.path.join(root_conf_dirpath, "sites-enabled")
+        self.wui_site_name = "ktp-controller-wui"
+        self.wui_crt_filepath = os.path.join(
+            root_conf_dirpath, "ktp-controller-wui.crt"
+        )
+        self.wui_key_filepath = os.path.join(
+            root_conf_dirpath, "ktp-controller-wui.key"
+        )
+        self.wui_site_filepath = os.path.join(
+            self.sites_available_dirpath, self.wui_site_name
+        )
+        self.wui_symlink_filepath = os.path.join(
+            self.sites_enabled_dirpath, self.wui_site_name
+        )
+        self.wui_symlink_target = os.path.relpath(
+            self.wui_site_filepath, self.sites_enabled_dirpath
+        )
+
+
+_PATHS = _Paths()
 
 
 def disable_nginx_wui_tls_reverse_proxy() -> None:
@@ -36,13 +57,8 @@ def disable_nginx_wui_tls_reverse_proxy() -> None:
     Counter part to `enable_nginx_wui_tls_reverse_proxy()`.
     """
 
-    enabled_symlink_filepath = os.path.join(
-        NGINX_SITES_ENABLED_DIRPATH, NGINX_WUI_SITE_NAME
-    )
-    site_filepath = os.path.join(NGINX_SITES_AVAILABLE_DIRPATH, NGINX_WUI_SITE_NAME)
-
     try:
-        os.remove(enabled_symlink_filepath)
+        os.remove(_PATHS.wui_symlink_filepath)
     except FileNotFoundError:
         _LOGGER.warning(
             "Nginx site %r does not exist, nginx reconfiguration skipped",
@@ -50,13 +66,17 @@ def disable_nginx_wui_tls_reverse_proxy() -> None:
         )
         return
 
-    _LOGGER.info("Deleted %r", enabled_symlink_filepath)
+    _LOGGER.info("Deleted %r", _PATHS.wui_symlink_filepath)
 
     exceptions = []
     try:
-        for fp in [NGINX_WUI_KEY_FILEPATH, NGINX_WUI_CRT_FILEPATH, site_filepath]:
+        for fp in [
+            _PATHS.wui_key_filepath,
+            _PATHS.wui_crt_filepath,
+            _PATHS.wui_site_filepath,
+        ]:
             try:
-                os.remove(site_filepath)
+                os.remove(fp)
             except Exception as e:
                 exceptions.append(e)
                 continue
@@ -81,22 +101,22 @@ def enable_nginx_wui_tls_reverse_proxy(
     WUI (listening at WUI_UPSTREAM_URL), making WUI reachable at
     https://<domain_name>:<port>/.
 
-    crt_filepath and key_filepath are copied into NGINX_DIRPATH so the
+    crt_filepath and key_filepath are copied into _PATHS.ROOT_CONF_DIRPATH so the
     TLS certificate and key remain available even if the original
     files are deleted afterwards.
 
     """
 
-    ktp_controller.utils.copy_atomic(crt_filepath, NGINX_WUI_CRT_FILEPATH)
-    ktp_controller.utils.copy_atomic(key_filepath, NGINX_WUI_KEY_FILEPATH)
+    ktp_controller.utils.copy_atomic(crt_filepath, _PATHS.wui_crt_filepath)
+    ktp_controller.utils.copy_atomic(key_filepath, _PATHS.wui_key_filepath)
 
     config = f"""\
 server {{
     listen {port} ssl;
     server_name {domain_name};
 
-    ssl_certificate {NGINX_WUI_CRT_FILEPATH};
-    ssl_certificate_key {NGINX_WUI_KEY_FILEPATH};
+    ssl_certificate {_PATHS.wui_crt_filepath};
+    ssl_certificate_key {_PATHS.wui_key_filepath};
 
     location / {{
         proxy_pass {WUI_UPSTREAM_URL};
@@ -111,22 +131,16 @@ server {{
 }}
 """
 
-    site_filepath = os.path.join(NGINX_SITES_AVAILABLE_DIRPATH, NGINX_WUI_SITE_NAME)
-    enabled_symlink_filepath = os.path.join(
-        NGINX_SITES_ENABLED_DIRPATH, NGINX_WUI_SITE_NAME
-    )
-
     with ktp_controller.utils.open_atomic_write(
-        site_filepath, encoding="utf-8"
+        _PATHS.wui_site_filepath, encoding="utf-8"
     ) as site_file:
         site_file.write(config)
 
-    symlink_target = os.path.relpath(site_filepath, NGINX_SITES_ENABLED_DIRPATH)
     try:
-        os.symlink(symlink_target, enabled_symlink_filepath)
+        os.symlink(_PATHS.wui_symlink_target, _PATHS.wui_symlink_filepath)
     except FileExistsError:
-        os.remove(enabled_symlink_filepath)
-        os.symlink(symlink_target, enabled_symlink_filepath)
+        os.remove(_PATHS.wui_symlink_filepath)
+        os.symlink(_PATHS.wui_symlink_target, _PATHS.wui_symlink_filepath)
 
     completed_process = subprocess.run(
         ["systemctl", "reload", "nginx"], capture_output=True
