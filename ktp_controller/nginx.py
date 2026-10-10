@@ -12,7 +12,7 @@ import subprocess
 import ktp_controller.utils
 
 __all__ = [
-    "setup_nginx_wui_tls_reverse_proxy",
+    "enable_nginx_wui_tls_reverse_proxy",
 ]
 
 
@@ -25,7 +25,7 @@ NGINX_WUI_SITE_NAME = "ktp-controller-wui"
 WUI_UPSTREAM_URL = "http://127.0.0.1:9999"
 
 
-def setup_nginx_wui_tls_reverse_proxy(
+def enable_nginx_wui_tls_reverse_proxy(
     domain_name: str, port: int, crt_filepath: str, key_filepath: str
 ) -> None:
     """Configure nginx as a TLS terminating reverse proxy in front of

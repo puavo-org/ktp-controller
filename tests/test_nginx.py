@@ -29,7 +29,7 @@ def _write(filepath, content):
         f.write(content)
 
 
-def test_setup_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
+def test_enable_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
     nginx_dirpath, sites_available_dirpath, sites_enabled_dirpath = _patch_nginx_dirs(
         monkeypatch, testdir
     )
@@ -44,7 +44,7 @@ def test_setup_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
         return_value=subprocess.CompletedProcess(args=[], returncode=0),
     )
 
-    ktp_controller.nginx.setup_nginx_wui_tls_reverse_proxy(
+    ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy(
         "exam.example.invalid", 8443, crt_filepath, key_filepath
     )
 
@@ -77,7 +77,7 @@ def test_setup_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
     )
 
 
-def test_setup_nginx_wui_tls_reverse_proxy_replaces_existing_symlink(
+def test_enable_nginx_wui_tls_reverse_proxy_replaces_existing_symlink(
     monkeypatch, mocker, testdir
 ):
     _nginx_dirpath, sites_available_dirpath, sites_enabled_dirpath = _patch_nginx_dirs(
@@ -99,7 +99,7 @@ def test_setup_nginx_wui_tls_reverse_proxy_replaces_existing_symlink(
         return_value=subprocess.CompletedProcess(args=[], returncode=0),
     )
 
-    ktp_controller.nginx.setup_nginx_wui_tls_reverse_proxy(
+    ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy(
         "exam.example.invalid", 8443, crt_filepath, key_filepath
     )
 
@@ -107,7 +107,7 @@ def test_setup_nginx_wui_tls_reverse_proxy_replaces_existing_symlink(
     assert os.path.realpath(enabled_symlink_filepath) == os.path.realpath(site_filepath)
 
 
-def test_setup_nginx_wui_tls_reverse_proxy_logs_error_on_reload_failure(
+def test_enable_nginx_wui_tls_reverse_proxy_logs_error_on_reload_failure(
     monkeypatch, mocker, testdir
 ):
     _patch_nginx_dirs(monkeypatch, testdir)
@@ -125,7 +125,7 @@ def test_setup_nginx_wui_tls_reverse_proxy_logs_error_on_reload_failure(
     )
     error_mock = mocker.patch.object(ktp_controller.nginx._LOGGER, "error")
 
-    ktp_controller.nginx.setup_nginx_wui_tls_reverse_proxy(
+    ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy(
         "exam.example.invalid", 8443, crt_filepath, key_filepath
     )
 

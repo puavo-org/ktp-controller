@@ -98,7 +98,7 @@ def _get_root() -> fastapi.responses.RedirectResponse:
     # to add the slash, built from the request's Host header instead
     # of the relative path the browser is already on. Behind a
     # reverse proxy that forwards Host without its port (see
-    # ktp_controller.nginx.setup_nginx_wui_tls_reverse_proxy), that
+    # ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy), that
     # second redirect drops the port.
     return fastapi.responses.RedirectResponse(
         url="/invigilator/", status_code=fastapi.status.HTTP_303_SEE_OTHER
