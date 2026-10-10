@@ -3,6 +3,7 @@ import os.path
 import subprocess
 
 import ktp_controller.nginx
+from ktp_controller import SETTINGS
 
 
 def _patch_nginx_paths(monkeypatch, testdir):
@@ -54,7 +55,7 @@ def test_enable_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
     assert "server_name exam.example.invalid;" in config
     assert f"ssl_certificate {dest_crt_filepath};" in config
     assert f"ssl_certificate_key {dest_key_filepath};" in config
-    assert "proxy_pass http://127.0.0.1:9999;" in config
+    assert f"proxy_pass http://{SETTINGS.wui_host}:{SETTINGS.wui_port};" in config
     # $host strips the port from the forwarded Host header, which
     # breaks absolute redirects (e.g. Starlette's trailing-slash
     # redirect) when WUI is served on a non-standard port.

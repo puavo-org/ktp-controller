@@ -10,6 +10,7 @@ import subprocess
 
 # Internal imports
 import ktp_controller.utils
+from ktp_controller import SETTINGS
 
 __all__ = [
     "disable_nginx_wui_tls_reverse_proxy",
@@ -19,7 +20,7 @@ __all__ = [
 
 _LOGGER = logging.getLogger(__name__)
 
-WUI_UPSTREAM_URL = "http://127.0.0.1:9999"
+WUI_UPSTREAM_URL = f"http://{SETTINGS.wui_host}:{SETTINGS.wui_port}"
 
 
 class _Paths:
