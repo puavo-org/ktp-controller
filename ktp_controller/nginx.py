@@ -22,6 +22,9 @@ NGINX_DIRPATH = "/etc/nginx"
 NGINX_SITES_AVAILABLE_DIRPATH = os.path.join(NGINX_DIRPATH, "sites-available")
 NGINX_SITES_ENABLED_DIRPATH = os.path.join(NGINX_DIRPATH, "sites-enabled")
 NGINX_WUI_SITE_NAME = "ktp-controller-wui"
+NGINX_WUI_CRT_FILEPATH = os.path.join(NGINX_DIRPATH, "ktp-controller-wui.crt")
+NGINX_WUI_KEY_FILEPATH = os.path.join(NGINX_DIRPATH, "ktp-controller-wui.key")
+
 WUI_UPSTREAM_URL = "http://127.0.0.1:9999"
 
 
@@ -37,19 +40,17 @@ def enable_nginx_wui_tls_reverse_proxy(
     files are deleted afterwards.
 
     """
-    dest_crt_filepath = os.path.join(NGINX_DIRPATH, os.path.basename(crt_filepath))
-    dest_key_filepath = os.path.join(NGINX_DIRPATH, os.path.basename(key_filepath))
 
-    ktp_controller.utils.copy_atomic(crt_filepath, dest_crt_filepath)
-    ktp_controller.utils.copy_atomic(key_filepath, dest_key_filepath)
+    ktp_controller.utils.copy_atomic(crt_filepath, NGINX_WUI_CRT_FILEPATH)
+    ktp_controller.utils.copy_atomic(key_filepath, NGINX_WUI_KEY_FILEPATH)
 
     config = f"""\
 server {{
     listen {port} ssl;
     server_name {domain_name};
 
-    ssl_certificate {dest_crt_filepath};
-    ssl_certificate_key {dest_key_filepath};
+    ssl_certificate {NGINX_WUI_CRT_FILEPATH};
+    ssl_certificate_key {NGINX_WUI_KEY_FILEPATH};
 
     location / {{
         proxy_pass {WUI_UPSTREAM_URL};
