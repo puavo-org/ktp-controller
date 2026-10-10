@@ -143,8 +143,6 @@ server {{
         os.remove(_PATHS.wui_symlink_filepath)
         os.symlink(_PATHS.wui_symlink_target, _PATHS.wui_symlink_filepath)
 
-    completed_process = subprocess.run(
-        ["systemctl", "reload", "nginx"], capture_output=True
-    )
-    if completed_process.returncode != 0:
-        _LOGGER.error("failed to reload nginx: %s", completed_process.stderr.decode())
+    subprocess.check_call(["systemctl", "reload", "nginx"])
+
+    _LOGGER.info("Configured Nginx site %r", _PATHS.wui_site_name)

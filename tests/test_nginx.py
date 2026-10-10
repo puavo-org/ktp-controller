@@ -2,6 +2,8 @@ import os
 import os.path
 import subprocess
 
+import pytest
+
 import ktp_controller.nginx
 from ktp_controller import SETTINGS
 
@@ -33,8 +35,7 @@ def test_enable_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
     _write(key_filepath, "dummy-key")
 
     run_mock = mocker.patch(
-        "ktp_controller.nginx.subprocess.run",
-        return_value=subprocess.CompletedProcess(args=[], returncode=0),
+        "ktp_controller.nginx.subprocess.check_call", return_value=None
     )
 
     ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy(
@@ -67,9 +68,7 @@ def test_enable_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
     assert os.path.islink(enabled_symlink_filepath)
     assert os.path.realpath(enabled_symlink_filepath) == os.path.realpath(site_filepath)
 
-    run_mock.assert_called_once_with(
-        ["systemctl", "reload", "nginx"], capture_output=True
-    )
+    run_mock.assert_called_once_with(["systemctl", "reload", "nginx"])
 
 
 def test_enable_nginx_wui_tls_reverse_proxy_replaces_existing_symlink(
@@ -89,10 +88,7 @@ def test_enable_nginx_wui_tls_reverse_proxy_replaces_existing_symlink(
     )
     os.symlink(stale_target_filepath, enabled_symlink_filepath)
 
-    mocker.patch(
-        "ktp_controller.nginx.subprocess.run",
-        return_value=subprocess.CompletedProcess(args=[], returncode=0),
-    )
+    mocker.patch("ktp_controller.nginx.subprocess.check_call", return_value=None)
 
     ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy(
         "exam.example.invalid", 8443, crt_filepath, key_filepath
@@ -102,7 +98,7 @@ def test_enable_nginx_wui_tls_reverse_proxy_replaces_existing_symlink(
     assert os.path.realpath(enabled_symlink_filepath) == os.path.realpath(site_filepath)
 
 
-def test_enable_nginx_wui_tls_reverse_proxy_logs_error_on_reload_failure(
+def test_enable_nginx_wui_tls_reverse_proxy_raises_exception_on_reload_failure(
     monkeypatch, mocker, testdir
 ):
     _patch_nginx_paths(monkeypatch, testdir)
@@ -113,15 +109,11 @@ def test_enable_nginx_wui_tls_reverse_proxy_logs_error_on_reload_failure(
     _write(key_filepath, "dummy-key")
 
     mocker.patch(
-        "ktp_controller.nginx.subprocess.run",
-        return_value=subprocess.CompletedProcess(
-            args=[], returncode=1, stderr=b"nginx: configuration file test failed"
-        ),
-    )
-    error_mock = mocker.patch.object(ktp_controller.nginx._LOGGER, "error")
-
-    ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy(
-        "exam.example.invalid", 8443, crt_filepath, key_filepath
+        "ktp_controller.nginx.subprocess.check_call",
+        side_effect=subprocess.CalledProcessError(1, ["systemctl", "reload", "nginx"]),
     )
 
-    error_mock.assert_called_once()
+    with pytest.raises(subprocess.CalledProcessError):
+        ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy(
+            "exam.example.invalid", 8443, crt_filepath, key_filepath
+        )
