@@ -61,8 +61,8 @@ msgstr "Avslutad"
 
 #: ktp_controller/wui/invigilator/routes.py:218
 #: ktp_controller/wui/invigilator/templates/partials/student_state_counts.html.j2:3
-msgid "Active"
-msgstr "Aktiv"
+msgid "In exam"
+msgstr "I provet"
 
 #: ktp_controller/wui/invigilator/routes.py:226
 msgid "Disconnected"

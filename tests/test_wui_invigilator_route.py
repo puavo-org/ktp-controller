@@ -823,7 +823,7 @@ def test_invigilator_view_renders_student_state_counts(
     assert '<span class="pill pill-attention">Requires attention 1</span>' in (
         response.text
     )
-    assert '<span class="pill pill-active">Active 1</span>' in response.text
+    assert '<span class="pill pill-active">In exam 1</span>' in response.text
     assert '<span class="pill pill-finished">Finished 1</span>' in response.text
 
 
@@ -854,7 +854,7 @@ def test_invigilator_view_student_state_counts_ignore_name_birthday_filter(
     assert '<span class="pill pill-attention">Requires attention 1</span>' in (
         response.text
     )
-    assert '<span class="pill pill-active">Active 1</span>' in response.text
+    assert '<span class="pill pill-active">In exam 1</span>' in response.text
     assert '<span class="pill pill-finished">Finished 1</span>' in response.text
 
 
@@ -877,7 +877,7 @@ def test_invigilator_view_renders_student_list_table_state_pills(
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert '<span class="pill pill-active">Active</span>' in response.text
+    assert '<span class="pill pill-active">In exam</span>' in response.text
     assert '<span class="pill pill-finished">Finished</span>' in response.text
     assert '<span class="pill pill-attention">Undefined exam</span>' in response.text
 
@@ -901,7 +901,7 @@ def test_invigilator_view_renders_student_list_table_state_pills_in_htmx_partial
     response = wui_client.get("/invigilator/", headers={"HX-Request": "true"})
 
     assert response.status_code == 200
-    assert '<span class="pill pill-active">Active</span>' in response.text
+    assert '<span class="pill pill-active">In exam</span>' in response.text
     assert '<span class="pill pill-finished">Finished</span>' in response.text
     assert '<span class="pill pill-attention">Undefined exam</span>' in response.text
 
@@ -929,7 +929,7 @@ def test_invigilator_view_student_state_counts_present_in_htmx_partial(
     assert '<span class="pill pill-attention">Requires attention 1</span>' in (
         response.text
     )
-    assert '<span class="pill pill-active">Active 1</span>' in response.text
+    assert '<span class="pill pill-active">In exam 1</span>' in response.text
     assert '<span class="pill pill-finished">Finished 1</span>' in response.text
 
 

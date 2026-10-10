@@ -215,7 +215,7 @@ async def _get_invigilator(
 
     state_labels = {
         schemas.StudentState.FINISHED: _("Finished"),
-        schemas.StudentState.ACTIVE: _("Active"),
+        schemas.StudentState.ACTIVE: _("In exam"),
     }
     state_pill_classes = {
         schemas.StudentState.FINISHED: "pill-finished",
@@ -251,7 +251,7 @@ async def _get_invigilator(
             "wui.actions.allow-audio-replay" in session.permissions
         ),
         "finished_count": state_counts[schemas.StudentState.FINISHED],
-        "active_count": state_counts[schemas.StudentState.ACTIVE],
+        "in_exam_count": state_counts[schemas.StudentState.ACTIVE],
         "requires_attention_count": state_counts[schemas.StudentState.FLAGGED],
     }
 
