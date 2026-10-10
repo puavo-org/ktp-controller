@@ -12,6 +12,7 @@ import subprocess
 import ktp_controller.utils
 
 __all__ = [
+    "disable_nginx_wui_tls_reverse_proxy",
     "enable_nginx_wui_tls_reverse_proxy",
 ]
 
@@ -26,6 +27,51 @@ NGINX_WUI_CRT_FILEPATH = os.path.join(NGINX_DIRPATH, "ktp-controller-wui.crt")
 NGINX_WUI_KEY_FILEPATH = os.path.join(NGINX_DIRPATH, "ktp-controller-wui.key")
 
 WUI_UPSTREAM_URL = "http://127.0.0.1:9999"
+
+
+def disable_nginx_wui_tls_reverse_proxy() -> None:
+    """Deconfigure nginx as a TLS terminating reverse proxy in front
+    of WUI.
+
+    Counter part to `enable_nginx_wui_tls_reverse_proxy()`.
+    """
+
+    enabled_symlink_filepath = os.path.join(
+        NGINX_SITES_ENABLED_DIRPATH, NGINX_WUI_SITE_NAME
+    )
+    site_filepath = os.path.join(NGINX_SITES_AVAILABLE_DIRPATH, NGINX_WUI_SITE_NAME)
+
+    try:
+        os.remove(enabled_symlink_filepath)
+    except FileNotFoundError:
+        _LOGGER.warning(
+            "Nginx site %r does not exist, nginx reconfiguration skipped",
+            _PATHS.wui_site_name,
+        )
+        return
+
+    _LOGGER.info("Deleted %r", enabled_symlink_filepath)
+
+    exceptions = []
+    try:
+        for fp in [NGINX_WUI_KEY_FILEPATH, NGINX_WUI_CRT_FILEPATH, site_filepath]:
+            try:
+                os.remove(site_filepath)
+            except Exception as e:
+                exceptions.append(e)
+                continue
+            _LOGGER.info("Deleted %r", fp)
+    finally:
+        subprocess.check_call(["systemctl", "reload", "nginx"])
+        _LOGGER.info("Reloaded nginx")
+
+    if exceptions:
+        raise ExceptionGroup(
+            "failed to delete some of the WUI's files from /etc/nginx",
+            exceptions,
+        )
+
+    _LOGGER.info("Deconfigured Nginx site %r", _PATHS.wui_site_name)
 
 
 def enable_nginx_wui_tls_reverse_proxy(
