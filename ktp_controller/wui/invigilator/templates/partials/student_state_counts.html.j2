@@ -1,5 +1,6 @@
 <div id="student-state-counts" hx-swap-oob="true">
-    <span class="pill pill-attention">{{ _("Requires attention") }} {{ requires_attention_count }}</span>
-    <span class="pill pill-active">{{ _("In exam") }} {{ in_exam_count }}</span>
+    <span class="pill pill-waiting">{{ _("Waiting") }} {{ waiting_count }}</span>
+    <span class="pill pill-in_exam">{{ _("In exam") }} {{ in_exam_count }}</span>
+    <span class="pill pill-has_problems">{{ _("Has problems") }} {{ has_problems_count }}</span>
     <span class="pill pill-finished">{{ _("Finished") }} {{ finished_count }}</span>
 </div>

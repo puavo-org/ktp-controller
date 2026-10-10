@@ -14,8 +14,9 @@ _LOGGER = logging.getLogger(__name__)
 
 class StudentState(enum.StrEnum):
     FINISHED = "finished"
-    ACTIVE = "active"
-    FLAGGED = "flagged"
+    IN_EXAM = "in_exam"
+    WAITING = "waiting"
+    HAS_PROBLEMS = "has_problems"
 
 
 class StudentListItem(pydantic.BaseModel):

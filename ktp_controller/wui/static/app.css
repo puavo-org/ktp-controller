@@ -64,13 +64,17 @@ header select {
   font-weight: 600;
   margin-right: 0.5rem;
 }
-.pill-attention {
+.pill-waiting {
   background-color: #fff3cd;
   color: #7a5d00;
 }
-.pill-active {
+.pill-in_exam {
   background-color: #d4edda;
   color: #155724;
+}
+.pill-has_problems {
+  background-color: #f8d7da;
+  color: #842029;
 }
 .pill-finished {
   background-color: #cfe2ff;

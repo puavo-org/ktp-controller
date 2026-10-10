@@ -417,7 +417,7 @@ def test_invigilator_view_hides_end_exam_button_without_permission(
     assert "/actions/end-exam" not in response.text
 
 
-def test_invigilator_view_enables_end_exam_button_for_active_student(
+def test_invigilator_view_enables_end_exam_button_for_in_exam_student(
     wui_client, override_session, mocker
 ):
     mocker.patch(
@@ -460,7 +460,7 @@ def test_invigilator_view_enables_end_exam_button_for_idle_student(
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert '<span class="pill pill-attention">Idle</span>' in response.text
+    assert '<span class="pill pill-has_problems">Idle</span>' in response.text
     assert "disabled" not in _end_exam_button_tag(response.text)
 
 
@@ -504,7 +504,7 @@ def test_invigilator_view_disables_end_exam_button_for_student_with_other_flags(
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert '<span class="pill pill-attention">Undefined exam</span>' in response.text
+    assert '<span class="pill pill-has_problems">Undefined exam</span>' in response.text
     assert "disabled" in _end_exam_button_tag(response.text)
 
 
@@ -793,7 +793,21 @@ def _raw_abitti2_stats_messages_with_states():
         "examFinishedAt": None,
         "examTitle": None,
     }
-    data = {"students": [active_student, finished_student, flagged_student]}
+    waiting_student = {
+        "studentUuid": "44444444-4444-4444-4444-444444444444",
+        "sessionUuid": "44444444-4444-4444-4444-444444444445",
+        "firstNames": "Oili",
+        "lastName": "Odottava",
+        "studentBd": "040405",
+        "studentStatus": "waiting-for-auth",
+        "sessionStatus": "exam_in_progress",
+        "updateTime": None,
+        "examFinishedAt": None,
+        "examTitle": "Matematiikka",
+    }
+    data = {
+        "students": [active_student, finished_student, flagged_student, waiting_student]
+    }
     return [{"data": data}]
 
 
@@ -820,11 +834,12 @@ def test_invigilator_view_renders_student_state_counts(
     # once via the table partial, which must only emit them for htmx
     # requests to avoid rendering duplicate #student-state-counts elements.
     assert response.text.count('id="student-state-counts"') == 1
-    assert '<span class="pill pill-attention">Requires attention 1</span>' in (
+    assert '<span class="pill pill-has_problems">Has problems 1</span>' in (
         response.text
     )
-    assert '<span class="pill pill-active">In exam 1</span>' in response.text
+    assert '<span class="pill pill-in_exam">In exam 1</span>' in response.text
     assert '<span class="pill pill-finished">Finished 1</span>' in response.text
+    assert '<span class="pill pill-waiting">Waiting 1</span>' in response.text
 
 
 def test_invigilator_view_student_state_counts_ignore_name_birthday_filter(
@@ -851,11 +866,12 @@ def test_invigilator_view_student_state_counts_ignore_name_birthday_filter(
     assert "Aino Aktiivinen" in response.text
     assert "Feeri Finito" not in response.text
     assert "Hupsu Huomio" not in response.text
-    assert '<span class="pill pill-attention">Requires attention 1</span>' in (
+    assert '<span class="pill pill-has_problems">Has problems 1</span>' in (
         response.text
     )
-    assert '<span class="pill pill-active">In exam 1</span>' in response.text
+    assert '<span class="pill pill-in_exam">In exam 1</span>' in response.text
     assert '<span class="pill pill-finished">Finished 1</span>' in response.text
+    assert '<span class="pill pill-waiting">Waiting 1</span>' in response.text
 
 
 def test_invigilator_view_renders_student_list_table_state_pills(
@@ -877,9 +893,10 @@ def test_invigilator_view_renders_student_list_table_state_pills(
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert '<span class="pill pill-active">In exam</span>' in response.text
+    assert '<span class="pill pill-in_exam">In exam</span>' in response.text
     assert '<span class="pill pill-finished">Finished</span>' in response.text
-    assert '<span class="pill pill-attention">Undefined exam</span>' in response.text
+    assert '<span class="pill pill-has_problems">Undefined exam</span>' in response.text
+    assert '<span class="pill pill-waiting">Waiting</span>' in response.text
 
 
 def test_invigilator_view_renders_student_list_table_state_pills_in_htmx_partial(
@@ -901,9 +918,10 @@ def test_invigilator_view_renders_student_list_table_state_pills_in_htmx_partial
     response = wui_client.get("/invigilator/", headers={"HX-Request": "true"})
 
     assert response.status_code == 200
-    assert '<span class="pill pill-active">In exam</span>' in response.text
+    assert '<span class="pill pill-in_exam">In exam</span>' in response.text
     assert '<span class="pill pill-finished">Finished</span>' in response.text
-    assert '<span class="pill pill-attention">Undefined exam</span>' in response.text
+    assert '<span class="pill pill-has_problems">Undefined exam</span>' in response.text
+    assert '<span class="pill pill-waiting">Waiting</span>' in response.text
 
 
 def test_invigilator_view_student_state_counts_present_in_htmx_partial(
@@ -926,11 +944,12 @@ def test_invigilator_view_student_state_counts_present_in_htmx_partial(
 
     assert response.status_code == 200
     assert 'id="student-state-counts" hx-swap-oob="true"' in response.text
-    assert '<span class="pill pill-attention">Requires attention 1</span>' in (
+    assert '<span class="pill pill-has_problems">Has problems 1</span>' in (
         response.text
     )
-    assert '<span class="pill pill-active">In exam 1</span>' in response.text
+    assert '<span class="pill pill-in_exam">In exam 1</span>' in response.text
     assert '<span class="pill pill-finished">Finished 1</span>' in response.text
+    assert '<span class="pill pill-waiting">Waiting 1</span>' in response.text
 
 
 def _raw_abitti2_stats_messages_with_exam_titles(exam_titles):

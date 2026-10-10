@@ -114,9 +114,13 @@ async def _get_student_list_items() -> list[schemas.StudentListItem]:
         if state_info["has_finished"]:
             state = schemas.StudentState.FINISHED
         elif state_info["is_active"]:
-            state = schemas.StudentState.ACTIVE
+            state = schemas.StudentState.IN_EXAM
+        elif len(state_info["flags"]) > 0 and all(
+            f.lower().startswith("waiting") for f in state_info["flags"]
+        ):
+            state = schemas.StudentState.WAITING
         else:
-            state = schemas.StudentState.FLAGGED
+            state = schemas.StudentState.HAS_PROBLEMS
 
         student_list_item = schemas.StudentListItem(
             name=f"{raw_abitti2_student['firstNames']} {raw_abitti2_student['lastName']}",
@@ -215,12 +219,15 @@ async def _get_invigilator(
 
     state_labels = {
         schemas.StudentState.FINISHED: _("Finished"),
-        schemas.StudentState.ACTIVE: _("In exam"),
+        schemas.StudentState.IN_EXAM: _("In exam"),
+        schemas.StudentState.WAITING: _("Waiting"),
+        schemas.StudentState.HAS_PROBLEMS: _("Has problems"),
     }
     state_pill_classes = {
         schemas.StudentState.FINISHED: "pill-finished",
-        schemas.StudentState.ACTIVE: "pill-active",
-        schemas.StudentState.FLAGGED: "pill-attention",
+        schemas.StudentState.IN_EXAM: "pill-in_exam",
+        schemas.StudentState.WAITING: "pill-waiting",
+        schemas.StudentState.HAS_PROBLEMS: "pill-has_problems",
     }
     flag_labels = {
         ktp_controller.schemas.StudentFlag.DISCONNECTED: _("Disconnected"),
@@ -251,8 +258,9 @@ async def _get_invigilator(
             "wui.actions.allow-audio-replay" in session.permissions
         ),
         "finished_count": state_counts[schemas.StudentState.FINISHED],
-        "in_exam_count": state_counts[schemas.StudentState.ACTIVE],
-        "requires_attention_count": state_counts[schemas.StudentState.FLAGGED],
+        "in_exam_count": state_counts[schemas.StudentState.IN_EXAM],
+        "waiting_count": state_counts[schemas.StudentState.WAITING],
+        "has_problems_count": state_counts[schemas.StudentState.HAS_PROBLEMS],
     }
 
     # If the request comes from htmx, return only the table partial
