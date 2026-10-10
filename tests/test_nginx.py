@@ -1,3 +1,4 @@
+import logging
 import os
 import os.path
 import subprocess
@@ -24,6 +25,13 @@ def _patch_nginx_paths(monkeypatch, testdir):
 def _write(filepath, content):
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(content)
+
+
+def _enable_site(paths):
+    _write(paths.wui_site_filepath, "dummy-site-config")
+    _write(paths.wui_crt_filepath, "dummy-cert")
+    _write(paths.wui_key_filepath, "dummy-key")
+    os.symlink(paths.wui_symlink_target, paths.wui_symlink_filepath)
 
 
 def test_enable_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
@@ -117,3 +125,77 @@ def test_enable_nginx_wui_tls_reverse_proxy_raises_exception_on_reload_failure(
         ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy(
             "exam.example.invalid", 8443, crt_filepath, key_filepath
         )
+
+
+def test_disable_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
+    paths = _patch_nginx_paths(monkeypatch, testdir)
+    _enable_site(paths)
+
+    run_mock = mocker.patch(
+        "ktp_controller.nginx.subprocess.check_call", return_value=None
+    )
+
+    ktp_controller.nginx.disable_nginx_wui_tls_reverse_proxy()
+
+    assert not os.path.exists(paths.wui_symlink_filepath)
+    assert not os.path.exists(paths.wui_site_filepath)
+    assert not os.path.exists(paths.wui_crt_filepath)
+    assert not os.path.exists(paths.wui_key_filepath)
+
+    run_mock.assert_called_once_with(["systemctl", "reload", "nginx"])
+
+
+def test_disable_nginx_wui_tls_reverse_proxy_missing_symlink(
+    monkeypatch, mocker, caplog, testdir
+):
+    _patch_nginx_paths(monkeypatch, testdir)
+
+    run_mock = mocker.patch(
+        "ktp_controller.nginx.subprocess.check_call", return_value=None
+    )
+
+    with caplog.at_level(logging.WARNING, logger="ktp_controller.nginx"):
+        ktp_controller.nginx.disable_nginx_wui_tls_reverse_proxy()
+
+    assert any("does not exist" in record.message for record in caplog.records)
+    run_mock.assert_not_called()
+
+
+def test_disable_nginx_wui_tls_reverse_proxy_raises_exception_group_on_partial_failure(
+    monkeypatch, mocker, testdir
+):
+    paths = _patch_nginx_paths(monkeypatch, testdir)
+    # Only the symlink and the site file exist; crt/key are already
+    # missing, so removing them fails but the function should still
+    # remove what it can and still reload nginx.
+    _write(paths.wui_site_filepath, "dummy-site-config")
+    os.symlink(paths.wui_symlink_target, paths.wui_symlink_filepath)
+
+    run_mock = mocker.patch(
+        "ktp_controller.nginx.subprocess.check_call", return_value=None
+    )
+
+    with pytest.raises(ExceptionGroup) as exc_info:
+        ktp_controller.nginx.disable_nginx_wui_tls_reverse_proxy()
+
+    assert not os.path.exists(paths.wui_symlink_filepath)
+    assert not os.path.exists(paths.wui_site_filepath)
+    assert len(exc_info.value.exceptions) == 2
+    assert all(isinstance(e, FileNotFoundError) for e in exc_info.value.exceptions)
+
+    run_mock.assert_called_once_with(["systemctl", "reload", "nginx"])
+
+
+def test_disable_nginx_wui_tls_reverse_proxy_raises_exception_on_reload_failure(
+    monkeypatch, mocker, testdir
+):
+    paths = _patch_nginx_paths(monkeypatch, testdir)
+    _enable_site(paths)
+
+    mocker.patch(
+        "ktp_controller.nginx.subprocess.check_call",
+        side_effect=subprocess.CalledProcessError(1, ["systemctl", "reload", "nginx"]),
+    )
+
+    with pytest.raises(subprocess.CalledProcessError):
+        ktp_controller.nginx.disable_nginx_wui_tls_reverse_proxy()
