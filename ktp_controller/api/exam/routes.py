@@ -266,14 +266,9 @@ async def _set_current_exam_package_state(
     return old_state
 
 
-@router.post(
-    "/get_locked_exam_packages",
-    response_model=list[schemas.ScheduledExamPackage],
-    summary="Get locked exam packages",
-)
-async def _get_locked_exam_packages(
-    db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
-) -> list[dict[str, typing.Any]]:
+async def _get_locked_db_exam_packages(
+    db: sqlalchemy.orm.Session,
+) -> list[models.ScheduledExamPackage]:
     utcnow = ktp_controller.utils.utcnow()
 
     db_locked_exam_packages = []
@@ -309,6 +304,18 @@ async def _get_locked_exam_packages(
         db_locked_exam_packages[0].current = True
         db.commit()
 
+    return db_locked_exam_packages
+
+
+@router.post(
+    "/get_locked_exam_packages",
+    response_model=list[schemas.ScheduledExamPackage],
+    summary="Get locked exam packages",
+)
+async def _get_locked_exam_packages(
+    db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
+) -> list[dict[str, typing.Any]]:
+    db_locked_exam_packages = await _get_locked_db_exam_packages(db)
     return [
         {
             "external_id": db_locked_exam_package.external_id,
@@ -362,6 +369,47 @@ async def _get_current_exam_package(
         return None
 
     return db_locked_exam_packages[0]
+
+
+@router.post(
+    "/get_current_exams",
+    response_model=list[schemas.ScheduledExam],
+    summary="Get current exams",
+)
+async def _get_current_exams(
+    db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
+) -> list[dict[str, typing.Any]]:
+    locked_db_exam_packages = await _get_locked_db_exam_packages(db)
+    if len(locked_db_exam_packages) == 0:
+        return []
+
+    current_db_exam_package = locked_db_exam_packages[0]
+
+    return sorted(
+        [
+            {
+                "external_id": db_scheduled_exam.external_id,
+                "exam_title": db_scheduled_exam.exam_title,
+                "start_time": db_scheduled_exam.start_time.replace(tzinfo=datetime.UTC),
+                "end_time": db_scheduled_exam.end_time.replace(tzinfo=datetime.UTC),
+                "exam_file_info": {
+                    "external_id": db_scheduled_exam.exam_file_info.external_id,
+                    "name": db_scheduled_exam.exam_file_info.name,
+                    "size": db_scheduled_exam.exam_file_info.size,
+                    "sha256": db_scheduled_exam.exam_file_info.sha256,
+                    "decrypt_code": db_scheduled_exam.exam_file_info.decrypt_code,
+                    "modified_at": db_scheduled_exam.exam_file_info.modified_at.replace(
+                        tzinfo=datetime.UTC
+                    ),
+                },
+                "modified_at": db_scheduled_exam.modified_at.replace(
+                    tzinfo=datetime.UTC
+                ),
+            }
+            for db_scheduled_exam in current_db_exam_package.scheduled_exams
+        ],
+        key=lambda e: (e["exam_title"], e["start_time"], e["external_id"]),
+    )
 
 
 @router.post(
