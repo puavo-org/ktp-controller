@@ -181,6 +181,13 @@ async def get_locked_exam_packages(
     )
 
 
+async def get_current_exams(**kwargs: typing.Any) -> list[dict[str, typing.Any]]:
+    return typing.cast(
+        "list[dict[str, typing.Any]]",
+        await _post("/api/v1/exam/get_current_exams", **kwargs),
+    )
+
+
 async def get_current_exam_package(**kwargs: typing.Any) -> dict[str, typing.Any]:
     return typing.cast(
         "dict[str, typing.Any]",
