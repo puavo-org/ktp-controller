@@ -43,7 +43,38 @@ _templates.env.add_extension("jinja2.ext.i18n")
 _templates.env.install_null_translations(newstyle=True)  # type: ignore[attr-defined]
 _templates.env.filters["localize_date"] = ktp_controller.wui.i18n.localize_date
 _templates.env.filters["localize_datetime"] = ktp_controller.wui.i18n.localize_datetime
-_templates.env.filters["translate_labels"] = ktp_controller.wui.i18n.translate_labels
+_templates.env.filters["extract"] = ktp_controller.wui.utils.extract_filter
+
+
+async def _get_exams() -> list[schemas.Exam]:
+    exams: list[schemas.Exam] = []
+    abitti2_exams = await ktp_controller.abitti2.client.get_decrypted_exams()
+    api_exams_by_external_id: dict[
+        str, dict[str, typing.Any]
+    ] = {}  # ktp_controller.api.client.get_current_exams()
+    for abitti2_exam in sorted(abitti2_exams, key=lambda e: e["examTitle"]):
+        external_id = abitti2_exam["examUuid"].lower()
+        try:
+            api_exam = api_exams_by_external_id[external_id]
+        except KeyError:
+            scheduled_start_time = None
+            scheduled_end_time = None
+        else:
+            scheduled_start_time = api_exam["scheduled_start_time"]
+            scheduled_end_time = api_exam["scheduled_end_time"]
+        student_state_counts = schemas.StudentStateCounts()
+        exams.append(
+            schemas.Exam(
+                title=abitti2_exam["examTitle"],
+                external_id=external_id,
+                student_state_counts=student_state_counts,
+                started_at=abitti2_exam["startTime"],
+                scheduled_start_time=scheduled_start_time,
+                scheduled_end_time=scheduled_end_time,
+            )
+        )
+
+    return exams
 
 
 async def _get_student_list_items() -> list[schemas.StudentListItem]:
@@ -153,14 +184,22 @@ class _StudentListItemSortableField(enum.StrEnum):
 
 
 def _group_student_list_items_by_exam_title(
+    exams: list[schemas.Exam],
     student_list_items: list[schemas.StudentListItem],
-) -> dict[str, list[schemas.StudentListItem]]:
+) -> tuple[dict[str, list[schemas.StudentListItem]], list[schemas.StudentListItem]]:
+    ungrouped: list[schemas.StudentListItem] = []
     grouped: dict[str, list[schemas.StudentListItem]] = {}
+    for exam in exams:
+        grouped[exam.title] = []
     for student_list_item in student_list_items:
-        grouped.setdefault(student_list_item.exam_title or "???", []).append(
-            student_list_item
-        )
-    return dict(sorted(grouped.items()))
+        if student_list_item.exam_title is None:
+            ungrouped.append(student_list_item)
+            continue
+        try:
+            grouped[student_list_item.exam_title].append(student_list_item)
+        except KeyError:
+            ungrouped.append(student_list_item)
+    return dict(sorted(grouped.items())), ungrouped
 
 
 @router.get("/", response_class=fastapi.responses.HTMLResponse)
@@ -180,9 +219,13 @@ async def _get_invigilator(
         reverse=order == "desc",
     )
 
+    exams = await _get_exams()
+
     can_reset_audio = any(item.last_audio is not None for item in student_list_items)
 
-    state_counts = collections.Counter(item.state for item in student_list_items)
+    student_state_counts = schemas.StudentStateCounts(
+        **dict(collections.Counter(item.state for item in student_list_items))
+    )
 
     if name_birthday_filter:
         query = name_birthday_filter.lower()
@@ -194,8 +237,11 @@ async def _get_invigilator(
 
     order_next = "desc" if order == "asc" else "asc"  # Next time the order is reversed
 
-    grouped_student_list_items = _group_student_list_items_by_exam_title(
-        student_list_items
+    grouped_student_list_items, ungrouped_student_list_items = (
+        _group_student_list_items_by_exam_title(
+            exams,
+            student_list_items,
+        )
     )
 
     request.state.locale = session.locale
@@ -223,12 +269,7 @@ async def _get_invigilator(
         schemas.StudentState.WAITING: _("Waiting"),
         schemas.StudentState.HAS_PROBLEMS: _("Has problems"),
     }
-    state_pill_classes = {
-        schemas.StudentState.FINISHED: "pill-finished",
-        schemas.StudentState.IN_EXAM: "pill-in_exam",
-        schemas.StudentState.WAITING: "pill-waiting",
-        schemas.StudentState.HAS_PROBLEMS: "pill-has_problems",
-    }
+
     flag_labels = {
         ktp_controller.schemas.StudentFlag.DISCONNECTED: _("Disconnected"),
         ktp_controller.schemas.StudentFlag.IDLE: _("Idle"),
@@ -239,10 +280,10 @@ async def _get_invigilator(
 
     context = {
         "grouped_student_list_items": grouped_student_list_items,
-        "columns": columns,
+        "ungrouped_student_list_items": ungrouped_student_list_items,
         "state_labels": state_labels,
-        "state_pill_classes": state_pill_classes,
         "flag_labels": flag_labels,
+        "columns": columns,
         "sort_by": sort_by,
         "order_now": order,
         "order_next": order_next,
@@ -257,10 +298,7 @@ async def _get_invigilator(
         "can_allow_audio_replay": (
             "wui.actions.allow-audio-replay" in session.permissions
         ),
-        "finished_count": state_counts[schemas.StudentState.FINISHED],
-        "in_exam_count": state_counts[schemas.StudentState.IN_EXAM],
-        "waiting_count": state_counts[schemas.StudentState.WAITING],
-        "has_problems_count": state_counts[schemas.StudentState.HAS_PROBLEMS],
+        "student_state_counts": dict(student_state_counts),
     }
 
     # If the request comes from htmx, return only the table partial

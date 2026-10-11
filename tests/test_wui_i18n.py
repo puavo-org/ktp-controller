@@ -21,7 +21,7 @@ def test_compiled_catalogs_translate_known_strings():
     fi_gettext = i18n.get_gettext("fi")
     en_gettext = i18n.get_gettext("en")
 
-    assert fi_gettext("Log in") != "Log in"
+    assert fi_gettext("Log in") == "Kirjaudu sisään"
     assert en_gettext("Log in") == "Log in"
 
 
@@ -33,11 +33,3 @@ def test_localize_date_differs_by_locale_format():
 
     assert "." in fi_str
     assert fi_str != en_str
-
-
-def test_translate_labels_falls_back_to_raw_value_when_unknown():
-    assert i18n.translate_labels({"a", "b"}, {"a": "A"}) == "A, b"
-
-
-def test_translate_labels_returns_dash_for_empty_set():
-    assert i18n.translate_labels(set(), {}) == "-"

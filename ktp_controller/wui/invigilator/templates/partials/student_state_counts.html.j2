@@ -1,6 +1,5 @@
 <div id="student-state-counts" hx-swap-oob="true">
-    <span class="pill pill-waiting">{{ _("Waiting") }} {{ waiting_count }}</span>
-    <span class="pill pill-in_exam">{{ _("In exam") }} {{ in_exam_count }}</span>
-    <span class="pill pill-has_problems">{{ _("Has problems") }} {{ has_problems_count }}</span>
-    <span class="pill pill-finished">{{ _("Finished") }} {{ finished_count }}</span>
+{% for state, count in student_state_counts.items() %}
+    <span class="pill pill-{{ state }}">{{ state_labels[state] }} {{ count }}</span>
+{% endfor %}
 </div>

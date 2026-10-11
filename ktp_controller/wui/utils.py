@@ -1,6 +1,7 @@
 # Standard library imports
 import asyncio
 import logging
+import typing
 
 # Third-party imports
 import fastapi
@@ -101,3 +102,9 @@ async def raw_abitti2_stats_message_listener(registry: BrowserSocketRegistry) ->
             )
             await asyncio.sleep(reconnect_delay)
             reconnect_delay = min(reconnect_delay * 2, max_reconnect_delay)
+
+
+def extract_filter(
+    key: typing.Any, container: typing.Mapping[typing.Any, typing.Any]
+) -> typing.Any:
+    return container[key]

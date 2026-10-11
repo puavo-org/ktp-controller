@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-10 20:09+0300\n"
+"POT-Creation-Date: 2026-10-11 22:49+0300\n"
 "PO-Revision-Date: 2026-09-27 20:42+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv\n"
@@ -26,71 +26,67 @@ msgstr "För många inloggningsförsök, försök igen senare."
 msgid "Incorrect username or password"
 msgstr "Fel användarnamn eller lösenord"
 
-#: ktp_controller/wui/invigilator/routes.py:205
+#: ktp_controller/wui/invigilator/routes.py:251
 msgid "Name"
 msgstr "Namn"
 
-#: ktp_controller/wui/invigilator/routes.py:206
+#: ktp_controller/wui/invigilator/routes.py:252
 msgid "Birthday"
 msgstr "Födelsedatum"
 
-#: ktp_controller/wui/invigilator/routes.py:207
+#: ktp_controller/wui/invigilator/routes.py:253
 msgid "State"
 msgstr "Status"
 
-#: ktp_controller/wui/invigilator/routes.py:208
+#: ktp_controller/wui/invigilator/routes.py:254
 msgid "Last changed at"
 msgstr "Senast ändrad"
 
-#: ktp_controller/wui/invigilator/routes.py:215
+#: ktp_controller/wui/invigilator/routes.py:261
 msgid "Allowed to use browsers"
 msgstr "Tillåten att använda webbläsare"
 
-#: ktp_controller/wui/invigilator/routes.py:216
+#: ktp_controller/wui/invigilator/routes.py:262
 msgid "Last played audio"
 msgstr "Den senast lyssnade inspelningen"
 
-#: ktp_controller/wui/invigilator/routes.py:217
+#: ktp_controller/wui/invigilator/routes.py:263
 msgid "Action"
 msgstr "Åtgärd"
 
-#: ktp_controller/wui/invigilator/routes.py:221
-#: ktp_controller/wui/invigilator/templates/partials/student_state_counts.html.j2:5
+#: ktp_controller/wui/invigilator/routes.py:267
 msgid "Finished"
 msgstr "Avslutad"
 
-#: ktp_controller/wui/invigilator/routes.py:222
-#: ktp_controller/wui/invigilator/templates/partials/student_state_counts.html.j2:3
+#: ktp_controller/wui/invigilator/routes.py:268
 msgid "In exam"
 msgstr "I provet"
 
-#: ktp_controller/wui/invigilator/routes.py:223
-#: ktp_controller/wui/invigilator/templates/partials/student_state_counts.html.j2:2
+#: ktp_controller/wui/invigilator/routes.py:269
 msgid "Waiting"
 msgstr "Väntar"
 
-#: ktp_controller/wui/invigilator/routes.py:224
-#: ktp_controller/wui/invigilator/templates/partials/student_state_counts.html.j2:4
+#: ktp_controller/wui/invigilator/routes.py:270
 msgid "Has problems"
 msgstr "Problem"
 
-#: ktp_controller/wui/invigilator/routes.py:233
+#: ktp_controller/wui/invigilator/routes.py:274
 msgid "Disconnected"
 msgstr "Frånkopplad"
 
-#: ktp_controller/wui/invigilator/routes.py:234
+#: ktp_controller/wui/invigilator/routes.py:275
 msgid "Idle"
 msgstr "Inaktiv"
 
-#: ktp_controller/wui/invigilator/routes.py:235
+#: ktp_controller/wui/invigilator/routes.py:276
 msgid "Waiting for auth"
 msgstr "Väntar på autentisering"
 
-#: ktp_controller/wui/invigilator/routes.py:236
+#: ktp_controller/wui/invigilator/routes.py:277
 msgid "Undefined exam"
 msgstr "Odefinierat prov"
 
-#: ktp_controller/wui/invigilator/routes.py:237
+#: ktp_controller/wui/invigilator/routes.py:278
 msgid "Unknown issue"
 msgstr "Okänt problem"
 
@@ -190,6 +186,10 @@ msgstr "Ingen åtkomstkod tillgänglig"
 #: ktp_controller/wui/invigilator/templates/partials/student_access_code_display.html.j2:10
 msgid "Change access code"
 msgstr "Byt åtkomstkod"
+
+#: ktp_controller/wui/invigilator/templates/partials/student_list_groups.html.j2:19
+msgid "No exams"
+msgstr "Inga prov"
 
 #: ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:55
 #, python-format

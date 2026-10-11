@@ -26,7 +26,6 @@ __all__ = [
     "localize_datetime",
     "negotiate_locale",
     "template_context_processor",
-    "translate_labels",
 ]
 
 _LOCALE_DIR = os.path.join(os.path.dirname(__file__), "locale")
@@ -157,9 +156,3 @@ def localize_date(d: datetime.date, locale: str) -> str:
 
 def localize_datetime(dt: datetime.datetime, locale: str) -> str:
     return babel.dates.format_datetime(dt, format="short", locale=locale)
-
-
-def translate_labels(
-    values: typing.Iterable[typing.Any], labels: dict[typing.Any, str]
-) -> str:
-    return ", ".join(labels.get(v, v) for v in sorted(values)) or "-"

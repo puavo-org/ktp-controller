@@ -19,6 +19,16 @@ class StudentState(enum.StrEnum):
     HAS_PROBLEMS = "has_problems"
 
 
+class StudentStateCounts(pydantic.BaseModel):
+    finished: ktp_controller.pydantic.StrictNonNegativeInt = 0
+    in_exam: ktp_controller.pydantic.StrictNonNegativeInt = 0
+    waiting: ktp_controller.pydantic.StrictNonNegativeInt = 0
+    has_problems: ktp_controller.pydantic.StrictNonNegativeInt = 0
+
+    def total_count(self) -> int:
+        return self.finished + self.in_exam + self.waiting + self.has_problems
+
+
 class StudentListItem(pydantic.BaseModel):
     name: pydantic.StrictStr
     birthday: datetime.date
@@ -30,3 +40,12 @@ class StudentListItem(pydantic.BaseModel):
     session_uuid: pydantic.StrictStr
     is_allowed_to_use_browser: pydantic.StrictBool | None
     last_audio: pydantic.StrictInt | None
+
+
+class Exam(pydantic.BaseModel):
+    external_id: pydantic.StrictStr
+    title: pydantic.StrictStr
+    student_state_counts: StudentStateCounts
+    started_at: ktp_controller.pydantic.DateTime | None
+    scheduled_start_time: ktp_controller.pydantic.DateTime | None
+    scheduled_end_time: ktp_controller.pydantic.DateTime | None

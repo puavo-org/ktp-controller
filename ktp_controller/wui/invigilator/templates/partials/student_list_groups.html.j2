@@ -4,14 +4,19 @@
      hx-target="this"
      hx-swap="outerHTML"
      hx-include="#filters">
+    {% if ungrouped_student_list_items %}
+    <details class="exam-group unknown" data-exam-title="???" open>
+        <summary>???</summary>
+        {% include "partials/student_list_table.html.j2" %}
+    </details>
+    {% endif %}
     {% for exam_title, student_list_items in grouped_student_list_items.items() %}
     <details class="exam-group" data-exam-title="{{ exam_title }}" open>
         <summary>{{ exam_title }}</summary>
         {% include "partials/student_list_table.html.j2" %}
     </details>
     {% else %}
-    {% set student_list_items = [] %}
-    {% include "partials/student_list_table.html.j2" %}
+    <p class="text-center">{{ _("No exams") }}</p>
     {% endfor %}
 </div>
 {# This partial is also {% include %}'d from invigilator_index.html.j2,

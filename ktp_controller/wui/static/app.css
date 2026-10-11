@@ -106,6 +106,10 @@ header select {
   margin-top: 1rem;
 }
 
+.exam-group .unknown {
+    background-color: #842029;
+}
+
 /* login.html.j2 */
 .login-container {
   max-width: 24rem;

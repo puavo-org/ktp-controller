@@ -1,4 +1,5 @@
 import datetime
+import itertools
 import re
 
 import fastapi.testclient
@@ -59,10 +60,7 @@ def test_invigilator_view_htmx_requires_login_sends_hx_redirect(wui_client):
 
 
 def test_invigilator_view_allowed_with_permission(wui_client, override_session, mocker):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=[],
-    )
+    _mock_abitti2_state(mocker, is_empty=True)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -81,10 +79,7 @@ def test_invigilator_view_allowed_with_permission(wui_client, override_session, 
 def test_invigilator_view_shows_user_menu_dropdown(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=[],
-    )
+    _mock_abitti2_state(mocker, is_empty=True)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -106,10 +101,7 @@ def test_invigilator_view_shows_user_menu_dropdown(
 def test_invigilator_view_shows_student_access_code_nav_link(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=[],
-    )
+    _mock_abitti2_state(mocker, is_empty=True)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -127,10 +119,7 @@ def test_invigilator_view_shows_student_access_code_nav_link(
 def test_invigilator_view_renders_connection_lost_overlay(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=[],
-    )
+    _mock_abitti2_state(mocker, is_empty=True)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -145,49 +134,132 @@ def test_invigilator_view_renders_connection_lost_overlay(
     assert 'id="connection-lost-overlay"' in response.text
 
 
-_STUDENT_UUID = "0b7f4c5e-2a55-4c34-9a8c-7e4f0d3a1b21"
-_SESSION_UUID = "5d2e8f1a-6b3c-4d9e-8f7a-1c2b3d4e5f60"
-
-
 def _raw_abitti2_stats_messages(
     *,
-    is_allowed_to_use_browser=None,
-    audio_in_some_exam=None,
-    last_accessed_media=None,
-    session_status="exam_in_progress",
-    update_time=None,
-    student_status="exam-in-progress",
-    exam_title="Matematiikka",
+    student_count: int,
+    is_allowed_to_use_browser: bool | None,
+    audio_in_some_exam: bool | None,
+    last_accessed_media: str | None,
+    student_statuses: list[str],
+    update_time: str | None,
+    exam_titles: list[str | None],
+    is_connecteds: [bool],
 ):
-    student = {
-        "studentUuid": _STUDENT_UUID,
-        "sessionUuid": _SESSION_UUID,
-        "firstNames": "Maija",
-        "lastName": "Meikäläinen",
-        "studentBd": "010105",
-        "studentStatus": student_status,
-        "sessionStatus": session_status,
-        "updateTime": update_time,
-        "examFinishedAt": None,
-        "examTitle": exam_title,
-    }
-    if is_allowed_to_use_browser is not None:
-        student["isAllowedToUseBrowser"] = is_allowed_to_use_browser
-    if last_accessed_media is not None:
-        student["lastAccessedMedia"] = last_accessed_media
-    data = {"students": [student]}
+    if student_count > 28:
+        raise ValueError("student_count cannot be more than 28")
+    if student_count < 0:
+        raise ValueError("student_count cannot be less than 0")
+
+    students = []
+
+    exam_title_iter = itertools.cycle(exam_titles)
+    student_status_iter = itertools.cycle(student_statuses)
+    is_connected_iter = itertools.cycle(is_connecteds)
+
+    for index in range(student_count):
+        index += 1
+        exam_title = next(exam_title_iter)
+        student_status = next(student_status_iter)
+        is_connected = next(is_connected_iter)
+        student = {
+            "studentUuid": f"{index:08d}-1111-1111-1111-111111111111",
+            "sessionUuid": f"{index:08d}-2222-2222-2222-222222222222",
+            "firstNames": f"Maija{index}",
+            "lastName": "Meikäläinen",
+            "studentBd": f"{index:02d}0105",
+            "studentStatus": student_status,
+            "sessionStatus": student_status.replace("-", "_"),
+            "updateTime": update_time,
+            "examFinishedAt": None,
+            "isConnected": is_connected,
+            "examTitle": exam_title,
+        }
+        if is_allowed_to_use_browser is not None:
+            student["isAllowedToUseBrowser"] = is_allowed_to_use_browser
+        if last_accessed_media is not None:
+            student["lastAccessedMedia"] = last_accessed_media
+        students.append(student)
+    data = {"students": students}
     if audio_in_some_exam is not None:
         data["audioInSomeExam"] = audio_in_some_exam
     return [{"data": data}]
 
 
+def _decrypted_exams(
+    *, exam_titles: [str], start_time: datetime.datetime | None = None
+):
+    if start_time is not None and start_time.tzinfo != datetime.UTC:
+        raise ValueError("start_time must be UTC")
+    exams = []
+    for index, exam_title in enumerate(exam_titles):
+        index += 1
+        exams.append(
+            {
+                "examUuid": f"{index:08d}-3333-3333-3333-333333333333",
+                "examTitle": exam_title,
+                "hasStarted": start_time is not None,
+                "startTime": None
+                if start_time is None
+                else start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "type": "xml",
+            }
+        )
+
+    return exams
+
+
+def _mock_abitti2_state(
+    mocker,
+    /,
+    *,
+    student_count: int = 1,
+    is_empty: bool = False,
+    is_allowed_to_use_browser=None,
+    audio_in_some_exam=None,
+    last_accessed_media=None,
+    student_statuses: list[str] | None = None,
+    update_time=None,
+    exam_titles: list[str] | None = None,
+    is_connecteds: list[bool] | None = None,
+    student_exam_titles: list[str | None] | None = None,
+):
+    if exam_titles is None:
+        exam_titles = ["Matematiikka"]
+
+    if student_statuses is None:
+        student_statuses = ["in-exam-browser"]
+
+    if is_connecteds is None:
+        is_connecteds = [True]
+
+    if student_exam_titles is None:
+        student_exam_titles = list(exam_titles)
+
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[]
+        if is_empty
+        else _raw_abitti2_stats_messages(
+            student_count=student_count,
+            is_allowed_to_use_browser=is_allowed_to_use_browser,
+            audio_in_some_exam=audio_in_some_exam,
+            last_accessed_media=last_accessed_media,
+            student_statuses=student_statuses,
+            update_time=update_time,
+            exam_titles=student_exam_titles,
+            is_connecteds=is_connecteds,
+        ),
+    )
+    mocker.patch(
+        "ktp_controller.abitti2.client.get_decrypted_exams",
+        return_value=[] if is_empty else _decrypted_exams(exam_titles=exam_titles),
+    )
+
+
 def test_invigilator_view_renders_student_without_uuid_columns(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(),
-    )
+    _mock_abitti2_state(mocker)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -199,16 +271,13 @@ def test_invigilator_view_renders_student_without_uuid_columns(
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert "Maija Meikäläinen" in response.text
+    assert "Maija1 Meikäläinen" in response.text
     assert "Student uuid" not in response.text
     assert "Session uuid" not in response.text
 
 
 def test_invigilator_view_uses_session_locale(wui_client, override_session, mocker):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=[],
-    )
+    _mock_abitti2_state(mocker, is_empty=True)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -222,7 +291,7 @@ def test_invigilator_view_uses_session_locale(wui_client, override_session, mock
 
     assert response.status_code == 200
     assert '<html lang="en">' in response.text
-    assert "Birthday" in response.text
+    assert ">No exams</p>" in response.text
 
 
 def test_invigilator_view_locale_switcher_has_no_inline_script(
@@ -231,10 +300,7 @@ def test_invigilator_view_locale_switcher_has_no_inline_script(
     # The page's CSP has no 'unsafe-inline' in script-src, so the
     # language switcher must not rely on an inline event-handler
     # attribute (e.g. onchange="..."), which browsers silently drop.
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=[],
-    )
+    _mock_abitti2_state(mocker, is_empty=True)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -255,10 +321,7 @@ def test_invigilator_view_locale_switcher_has_no_inline_script(
 
 
 def test_invigilator_view_loads_vendored_htmx(wui_client, override_session, mocker):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=[],
-    )
+    _mock_abitti2_state(mocker, is_empty=True)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -278,10 +341,7 @@ def test_invigilator_view_loads_vendored_htmx(wui_client, override_session, mock
 
 
 def test_invigilator_view_csp_has_no_unpkg(wui_client, override_session, mocker):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=[],
-    )
+    _mock_abitti2_state(mocker, is_empty=True)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -372,10 +432,7 @@ def test_invigilator_ws_registers_and_unregisters(wui_client, mocker):
 def test_invigilator_view_shows_end_exam_button_with_permission(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(),
-    )
+    _mock_abitti2_state(mocker)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -388,8 +445,8 @@ def test_invigilator_view_shows_end_exam_button_with_permission(
 
     assert response.status_code == 200
     assert 'hx-post="/actions/end-exam"' in response.text
-    assert f'data-session-uuid="{_SESSION_UUID}"' in response.text
-    assert f'data-student-uuid="{_STUDENT_UUID}"' in response.text
+    assert 'data-session-uuid="00000001-2222-2222-2222-222222222222"' in response.text
+    assert 'data-student-uuid="00000001-1111-1111-1111-111111111111"' in response.text
     assert "hx-confirm" not in response.text
     assert 'id="end-exam-confirm-overlay"' in response.text
     assert 'class="end-exam-confirm-yes"' in response.text
@@ -399,10 +456,7 @@ def test_invigilator_view_shows_end_exam_button_with_permission(
 def test_invigilator_view_hides_end_exam_button_without_permission(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(),
-    )
+    _mock_abitti2_state(mocker)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -420,10 +474,7 @@ def test_invigilator_view_hides_end_exam_button_without_permission(
 def test_invigilator_view_enables_end_exam_button_for_in_exam_student(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(),
-    )
+    _mock_abitti2_state(mocker)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -444,10 +495,7 @@ def test_invigilator_view_enables_end_exam_button_for_idle_student(
     idle_update_time = (
         datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=31)
     ).isoformat()
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(update_time=idle_update_time),
-    )
+    _mock_abitti2_state(mocker, update_time=idle_update_time)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -467,10 +515,7 @@ def test_invigilator_view_enables_end_exam_button_for_idle_student(
 def test_invigilator_view_disables_end_exam_button_for_finished_student(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(session_status="session_ended"),
-    )
+    _mock_abitti2_state(mocker, student_statuses=["session-ended"])
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -488,10 +533,7 @@ def test_invigilator_view_disables_end_exam_button_for_finished_student(
 def test_invigilator_view_disables_end_exam_button_for_student_with_other_flags(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(exam_title=None),
-    )
+    _mock_abitti2_state(mocker, is_connecteds=[False])
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -504,17 +546,14 @@ def test_invigilator_view_disables_end_exam_button_for_student_with_other_flags(
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert '<span class="pill pill-has_problems">Undefined exam</span>' in response.text
+    assert '<span class="pill pill-has_problems">Disconnected</span>' in response.text
     assert "disabled" in _end_exam_button_tag(response.text)
 
 
 def test_invigilator_view_renders_question_marks_when_browser_permission_missing(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(),
-    )
+    _mock_abitti2_state(mocker)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -538,10 +577,7 @@ def test_invigilator_view_renders_question_marks_when_browser_permission_missing
 def test_invigilator_view_renders_checked_browser_permission_checkbox(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(is_allowed_to_use_browser=True),
-    )
+    _mock_abitti2_state(mocker, is_allowed_to_use_browser=True)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -570,10 +606,7 @@ def test_invigilator_view_renders_checked_browser_permission_checkbox(
 def test_invigilator_view_renders_unchecked_browser_permission_checkbox(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(is_allowed_to_use_browser=False),
-    )
+    _mock_abitti2_state(mocker, is_allowed_to_use_browser=False)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -598,10 +631,7 @@ def test_invigilator_view_renders_unchecked_browser_permission_checkbox(
 def test_invigilator_view_disables_browser_permission_checkbox_without_permission(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(is_allowed_to_use_browser=True),
-    )
+    _mock_abitti2_state(mocker, is_allowed_to_use_browser=True)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -620,11 +650,8 @@ def test_invigilator_view_disables_browser_permission_checkbox_without_permissio
 def test_invigilator_view_disables_browser_permission_checkbox_for_finished_student(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(
-            is_allowed_to_use_browser=True, session_status="session_ended"
-        ),
+    _mock_abitti2_state(
+        mocker, is_allowed_to_use_browser=True, student_statuses=["session-ended"]
     )
     override_session(
         ktp_controller.wui.auth.Session(
@@ -649,10 +676,7 @@ def test_invigilator_view_disables_browser_permission_checkbox_for_finished_stud
 def test_invigilator_view_hides_last_audio_column_when_no_audio_in_exam(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(audio_in_some_exam=False),
-    )
+    _mock_abitti2_state(mocker, audio_in_some_exam=False)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -674,12 +698,7 @@ def test_invigilator_view_hides_last_audio_column_when_no_audio_in_exam(
 def test_invigilator_view_shows_empty_cell_when_last_audio_is_zero(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(
-            audio_in_some_exam=True, last_accessed_media=None
-        ),
-    )
+    _mock_abitti2_state(mocker, audio_in_some_exam=True, last_accessed_media=None)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -701,12 +720,7 @@ def test_invigilator_view_shows_empty_cell_when_last_audio_is_zero(
 def test_invigilator_view_shows_allow_audio_replay_button_with_permission(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(
-            audio_in_some_exam=True, last_accessed_media="3"
-        ),
-    )
+    _mock_abitti2_state(mocker, audio_in_some_exam=True, last_accessed_media="3")
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -723,7 +737,7 @@ def test_invigilator_view_shows_allow_audio_replay_button_with_permission(
     assert response.status_code == 200
     assert "Last played audio" in response.text
     assert "Allow replaying audio 3" in response.text
-    assert f'data-student-uuid="{_STUDENT_UUID}"' in response.text
+    assert 'data-student-uuid="00000001-1111-1111-1111-111111111111"' in response.text
     assert 'data-last-audio="3"' in response.text
     assert 'data-exam-title="Matematiikka"' in response.text
     assert "allow-audio-replay-confirm-overlay" in response.text
@@ -732,12 +746,7 @@ def test_invigilator_view_shows_allow_audio_replay_button_with_permission(
 def test_invigilator_view_hides_allow_audio_replay_button_without_permission(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(
-            audio_in_some_exam=True, last_accessed_media="3"
-        ),
-    )
+    _mock_abitti2_state(mocker, audio_in_some_exam=True, last_accessed_media="3")
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -756,67 +765,19 @@ def test_invigilator_view_hides_allow_audio_replay_button_without_permission(
     assert "allow-audio-replay-button" not in response.text
 
 
-def _raw_abitti2_stats_messages_with_states():
-    active_student = {
-        "studentUuid": "11111111-1111-1111-1111-111111111111",
-        "sessionUuid": "21111111-1111-1111-1111-111111111111",
-        "firstNames": "Aino",
-        "lastName": "Aktiivinen",
-        "studentBd": "010105",
-        "studentStatus": "exam-in-progress",
-        "sessionStatus": "exam_in_progress",
-        "updateTime": None,
-        "examFinishedAt": None,
-        "examTitle": "Matematiikka",
-    }
-    finished_student = {
-        "studentUuid": "22222222-2222-2222-2222-222222222222",
-        "sessionUuid": "22222222-2222-2222-2222-222222222223",
-        "firstNames": "Feeri",
-        "lastName": "Finito",
-        "studentBd": "020205",
-        "studentStatus": "exam-in-progress",
-        "sessionStatus": "session_ended",
-        "updateTime": None,
-        "examFinishedAt": None,
-        "examTitle": "Matematiikka",
-    }
-    flagged_student = {
-        "studentUuid": "33333333-3333-3333-3333-333333333333",
-        "sessionUuid": "33333333-3333-3333-3333-333333333334",
-        "firstNames": "Hupsu",
-        "lastName": "Huomio",
-        "studentBd": "030305",
-        "studentStatus": "exam-in-progress",
-        "sessionStatus": "exam_in_progress",
-        "updateTime": None,
-        "examFinishedAt": None,
-        "examTitle": None,
-    }
-    waiting_student = {
-        "studentUuid": "44444444-4444-4444-4444-444444444444",
-        "sessionUuid": "44444444-4444-4444-4444-444444444445",
-        "firstNames": "Oili",
-        "lastName": "Odottava",
-        "studentBd": "040405",
-        "studentStatus": "waiting-for-auth",
-        "sessionStatus": "exam_in_progress",
-        "updateTime": None,
-        "examFinishedAt": None,
-        "examTitle": "Matematiikka",
-    }
-    data = {
-        "students": [active_student, finished_student, flagged_student, waiting_student]
-    }
-    return [{"data": data}]
-
-
 def test_invigilator_view_renders_student_state_counts(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages_with_states(),
+    _mock_abitti2_state(
+        mocker,
+        student_count=4,
+        student_statuses=[
+            "in-exam-browser",
+            "waiting-for-auth-browser",
+            "exam-finished-by-supo",
+            "in-exam-browser",
+        ],
+        is_connecteds=[True, True, True, False],
     )
     override_session(
         ktp_controller.wui.auth.Session(
@@ -845,9 +806,16 @@ def test_invigilator_view_renders_student_state_counts(
 def test_invigilator_view_student_state_counts_ignore_name_birthday_filter(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages_with_states(),
+    _mock_abitti2_state(
+        mocker,
+        student_count=4,
+        student_statuses=[
+            "in-exam-browser",
+            "waiting-for-auth-browser",
+            "exam-finished-by-supo",
+            "in-exam-browser",
+        ],
+        is_connecteds=[True, True, True, False],
     )
     override_session(
         ktp_controller.wui.auth.Session(
@@ -859,13 +827,14 @@ def test_invigilator_view_student_state_counts_ignore_name_birthday_filter(
     )
 
     response = wui_client.get(
-        "/invigilator/", params={"name_birthday_filter": "Aktiivinen"}
+        "/invigilator/", params={"name_birthday_filter": "Maija1"}
     )
 
     assert response.status_code == 200
-    assert "Aino Aktiivinen" in response.text
-    assert "Feeri Finito" not in response.text
-    assert "Hupsu Huomio" not in response.text
+    assert "Maija1 Meikäläinen" in response.text
+    assert "Maija2 Meikäläinen" not in response.text
+    assert "Maija3 Meikäläinen" not in response.text
+    assert "Maija4 Meikäläinen" not in response.text
     assert '<span class="pill pill-has_problems">Has problems 1</span>' in (
         response.text
     )
@@ -877,9 +846,16 @@ def test_invigilator_view_student_state_counts_ignore_name_birthday_filter(
 def test_invigilator_view_renders_student_list_table_state_pills(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages_with_states(),
+    _mock_abitti2_state(
+        mocker,
+        student_count=4,
+        student_statuses=[
+            "in-exam-browser",
+            "waiting-for-auth-browser",
+            "exam-finished-by-supo",
+            "in-exam-browser",
+        ],
+        is_connecteds=[True, True, True, False],
     )
     override_session(
         ktp_controller.wui.auth.Session(
@@ -895,16 +871,23 @@ def test_invigilator_view_renders_student_list_table_state_pills(
     assert response.status_code == 200
     assert '<span class="pill pill-in_exam">In exam</span>' in response.text
     assert '<span class="pill pill-finished">Finished</span>' in response.text
-    assert '<span class="pill pill-has_problems">Undefined exam</span>' in response.text
+    assert '<span class="pill pill-has_problems">Disconnected</span>' in response.text
     assert '<span class="pill pill-waiting">Waiting</span>' in response.text
 
 
 def test_invigilator_view_renders_student_list_table_state_pills_in_htmx_partial(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages_with_states(),
+    _mock_abitti2_state(
+        mocker,
+        student_count=4,
+        student_statuses=[
+            "in-exam-browser",
+            "waiting-for-auth-browser",
+            "exam-finished-by-supo",
+            "in-exam-browser",
+        ],
+        is_connecteds=[True, True, True, False],
     )
     override_session(
         ktp_controller.wui.auth.Session(
@@ -920,16 +903,23 @@ def test_invigilator_view_renders_student_list_table_state_pills_in_htmx_partial
     assert response.status_code == 200
     assert '<span class="pill pill-in_exam">In exam</span>' in response.text
     assert '<span class="pill pill-finished">Finished</span>' in response.text
-    assert '<span class="pill pill-has_problems">Undefined exam</span>' in response.text
+    assert '<span class="pill pill-has_problems">Disconnected</span>' in response.text
     assert '<span class="pill pill-waiting">Waiting</span>' in response.text
 
 
 def test_invigilator_view_student_state_counts_present_in_htmx_partial(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages_with_states(),
+    _mock_abitti2_state(
+        mocker,
+        student_count=4,
+        student_statuses=[
+            "in-exam-browser",
+            "waiting-for-auth-browser",
+            "exam-finished-by-supo",
+            "in-exam-browser",
+        ],
+        is_connecteds=[True, True, True, False],
     )
     override_session(
         ktp_controller.wui.auth.Session(
@@ -952,33 +942,11 @@ def test_invigilator_view_student_state_counts_present_in_htmx_partial(
     assert '<span class="pill pill-waiting">Waiting 1</span>' in response.text
 
 
-def _raw_abitti2_stats_messages_with_exam_titles(exam_titles):
-    students = [
-        {
-            "studentUuid": f"{index:08d}-1111-1111-1111-111111111111",
-            "sessionUuid": f"{index:08d}-2222-2222-2222-222222222222",
-            "firstNames": f"Student{index}",
-            "lastName": "Testinen",
-            "studentBd": "010105",
-            "studentStatus": "exam-in-progress",
-            "sessionStatus": "exam_in_progress",
-            "updateTime": None,
-            "examFinishedAt": None,
-            "examTitle": exam_title,
-        }
-        for index, exam_title in enumerate(exam_titles)
-    ]
-    return [{"data": {"students": students}}]
-
-
 def test_invigilator_view_groups_students_by_exam_title(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages_with_exam_titles(
-            ["Matematiikka", "Englanti"]
-        ),
+    _mock_abitti2_state(
+        mocker, student_count=2, exam_titles=["Matematiikka", "Englanti"]
     )
     override_session(
         ktp_controller.wui.auth.Session(
@@ -1007,10 +975,7 @@ def test_invigilator_view_groups_students_by_exam_title(
 def test_invigilator_view_groups_student_with_missing_exam_title_as_question_marks(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(exam_title=None),
-    )
+    _mock_abitti2_state(mocker, student_exam_titles=[None])
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -1029,10 +994,7 @@ def test_invigilator_view_groups_student_with_missing_exam_title_as_question_mar
 def test_invigilator_view_shows_no_students_row_with_headers_when_list_empty(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=[],
-    )
+    _mock_abitti2_state(mocker, is_empty=True)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -1045,18 +1007,15 @@ def test_invigilator_view_shows_no_students_row_with_headers_when_list_empty(
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert response.text.count("<table") == 1
+    assert response.text.count("<table") == 0
     assert '<details class="exam-group"' not in response.text
-    assert "No students" in response.text
+    assert "No exams" in response.text
 
 
 def test_invigilator_view_shows_no_students_matching_filter_message(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(),
-    )
+    _mock_abitti2_state(mocker)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -1072,17 +1031,17 @@ def test_invigilator_view_shows_no_students_matching_filter_message(
 
     assert response.status_code == 200
     assert response.text.count("<table") == 1
-    assert '<details class="exam-group"' not in response.text
+    assert (
+        '<details class="exam-group" data-exam-title="Matematiikka" open>'
+        in response.text
+    )
     assert "No students matching 'Nonexistent'" in response.text
 
 
 def test_invigilator_view_shows_expand_collapse_all_button(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages_with_exam_titles(["Matematiikka"]),
-    )
+    _mock_abitti2_state(mocker, exam_titles=["Matematiikka"])
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -1112,10 +1071,7 @@ def test_invigilator_view_shows_expand_collapse_all_button(
 def test_invigilator_view_disables_expand_collapse_all_button_when_no_students(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=[],
-    )
+    _mock_abitti2_state(mocker, is_empty=True)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -1135,10 +1091,7 @@ def test_invigilator_view_disables_expand_collapse_all_button_when_no_students(
 def test_invigilator_view_loads_preserve_exam_group_state_script(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=[],
-    )
+    _mock_abitti2_state(mocker, is_empty=True)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -1160,10 +1113,7 @@ def test_invigilator_view_loads_preserve_exam_group_state_script(
 def test_invigilator_view_sortable_columns_and_filter_target_student_list_groups(
     wui_client, override_session, mocker
 ):
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=_raw_abitti2_stats_messages(),
-    )
+    _mock_abitti2_state(mocker)
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
