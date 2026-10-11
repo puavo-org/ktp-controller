@@ -615,6 +615,10 @@ def test_set_current_exam_package_state__set_state_of_current_exam_package_valid
             # Exam package is now in the final state, so it is not current anymore
             assert get_current_exam_package_response.json() is None
 
+            response = client.post("/api/v1/exam/get_current_exams")
+            assert_response(response, expected_status_code=200)
+            assert response.json() == []
+
             db_scheduled_exam_package = (
                 testdb.query(models.ScheduledExamPackage)
                 .filter_by(
@@ -698,6 +702,13 @@ def test_set_current_exam_package_state__multiple_locked_packages(
         assert_response(response, expected_status_code=200)
 
     for i in range(4):
+        response = client.post("/api/v1/exam/get_current_exams")
+        assert_response(response, expected_status_code=200)
+
+        assert [e["external_id"] for e in response.json()] == api_exam_infos[i][
+            "scheduled_exam_packages"
+        ][0]["scheduled_exam_external_ids"]
+
         response = client.post("/api/v1/exam/get_current_exam_package")
         assert_response(response, expected_status_code=200)
 
