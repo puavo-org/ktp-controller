@@ -143,9 +143,9 @@ async def upload_exam_package(
         return typing.cast(list[str], response.json())
 
 
-async def get_decrypted_exams() -> dict[str, typing.Any]:
+async def get_decrypted_exams() -> list[dict[str, typing.Any]]:
     response = await _get("/api/exams")
-    return typing.cast(dict[str, typing.Any], response.json())
+    return typing.cast(list[dict[str, typing.Any]], response.json())
 
 
 async def start_decrypted_exams() -> dict[str, typing.Any]:
