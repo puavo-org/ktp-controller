@@ -5,7 +5,7 @@ TODO2 and so on. When an item is done, remove it from this document.
 
 When adding new items, always update the following line to define the
 ID of the next TODO item.
-Next ID: TODO17
+Next ID: TODO19
 
 ## TODO1
 Examine and handle currently unhandled messages from Abitti2 1.37.1:
@@ -22,3 +22,26 @@ Sep 26 2026 17:03:29 testvirtkan1 supervisord: ktp-controller-agent WARNING:2026
 Unify/merge `ktp_controller.wui.utils.BrowserSocketRegistry` with
 `ktp_controller.api.utils.PubSubBroadcaster` and place it for example
 in `ktp_controller.redis`. Naturally, adapt all call sites.
+
+
+## TODO17
+
+WUI: Currently student state counter pills are visible only on
+Invigilator's main view.
+
+Make necessary changes to make student state counter pills visible on
+both pages: Invigialtor's main view (`/invigilator/`) and Student
+access code page (`/invigilator/student_access_code`). Hence, the
+logical placement for pills is in the common header. Counts must also
+get refreshed on both pages.
+
+
+## TODO18
+
+WUI: Currently, there only one global set of student state counter
+pills. It shows the count of states of all students accross all exams.
+
+Make necessary changes to make each exam details block display their
+own student state counter pills, i.e. these exam-specific student
+state counter pills must show only the count of states of students in
+that specific exam.
