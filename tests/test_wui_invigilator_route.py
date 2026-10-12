@@ -137,7 +137,7 @@ def test_invigilator_view_renders_connection_lost_overlay(
 def _raw_abitti2_stats_messages(
     *,
     student_count: int,
-    is_allowed_to_use_browser: bool | None,
+    is_allowed_to_use_browser: bool,
     audio_in_some_exam: bool | None,
     last_accessed_media: str | None,
     student_statuses: list[str],
@@ -173,9 +173,10 @@ def _raw_abitti2_stats_messages(
             "examFinishedAt": None,
             "isConnected": is_connected,
             "examTitle": exam_title,
+            "loginInitiatedOnBrowser": student_status.endswith("-browser")
+            or is_allowed_to_use_browser,
+            "isAllowedToUseBrowser": is_allowed_to_use_browser,
         }
-        if is_allowed_to_use_browser is not None:
-            student["isAllowedToUseBrowser"] = is_allowed_to_use_browser
         if last_accessed_media is not None:
             student["lastAccessedMedia"] = last_accessed_media
         students.append(student)
@@ -214,7 +215,7 @@ def _mock_abitti2_state(
     *,
     student_count: int = 1,
     is_empty: bool = False,
-    is_allowed_to_use_browser=None,
+    is_allowed_to_use_browser: bool = False,
     audio_in_some_exam=None,
     last_accessed_media=None,
     student_statuses: list[str] | None = None,
@@ -550,10 +551,10 @@ def test_invigilator_view_disables_end_exam_button_for_student_with_other_flags(
     assert "disabled" in _end_exam_button_tag(response.text)
 
 
-def test_invigilator_view_renders_question_marks_when_browser_permission_missing(
+def test_invigilator_view_renders_empty_when_user_does_not_want_to_use_browser(
     wui_client, override_session, mocker
 ):
-    _mock_abitti2_state(mocker)
+    _mock_abitti2_state(mocker, student_statuses=["in-exam"])
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -570,7 +571,6 @@ def test_invigilator_view_renders_question_marks_when_browser_permission_missing
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert "???" in response.text
     assert "browser-permission-checkbox" not in response.text
 
 

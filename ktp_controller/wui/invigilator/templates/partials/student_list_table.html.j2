@@ -24,7 +24,7 @@
             <td>{{ student_list_item.birthday | localize_date(locale) }}</td>
             <td><span class="pill pill-{{ student_list_item.state }}">{{ (student_list_item.flags | sort | map('extract', flag_labels) | join(', ')) if student_list_item.state == "has_problems" else state_labels[student_list_item.state] }}</span></td>
             <td>{{ '-' if not student_list_item.last_changed_at else student_list_item.last_changed_at | localize_datetime(locale) }}</td>
-            <td>{% if student_list_item.is_allowed_to_use_browser is none %}???{% else %}
+            <td>{% if student_list_item.wants_to_use_browser %}
               <input type="hidden"
                      id="browser-permission-session-uuid-{{ student_list_item.session_uuid }}"
                      name="session_uuid"

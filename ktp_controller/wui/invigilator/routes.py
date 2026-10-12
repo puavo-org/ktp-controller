@@ -162,8 +162,13 @@ async def _get_student_list_items() -> list[schemas.StudentListItem]:
             exam_title=exam_title,
             student_uuid=raw_abitti2_student["studentUuid"],
             session_uuid=raw_abitti2_student["sessionUuid"],
-            is_allowed_to_use_browser=raw_abitti2_student.get("isAllowedToUseBrowser"),
+            is_allowed_to_use_browser=raw_abitti2_student.get(
+                "isAllowedToUseBrowser", False
+            ),
             last_audio=last_audio,
+            wants_to_use_browser=raw_abitti2_student.get(
+                "loginInitiatedOnBrowser", False
+            ),
         )
 
         student_list_items.append(student_list_item)
