@@ -26,7 +26,6 @@ import ktp_controller.abitti2.client
 import ktp_controller.abitti2.naksu2
 import ktp_controller.abitti2.schemas
 import ktp_controller.abitti2.utils
-import ktp_controller.agent
 import ktp_controller.agent.answers
 import ktp_controller.agent.exam_package
 import ktp_controller.agent.state
