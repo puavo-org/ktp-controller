@@ -50,11 +50,12 @@ class Graph:
 def discover_modules(root: Path) -> dict[str, Path]:
     """Map dotted module name -> file path for every .py file under root."""
     modules: dict[str, Path] = {}
+    prefix = (root.name,) if (root / "__init__.py").is_file() else ()
     for path in sorted(root.rglob("*.py")):
         if any(part in _EXCLUDED_DIRS for part in path.relative_to(root).parts):
             continue
         rel = path.relative_to(root).with_suffix("")
-        parts = list(rel.parts)
+        parts = [*prefix, *rel.parts]
         if parts[-1] == "__init__":
             parts = parts[:-1]
         if not parts:
@@ -89,18 +90,21 @@ def classify_module(name: str, top_level_internal_packages: set[str]) -> Categor
     return Category.THIRD_PARTY
 
 
-def _imports_in_file(path: Path, module_name: str, is_package: bool) -> list[str]:
+def _imports_in_file(
+    path: Path, module_name: str, is_package: bool, internal_modules: set[str]
+) -> list[str]:
     tree = ast.parse(path.read_text(), filename=str(path))
     imports: list[str] = []
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             imports.extend(alias.name for alias in node.names)
         elif isinstance(node, ast.ImportFrom):
-            resolved = resolve_import(
+            base = resolve_import(
                 node.module or "", node.level, module_name, is_package
             )
-            if resolved:
-                imports.append(resolved)
+            for alias in node.names:
+                candidate = f"{base}.{alias.name}" if base else alias.name
+                imports.append(candidate if candidate in internal_modules else base)
     return imports
 
 
@@ -123,7 +127,9 @@ def build_graph(
 
     for module_name, path in modules.items():
         is_package = path.name == "__init__.py"
-        for imported in _imports_in_file(path, module_name, is_package):
+        for imported in _imports_in_file(
+            path, module_name, is_package, internal_modules
+        ):
             category = classify_module(imported, top_level_packages)
             if category in exclude:
                 continue
