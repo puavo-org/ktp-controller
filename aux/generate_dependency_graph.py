@@ -134,7 +134,30 @@ def build_graph(
     return graph
 
 
-def render_dot(graph: Graph) -> str:
+def wrap_description(text: str) -> list[str]:
+    """Wrap words into lines of 5-12 words (fewer only if text has <5 words total)."""
+    words = text.split()
+    n = len(words)
+    if not words:
+        return []
+    if n <= 12:
+        return [" ".join(words)]
+    num_lines = -(-n // 12)  # ceil(n / 12)
+    base, remainder = divmod(n, num_lines)
+    lines = []
+    i = 0
+    for line_idx in range(num_lines):
+        count = base + 1 if line_idx < remainder else base
+        lines.append(" ".join(words[i : i + count]))
+        i += count
+    return lines
+
+
+def _escape_dot_label_line(line: str) -> str:
+    return line.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def render_dot(graph: Graph, description: str | None) -> str:
     lines = [
         "digraph dependencies {",
         '    rankdir="LR";',
@@ -152,6 +175,18 @@ def render_dot(graph: Graph) -> str:
         )
     lines.append("    }")
     lines.append("")
+
+    if description and description.strip():
+        label = "\\n".join(
+            _escape_dot_label_line(line) for line in wrap_description(description)
+        )
+        lines.append("    subgraph cluster_description {")
+        lines.append('        label="Description";')
+        lines.append(
+            f'        "description" [shape="box", style="solid", label="{label}"];'
+        )
+        lines.append("    }")
+        lines.append("")
 
     for node, category in sorted(graph.node_categories.items()):
         shape, fillcolor = _NODE_STYLE[category]
@@ -212,6 +247,12 @@ def main() -> None:
         help="Exclude imports whose resolved module name matches REGEX "
         "(repeatable; an import is excluded if it matches any regex)",
     )
+    parser.add_argument(
+        "--description",
+        default=None,
+        help="Short free-text note rendered as a separate framed text box "
+        "on the graph (omit to render no box)",
+    )
     args = parser.parse_args()
 
     exclude = set()
@@ -223,7 +264,7 @@ def main() -> None:
         exclude.add(Category.STDLIB)
 
     graph = build_graph(args.root, exclude, args.exclude_regex)
-    args.output.write_text(render_dot(graph))
+    args.output.write_text(render_dot(graph, args.description))
     print(f"Written {args.output}")
 
 
