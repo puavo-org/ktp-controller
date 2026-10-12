@@ -10,3 +10,11 @@
     <button type="button" class="change-access-code-button">{{ _("Change access code") }}</button>
     {% endif %}
 </div>
+{# This partial is also rendered inside student_access_code.html.j2's
+   own full-page response, where the counts are already rendered once
+   in the common header - only emit the out-of-band counts update here
+   when this template is the direct htmx response (live update), to
+   avoid a duplicate #student-state-counts element. #}
+{% if request.headers.get("HX-Request") %}
+{% include "partials/student_state_counts.html.j2" %}
+{% endif %}
