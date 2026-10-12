@@ -108,8 +108,12 @@ def build_graph(
     root: Path,
     exclude: set[Category],
     exclude_regexes: list[re.Pattern[str]],
+    ignore_regexes: list[re.Pattern[str]],
 ) -> Graph:
     modules = discover_modules(root)
+    for module_path in list(modules.keys()):
+        if any(p.search(module_path) for p in ignore_regexes):
+            modules.pop(module_path)
     internal_modules = set(modules)
     top_level_packages = {name.split(".")[0] for name in internal_modules}
 
@@ -226,17 +230,17 @@ def main() -> None:
     parser.add_argument(
         "--exclude-internal",
         action="store_true",
-        help="Omit dependencies on internal (project-local) modules",
+        help="Exclude internal imports",
     )
     parser.add_argument(
         "--exclude-third-party",
         action="store_true",
-        help="Omit dependencies on third-party modules",
+        help="Exclude third-party imports",
     )
     parser.add_argument(
         "--exclude-stdlib",
         action="store_true",
-        help="Omit dependencies on standard library modules",
+        help="Exclude standard library imports",
     )
     parser.add_argument(
         "--exclude-regex",
@@ -246,6 +250,15 @@ def main() -> None:
         metavar="REGEX",
         help="Exclude imports whose resolved module name matches REGEX "
         "(repeatable; an import is excluded if it matches any regex)",
+    )
+    parser.add_argument(
+        "--ignore-regex",
+        action="append",
+        default=[],
+        type=_compile_regex,
+        metavar="REGEX",
+        help="Ignore modules whose resolved module name matches REGEX "
+        "(repeatable; a module is ignored if it matches any regex)",
     )
     parser.add_argument(
         "--description",
@@ -263,7 +276,7 @@ def main() -> None:
     if args.exclude_stdlib:
         exclude.add(Category.STDLIB)
 
-    graph = build_graph(args.root, exclude, args.exclude_regex)
+    graph = build_graph(args.root, exclude, args.exclude_regex, args.ignore_regex)
     args.output.write_text(render_dot(graph, args.description))
     print(f"Written {args.output}")
 
