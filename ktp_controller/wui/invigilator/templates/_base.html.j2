@@ -29,6 +29,7 @@
                 <li><a href="/invigilator/" {% if request.url.path == "/invigilator/" %}aria-current="page"{% endif %}>{{ _("Students") }}</a></li>
                 <li><a href="/invigilator/student_access_code" {% if request.url.path == "/invigilator/student_access_code" %}aria-current="page"{% endif %}>{{ _("Student access code") }}</a></li>
             </ul>
+            {% include "partials/student_state_counts.html.j2" %}
             <ul>
                 <li>
                     <details class="dropdown">
@@ -55,8 +56,6 @@
             </ul>
         </nav>
     </header>
-
-    {% include "partials/student_state_counts.html.j2" %}
 
     <main class="container">
         {% block content %}{% endblock %}
