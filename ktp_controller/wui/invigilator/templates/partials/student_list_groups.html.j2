@@ -7,23 +7,30 @@
     {% if ungrouped_student_list_items %}
     <details class="exam-group unknown" data-exam-title="???" open>
         <summary>???</summary>
+        {% with state_counts = ungrouped_student_state_counts %}
+        {% include "partials/exam_student_state_counts.html.j2" %}
+        {% endwith %}
         {% include "partials/student_list_table.html.j2" %}
     </details>
     {% endif %}
     {% for exam_title, student_list_items in grouped_student_list_items.items() %}
     <details class="exam-group" data-exam-title="{{ exam_title }}" open>
         <summary>{{ exam_title }}</summary>
+        {% with state_counts = grouped_student_state_counts[exam_title] %}
+        {% include "partials/exam_student_state_counts.html.j2" %}
+        {% endwith %}
         {% include "partials/student_list_table.html.j2" %}
     </details>
     {% else %}
     <p class="text-center">{{ _("No exams") }}</p>
     {% endfor %}
 </div>
-{# This partial is also {% include %}'d from invigilator_index.html.j2,
-   which already renders the counts once right after the Students h2. Only
-   emit the out-of-band counts update here when this template is the direct
-   htmx response for a table refresh (filter, sort, live update) - otherwise
-   the counts would be duplicated in the initial full-page HTML. #}
+{# This partial is also {% include %}'d from invigilator_index.html.j2.
+   The common header (_base.html.j2) already renders the global counts
+   once. Only emit the out-of-band counts update here when this template
+   is the direct htmx response for a table refresh (filter, sort, live
+   update) - otherwise the counts would be duplicated in the initial
+   full-page HTML. #}
 {% if request.headers.get("HX-Request") %}
 {% include "partials/student_state_counts.html.j2" %}
 {% endif %}

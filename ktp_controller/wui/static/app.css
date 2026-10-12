@@ -105,6 +105,10 @@ header select {
 .exam-group + .exam-group {
   margin-top: 1rem;
 }
+.exam-student-state-counts {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 0.85rem;
+}
 
 .exam-group .unknown {
     background-color: #842029;
