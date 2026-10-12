@@ -1,0 +1,4 @@
+{% import "partials/_student_state_count_pills.html.j2" as pills %}
+<div class="exam-student-state-counts">
+    {{ pills.render(state_labels, state_counts) }}
+</div>

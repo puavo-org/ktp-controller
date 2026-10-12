@@ -1,0 +1,7 @@
+{% macro render(state_labels, state_counts) %}
+    <ul>
+{% for state in state_labels %}
+        <li><span class="pill pill-{{ state }}">{{ state_labels[state] }} {{ state_counts[state] }}</span></li>
+{% endfor %}
+    </ul>
+{% endmacro %}

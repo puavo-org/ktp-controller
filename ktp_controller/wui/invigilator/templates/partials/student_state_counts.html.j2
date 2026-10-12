@@ -1,7 +1,4 @@
+{% import "partials/_student_state_count_pills.html.j2" as pills %}
 <div id="student-state-counts" hx-swap-oob="true">
-    <ul>
-{% for state in state_labels %}
-        <li><span class="pill pill-{{ state }}">{{ state_labels[state] }} {{ student_state_counts[state] }}</span></li>
-{% endfor %}
-    </ul>
+    {{ pills.render(state_labels, student_state_counts) }}
 </div>
