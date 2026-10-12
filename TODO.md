@@ -24,18 +24,6 @@ Unify/merge `ktp_controller.wui.utils.BrowserSocketRegistry` with
 in `ktp_controller.redis`. Naturally, adapt all call sites.
 
 
-## TODO17
-
-WUI: Currently student state counter pills are visible only on
-Invigilator's main view.
-
-Make necessary changes to make student state counter pills visible on
-both pages: Invigialtor's main view (`/invigilator/`) and Student
-access code page (`/invigilator/student_access_code`). Hence, the
-logical placement for pills is in the common header. Counts must also
-get refreshed on both pages.
-
-
 ## TODO18
 
 WUI: Currently, there only one global set of student state counter
