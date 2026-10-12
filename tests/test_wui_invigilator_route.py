@@ -791,9 +791,10 @@ def test_invigilator_view_renders_student_state_counts(
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    # Exactly once: the full page includes the counts once directly and
-    # once via the table partial, which must only emit them for htmx
-    # requests to avoid rendering duplicate #student-state-counts elements.
+    # Exactly once: the full page includes the counts once via the
+    # common header and once via the table partial, which must only
+    # emit them for htmx requests to avoid rendering duplicate
+    # #student-state-counts elements.
     assert response.text.count('id="student-state-counts"') == 1
     assert '<span class="pill pill-has_problems">Has problems 1</span>' in (
         response.text

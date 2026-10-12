@@ -4,6 +4,7 @@ import pytest
 import ktp_controller.schemas
 import ktp_controller.wui.auth
 import ktp_controller.wui.main
+from tests.test_wui_invigilator_route import _mock_abitti2_state
 
 
 @pytest.fixture
@@ -172,3 +173,78 @@ def test_student_access_code_view_hides_change_button_without_permission(
     assert response.status_code == 200
     assert "change-access-code-button" not in response.text
     assert "/actions/change-student-access-code" not in response.text
+
+
+def test_student_access_code_view_renders_student_state_counts(
+    wui_client, override_session, mocker
+):
+    mocker.patch("ktp_controller.api.client.get_student_access_code", return_value=None)
+    _mock_abitti2_state(
+        mocker,
+        student_count=4,
+        student_statuses=[
+            "in-exam-browser",
+            "waiting-for-auth-browser",
+            "exam-finished-by-supo",
+            "in-exam-browser",
+        ],
+        is_connecteds=[True, True, True, False],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/student_access_code")
+
+    assert response.status_code == 200
+    # Exactly once: rendered via the common header only.
+    assert response.text.count('id="student-state-counts"') == 1
+    assert '<span class="pill pill-has_problems">Has problems 1</span>' in (
+        response.text
+    )
+    assert '<span class="pill pill-in_exam">In exam 1</span>' in response.text
+    assert '<span class="pill pill-finished">Finished 1</span>' in response.text
+    assert '<span class="pill pill-waiting">Waiting 1</span>' in response.text
+
+
+def test_student_access_code_view_student_state_counts_present_in_htmx_partial(
+    wui_client, override_session, mocker
+):
+    mocker.patch("ktp_controller.api.client.get_student_access_code", return_value=None)
+    _mock_abitti2_state(
+        mocker,
+        student_count=4,
+        student_statuses=[
+            "in-exam-browser",
+            "waiting-for-auth-browser",
+            "exam-finished-by-supo",
+            "in-exam-browser",
+        ],
+        is_connecteds=[True, True, True, False],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get(
+        "/invigilator/student_access_code", headers={"HX-Request": "true"}
+    )
+
+    assert response.status_code == 200
+    assert 'id="student-state-counts" hx-swap-oob="true"' in response.text
+    assert '<span class="pill pill-has_problems">Has problems 1</span>' in (
+        response.text
+    )
+    assert '<span class="pill pill-in_exam">In exam 1</span>' in response.text
+    assert '<span class="pill pill-finished">Finished 1</span>' in response.text
+    assert '<span class="pill pill-waiting">Waiting 1</span>' in response.text
