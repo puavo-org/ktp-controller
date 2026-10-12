@@ -264,6 +264,12 @@ async def _get_invigilator(
         )
     )
 
+    grouped_student_state_counts = {
+        exam_title: _count_student_states(items)
+        for exam_title, items in grouped_student_list_items.items()
+    }
+    ungrouped_student_state_counts = _count_student_states(ungrouped_student_list_items)
+
     request.state.locale = session.locale
     _ = ktp_controller.wui.i18n.get_gettext(session.locale)
 
@@ -296,6 +302,8 @@ async def _get_invigilator(
     context = {
         "grouped_student_list_items": grouped_student_list_items,
         "ungrouped_student_list_items": ungrouped_student_list_items,
+        "grouped_student_state_counts": grouped_student_state_counts,
+        "ungrouped_student_state_counts": ungrouped_student_state_counts,
         "state_labels": state_labels,
         "flag_labels": flag_labels,
         "columns": columns,
