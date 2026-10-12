@@ -183,6 +183,17 @@ class _StudentListItemSortableField(enum.StrEnum):
     LAST_CHANGED_AT = "last_changed_at"
 
 
+def _get_student_state_labels(
+    _: typing.Callable[[str], str],
+) -> dict[schemas.StudentState, str]:
+    return {
+        schemas.StudentState.FINISHED: _("Finished"),
+        schemas.StudentState.IN_EXAM: _("In exam"),
+        schemas.StudentState.WAITING: _("Waiting"),
+        schemas.StudentState.HAS_PROBLEMS: _("Has problems"),
+    }
+
+
 def _group_student_list_items_by_exam_title(
     exams: list[schemas.Exam],
     student_list_items: list[schemas.StudentListItem],
@@ -263,12 +274,7 @@ async def _get_invigilator(
         + [(None, _("Action"), False)]
     )
 
-    state_labels = {
-        schemas.StudentState.FINISHED: _("Finished"),
-        schemas.StudentState.IN_EXAM: _("In exam"),
-        schemas.StudentState.WAITING: _("Waiting"),
-        schemas.StudentState.HAS_PROBLEMS: _("Has problems"),
-    }
+    state_labels = _get_student_state_labels(_)
 
     flag_labels = {
         ktp_controller.schemas.StudentFlag.DISCONNECTED: _("Disconnected"),
