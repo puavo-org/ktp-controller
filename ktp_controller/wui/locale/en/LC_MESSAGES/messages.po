@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-11 22:49+0300\n"
+"POT-Creation-Date: 2026-10-12 18:44+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -26,67 +26,67 @@ msgstr "Too many login attempts, please try again later."
 msgid "Incorrect username or password"
 msgstr "Incorrect username or password"
 
-#: ktp_controller/wui/invigilator/routes.py:251
-msgid "Name"
-msgstr "Name"
-
-#: ktp_controller/wui/invigilator/routes.py:252
-msgid "Birthday"
-msgstr "Birthday"
-
-#: ktp_controller/wui/invigilator/routes.py:253
-msgid "State"
-msgstr "State"
-
-#: ktp_controller/wui/invigilator/routes.py:254
-msgid "Last changed at"
-msgstr "Last changed at"
-
-#: ktp_controller/wui/invigilator/routes.py:261
-msgid "Allowed to use browsers"
-msgstr "Allowed to use browsers"
-
-#: ktp_controller/wui/invigilator/routes.py:262
-msgid "Last played audio"
-msgstr "Last played audio"
-
-#: ktp_controller/wui/invigilator/routes.py:263
-msgid "Action"
-msgstr "Action"
-
-#: ktp_controller/wui/invigilator/routes.py:267
-msgid "Finished"
-msgstr "Finished"
-
-#: ktp_controller/wui/invigilator/routes.py:268
-msgid "In exam"
-msgstr "In exam"
-
-#: ktp_controller/wui/invigilator/routes.py:269
+#: ktp_controller/wui/invigilator/routes.py:201
 msgid "Waiting"
 msgstr "Waiting"
 
-#: ktp_controller/wui/invigilator/routes.py:270
+#: ktp_controller/wui/invigilator/routes.py:202
+msgid "In exam"
+msgstr "In exam"
+
+#: ktp_controller/wui/invigilator/routes.py:203
 msgid "Has problems"
 msgstr "Has problems"
 
-#: ktp_controller/wui/invigilator/routes.py:274
+#: ktp_controller/wui/invigilator/routes.py:204
+msgid "Finished"
+msgstr "Finished"
+
+#: ktp_controller/wui/invigilator/routes.py:277
+msgid "Name"
+msgstr "Name"
+
+#: ktp_controller/wui/invigilator/routes.py:278
+msgid "Birthday"
+msgstr "Birthday"
+
+#: ktp_controller/wui/invigilator/routes.py:279
+msgid "State"
+msgstr "State"
+
+#: ktp_controller/wui/invigilator/routes.py:280
+msgid "Last changed at"
+msgstr "Last changed at"
+
+#: ktp_controller/wui/invigilator/routes.py:287
+msgid "Allowed to use browsers"
+msgstr "Allowed to use browsers"
+
+#: ktp_controller/wui/invigilator/routes.py:288
+msgid "Last played audio"
+msgstr "Last played audio"
+
+#: ktp_controller/wui/invigilator/routes.py:289
+msgid "Action"
+msgstr "Action"
+
+#: ktp_controller/wui/invigilator/routes.py:295
 msgid "Disconnected"
 msgstr "Disconnected"
 
-#: ktp_controller/wui/invigilator/routes.py:275
+#: ktp_controller/wui/invigilator/routes.py:296
 msgid "Idle"
 msgstr "Idle"
 
-#: ktp_controller/wui/invigilator/routes.py:276
+#: ktp_controller/wui/invigilator/routes.py:297
 msgid "Waiting for auth"
 msgstr "Waiting for auth"
 
-#: ktp_controller/wui/invigilator/routes.py:277
+#: ktp_controller/wui/invigilator/routes.py:298
 msgid "Undefined exam"
 msgstr "Undefined exam"
 
-#: ktp_controller/wui/invigilator/routes.py:278
+#: ktp_controller/wui/invigilator/routes.py:299
 msgid "Unknown issue"
 msgstr "Unknown issue"
 
@@ -100,8 +100,8 @@ msgstr "The page will reload automatically once it's back."
 
 #: ktp_controller/wui/invigilator/templates/_base.html.j2:29
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:48
-msgid "Students"
-msgstr "Students"
+msgid "Exams"
+msgstr "Exams"
 
 #: ktp_controller/wui/invigilator/templates/_base.html.j2:30
 #: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
@@ -109,11 +109,11 @@ msgstr "Students"
 msgid "Student access code"
 msgstr "Student access code"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:40
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:41
 msgid "Language"
 msgstr "Language"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:49
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:50
 #: ktp_controller/wui/templates/login.html.j2:30
 msgid "Log out"
 msgstr "Log out"
@@ -156,16 +156,16 @@ msgstr "Allow"
 msgid "Cancel"
 msgstr "Cancel"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:57
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:55
 msgid "Filter by student name or birthday..."
 msgstr "Filter by student name or birthday..."
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:65
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:63
 msgid "Expand all"
 msgstr "Expand all"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:66
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:67
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:64
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:65
 msgid "Collapse all"
 msgstr "Collapse all"
 
@@ -185,7 +185,7 @@ msgstr "No access code available"
 msgid "Change access code"
 msgstr "Change access code"
 
-#: ktp_controller/wui/invigilator/templates/partials/student_list_groups.html.j2:19
+#: ktp_controller/wui/invigilator/templates/partials/student_list_groups.html.j2:29
 msgid "No exams"
 msgstr "No exams"
 

@@ -1124,8 +1124,8 @@ def test_invigilator_view_groups_students_by_exam_title(
     assert '<details class="exam-group" data-exam-title="Englanti" open>' in (
         response.text
     )
-    assert "<summary>Matematiikka</summary>" in response.text
-    assert "<summary>Englanti</summary>" in response.text
+    assert "<h3>Matematiikka</h3>" in response.text
+    assert "<h3>Englanti</h3>" in response.text
     assert "Exam title" not in response.text
 
 
@@ -1145,7 +1145,7 @@ def test_invigilator_view_groups_student_with_missing_exam_title_as_question_mar
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert "<summary>???</summary>" in response.text
+    assert "<h3>???</h3>" in response.text
 
 
 def test_invigilator_view_shows_no_students_row_with_headers_when_list_empty(
