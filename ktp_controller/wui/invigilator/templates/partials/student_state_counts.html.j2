@@ -1,7 +1,7 @@
 <div id="student-state-counts" hx-swap-oob="true">
     <ul>
-{% for state, count in student_state_counts.items() %}
-        <li><span class="pill pill-{{ state }}">{{ state_labels[state] }} {{ count }}</span></li>
+{% for state in state_labels %}
+        <li><span class="pill pill-{{ state }}">{{ state_labels[state] }} {{ student_state_counts[state] }}</span></li>
 {% endfor %}
     </ul>
 </div>

@@ -186,11 +186,12 @@ class _StudentListItemSortableField(enum.StrEnum):
 def _get_student_state_labels(
     _: typing.Callable[[str], str],
 ) -> dict[schemas.StudentState, str]:
+    # Insertion order is the the rendering order.
     return {
-        schemas.StudentState.FINISHED: _("Finished"),
-        schemas.StudentState.IN_EXAM: _("In exam"),
         schemas.StudentState.WAITING: _("Waiting"),
+        schemas.StudentState.IN_EXAM: _("In exam"),
         schemas.StudentState.HAS_PROBLEMS: _("Has problems"),
+        schemas.StudentState.FINISHED: _("Finished"),
     }
 
 
