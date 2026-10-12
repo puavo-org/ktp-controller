@@ -183,6 +183,16 @@ class _StudentListItemSortableField(enum.StrEnum):
     LAST_CHANGED_AT = "last_changed_at"
 
 
+def _count_student_states(
+    items: typing.Iterable[schemas.StudentListItem],
+) -> dict[str, int]:
+    return dict(
+        schemas.StudentStateCounts(
+            **dict(collections.Counter(item.state for item in items))
+        )
+    )
+
+
 def _get_student_state_labels(
     _: typing.Callable[[str], str],
 ) -> dict[schemas.StudentState, str]:
@@ -235,9 +245,7 @@ async def _get_invigilator(
 
     can_reset_audio = any(item.last_audio is not None for item in student_list_items)
 
-    student_state_counts = schemas.StudentStateCounts(
-        **dict(collections.Counter(item.state for item in student_list_items))
-    )
+    student_state_counts = _count_student_states(student_list_items)
 
     if name_birthday_filter:
         query = name_birthday_filter.lower()
@@ -305,7 +313,7 @@ async def _get_invigilator(
         "can_allow_audio_replay": (
             "wui.actions.allow-audio-replay" in session.permissions
         ),
-        "student_state_counts": dict(student_state_counts),
+        "student_state_counts": student_state_counts,
     }
 
     # If the request comes from htmx, return only the table partial
@@ -331,9 +339,7 @@ async def _get_student_access_code(
     student_access_code = await ktp_controller.api.client.get_student_access_code()
 
     student_list_items = await _get_student_list_items()
-    student_state_counts = schemas.StudentStateCounts(
-        **dict(collections.Counter(item.state for item in student_list_items))
-    )
+    student_state_counts = _count_student_states(student_list_items)
 
     request.state.locale = session.locale
     _ = ktp_controller.wui.i18n.get_gettext(session.locale)
@@ -344,7 +350,7 @@ async def _get_student_access_code(
         "can_change_access_code": (
             "wui.actions.change-student-access-code" in session.permissions
         ),
-        "student_state_counts": dict(student_state_counts),
+        "student_state_counts": student_state_counts,
         "state_labels": _get_student_state_labels(_),
     }
 
