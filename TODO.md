@@ -22,14 +22,3 @@ Sep 26 2026 17:03:29 testvirtkan1 supervisord: ktp-controller-agent WARNING:2026
 Unify/merge `ktp_controller.wui.utils.BrowserSocketRegistry` with
 `ktp_controller.api.utils.PubSubBroadcaster` and place it for example
 in `ktp_controller.redis`. Naturally, adapt all call sites.
-
-
-## TODO18
-
-WUI: Currently, there only one global set of student state counter
-pills. It shows the count of states of all students accross all exams.
-
-Make necessary changes to make each exam details block display their
-own student state counter pills, i.e. these exam-specific student
-state counter pills must show only the count of states of students in
-that specific exam.
