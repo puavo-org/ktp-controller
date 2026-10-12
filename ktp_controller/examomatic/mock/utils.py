@@ -108,6 +108,7 @@ def get_synthetic_exam_info(
             "retake_participants": 0,
         }
         exam_schedule.update(_EXAM_FILE_INFOS[exam_title])
+        exam_schedule['exam_title'] = f"{exam_title}.{_i}"
 
         exam_schedules.append(exam_schedule)
         exam_uuids.append(exam_uuid)
