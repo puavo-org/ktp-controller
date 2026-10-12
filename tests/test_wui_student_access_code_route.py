@@ -43,6 +43,9 @@ def test_student_access_code_view_allowed_with_permission(
             key_code="1234", verification_code="xx"
         ),
     )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages", return_value=[]
+    )
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -62,6 +65,9 @@ def test_student_access_code_view_shows_students_nav_link(
     wui_client, override_session, mocker
 ):
     mocker.patch("ktp_controller.api.client.get_student_access_code", return_value=None)
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages", return_value=[]
+    )
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -80,6 +86,9 @@ def test_student_access_code_view_shows_placeholder_without_code(
     wui_client, override_session, mocker
 ):
     mocker.patch("ktp_controller.api.client.get_student_access_code", return_value=None)
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages", return_value=[]
+    )
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -99,6 +108,9 @@ def test_student_access_code_view_forbidden_without_permission(
     wui_client, override_session, mocker
 ):
     mocker.patch("ktp_controller.api.client.get_student_access_code", return_value=None)
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages", return_value=[]
+    )
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -116,6 +128,9 @@ def test_student_access_code_view_shows_change_button_with_permission(
     wui_client, override_session, mocker
 ):
     mocker.patch("ktp_controller.api.client.get_student_access_code", return_value=None)
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages", return_value=[]
+    )
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -141,6 +156,9 @@ def test_student_access_code_view_hides_change_button_without_permission(
     wui_client, override_session, mocker
 ):
     mocker.patch("ktp_controller.api.client.get_student_access_code", return_value=None)
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages", return_value=[]
+    )
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",

@@ -329,6 +329,11 @@ async def _get_student_access_code(
 ) -> fastapi.responses.HTMLResponse:
     student_access_code = await ktp_controller.api.client.get_student_access_code()
 
+    student_list_items = await _get_student_list_items()
+    student_state_counts = schemas.StudentStateCounts(
+        **dict(collections.Counter(item.state for item in student_list_items))
+    )
+
     request.state.locale = session.locale
     _ = ktp_controller.wui.i18n.get_gettext(session.locale)
 
@@ -338,6 +343,8 @@ async def _get_student_access_code(
         "can_change_access_code": (
             "wui.actions.change-student-access-code" in session.permissions
         ),
+        "student_state_counts": dict(student_state_counts),
+        "state_labels": _get_student_state_labels(_),
     }
 
     # If the request comes from htmx, return only the code display partial
