@@ -3,6 +3,7 @@
 import argparse
 import ast
 import enum
+import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -103,7 +104,11 @@ def _imports_in_file(path: Path, module_name: str, is_package: bool) -> list[str
     return imports
 
 
-def build_graph(root: Path, exclude: set[Category]) -> Graph:
+def build_graph(
+    root: Path,
+    exclude: set[Category],
+    exclude_regexes: list[re.Pattern[str]],
+) -> Graph:
     modules = discover_modules(root)
     internal_modules = set(modules)
     top_level_packages = {name.split(".")[0] for name in internal_modules}
@@ -117,6 +122,8 @@ def build_graph(root: Path, exclude: set[Category]) -> Graph:
         for imported in _imports_in_file(path, module_name, is_package):
             category = classify_module(imported, top_level_packages)
             if category in exclude:
+                continue
+            if any(p.search(imported) for p in exclude_regexes):
                 continue
             target = (
                 imported if category == Category.INTERNAL else imported.split(".")[0]
@@ -159,6 +166,13 @@ def render_dot(graph: Graph) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _compile_regex(pattern: str) -> re.Pattern[str]:
+    try:
+        return re.compile(pattern)
+    except re.error as e:
+        raise argparse.ArgumentTypeError(f"invalid regex {pattern!r}: {e}") from e
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -189,6 +203,15 @@ def main() -> None:
         action="store_true",
         help="Omit dependencies on standard library modules",
     )
+    parser.add_argument(
+        "--exclude-regex",
+        action="append",
+        default=[],
+        type=_compile_regex,
+        metavar="REGEX",
+        help="Exclude imports whose resolved module name matches REGEX "
+        "(repeatable; an import is excluded if it matches any regex)",
+    )
     args = parser.parse_args()
 
     exclude = set()
@@ -199,7 +222,7 @@ def main() -> None:
     if args.exclude_stdlib:
         exclude.add(Category.STDLIB)
 
-    graph = build_graph(args.root, exclude)
+    graph = build_graph(args.root, exclude, args.exclude_regex)
     args.output.write_text(render_dot(graph))
     print(f"Written {args.output}")
 
