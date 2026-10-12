@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-12 18:44+0300\n"
+"POT-Creation-Date: 2026-10-12 18:47+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -160,7 +160,7 @@ msgstr "Peruuta"
 
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:55
 msgid "Filter by student name or birthday..."
-msgstr "Suodata nimen tai syntymäajan mukaan..."
+msgstr "Suodata kokelaan nimen tai syntymäajan mukaan..."
 
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:63
 msgid "Expand all"

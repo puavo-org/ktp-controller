@@ -49,7 +49,7 @@ header select {
   margin-bottom: 20px;
 }
 #name_birthday_filter {
-  max-width: 32ch;
+  max-width: 44ch;
 }
 
 /* student_state_counts.html.j2 */
