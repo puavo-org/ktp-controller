@@ -943,6 +943,162 @@ def test_invigilator_view_student_state_counts_present_in_htmx_partial(
     assert '<span class="pill pill-waiting">Waiting 1</span>' in response.text
 
 
+def _exam_group_html(html, exam_title):
+    match = re.search(
+        rf'<details class="exam-group[^"]*" data-exam-title="{re.escape(exam_title)}"[^>]*>.*?</details>',
+        html,
+        re.DOTALL,
+    )
+    assert match, f"exam-group block for {exam_title!r} not found"
+    return match.group(0)
+
+
+def test_invigilator_view_renders_exam_specific_student_state_counts(
+    wui_client, override_session, mocker
+):
+    _mock_abitti2_state(
+        mocker,
+        student_count=4,
+        exam_titles=["Matematiikka", "Englanti"],
+        student_statuses=[
+            "in-exam-browser",
+            "exam-finished-by-supo",
+            "in-exam-browser",
+            "in-exam-browser",
+        ],
+        is_connecteds=[True, True, True, False],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    matematiikka_html = _exam_group_html(response.text, "Matematiikka")
+    assert '<span class="pill pill-in_exam">In exam 2</span>' in matematiikka_html
+    assert '<span class="pill pill-finished">Finished 0</span>' in matematiikka_html
+    assert (
+        '<span class="pill pill-has_problems">Has problems 0</span>'
+        in matematiikka_html
+    )
+
+    englanti_html = _exam_group_html(response.text, "Englanti")
+    assert '<span class="pill pill-in_exam">In exam 0</span>' in englanti_html
+    assert '<span class="pill pill-finished">Finished 1</span>' in englanti_html
+    assert '<span class="pill pill-has_problems">Has problems 1</span>' in englanti_html
+
+
+def test_invigilator_view_unknown_exam_group_shows_own_student_state_counts(
+    wui_client, override_session, mocker
+):
+    _mock_abitti2_state(mocker, student_exam_titles=[None])
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    unknown_html = _exam_group_html(response.text, "???")
+    # A student with no exam title gets an "undefined exam" flag, which
+    # puts them in HAS_PROBLEMS regardless of their raw studentStatus.
+    assert '<span class="pill pill-has_problems">Has problems 1</span>' in (
+        unknown_html
+    )
+
+
+def test_invigilator_view_exam_specific_student_state_counts_follow_name_birthday_filter(
+    wui_client, override_session, mocker
+):
+    _mock_abitti2_state(
+        mocker,
+        student_count=4,
+        exam_titles=["Matematiikka", "Englanti"],
+        student_statuses=[
+            "in-exam-browser",
+            "exam-finished-by-supo",
+            "in-exam-browser",
+            "in-exam-browser",
+        ],
+        is_connecteds=[True, True, True, False],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    # Narrow down to the single "Maija1" (Matematiikka, in exam) student.
+    # Unlike the global header pills (which ignore this filter, see
+    # test_invigilator_view_student_state_counts_ignore_name_birthday_filter),
+    # the per-exam pills must follow it.
+    response = wui_client.get(
+        "/invigilator/", params={"name_birthday_filter": "Maija1"}
+    )
+
+    assert response.status_code == 200
+    matematiikka_html = _exam_group_html(response.text, "Matematiikka")
+    assert '<span class="pill pill-in_exam">In exam 1</span>' in matematiikka_html
+    assert '<span class="pill pill-finished">Finished 0</span>' in matematiikka_html
+
+    englanti_html = _exam_group_html(response.text, "Englanti")
+    assert '<span class="pill pill-in_exam">In exam 0</span>' in englanti_html
+    assert '<span class="pill pill-finished">Finished 0</span>' in englanti_html
+    assert '<span class="pill pill-has_problems">Has problems 0</span>' in englanti_html
+
+    # The global header pills, by contrast, still show the unfiltered totals.
+    assert '<span class="pill pill-in_exam">In exam 2</span>' in response.text
+    assert '<span class="pill pill-finished">Finished 1</span>' in response.text
+
+
+def test_invigilator_view_exam_specific_student_state_counts_present_in_htmx_partial(
+    wui_client, override_session, mocker
+):
+    _mock_abitti2_state(
+        mocker,
+        student_count=4,
+        exam_titles=["Matematiikka", "Englanti"],
+        student_statuses=[
+            "in-exam-browser",
+            "exam-finished-by-supo",
+            "in-exam-browser",
+            "in-exam-browser",
+        ],
+        is_connecteds=[True, True, True, False],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/", headers={"HX-Request": "true"})
+
+    assert response.status_code == 200
+    matematiikka_html = _exam_group_html(response.text, "Matematiikka")
+    assert '<span class="pill pill-in_exam">In exam 2</span>' in matematiikka_html
+
+    englanti_html = _exam_group_html(response.text, "Englanti")
+    assert '<span class="pill pill-finished">Finished 1</span>' in englanti_html
+
+
 def test_invigilator_view_groups_students_by_exam_title(
     wui_client, override_session, mocker
 ):
