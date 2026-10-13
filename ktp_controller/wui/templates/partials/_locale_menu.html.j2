@@ -1,0 +1,26 @@
+{% set _LOCALES = [
+    ("fi", "🇫🇮 Suomi"),
+    ("en", "🇬🇧 English"),
+    ("sv", "🇸🇪 Svenska"),
+] %}
+
+{% macro options(locale) %}
+{%- for code, label in _LOCALES %}
+<option value="{{ code }}" {{ "selected" if locale == code else "" }}>{{ label }}</option>
+{%- endfor %}
+{% endmacro %}
+
+{% macro current_label(locale) %}
+{%- for code, label in _LOCALES -%}
+{%- if code == locale %}{{ label }}{% endif -%}
+{%- endfor -%}
+{% endmacro %}
+
+{% macro form(method, action, field_name, next_value, locale, aria_label) %}
+<form method="{{ method }}" action="{{ action }}">
+    <input type="hidden" name="next" value="{{ next_value | e }}">
+    <select name="{{ field_name }}" class="locale-select" aria-label="{{ aria_label }}">
+        {{ options(locale) }}
+    </select>
+</form>
+{% endmacro %}
