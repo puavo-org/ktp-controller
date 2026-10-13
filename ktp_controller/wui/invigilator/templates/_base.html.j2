@@ -1,4 +1,5 @@
 {% import "partials/_locale_menu.html.j2" as locale_menu %}
+{% import "partials/_logo.html.j2" as logo %}
 <!DOCTYPE html>
 <html lang="{{ locale }}">
 <head>
@@ -28,6 +29,7 @@
     <header class="container">
         <nav>
             <ul>
+                <li>{{ logo.img() }}</li>
                 <li><a href="/invigilator/" {% if request.url.path == "/invigilator/" %}aria-current="page"{% endif %}>{{ _("Exams") }}</a></li>
                 <li><a href="/invigilator/student_access_code" {% if request.url.path == "/invigilator/student_access_code" %}aria-current="page"{% endif %}>{{ _("Student access code") }}</a></li>
             </ul>
