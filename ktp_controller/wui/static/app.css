@@ -41,6 +41,11 @@ header button,
 header select {
   width: auto;
 }
+header .logo {
+  height: 2rem;
+  width: auto;
+  display: block;
+}
 
 /* invigilator_index.html.j2 */
 #filters {

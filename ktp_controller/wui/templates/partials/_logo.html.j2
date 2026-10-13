@@ -1,0 +1,6 @@
+{% macro img() %}
+<picture>
+    <source srcset="/static/opinsys_logo_dark_theme.png" media="(prefers-color-scheme: dark)">
+    <img src="/static/opinsys_logo_light_theme.png" alt="Opinsys" class="logo">
+</picture>
+{% endmacro %}
