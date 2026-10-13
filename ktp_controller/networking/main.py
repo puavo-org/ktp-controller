@@ -34,10 +34,10 @@ import subprocess
 import time
 import typing
 
-import ktp_controller.net
-import ktp_controller.puavo.conf
-
 # Internal imports
+import ktp_controller.net
+import ktp_controller.nginx
+import ktp_controller.puavo.conf
 from ktp_controller import VERSION
 
 _THIS_NAME = "ktp-controller-networking"
@@ -217,6 +217,13 @@ def _command_stop(
 def _command_set_domain(
     interface: str, network: str, number: int, args: argparse.Namespace
 ) -> int:
+
+    nginx_args = [args.nginx_port, args.nginx_crt_filepath, args.nginx_key_filepath]
+
+    if any(nginx_args) and not all(nginx_args):
+        _LOGGER.error("all --nginx-* options must be given")
+        return 1
+
     ipv4_addr = ipaddress.IPv4Address(
         ktp_controller.net.interface_addresses(interface)["AF_INET"][0]["addr"]
     )
@@ -226,9 +233,18 @@ def _command_set_domain(
     try:
         _reload_networkmanager()
     finally:
-        # dnsmasq must always be signalled to reload regardless of whether
-        # reloading NetworkManager failed.
-        return int(_kill_dnsmasq(signal.SIGHUP))  # noqa: B012
+        try:
+            if args.nginx_port and args.nginx_crt_filepath and args.nginx_key_filepath:
+                ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy(
+                    args.FQDN,
+                    args.nginx_port,
+                    args.nginx_crt_filepath,
+                    args.nginx_key_filepath,
+                )
+        finally:
+            # dnsmasq must always be signalled to reload regardless of whether
+            # reloading NetworkManager failed.
+            return int(_kill_dnsmasq(signal.SIGHUP))  # noqa: B012
 
 
 def _command_del_domain(
@@ -240,9 +256,12 @@ def _command_del_domain(
     try:
         _reload_networkmanager()
     finally:
-        # dnsmasq must always be signalled to reload regardless of whether
-        # reloading NetworkManager failed.
-        return int(_kill_dnsmasq(signal.SIGHUP))  # noqa: B012
+        try:
+            ktp_controller.nginx.disable_nginx_wui_tls_reverse_proxy()
+        finally:
+            # dnsmasq must always be signalled to reload regardless of whether
+            # reloading NetworkManager failed.
+            return int(_kill_dnsmasq(signal.SIGHUP))  # noqa: B012
 
 
 def _main() -> int:
@@ -263,6 +282,9 @@ def _main() -> int:
 
     parser_set_domain = subparsers.add_parser("set_domain")
     parser_set_domain.add_argument("FQDN")
+    parser_set_domain.add_argument("--nginx-port", type=int, choices=range(1, 65536))
+    parser_set_domain.add_argument("--nginx-crt-filepath", type=str)
+    parser_set_domain.add_argument("--nginx-key-filepath", type=str)
     parser_set_domain.set_defaults(func=_command_set_domain)
 
     parser_del_domain = subparsers.add_parser("del_domain")

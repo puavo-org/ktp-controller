@@ -11,13 +11,12 @@ import typing
 # Third-party imports
 import validators
 
+# Internal imports
 import ktp_controller.asyncio
 import ktp_controller.net
 import ktp_controller.puavo.conf
 import ktp_controller.utils
-
-# Internal imports
-from ktp_controller import VERSION
+from ktp_controller import SETTINGS, VERSION
 
 _LOGGER = logging.getLogger(os.path.basename(__file__))
 _THIS_DIR = os.path.dirname(__file__)
@@ -47,7 +46,16 @@ def _read_abitti2server_domain_name() -> str | None:
 def _reset_abitti2server_domain_name() -> None:
     fqdn = _read_abitti2server_domain_name()
     if fqdn:
-        _run_networking("set_domain", fqdn)
+        _run_networking(
+            "set_domain",
+            fqdn,
+            "--nginx-port",
+            str(SETTINGS.wui_tls_port),
+            "--nginx-crt-filepath",
+            os.path.join(_NAKSU2_CERTS_DIR_PATH, "cert.pem"),
+            "--nginx-key-filepath",
+            os.path.join(_NAKSU2_CERTS_DIR_PATH, "key.pem"),
+        )
     else:
         _run_networking("del_domain")
 
