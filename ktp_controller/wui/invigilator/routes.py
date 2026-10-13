@@ -31,7 +31,10 @@ _LOGGER = logging.getLogger(__name__)
 router = fastapi.APIRouter(tags=["htmx"])
 _thisdir = os.path.dirname(__file__)
 _templates = fastapi.templating.Jinja2Templates(
-    directory=os.path.join(_thisdir, "templates"),
+    directory=[
+        os.path.join(_thisdir, "templates"),
+        os.path.join(os.path.dirname(_thisdir), "templates"),
+    ],
     context_processors=[ktp_controller.wui.i18n.template_context_processor],
 )
 # jinja2.select_autoescape()'s default extensions don't match our
