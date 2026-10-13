@@ -99,7 +99,7 @@ All fields are always present.
 
 | Field                     | Type                                                | Description                                                                                   | Example                          | Notes             |
 | ------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------- | ----------------- |
-| `version`                 | `string`                                            |                                                                                               |                                  | const: `0.8.0rc1` |
+| `version`                 | `string`                                            |                                                                                               |                                  | const: `0.8.0rc6` |
 | `started_at`              | `datetime`                                          | When the program has started.                                                                 | `"2026-05-03T16:28:51.975+0000"` |                   |
 | `is_auto_control_enabled` | `boolean`                                           |                                                                                               | `true`                           |                   |
 | `cached_files`            | [CachedFiles](#cachedfiles)                         |                                                                                               |                                  |                   |
@@ -177,6 +177,7 @@ All fields are always present.
 | `session_cookie_secure`                            | `boolean`           |             |         |              |
 | `default_locale`                                   | `string`            |             |         |              |
 | `supported_locales`                                | `array` of `string` |             |         |              |
+| `wui_tls_port`                                     | `integer`           |             |         |              |
 
 #### KTPControllerStats
 
