@@ -92,7 +92,7 @@ def test_invigilator_view_shows_user_menu_dropdown(
 
     assert response.status_code == 200
     assert '<details class="dropdown">' in response.text
-    assert "<summary>alice</summary>" in response.text
+    assert "<summary>🇫🇮 alice</summary>" in response.text
     assert "Logged in as" not in response.text
     assert 'action="/logout"' in response.text
     assert 'action="/locale"' in response.text
