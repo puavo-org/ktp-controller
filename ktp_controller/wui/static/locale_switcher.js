@@ -1,8 +1,7 @@
 (function () {
   document.addEventListener("DOMContentLoaded", () => {
-    const select = document.querySelector("select[name='locale']");
-    if (select !== null) {
+    document.querySelectorAll(".locale-select").forEach((select) => {
       select.addEventListener("change", () => select.form.submit());
-    }
+    });
   });
 })();

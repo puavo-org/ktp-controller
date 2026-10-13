@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-13 19:13+0300\n"
+"POT-Creation-Date: 2026-10-13 19:14+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -110,11 +110,12 @@ msgid "Student access code"
 msgstr "Student access code"
 
 #: ktp_controller/wui/invigilator/templates/_base.html.j2:40
+#: ktp_controller/wui/templates/login.html.j2:23
 msgid "Language"
 msgstr "Language"
 
 #: ktp_controller/wui/invigilator/templates/_base.html.j2:44
-#: ktp_controller/wui/templates/login.html.j2:30
+#: ktp_controller/wui/templates/login.html.j2:40
 msgid "Log out"
 msgstr "Log out"
 
@@ -207,26 +208,26 @@ msgstr "No students matching '%(query)s'"
 msgid "No students"
 msgstr "No students"
 
-#: ktp_controller/wui/templates/login.html.j2:7
-#: ktp_controller/wui/templates/login.html.j2:33
-#: ktp_controller/wui/templates/login.html.j2:46
+#: ktp_controller/wui/templates/login.html.j2:8
+#: ktp_controller/wui/templates/login.html.j2:43
+#: ktp_controller/wui/templates/login.html.j2:56
 msgid "Log in"
 msgstr "Log in"
 
-#: ktp_controller/wui/templates/login.html.j2:25
+#: ktp_controller/wui/templates/login.html.j2:35
 msgid "Logged in"
 msgstr "Logged in"
 
-#: ktp_controller/wui/templates/login.html.j2:27
+#: ktp_controller/wui/templates/login.html.j2:37
 #, python-format
 msgid "Logged in as <strong>%(username)s</strong>."
 msgstr "Logged in as <strong>%(username)s</strong>."
 
-#: ktp_controller/wui/templates/login.html.j2:42
+#: ktp_controller/wui/templates/login.html.j2:52
 msgid "Username"
 msgstr "Username"
 
-#: ktp_controller/wui/templates/login.html.j2:44
+#: ktp_controller/wui/templates/login.html.j2:54
 msgid "Password"
 msgstr "Password"
 

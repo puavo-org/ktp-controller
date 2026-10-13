@@ -1,3 +1,4 @@
+{% import "partials/_locale_menu.html.j2" as locale_menu %}
 {% autoescape true %}
 <!DOCTYPE html>
 <html lang="{{ locale }}">
@@ -7,19 +8,28 @@
     <title>{{ _("Log in") }}</title>
     <link rel="stylesheet" href="/static/pico.min.css">
     <link rel="stylesheet" href="/static/app.css">
+    <script src="/static/locale_switcher.js"></script>
 </head>
 <body>
-<main class="container login-container">
 
-    {% if not session %}
+{% if not session %}
+<header class="container">
     <nav>
         <ul>
-            <li><a href="/login?next={{ next | urlencode }}&lang=fi">Suomi</a></li>
-            <li><a href="/login?next={{ next | urlencode }}&lang=en">English</a></li>
-            <li><a href="/login?next={{ next | urlencode }}&lang=sv">Svenska</a></li>
+            <li>
+                <details class="dropdown">
+                    <summary>{{ locale_menu.current_label(locale) }}</summary>
+                    <ul>
+                        <li>{{ locale_menu.form("get", "/login", "lang", next, locale, _('Language')) }}</li>
+                    </ul>
+                </details>
+            </li>
         </ul>
     </nav>
-    {% endif %}
+</header>
+{% endif %}
+
+<main class="container login-container">
 
     {% if session %}
     <h2>{{ _("Logged in") }}</h2>
