@@ -1,3 +1,4 @@
+{% import "partials/_locale_menu.html.j2" as locale_menu %}
 <!DOCTYPE html>
 <html lang="{{ locale }}">
 <head>
@@ -36,14 +37,7 @@
                         <summary>{{ user }}</summary>
                         <ul>
                             <li>
-                                <form method="post" action="/locale">
-                                    <input type="hidden" name="next" value="{{ request.url.path }}">
-                                    <select name="locale" aria-label="{{ _('Language') }}">
-                                        <option value="fi" {{ "selected" if locale == "fi" else "" }}>🇫🇮 Suomi</option>
-                                        <option value="en" {{ "selected" if locale == "en" else "" }}>🇬🇧 English</option>
-                                        <option value="sv" {{ "selected" if locale == "sv" else "" }}>🇸🇪 Svenska</option>
-                                    </select>
-                                </form>
+                                {{ locale_menu.form("post", "/locale", "locale", request.url.path, locale, _('Language')) }}
                             </li>
                             <li>
                                 <form method="post" action="/logout">
