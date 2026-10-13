@@ -1,4 +1,5 @@
 {% import "partials/_locale_menu.html.j2" as locale_menu %}
+{% import "partials/_logo.html.j2" as logo %}
 {% autoescape true %}
 <!DOCTYPE html>
 <html lang="{{ locale }}">
@@ -16,6 +17,9 @@
 {% if not session %}
 <header class="container">
     <nav>
+        <ul>
+            <li>{{ logo.img() }}</li>
+        </ul>
         <ul class="locale-nav">
             <li>{{ locale_menu.form("get", "/login", "lang", next, locale, _('Language')) }}</li>
         </ul>
