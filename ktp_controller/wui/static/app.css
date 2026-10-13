@@ -42,7 +42,7 @@ header select {
   width: auto;
 }
 header .logo {
-  height: 2rem;
+  height: 5rem;
   width: auto;
   display: block;
 }
@@ -106,6 +106,9 @@ header .logo {
 /* student_list_groups.html.j2 */
 .exam-group {
   width: 100%;
+  padding: var(--pico-spacing);
+  background-color: var(--pico-card-sectioning-background-color);
+  border-radius: var(--pico-border-radius);
 }
 .exam-group + .exam-group {
   margin-top: 1rem;
@@ -124,8 +127,8 @@ header .logo {
   list-style: none;
 }
 
-.exam-group .unknown {
-    background-color: #842029;
+.exam-group .unknown h3 {
+    color: var(--pico-del-color);
 }
 
 /* login.html.j2 */
