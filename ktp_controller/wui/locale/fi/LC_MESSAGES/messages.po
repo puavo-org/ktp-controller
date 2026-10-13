@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-13 19:25+0300\n"
+"POT-Creation-Date: 2026-10-13 22:58+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -90,32 +90,32 @@ msgstr "Tuntematon koe"
 msgid "Unknown issue"
 msgstr "Tuntematon ongelma"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:20
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:22
 msgid "Connection lost at"
 msgstr "Yhteys katkesi"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:21
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:23
 msgid "The page will reload automatically once it's back."
 msgstr "Sivu latautuu automaattisesti uudelleen, kun yhteys palautuu."
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:30
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:33
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:48
 msgid "Exams"
 msgstr "Kokeet"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:31
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:34
 #: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
 #: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:27
 msgid "Student access code"
 msgstr "Kokelaiden pääsykoodi"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:40
-#: ktp_controller/wui/templates/login.html.j2:19
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:43
+#: ktp_controller/wui/templates/login.html.j2:24
 msgid "Language"
 msgstr "Kieli"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:44
-#: ktp_controller/wui/templates/login.html.j2:33
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:47
+#: ktp_controller/wui/templates/login.html.j2:39
 msgid "Log out"
 msgstr "Kirjaudu ulos"
 
@@ -210,28 +210,32 @@ msgstr "Ei hakua '%(query)s' vastaavia kokelaita"
 msgid "No students"
 msgstr "Ei kokelaita"
 
-#: ktp_controller/wui/templates/login.html.j2:8
+#: ktp_controller/wui/templates/login.html.j2:9
+#: ktp_controller/wui/templates/login.html.j2:32
+msgid "Exam server"
+msgstr "Koepalvelin"
+
+#: ktp_controller/wui/templates/login.html.j2:9
+#: ktp_controller/wui/templates/login.html.j2:33
+msgid "Management panel"
+msgstr "Hallintapaneeli"
+
 #: ktp_controller/wui/templates/login.html.j2:36
-#: ktp_controller/wui/templates/login.html.j2:49
-msgid "Log in"
-msgstr "Kirjaudu sisään"
-
-#: ktp_controller/wui/templates/login.html.j2:28
-msgid "Logged in"
-msgstr "Kirjauduttu sisään"
-
-#: ktp_controller/wui/templates/login.html.j2:30
 #, python-format
 msgid "Logged in as <strong>%(username)s</strong>."
 msgstr "Kirjautuneena käyttäjänä <strong>%(username)s</strong>."
 
-#: ktp_controller/wui/templates/login.html.j2:45
+#: ktp_controller/wui/templates/login.html.j2:50
 msgid "Username"
 msgstr "Käyttäjätunnus"
 
-#: ktp_controller/wui/templates/login.html.j2:47
+#: ktp_controller/wui/templates/login.html.j2:52
 msgid "Password"
 msgstr "Salasana"
+
+#: ktp_controller/wui/templates/login.html.j2:54
+msgid "Log in"
+msgstr "Kirjaudu sisään"
 
 #~ msgid "End exam for %(name)s?"
 #~ msgstr "Päätetäänkö kokelaan %(name)s koe?"
@@ -253,4 +257,7 @@ msgstr "Salasana"
 
 #~ msgid "Requires attention"
 #~ msgstr "Vaatii huomiota"
+
+#~ msgid "Logged in"
+#~ msgstr "Kirjauduttu sisään"
 

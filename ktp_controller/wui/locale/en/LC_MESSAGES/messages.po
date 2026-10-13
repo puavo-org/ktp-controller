@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-13 19:25+0300\n"
+"POT-Creation-Date: 2026-10-13 22:58+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -90,32 +90,32 @@ msgstr "Undefined exam"
 msgid "Unknown issue"
 msgstr "Unknown issue"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:20
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:22
 msgid "Connection lost at"
 msgstr "Connection lost at"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:21
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:23
 msgid "The page will reload automatically once it's back."
 msgstr "The page will reload automatically once it's back."
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:30
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:33
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:48
 msgid "Exams"
 msgstr "Exams"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:31
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:34
 #: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
 #: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:27
 msgid "Student access code"
 msgstr "Student access code"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:40
-#: ktp_controller/wui/templates/login.html.j2:19
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:43
+#: ktp_controller/wui/templates/login.html.j2:24
 msgid "Language"
 msgstr "Language"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:44
-#: ktp_controller/wui/templates/login.html.j2:33
+#: ktp_controller/wui/invigilator/templates/_base.html.j2:47
+#: ktp_controller/wui/templates/login.html.j2:39
 msgid "Log out"
 msgstr "Log out"
 
@@ -208,28 +208,32 @@ msgstr "No students matching '%(query)s'"
 msgid "No students"
 msgstr "No students"
 
-#: ktp_controller/wui/templates/login.html.j2:8
+#: ktp_controller/wui/templates/login.html.j2:9
+#: ktp_controller/wui/templates/login.html.j2:32
+msgid "Exam server"
+msgstr "Exam server"
+
+#: ktp_controller/wui/templates/login.html.j2:9
+#: ktp_controller/wui/templates/login.html.j2:33
+msgid "Management panel"
+msgstr "Management panel"
+
 #: ktp_controller/wui/templates/login.html.j2:36
-#: ktp_controller/wui/templates/login.html.j2:49
-msgid "Log in"
-msgstr "Log in"
-
-#: ktp_controller/wui/templates/login.html.j2:28
-msgid "Logged in"
-msgstr "Logged in"
-
-#: ktp_controller/wui/templates/login.html.j2:30
 #, python-format
 msgid "Logged in as <strong>%(username)s</strong>."
 msgstr "Logged in as <strong>%(username)s</strong>."
 
-#: ktp_controller/wui/templates/login.html.j2:45
+#: ktp_controller/wui/templates/login.html.j2:50
 msgid "Username"
 msgstr "Username"
 
-#: ktp_controller/wui/templates/login.html.j2:47
+#: ktp_controller/wui/templates/login.html.j2:52
 msgid "Password"
 msgstr "Password"
+
+#: ktp_controller/wui/templates/login.html.j2:54
+msgid "Log in"
+msgstr "Log in"
 
 #~ msgid "End exam for %(name)s?"
 #~ msgstr "End exam for %(name)s?"
@@ -251,4 +255,7 @@ msgstr "Password"
 
 #~ msgid "Requires attention"
 #~ msgstr "Requires attention"
+
+#~ msgid "Logged in"
+#~ msgstr "Logged in"
 

@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ _("Log in") }}</title>
+    <title>{{ _("Exam server") }} &mdash; {{ _("Management panel") }}</title>
     <link rel="stylesheet" href="/static/pico.min.css">
     <link rel="stylesheet" href="/static/app.css">
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
@@ -29,8 +29,9 @@
 
 <main class="container login-container">
 
+    <h1>{{ _("Exam server") }}</h1>
+    <h2>{{ _("Management panel") }}</h2>
     {% if session %}
-    <h2>{{ _("Logged in") }}</h2>
 
     <p>{% trans username=session.username %}Logged in as <strong>{{ username }}</strong>.{% endtrans %}</p>
 
@@ -38,7 +39,6 @@
         <button type="submit">{{ _("Log out") }}</button>
     </form>
     {% else %}
-    <h2>{{ _("Log in") }}</h2>
 
     {% if error %}
     <p class="login-error">{{ error }}</p>
