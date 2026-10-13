@@ -34,7 +34,7 @@
             <ul>
                 <li>
                     <details class="dropdown">
-                        <summary>{{ user }}</summary>
+                        <summary>{{ locale_menu.flag(locale) }} {{ user }}</summary>
                         <ul>
                             <li>
                                 {{ locale_menu.form("post", "/locale", "locale", request.url.path, locale, _('Language')) }}

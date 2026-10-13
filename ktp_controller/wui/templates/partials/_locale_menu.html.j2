@@ -1,13 +1,19 @@
 {% set _LOCALES = [
-    ("fi", "🇫🇮 Suomi"),
-    ("en", "🇬🇧 English"),
-    ("sv", "🇸🇪 Svenska"),
+    ("fi", "🇫🇮", "Suomi"),
+    ("en", "🇬🇧", "English"),
+    ("sv", "🇸🇪", "Svenska"),
 ] %}
 
 {% macro options(locale) %}
-{%- for code, label in _LOCALES %}
-<option value="{{ code }}" {{ "selected" if locale == code else "" }}>{{ label }}</option>
+{%- for code, emoji, name in _LOCALES %}
+<option value="{{ code }}" {{ "selected" if locale == code else "" }}>{{ emoji }} {{ name }}</option>
 {%- endfor %}
+{% endmacro %}
+
+{% macro flag(locale) %}
+{%- for code, emoji, name in _LOCALES -%}
+{%- if code == locale %}{{ emoji }}{% endif -%}
+{%- endfor -%}
 {% endmacro %}
 
 {% macro form(method, action, field_name, next_value, locale, aria_label) %}
