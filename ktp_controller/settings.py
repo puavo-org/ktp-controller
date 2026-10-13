@@ -100,7 +100,7 @@ class Settings(BaseSettings):
     session_cookie_secure: StrictBool = True
     default_locale: str = "fi"
     supported_locales: list[str] = ["fi", "en", "sv"]
-    wui_tls_port: PositiveInt = 8443 # alt-https
+    wui_tls_port: PositiveInt = 8443  # alt-https
 
     @field_validator("supported_locales", mode="before")
     @classmethod
