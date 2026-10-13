@@ -15,15 +15,8 @@
 {% if not session %}
 <header class="container">
     <nav>
-        <ul>
-            <li>
-                <details class="dropdown">
-                    <summary>{{ locale_menu.current_label(locale) }}</summary>
-                    <ul>
-                        <li>{{ locale_menu.form("get", "/login", "lang", next, locale, _('Language')) }}</li>
-                    </ul>
-                </details>
-            </li>
+        <ul class="locale-nav">
+            <li>{{ locale_menu.form("get", "/login", "lang", next, locale, _('Language')) }}</li>
         </ul>
     </nav>
 </header>

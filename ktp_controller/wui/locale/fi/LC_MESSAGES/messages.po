@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-13 19:14+0300\n"
+"POT-Creation-Date: 2026-10-13 19:25+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -110,12 +110,12 @@ msgid "Student access code"
 msgstr "Kokelaiden pääsykoodi"
 
 #: ktp_controller/wui/invigilator/templates/_base.html.j2:40
-#: ktp_controller/wui/templates/login.html.j2:23
+#: ktp_controller/wui/templates/login.html.j2:19
 msgid "Language"
 msgstr "Kieli"
 
 #: ktp_controller/wui/invigilator/templates/_base.html.j2:44
-#: ktp_controller/wui/templates/login.html.j2:40
+#: ktp_controller/wui/templates/login.html.j2:33
 msgid "Log out"
 msgstr "Kirjaudu ulos"
 
@@ -211,25 +211,25 @@ msgid "No students"
 msgstr "Ei kokelaita"
 
 #: ktp_controller/wui/templates/login.html.j2:8
-#: ktp_controller/wui/templates/login.html.j2:43
-#: ktp_controller/wui/templates/login.html.j2:56
+#: ktp_controller/wui/templates/login.html.j2:36
+#: ktp_controller/wui/templates/login.html.j2:49
 msgid "Log in"
 msgstr "Kirjaudu sisään"
 
-#: ktp_controller/wui/templates/login.html.j2:35
+#: ktp_controller/wui/templates/login.html.j2:28
 msgid "Logged in"
 msgstr "Kirjauduttu sisään"
 
-#: ktp_controller/wui/templates/login.html.j2:37
+#: ktp_controller/wui/templates/login.html.j2:30
 #, python-format
 msgid "Logged in as <strong>%(username)s</strong>."
 msgstr "Kirjautuneena käyttäjänä <strong>%(username)s</strong>."
 
-#: ktp_controller/wui/templates/login.html.j2:52
+#: ktp_controller/wui/templates/login.html.j2:45
 msgid "Username"
 msgstr "Käyttäjätunnus"
 
-#: ktp_controller/wui/templates/login.html.j2:54
+#: ktp_controller/wui/templates/login.html.j2:47
 msgid "Password"
 msgstr "Salasana"
 

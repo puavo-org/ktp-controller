@@ -130,3 +130,6 @@ header select {
 .login-error {
   color: var(--pico-del-color);
 }
+header nav ul.locale-nav {
+  margin-left: auto;
+}
