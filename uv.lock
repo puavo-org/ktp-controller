@@ -416,7 +416,7 @@ wheels = [
 
 [[package]]
 name = "ktp-controller"
-version = "0.8.0rc6"
+version = "0.8.0rc7"
 source = { editable = "." }
 dependencies = [
     { name = "alembic" },
