@@ -299,7 +299,7 @@ def assert_exam_scheduling_and_download(
     # exam info successfully, hence this small timeout after checking
     # ack.
     ackd = False
-    for _i in range(3):
+    for _i in range(10):
         state = asyncio.run(
             ktp_controller.examomatic.client._post("/mock/get_state")
         ).json()

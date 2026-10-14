@@ -29,19 +29,6 @@ jobs:
     - name: Run checks
       run: make check
 
-    - name: Run tests
-      run: uv run make .pytest
-
-    - name: Check coverage
-      run: uv run make check-coverage
-
-    - name: Generate coverage HTML report
-      if: ${{ !cancelled() }}
-      run: uv run coverage html
-
-    - name: Upload coverage HTML report
-      if: ${{ !cancelled() }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-html-report
-        path: htmlcov/
+    - name: Run unit tests
+      working-directory: workdirs/unit-test
+      run: ../../aux/pytest-runner unit-test

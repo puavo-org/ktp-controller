@@ -4,7 +4,6 @@ import logging
 import os
 import os.path
 import pathlib
-import re
 import subprocess
 import typing
 
@@ -60,42 +59,14 @@ def _reset_abitti2server_domain_name() -> None:
         _run_networking("del_domain")
 
 
-def _get_wd(name: str) -> str:
-    if not re.match(r"^[a-z0-9]{1,32}$", name):
-        raise ValueError("invalid working directory name", name)
-
-    wd = os.path.join(os.path.expanduser("~/.puavo/puavo-ers/ktp-controller"), name)
-
-    try:
-        os.makedirs(wd)
-    except FileExistsError:
-        pass
-
-    return wd
-
-
-def _run(prog_args: list[str], wd: str) -> None:
-    with (
-        open(os.path.join(wd, "stderr.log"), "w", encoding="utf-8") as stderr,
-        open(os.path.join(wd, "stdout.log"), "w", encoding="utf-8") as stdout,
-    ):
-        subprocess.check_call(
-            prog_args,
-            cwd=wd,
-            stdout=stdout,
-            stderr=stderr,
-        )
-
-
 def _run_networking(*args: str) -> None:
-    return _run(
+    subprocess.check_call(
         [
             "sudo",
             "-n",
             "/opt/ktp-controller/bin/ktp-controller-networking",
             *list(args),
-        ],
-        _get_wd("networking"),
+        ]
     )
 
 

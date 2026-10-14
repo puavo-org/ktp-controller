@@ -1,0 +1,47 @@
+#!/bin/bash
+
+set -eu
+
+mode=$1
+shift
+
+project_root=$(git rev-parse --show-toplevel)
+tests_dir=$(realpath --relative-to . "${project_root}/tests")
+src_dir=$(realpath --relative-to . "${project_root}/ktp_controller")
+
+if [ -z "${UV:-}" ]; then
+    MAYBE_UV='uv run'
+else
+    MAYBE_UV=
+fi
+
+case "$mode" in
+    unit-test)
+        ${MAYBE_UV} coverage run \
+                    --context=unit-test \
+                    --data-file=.coverage.pytest \
+                    -m pytest \
+                    -rA --ignore-glob="${tests_dir}/integration_test_case*.py" \
+                    --show-capture=all \
+                    --ff \
+                    -x \
+                    --log-level=WARNING \
+                    --doctest-modules \
+                    -vv \
+                    "${tests_dir}" \
+                    "${src_dir}"
+    ;;
+    integration-test)
+        ${MAYBE_UV} pytest \
+                    -rA \
+                    --show-capture=all \
+                    -x \
+                    --log-level=WARNING \
+                    -vv \
+                    "$(readlink -e test.py)"
+    ;;
+    *)
+        echo "ERROR: invalid test mode '$mode'" >&2
+        exit 1
+        ;;
+esac

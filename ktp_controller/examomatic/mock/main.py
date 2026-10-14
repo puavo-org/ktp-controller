@@ -53,8 +53,8 @@ async def _lifespan(app: fastapi.FastAPI) -> typing.AsyncIterator[None]:
 def _check_domain(domain: str) -> None:
     # For safety and user-friendlyness, user wanting to use this
     # Exam-O-Matic mock needs to explicitly claim it.
-    if domain != "integration.test":
-        raise fastapi.HTTPException(400, detail="domain must be integration.test")
+    if domain not in ("integration.test", "dev-run.invalid"):
+        raise fastapi.HTTPException(400, detail="unaccepted domain")
 
 
 APP = fastapi.FastAPI(lifespan=_lifespan)

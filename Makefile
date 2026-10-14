@@ -1,8 +1,10 @@
-integration_test_case_targets := integration-test-case1 integration-test-case2 integration-test-case3 integration-test-case5 integration-test-case7 integration-test-case8
+integration_test_targets := integration-test-case1 integration-test-case2 integration-test-case3 integration-test-case5 integration-test-case7 integration-test-case8
+project_root := $(shell git rev-parse --show-toplevel)
+partial_coverage_files := $(shell find '$(project_root)' -type f -name '.coverage*')
 
 .NOTPARALLEL: all
 .PHONY: all
-all: check test docs build
+all: check test integration-test docs build
 
 .PHONY: format
 format:
@@ -14,9 +16,9 @@ check-format:
 
 .PHONY: check-alembic
 check-alembic:
-	rm -f ktp_controller_alembic_check.sqlite
-	KTP_CONTROLLER_DB_PATH=ktp_controller_alembic_check.sqlite uv run alembic upgrade head
-	KTP_CONTROLLER_DB_PATH=ktp_controller_alembic_check.sqlite uv run alembic check
+	git clean -fdx -- '$(project_root)/workdirs/alembic-check/'
+	uv run --directory '$(project_root)/workdirs/alembic-check/' alembic -c ../../alembic.ini upgrade head
+	uv run --directory '$(project_root)/workdirs/alembic-check/' alembic -c ../../alembic.ini check
 
 .PHONY: check-types
 check-types:
@@ -24,52 +26,62 @@ check-types:
 
 .PHONY: i18n-extract
 i18n-extract:
-	uv run pybabel extract -F ktp_controller/wui/babel.cfg \
-		-o ktp_controller/wui/locale/messages.pot ktp_controller/wui
+	uv run pybabel extract -F '$(project_root)/ktp_controller/wui/babel.cfg' \
+		-o '$(project_root)/ktp_controller/wui/locale/messages.pot' '$(project_root)/ktp_controller/wui'
 
 .PHONY: i18n-update
 i18n-update: i18n-extract
-	uv run pybabel update -i ktp_controller/wui/locale/messages.pot \
-		-d ktp_controller/wui/locale -D messages --no-fuzzy-matching
+	uv run pybabel update -i '$(project_root)/ktp_controller/wui/locale/messages.pot' \
+		-d '$(project_root)/ktp_controller/wui/locale' -D messages --no-fuzzy-matching
 
 .PHONY: i18n-compile
 i18n-compile:
-	uv run pybabel compile -d ktp_controller/wui/locale -D messages --statistics
+	uv run pybabel compile -d '$(project_root)/ktp_controller/wui/locale' -D messages --statistics
 
 .PHONY: check-i18n
 check-i18n: i18n-compile
-	git diff --exit-code ktp_controller/wui/locale
+	git diff --exit-code '$(project_root)/ktp_controller/wui/locale'
 
+.NOTPARALLEL: check
 .PHONY: check
 check: check-format check-alembic check-types check-i18n
 	uv run ruff check
 
+.combined_coverage: $(partial_coverage_files)
+	uv run coverage combine --data-file='$@' --keep $^
+
 .PHONY: check-coverage
-check-coverage:
-	uv run coverage report
+check-coverage: .combined_coverage
+	uv run coverage report --data-file='$<' --include 'ktp_controller/*' --omit 'ktp_controller/examomatic/mock/*' --skip-empty --skip-covered
 
-.PHONY: .pytest
-.pytest:
-	coverage run -m pytest -rA --ignore-glob=tests/integration_test_case*.py --show-capture=all --ff -x --log-level=WARNING --doctest-modules -vv tests/ ktp_controller/
+htmlcov: .combined_coverage
+	uv run coverage html --data-file='$<' --include 'ktp_controller/*' --omit 'ktp_controller/examomatic/mock/*' --skip-covered --show-contexts --title 'KTP Controller test coverage'
 
-.PHONY: .pytest-integration
-.pytest-integration:
-	test -n "$${KTP_CONTROLLER_INTEGRATION_TEST_CASE:-}"
-	pytest -rA --show-capture=all -x --log-level=WARNING -vv "tests/integration_test_$${KTP_CONTROLLER_INTEGRATION_TEST_CASE}.py"
+coverage.json: .combined_coverage
+	uv run coverage json --data-file='$<' --include 'ktp_controller/*' --omit 'ktp_controller/examomatic/mock/*' --show-contexts --pretty-print
+
+.PHONY: unit-test
+unit-test: test
 
 .PHONY: test
 test:
-	uv run supervisord -c supervisor/test.conf
-	@grep -q -x ok chain_result
+	git clean -fdx -- '$(project_root)/workdirs/unit-test/'
+	'$(project_root)/aux/unit-test-run'
+	@grep -q -x ok '$(project_root)/workdirs/unit-test/chain_result'
 
-.PHONY: $(integration_test_case_targets)
-$(integration_test_case_targets): integration-test-%:
-	KTP_CONTROLLER_DOTENV='$(@:%=%.env)' KTP_CONTROLLER_INTEGRATION_TEST_CASE='$(@:integration-test-%=%)' uv run supervisord -c supervisor/integration-test.conf
-	@grep -q -x ok chain_result
+.PHONY: $(integration_test_targets)
+$(integration_test_targets): integration-test-%:
+	git clean -fdx -- '$(project_root)/workdirs/integration-test/$(@:integration-test-%=%)/'
+	'$(project_root)/aux/integration-test-run' '$(@:integration-test-%=%)'
+	@grep -q -x ok '$(project_root)/workdirs/integration-test/$(@:integration-test-%=%)/chain_result'
 
 .NOTPARALLEL: integration-test
 .PHONY: integration-test
-integration-test: $(integration_test_case_targets)
+integration-test: $(integration_test_targets)
+
+.PHONY: dev-run
+dev-run:
+	'$(project_root)/dev-run'
 
 .PHONY: dev-install
 dev-install:
@@ -82,30 +94,34 @@ update-deps:
 .PHONY: dry-update-deps
 dry-update-deps:
 	@uv lock --upgrade --dry-run
-	@wget -q -O- https://github.com/redis/redis/releases/latest | sed -r -n 's|.*<title>Release ([0-9.]+).*$$|Redis available: \1|p'
-	@sed -r -n 's|^command=docker pull redis:(.*)$$|Redis installed: \1|p' supervisor/test.conf
 
 .PHONY: build-prodbundle
 build-prodbundle:
-	aux/build-prodbundle.sh
+	git clean -fdx -- '$(project_root)/'
+	'$(project_root)/aux/build-prodbundle.sh'
 
 .PHONY: build-wheel
 build-wheel:
-	uv build --wheel
+	uv build --directory '$(project_root)' --wheel
 
 .PHONY: build-sdist
 build-sdist:
-	uv build --sdist
+	uv build --directory '$(project_root)' --sdist
 
-.PHONY: build
 .NOTPARALLEL: build
+.PHONY: build
 build: build-prodbundle build-wheel build-sdist
 
 .PHONY: docs
 docs:
-	uv run python aux/generate_status_report_docs.py docs/status_report.md
+	uv run python '$(project_root)/aux/generate_status_report_docs.py' '$(project_root)/docs/status_report.md'
 
 .PHONY: clean
 clean:
-	git clean -fdx dist/
-	git clean -fdx '*.sqlite'
+	rm -rf '$(project_root)/htmlcov' '$(project_root)/.mypy_cache' '$(project_root)/.ruff_cache' '$(project_root)/.pytest_cache' '$(project_root)/.venv'
+	rm -f '$(project_root)/coverage.json' '$(project_root)/.combined_coverage'
+	py3clean '$(project_root)/'
+
+.PHONY: gitclean
+gitclean:
+	git clean -fdx -- '$(project_root)/'

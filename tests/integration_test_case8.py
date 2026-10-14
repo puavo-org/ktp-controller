@@ -79,27 +79,23 @@ def test_examomatic_is_shutdown_for_2mins_and_agent_restarts(utcnow):
         last_status_report_seen_by_api["ktp_controller"]["started_at"]
     )
 
-    subprocess.call(
+    subprocess.check_call(
         [
-            "uv",
-            "run",
             "supervisorctl",
             "-c",
-            "supervisor/integration-test.conf",
+            "../../../supervisor/puavo_os-integration-test-run.conf",
             "stop",
-            "examomatic-mock",
+            "ktp-controller-examomatic-mock",
         ]
     )
     time.sleep(120)
-    subprocess.call(
+    subprocess.check_call(
         [
-            "uv",
-            "run",
             "supervisorctl",
             "-c",
-            "supervisor/integration-test.conf",
+            "../../../supervisor/puavo_os-integration-test-run.conf",
             "start",
-            "examomatic-mock",
+            "ktp-controller-examomatic-mock",
         ]
     )
 

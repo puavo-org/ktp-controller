@@ -4,15 +4,28 @@
 
 Multi-process orchestra, managed by supervisord.
 
-`make test` uses @supervisor/test.conf to run unit tests. Execution
-takes less than 1min.
+`make check` runs various static checks on the source code.
 
-`make integration-test` uses @supervisor/integration-test.conf to run
-integration tests. Execution takes 20-30mins. During execution, a
-testbot launches and uses a browser window on the host.
+`make test` uses @supervisor/puavo_os-unit-test-run.conf to run unit
+tests. Execution takes less than 1min. The working directory for
+unit-test-run is `workdirs/unit-test`. It contains all artifacts from
+the unit test run.
 
-Running the complete orchestra in production mode requires `sudo` and
-is out of your scope.
+`make unit-test` is an alias for `make test`.
+
+`make integration-test` uses
+@supervisor/puavo_os-integration-test-run.conf to run integration
+tests. Execution takes 20-30mins. During execution, a testbot launches
+and uses a browser window on the host.
+
+`make dev-run` uses @supervisor/puavo_os-dev-run.conf to launch the
+whole orchestra. It takes about 1min to get all processes up and
+running. The working directory for dev-run is `workdirs/dev`. It
+contains all the artifacts from the dev run.
+
+Running the complete orchestra in production mode is not necessary and
+is out of your scope. If you encounter a need to run
+`/opt/ktp-controller/ktp-controller` stop and prompt the user.
 
 
 ## Component: API

@@ -13,12 +13,18 @@ import typing
 # Third-party imports
 # Internal imports
 import ktp_controller.schemas
+from ktp_controller import is_prod_mode
 
-_USER_FRIENDLY_DATA_DIR = os.path.expanduser("~/ktp-jako")
+if is_prod_mode():
+    _USER_FRIENDLY_DATA_DIR = os.path.expanduser("~/ktp-jako")
 
-_LOGS_DIR = os.path.expanduser("~/.puavo/puavo-ers/ktp-controller/logs")
+    _LOGS_DIR = os.path.expanduser("~/.puavo/puavo-ers/ktp-controller/logs")
 
-_BASEDIRPATH = os.path.expanduser("~/.local/share/ktp-controller")
+    _BASEDIRPATH = os.path.expanduser("~/.local/share/ktp-controller")
+else:
+    _USER_FRIENDLY_DATA_DIR = "ktp-jako"
+    _LOGS_DIR = "logs"
+    _BASEDIRPATH = os.path.curdir
 
 # All exam files will be stored here like so:
 # ~/.local/share/ktp-controller/exam-files/FILE_UUID/exam-file_FILE_SHA256.mex

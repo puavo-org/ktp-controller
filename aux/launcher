@@ -2,9 +2,46 @@
 
 set -euo pipefail
 
-THIS=$(readlink -e "$0")
-HERE=$(dirname "$THIS")
-RUNCONF=
+acquire_singleton_lock()
+{
+    local lockfd
+    local lock_file
+    local pid
+
+    # Locks this file to ensure only one ktp-controller is running on
+    # this host. KTP Controller itself could spawn multiple instances,
+    # but it controls Abitti2, which is a singleton service.
+    lock_file=/tmp/ktp-controller.pid
+
+    exec {lockfd}<> "${lock_file}" || {
+        echo "ERROR: failed to open lock file '${lock_file}' for reading and writing" >&2
+        return 1
+    }
+
+    flock -x -n "${lockfd}" || {
+        pid=$(head -n1 "${lock_file}") || {
+            # Could theoretically happen if someone deletes the file
+            # simultaneously. Not fatal anymore, we are already
+            # failing this function call.
+            true
+        }
+        if [ -n "$pid" ]; then
+            pid=" (PID ${pid})"
+        else
+            pid=''
+        fi
+        echo "ERROR: ktp-controller is already running!${pid}" >&2
+        return 1
+    }
+
+    echo "$$" >"${lock_file}"
+
+    return 0
+}
+
+THIS_FILENAME=$(basename "$0")
+THIS_CANONICAL_FILEPATH=$(readlink -e "$0")
+HERE=$(dirname "${THIS_CANONICAL_FILEPATH}")
 OS=
 
 if [ -d /etc/puavo ]; then
@@ -13,27 +50,74 @@ fi
 
 case "$OS" in
     '')
-        echo 'Failed to detect operating system!' >&2
+        echo 'ERROR: Failed to detect operating system!' >&2
         exit 1
         ;;
     'Puavo OS')
-        WORKDIR="$HOME/.puavo/puavo-ers/ktp-controller"
-        RUNCONF='puavo_os-prod-run.conf'
+        case "${THIS_CANONICAL_FILEPATH}" in
+            /opt/ktp-controller/ktp-controller)
+                RUN_MODE='prod'
+                ;;
+            *)
+                RUN_MODE="${THIS_FILENAME%-run}"
+                ;;
+        esac
         ;;
     *)
-        echo "Unsupported operating system '$OS'!" >&2
+        echo "ERROR: Unsupported operating system '$OS'!" >&2
         exit 1
         ;;
 esac
 
+case "${RUN_MODE}" in
+    'prod')
+        RUNCONF="$HERE/puavo_os-prod-run.conf"
+        WORKDIR="$HOME/.puavo/puavo-ers/ktp-controller"
+        EXEC_CMD='exec'
+        export PATH="$HERE/bin:$PATH"
+        export _KTPC_PROD_MODE=1
+        ;;
+    'dev'|'unit-test')
+        RUNCONF=$(readlink -e "supervisor/puavo_os-${RUN_MODE}-run.conf")
+        WORKDIR="workdirs/${RUN_MODE}/"
+        EXEC_CMD="exec uv run"
+        ;;
+    'integration-test')
+        if [ $# -lt 1 ]; then
+            echo 'ERROR: integration test case argument is required' >&2
+            exit 1
+        fi
+
+        case="$1"
+        shift
+
+        if [[ "$case" =~ ^case[0-9]$ ]]; then
+            test -d "workdirs/integration-test/$case" || {
+                echo "ERROR: invalid integration test case" >&2
+                exit 1
+            }
+        else
+            echo "ERROR: invalid integration test case" >&2
+            exit 1
+        fi
+
+        RUNCONF=$(readlink -e "supervisor/puavo_os-${RUN_MODE}-run.conf")
+        WORKDIR="workdirs/${RUN_MODE}/${case}/"
+        EXEC_CMD="exec uv run"
+        ;;
+    *)
+        echo "ERROR: unsupported run mode '${RUN_MODE}'" >&2
+        exit 1
+        ;;
+esac
+
+echo "INFO: Running in '${RUN_MODE}' mode" >&2
+
 WORKDIR=$(readlink -m "${WORKDIR}")
 
 mkdir -p "${WORKDIR}"
-mkdir -p "${WORKDIR}/logs"
 
 cd "${WORKDIR}"
-
-export PATH="$HERE/bin:$PATH"
 
 if [ $# -eq 0 ]; then
     COMMAND=run
@@ -44,28 +128,29 @@ fi
 
 case "$COMMAND" in
     bash)
-        exec bash --noprofile --rcfile <(echo "PS1='KTP Controller Shell\n\u@\h $ '") -i "$@"
+        ${EXEC_CMD} bash --noprofile --rcfile <(printf 'PS1="KTP Controller Shell [%s]\\n\\u@\\h $ "' "${RUN_MODE}") -i "$@"
         ;;
     cli)
-        echo "WARNING: deprecated, run instead: $0 $@" >&2
-        KTP_CONTROLLER_LOGGING_LEVEL=WARNING exec ktp-controller-cli "$@"
+        echo "WARNING: deprecated, run instead: $0 $*" >&2
+        KTP_CONTROLLER_LOGGING_LEVEL=WARNING ${EXEC_CMD} ktp-controller-cli "$@"
         ;;
     shutdown)
-        exec supervisorctl -c "$HERE/$RUNCONF" shutdown
+        ${EXEC_CMD} supervisorctl -c "$RUNCONF" shutdown
         ;;
     supervisorctl)
-        exec supervisorctl -c "$HERE/$RUNCONF" "$@"
+        ${EXEC_CMD} supervisorctl -c "$RUNCONF" "$@"
         ;;
     run)
-        exec supervisord -c "$HERE/$RUNCONF"
+        acquire_singleton_lock || exit 1
+        ${EXEC_CMD} supervisord -c "$RUNCONF"
         ;;
     tui)
-        exec ktp-controller-tui "$@"
+        ${EXEC_CMD} ktp-controller-tui "$@"
         ;;
     wui)
-        exec ktp-controller-wui "$@"
+        ${EXEC_CMD} ktp-controller-wui "$@"
         ;;
     *)
-        KTP_CONTROLLER_LOGGING_LEVEL=WARNING exec ktp-controller-cli "$COMMAND" "$@"
+        KTP_CONTROLLER_LOGGING_LEVEL=WARNING ${EXEC_CMD} ktp-controller-cli "$COMMAND" "$@"
         ;;
 esac

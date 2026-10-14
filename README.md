@@ -96,3 +96,10 @@ the set of packages is ok, remember to commit the lock file with:
 ```
 git commit uv.lock -m 'Update dependencies'
 ```
+
+### How to run
+
+Simply just run:
+```
+./ktp-controller
+```

@@ -1,9 +1,14 @@
 # Standard library imports
 import importlib.metadata
 import logging
+import os as _os
 
 # Relative imports
 from .settings import Settings
+
+
+def is_prod_mode() -> bool:
+    return _os.environ.get("_KTPC_PROD_MODE") is not None
 
 
 def set_logging_level(level: str) -> None:

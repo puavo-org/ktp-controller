@@ -8,8 +8,7 @@ import pydantic
 # Internal imports
 import ktp_controller.pydantic
 import ktp_controller.utils
-
-# Relative imports
+from ktp_controller import is_prod_mode
 
 __all__ = [
     "AgentState",
@@ -20,9 +19,12 @@ __all__ = [
 
 _LOGGER = logging.getLogger(__name__)
 
-_AGENT_STATE_FILEPATH = os.path.expanduser(
-    "~/.local/share/ktp-controller/agent-state.json"
-)
+if is_prod_mode():
+    _AGENT_STATE_FILEPATH = os.path.expanduser(
+        "~/.local/share/ktp-controller/agent-state.json"
+    )
+else:
+    _AGENT_STATE_FILEPATH = os.path.abspath("agent-state.json")
 
 
 class AgentState(ktp_controller.pydantic.BaseModel):
