@@ -302,9 +302,14 @@ def bytes_stream(filepath: str, chunk_size: int = 4096) -> typing.Iterator[bytes
 
 
 @contextlib.contextmanager
-def singleton() -> typing.Iterator[None]:
+def singleton(*, lock_file_path: str | None = None) -> typing.Iterator[None]:
     this_prog_path = os.path.realpath(sys.argv[0])
-    with open(this_prog_path, "rb") as lock_file:
+    if lock_file_path is None:
+        lock_file_path = this_prog_path
+        mode = "rb"
+    else:
+        mode = "ab+"
+    with open(lock_file_path, mode) as lock_file:
         try:
             fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError as io_error:
