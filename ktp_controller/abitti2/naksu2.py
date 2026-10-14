@@ -10,9 +10,7 @@ import ktp_controller.abitti2.words
 
 __all__ = [
     "cleanup_rotated_logs",
-    "make_password",
     "read_domain",
-    "read_naksu2_conf",
     "read_supervisor_passphrase",
 ]
 
@@ -20,11 +18,11 @@ __all__ = [
 _NAKSU2_CONF_DIR_PATH = "~/.local/share/digabi/naksu2"
 
 
-def make_password(word_list_indices: list[int]) -> str:
+def _make_password(word_list_indices: list[int]) -> str:
     return " ".join([ktp_controller.abitti2.words.WORDS[i] for i in word_list_indices])
 
 
-def read_naksu2_conf(*, filepath: str | None = None) -> dict[str, typing.Any]:
+def _read_naksu2_conf(*, filepath: str | None = None) -> dict[str, typing.Any]:
     if filepath is None:
         filepath = os.path.join(
             os.path.expanduser(_NAKSU2_CONF_DIR_PATH), "naksu2-config.json"
@@ -34,8 +32,8 @@ def read_naksu2_conf(*, filepath: str | None = None) -> dict[str, typing.Any]:
 
 
 def read_supervisor_passphrase() -> str:
-    naksu2_conf = read_naksu2_conf()
-    return make_password(naksu2_conf["passwordSeed"])
+    naksu2_conf = _read_naksu2_conf()
+    return _make_password(naksu2_conf["passwordSeed"])
 
 
 def read_domain() -> str:
