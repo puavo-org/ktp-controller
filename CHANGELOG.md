@@ -10,18 +10,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - New web-based invigilator view (WUI): a browser UI for monitoring
-  students and exam sessions.
+  and controlling students and exam sessions.
 
   - The student list refreshes itself automatically as exam status
-    changes; no manual reload needed.
+    changes; no manual reload needed. Students can be searched and
+    filtered by name or birthday.
+
+  - Students can be grouped by exam, with collapsible per-exam
+    sections and both per-exam and overall state counters.
+
+  - Invigilators can end a student's exam, allow or disallow browser
+    use during the exam, allow a student to replay exam audio again,
+    and view or change a student's access code.
 
   - If the live connection drops, the page shows a "connection lost"
     notice and recovers automatically, including after a server
     restart or an expired login session.
 
-  - Available in Finnish, Swedish and English.
+  - Available in Finnish, Swedish and English, selectable from a
+    dropdown.
 
-  - Currently only accessible at http://localhost:9999
+  - Can be exposed over HTTPS on the Abitti2 domain (port 8443 by
+    default, configurable via `wui_tls_port`) through an automatically
+    configured nginx reverse proxy, in addition to
+    http://localhost:9999.
+
+### Fixed
+
+- Fixed rare data-corruption and crash-safety bugs in internal atomic
+  file writing/copying (used for exam files, answers files, logs and
+  more): two processes writing the same file at the same time could
+  corrupt each other's output or crash, and a crash right after a
+  write could leave the file empty, stale or missing even though the
+  write had already "succeeded".
 
 ### Changed
 
