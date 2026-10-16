@@ -521,12 +521,23 @@ def cleanup_old_log_files(
     Return the number of deleted log files.
 
     """
-    return cleanup_old_files(
+    number_of_deleted_files = cleanup_old_files(
         basedirpath=_LOGS_DIR,
         mtime_older_than_days=mtime_older_than_days,
         deleted_paths=deleted_paths,
         select_func=lambda fp: str(fp).endswith(".log"),
     )
+
+    try:
+        os.rmdir(_LOGS_DIR)
+    except FileNotFoundError:
+        pass  # Directory not even created anymore.
+    except OSError as os_error:
+        # 39: Directory not empty yet.
+        if os_error.errno != 39:
+            raise  # Something strange.
+
+    return number_of_deleted_files
 
 
 async def cleanup_files(logger: logging.Logger | None = None) -> None:
