@@ -57,7 +57,7 @@ def create_user_friendly_data_dir() -> None:
         symlink_filename = os.path.basename(symlink_target)
         try:
             os.symlink(
-                symlink_target,
+                os.path.relpath(symlink_target, start=_USER_FRIENDLY_DATA_DIR),
                 os.path.join(_USER_FRIENDLY_DATA_DIR, symlink_filename),
             )
         except FileExistsError:
