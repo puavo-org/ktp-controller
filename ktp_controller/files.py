@@ -53,7 +53,6 @@ def create_user_friendly_data_dir() -> None:
         _EXAM_FILE_DIR,
         _EXAM_PACKAGE_DIR,
         ANSWERS_FILE_DIR,
-        _LOGS_DIR,
     ):
         symlink_filename = os.path.basename(symlink_target)
         try:
