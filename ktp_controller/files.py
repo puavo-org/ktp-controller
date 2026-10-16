@@ -46,6 +46,10 @@ DUMMY_EXAM_PACKAGE_FILEPATH = os.path.join(_BASEDIRPATH, "dummy-exam-package.zip
 
 def create_user_friendly_data_dir() -> None:
     try:
+        shutil.rmtree(_USER_FRIENDLY_DATA_DIR)
+    except FileNotFoundError:
+        pass
+    try:
         os.makedirs(_USER_FRIENDLY_DATA_DIR)
     except FileExistsError:
         pass
