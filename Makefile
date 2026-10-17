@@ -118,7 +118,7 @@ docs:
 
 .PHONY: clean
 clean:
-	rm -rf '$(project_root)/htmlcov' '$(project_root)/.mypy_cache' '$(project_root)/.ruff_cache' '$(project_root)/.pytest_cache' '$(project_root)/.venv'
+	rm -rf '$(project_root)/htmlcov' '$(project_root)/.mypy_cache' '$(project_root)/.ruff_cache' '$(project_root)/.pytest_cache' '$(project_root)/.venv' '$(project_root)/dist'
 	rm -f '$(project_root)/coverage.json' '$(project_root)/.combined_coverage'
 	py3clean '$(project_root)/'
 
