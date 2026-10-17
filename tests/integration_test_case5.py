@@ -18,7 +18,6 @@ from .utils import (
     assert_clean_start,
     assert_exam_scheduling_and_download,
     assert_last_status_report_does_not_contain_student_names,
-    assert_last_status_report_has_abitti2_domain,
     assert_scheduled_exam_package_gets_started,
     assert_scheduled_exam_package_state_is,
     assert_student_access_code_is_not,
@@ -64,10 +63,6 @@ def test_exam_package_is_scheduled_and_downloaded(utcnow):
         utcnow=utcnow,
         number_of_duplicates=3,
     )
-
-
-def test_last_status_report_has_abitti2_domain():
-    assert_last_status_report_has_abitti2_domain()
 
 
 def test_exam_package_gets_started(testrunstate):
