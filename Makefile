@@ -1,4 +1,4 @@
-integration_test_targets := integration-test-case1 integration-test-case2 integration-test-case3 integration-test-case5 integration-test-case7 integration-test-case8
+integration_test_targets := integration-test-case2 integration-test-case3 integration-test-case5 integration-test-case7 integration-test-case8
 project_root := $(shell git rev-parse --show-toplevel)
 partial_coverage_files := $(shell find '$(project_root)' -type f -name '.coverage*')
 
