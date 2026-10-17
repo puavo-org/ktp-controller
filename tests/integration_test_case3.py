@@ -175,6 +175,99 @@ def test_second_exam_package_gets_archived(testrunstate):
     assert asyncio.run(ktp_controller.api.client.get_current_exam_package()) is None
 
 
+def test_all_answer_uploads_are_successful_after_second_exam_package():
+    assert_all_answer_uploads_are_successful()
+
+
+def test_odotusaulakoe_is_running_between_second_and_third_exam_packages():
+    assert_abitti2_running_exams(
+        lambda running_exams: "Odotusaulakoe" in running_exams, wait=30
+    )
+
+
+def test_third_exam_package_is_scheduled_and_downloaded(utcnow):
+    assert_exam_scheduling_and_download(
+        exam_title="Integraatiotestikoe1",
+        seconds_until_start=60,
+        duration_seconds=90,
+        lock_time_duration_seconds=30,
+        expected_ack_count=3,
+        utcnow=utcnow,
+        number_of_duplicates=3,
+    )
+
+
+def test_third_exam_package_gets_started(testrunstate):
+    testrunstate.scheduled_exam_package3 = assert_scheduled_exam_package_gets_started(
+        "Integraatiotestikoe1"
+    )
+
+
+def test_student_access_code_is_changed_when_third_exam_package_is_started(
+    testrunstate,
+):
+    testrunstate.student_access_code = assert_student_access_code_is_not(
+        testrunstate.student_access_code.key_code,
+        testrunstate.student_access_code.verification_code,
+    )
+
+
+def test_student1_take_third_scheduled_exam(student1, testrunstate):
+    student1.relogin()  # Exam has changed, relogin is needed.
+    student1.start_exam(
+        exam_uuid="c574f93a-ac4d-4441-8679-ca47e565fb7b",
+        exam_title="Integraatiotestikoe1",
+        access_code=testrunstate.student_access_code,
+        expect_exam_instructions=False,  # Already seen in this browsing session, Abitti2 seems to show it only once.
+    )
+    student1.end_exam()
+
+
+def test_student2_take_third_scheduled_exam_but_do_not_end_it(student2, testrunstate):
+    student2.relogin()  # Exam has changed, relogin is needed.
+    student2.start_exam(
+        exam_uuid="c574f93a-ac4d-4441-8679-ca47e565fb7b",
+        exam_title="Integraatiotestikoe1",
+        access_code=testrunstate.student_access_code,
+        expect_exam_instructions=False,  # Already seen in this browsing session, Abitti2 seems to show it only once.
+    )
+
+
+def test_third_exam_package_does_not_get_stopped_until_student2_ends_exam(
+    student2, testrunstate, utcnow
+):
+    until_scheduled_end = (
+        datetime.datetime.fromisoformat(
+            testrunstate.scheduled_exam_package3["end_time"]
+        )
+        - utcnow
+    ).total_seconds()
+    time.sleep(until_scheduled_end + 10)
+
+    testrunstate.scheduled_exam_package3 = assert_scheduled_exam_package_state_is(
+        "running",
+        external_id=testrunstate.scheduled_exam_package3["external_id"],
+        wait=0,
+    )
+
+    student2.end_exam()
+
+    testrunstate.scheduled_exam_package3 = assert_scheduled_exam_package_state_is(
+        "stopped",
+        external_id=testrunstate.scheduled_exam_package3["external_id"],
+        wait=60,
+    )
+
+
+def test_third_exam_package_gets_archived(testrunstate):
+    testrunstate.scheduled_exam_package3 = assert_scheduled_exam_package_state_is(
+        "archived",
+        external_id=testrunstate.scheduled_exam_package3["external_id"],
+        wait=90,
+    )
+    assert asyncio.run(ktp_controller.api.client.get_current_exam_package()) is None
+
+
 def test_all_answer_uploads_are_successful():
     assert_all_answer_uploads_are_successful()
 
