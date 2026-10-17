@@ -1,11 +1,16 @@
 # Standard library imports
 import asyncio
+import datetime
+import logging
+import subprocess
+import time
 
 # Third-party imports
 # Internal imports
 import ktp_controller.abitti2.client
 import ktp_controller.api.client
 import ktp_controller.examomatic.client
+import ktp_controller.utils
 
 # Relative imports
 from .utils import (
@@ -15,6 +20,8 @@ from .utils import (
     assert_scheduled_exam_package_gets_started,
     assert_scheduled_exam_package_state_is,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 # Test functions are and must be executed sequentially. In unit tests,
 # it's not a good idea to build tests which depend on each other, but
@@ -89,6 +96,99 @@ def test_second_exam_package_gets_stopped(testrunstate):
 def test_second_exam_package_gets_archived(testrunstate):
     testrunstate.scheduled_exam_package2 = assert_scheduled_exam_package_state_is(
         "archived", external_id=testrunstate.scheduled_exam_package2["external_id"]
+    )
+    assert asyncio.run(ktp_controller.api.client.get_current_exam_package()) is None
+
+
+def test_odotusaulakoe_is_running_before_examomatic_shutdown():
+    assert_abitti2_running_exams(
+        lambda running_exams: "Odotusaulakoe" in running_exams, wait=30
+    )
+
+
+def test_examomatic_is_shutdown_for_2mins_and_agent_restarts(utcnow):
+    last_status_report_seen_by_api = asyncio.run(
+        ktp_controller.api.client.get_last_status_report()
+    )
+
+    ktp_controller_started_at_before_shutdown = datetime.datetime.fromisoformat(
+        last_status_report_seen_by_api["ktp_controller"]["started_at"]
+    )
+
+    subprocess.check_call(
+        [
+            "supervisorctl",
+            "-c",
+            "../../../supervisor/puavo_os-integration-test-run.conf",
+            "stop",
+            "ktp-controller-examomatic-mock",
+        ]
+    )
+    time.sleep(120)
+    subprocess.check_call(
+        [
+            "supervisorctl",
+            "-c",
+            "../../../supervisor/puavo_os-integration-test-run.conf",
+            "start",
+            "ktp-controller-examomatic-mock",
+        ]
+    )
+
+    last_status_report_seen_by_api = asyncio.run(
+        ktp_controller.api.client.get_last_status_report()
+    )
+    ktp_controller_started_at_after_shutdown = datetime.datetime.fromisoformat(
+        last_status_report_seen_by_api["ktp_controller"]["started_at"]
+    )
+
+    assert (
+        ktp_controller_started_at_before_shutdown
+        < ktp_controller_started_at_after_shutdown
+    )
+
+
+def test_examomatic_is_running_again():
+    for _i in range(30):
+        try:
+            response = asyncio.run(
+                ktp_controller.examomatic.client._post("/mock/get_state")
+            )
+        except Exception as e:
+            _LOGGER.warning("Failed to connect: %s", str(e))
+        else:
+            if response.status_code == 200:
+                break
+        time.sleep(1)
+    assert response.status_code == 200
+
+
+def test_third_exam_package_is_scheduled_and_downloaded(utcnow):
+    assert_exam_scheduling_and_download(
+        exam_title="Ääkköskoe välilyönneillä integraatiotestaukseen",
+        seconds_until_start=60,
+        duration_seconds=30,
+        lock_time_duration_seconds=30,
+        expected_ack_count=1,
+        utcnow=utcnow,
+    )
+
+
+def test_third_exam_package_gets_started(testrunstate):
+    testrunstate.scheduled_exam_package3 = assert_scheduled_exam_package_gets_started(
+        "Ääkköskoe välilyönneillä integraatiotestaukseen"
+    )
+
+
+def test_third_exam_package_gets_stopped(testrunstate):
+    testrunstate.scheduled_exam_package3 = assert_scheduled_exam_package_state_is(
+        "stopped", external_id=testrunstate.scheduled_exam_package3["external_id"]
+    )
+
+
+def test_third_exam_package_gets_archived(testrunstate):
+    testrunstate.scheduled_exam_package3 = assert_scheduled_exam_package_state_is(
+        "archived", external_id=testrunstate.scheduled_exam_package3["external_id"]
     )
     assert asyncio.run(ktp_controller.api.client.get_current_exam_package()) is None
 

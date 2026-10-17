@@ -139,6 +139,7 @@ def student2(browser_chrome):
 class _TestRunState:
     scheduled_exam_package1: dict | None = None
     scheduled_exam_package2: dict | None = None
+    scheduled_exam_package3: dict | None = None
     student_access_code: ktp_controller.schemas.StudentAccessCode | None = None
 
 
