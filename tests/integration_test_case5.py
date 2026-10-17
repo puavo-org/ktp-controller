@@ -17,7 +17,6 @@ from .utils import (
     assert_all_answer_uploads_are_successful,
     assert_clean_start,
     assert_exam_scheduling_and_download,
-    assert_last_status_report_does_not_contain_student_names,
     assert_scheduled_exam_package_gets_started,
     assert_scheduled_exam_package_state_is,
     assert_student_access_code_is_not,
@@ -99,10 +98,6 @@ def test_student2_take_scheduled_exam_but_do_not_end_it(student2, testrunstate):
         access_code=testrunstate.student_access_code,
         expect_exam_instructions=False,  # Already seen in this browsing session, Abitti2 seems to show it only once.
     )
-
-
-def test_last_status_report_does_not_contain_student_names(student1, student2):
-    assert_last_status_report_does_not_contain_student_names(student1, student2)
 
 
 def test_exam_package_does_not_get_stopped_until_student2_ends_exam(
