@@ -105,7 +105,9 @@ def utcnow():
 
 @pytest.fixture(scope="session")
 def browser_chrome():
-    chrome = selenium.webdriver.Chrome()
+    options = selenium.webdriver.ChromeOptions()
+    options.add_argument("--headless=new")
+    chrome = selenium.webdriver.Chrome(options=options)
     try:
         yield chrome
     finally:
@@ -114,7 +116,9 @@ def browser_chrome():
 
 @pytest.fixture(scope="session")
 def browser_firefox():
-    firefox = selenium.webdriver.Firefox()
+    options = selenium.webdriver.FirefoxOptions()
+    options.add_argument("-headless")
+    firefox = selenium.webdriver.Firefox(options=options)
     try:
         yield firefox
     finally:
