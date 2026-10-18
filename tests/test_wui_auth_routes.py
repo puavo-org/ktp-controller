@@ -42,6 +42,14 @@ def test_get_login_renders_form(wui_client):
     assert b"/logout" not in response.content
 
 
+def test_get_login_renders_form_with_forwarded_prefix(wui_client):
+    response = wui_client.get("/login", headers={"X-Forwarded-Prefix": "/remote/12345"})
+
+    assert response.status_code == 200
+    assert b'action="/remote/12345/login"' in response.content
+    assert b'value="/remote/12345/invigilator/"' in response.content
+
+
 def test_get_login_shows_logged_in_state_with_valid_session(wui_client, mocker):
     mocker.patch.object(
         ktp_controller.api.client,
@@ -107,6 +115,27 @@ def test_post_login_correct_credentials_sets_session_cookie(wui_client, mocker):
     assert response.status_code == 303
     assert response.headers["location"] == "/invigilator/"
     assert ktp_controller.wui.auth.SESSION_COOKIE_NAME in response.cookies
+
+
+def test_post_login_correct_credentials_honors_forwarded_prefix(wui_client, mocker):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=_status_report(),
+    )
+    mocker.patch.object(
+        ktp_controller.api.client,
+        "get_or_create_user_permissions",
+        return_value=["wui.invigilator.view"],
+    )
+
+    response = wui_client.post(
+        "/login",
+        data={"username": "invigilator1", "password": "s3cret"},
+        headers={**_SAME_ORIGIN_HEADERS, "X-Forwarded-Prefix": "/remote/12345"},
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/remote/12345/invigilator/"
 
 
 def test_post_login_rejects_cross_origin_request(wui_client, mocker):
@@ -221,3 +250,31 @@ def test_logout_clears_session(wui_client, mocker):
 
     assert logout_response.status_code == 303
     assert logout_response.headers["location"] == "/login"
+
+
+def test_logout_honors_forwarded_prefix(wui_client, mocker):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=_status_report(),
+    )
+    mocker.patch.object(
+        ktp_controller.api.client,
+        "get_or_create_user_permissions",
+        return_value=["wui.invigilator.view"],
+    )
+
+    login_response = wui_client.post(
+        "/login",
+        data={"username": "invigilator1", "password": "s3cret"},
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+    session_cookie = login_response.cookies[ktp_controller.wui.auth.SESSION_COOKIE_NAME]
+
+    logout_response = wui_client.post(
+        "/logout",
+        cookies={ktp_controller.wui.auth.SESSION_COOKIE_NAME: session_cookie},
+        headers={**_SAME_ORIGIN_HEADERS, "X-Forwarded-Prefix": "/remote/12345"},
+    )
+
+    assert logout_response.status_code == 303
+    assert logout_response.headers["location"] == "/remote/12345/login"
