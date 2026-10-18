@@ -7,10 +7,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ _("Exam server") }} &mdash; {{ _("Management panel") }}</title>
-    <link rel="stylesheet" href="/static/pico.min.css">
-    <link rel="stylesheet" href="/static/app.css">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <script src="/static/locale_switcher.js"></script>
+    <link rel="stylesheet" href="{{ prefix }}/static/pico.min.css">
+    <link rel="stylesheet" href="{{ prefix }}/static/app.css">
+    <link rel="icon" type="image/x-icon" href="{{ prefix }}/static/favicon.ico">
+    <script src="{{ prefix }}/static/locale_switcher.js"></script>
 </head>
 <body>
 
@@ -18,10 +18,10 @@
 <header class="container">
     <nav>
         <ul>
-            <li>{{ logo.img() }}</li>
+            <li>{{ logo.img(prefix) }}</li>
         </ul>
         <ul class="locale-nav">
-            <li>{{ locale_menu.form("get", "/login", "lang", next, locale, _('Language')) }}</li>
+            <li>{{ locale_menu.form("get", prefix ~ "/login", "lang", next, locale, _('Language')) }}</li>
         </ul>
     </nav>
 </header>
@@ -35,7 +35,7 @@
 
     <p>{% trans username=session.username %}Logged in as <strong>{{ username }}</strong>.{% endtrans %}</p>
 
-    <form method="post" action="/logout">
+    <form method="post" action="{{ prefix }}/logout">
         <button type="submit">{{ _("Log out") }}</button>
     </form>
     {% else %}
@@ -44,7 +44,7 @@
     <p class="login-error">{{ error }}</p>
     {% endif %}
 
-    <form method="post" action="/login">
+    <form method="post" action="{{ prefix }}/login">
         <input type="hidden" name="next" value="{{ next }}">
         <input type="hidden" name="lang" value="{{ locale }}">
         <label for="username">{{ _("Username") }}</label>

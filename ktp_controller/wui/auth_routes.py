@@ -33,6 +33,11 @@ _templates.env.install_null_translations(newstyle=True)  # type: ignore[attr-def
 
 _DEFAULT_NEXT_PATH = "/invigilator/"
 
+
+def _default_next(request: fastapi.Request) -> str:
+    return str(request.scope.get("root_path", "")) + _DEFAULT_NEXT_PATH
+
+
 # Slows down brute-forcing of the login form. Keyed by the immediate
 # peer address; this app isn't behind nginx yet (see architecture
 # notes), so there's no forwarded-for header to trust instead.
@@ -42,14 +47,18 @@ _LOGIN_RATE_LIMITER = ktp_controller.redis.RateLimiter("login", 10, 300)
 @router.get("/login", response_class=fastapi.responses.HTMLResponse)
 async def _get_login(
     request: fastapi.Request,
-    next: str = _DEFAULT_NEXT_PATH,
+    next: str | None = None,
     session: auth.Session | None = fastapi.Depends(auth.get_optional_session),
     locale: str = fastapi.Depends(i18n.get_locale),
 ) -> fastapi.responses.HTMLResponse:
     return _templates.TemplateResponse(
         request,
         name="login.html.j2",
-        context={"next": next, "error": None, "session": session},
+        context={
+            "next": next or _default_next(request),
+            "error": None,
+            "session": session,
+        },
     )
 
 
@@ -58,10 +67,12 @@ async def _post_login(
     request: fastapi.Request,
     username: str = fastapi.Form(...),
     password: str = fastapi.Form(...),
-    next: str = fastapi.Form(_DEFAULT_NEXT_PATH),
+    next: str | None = fastapi.Form(None),
     locale: str = fastapi.Depends(i18n.get_locale),
 ) -> fastapi.responses.Response:
     _ = i18n.get_gettext(locale)
+
+    next = next or _default_next(request)
 
     client_ip = request.client.host if request.client is not None else "unknown"
     if not await _LOGIN_RATE_LIMITER.hit(client_ip):
@@ -106,7 +117,8 @@ async def _post_logout(request: fastapi.Request) -> fastapi.responses.Response:
         await auth.destroy_session(session_id)
 
     response: fastapi.responses.Response = fastapi.responses.RedirectResponse(
-        url="/login", status_code=fastapi.status.HTTP_303_SEE_OTHER
+        url=request.scope.get("root_path", "") + "/login",
+        status_code=fastapi.status.HTTP_303_SEE_OTHER,
     )
     response.delete_cookie(auth.SESSION_COOKIE_NAME)
     return response
@@ -114,8 +126,9 @@ async def _post_logout(request: fastapi.Request) -> fastapi.responses.Response:
 
 @router.post("/locale")
 async def _post_locale(
+    request: fastapi.Request,
     locale: str = fastapi.Form(...),
-    next: str = fastapi.Form(_DEFAULT_NEXT_PATH),
+    next: str | None = fastapi.Form(None),
     session: auth.Session | None = fastapi.Depends(auth.get_optional_session),
 ) -> fastapi.responses.Response:
     if locale not in SETTINGS.supported_locales:
@@ -128,5 +141,6 @@ async def _post_locale(
         await auth.set_session_locale(session.session_id, locale)
 
     return fastapi.responses.RedirectResponse(
-        url=next, status_code=fastapi.status.HTTP_303_SEE_OTHER
+        url=next or _default_next(request),
+        status_code=fastapi.status.HTTP_303_SEE_OTHER,
     )

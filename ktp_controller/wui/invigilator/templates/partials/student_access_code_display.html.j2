@@ -1,5 +1,5 @@
 <div id="student-access-code"
-     hx-get="/invigilator/student_access_code"
+     hx-get="{{ prefix }}/invigilator/student_access_code"
      hx-trigger="invigilator-live-update from:body throttle:2s"
      hx-target="this"
      hx-swap="outerHTML">

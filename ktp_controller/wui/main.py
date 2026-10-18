@@ -56,6 +56,7 @@ APP = fastapi.FastAPI(lifespan=_lifespan)
 APP.state.invigilator_ws_registry = ktp_controller.wui.utils.BrowserSocketRegistry()
 APP.add_middleware(ktp_controller.wui.middleware.OriginCheckMiddleware)
 APP.add_middleware(ktp_controller.wui.middleware.SecurityHeadersMiddleware)
+APP.add_middleware(ktp_controller.wui.middleware.RootPathFromHeaderMiddleware)
 APP.include_router(ktp_controller.wui.invigilator.routes.router, prefix="/invigilator")
 APP.include_router(ktp_controller.wui.actions.routes.router, prefix="/actions")
 APP.include_router(ktp_controller.wui.auth_routes.router)
@@ -73,8 +74,9 @@ async def _handle_not_authenticated(
     request: fastapi.Request,
     exc: ktp_controller.wui.auth.NotAuthenticatedError,
 ) -> fastapi.Response:
-    next_qs = urllib.parse.urlencode({"next": request.url.path})
-    login_url = f"/login?{next_qs}"
+    prefix = request.scope.get("root_path", "")
+    next_qs = urllib.parse.urlencode({"next": prefix + request.url.path})
+    login_url = f"{prefix}/login?{next_qs}"
 
     if request.headers.get("HX-Request") == "true":
         # htmx follows a 303 itself and swaps the resulting login page
@@ -91,7 +93,7 @@ async def _handle_not_authenticated(
 
 
 @APP.get("/")
-def _get_root() -> fastapi.responses.RedirectResponse:
+def _get_root(request: fastapi.Request) -> fastapi.responses.RedirectResponse:
     # Redirect straight to the trailing-slash form. Redirecting to
     # "/invigilator" instead would make Starlette's own
     # redirect_slashes handling issue a second, *absolute* redirect
@@ -100,8 +102,9 @@ def _get_root() -> fastapi.responses.RedirectResponse:
     # reverse proxy that forwards Host without its port (see
     # ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy), that
     # second redirect drops the port.
+    prefix = request.scope.get("root_path", "")
     return fastapi.responses.RedirectResponse(
-        url="/invigilator/", status_code=fastapi.status.HTTP_303_SEE_OTHER
+        url=f"{prefix}/invigilator/", status_code=fastapi.status.HTTP_303_SEE_OTHER
     )
 
 

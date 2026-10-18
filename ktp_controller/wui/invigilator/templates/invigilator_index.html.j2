@@ -3,10 +3,10 @@
 {% block title %}{{ _("Invigilator's view") }}{% endblock %}
 
 {% block extra_scripts %}
-    <script src="/static/end_exam_confirm.js"></script>
-    <script src="/static/allow_audio_replay_confirm.js"></script>
-    <script src="/static/toggle_exam_groups.js"></script>
-    <script src="/static/preserve_exam_group_state.js"></script>
+    <script src="{{ prefix }}/static/end_exam_confirm.js"></script>
+    <script src="{{ prefix }}/static/allow_audio_replay_confirm.js"></script>
+    <script src="{{ prefix }}/static/toggle_exam_groups.js"></script>
+    <script src="{{ prefix }}/static/preserve_exam_group_state.js"></script>
 {% endblock %}
 
 {% block modals %}
@@ -18,7 +18,7 @@
             <input type="hidden" id="end-exam-confirm-student-uuid" name="student_uuid">
             <div class="modal-overlay-actions">
                 <button class="end-exam-confirm-yes"
-                        hx-post="/actions/end-exam"
+                        hx-post="{{ prefix }}/actions/end-exam"
                         hx-include="#end-exam-confirm-session-uuid, #end-exam-confirm-student-uuid"
                         hx-swap="none">{{ _("Yes") }}</button>
                 <button type="button" class="end-exam-confirm-no">{{ _("No") }}</button>
@@ -33,7 +33,7 @@
             <input type="hidden" id="allow-audio-replay-confirm-student-uuid" name="student_uuid">
             <div class="modal-overlay-actions">
                 <button class="allow-audio-replay-confirm-yes"
-                        hx-post="/actions/allow-audio-replay"
+                        hx-post="{{ prefix }}/actions/allow-audio-replay"
                         hx-include="#allow-audio-replay-confirm-student-uuid"
                         hx-swap="none">{{ _("Allow") }}</button>
                 <button type="button" class="allow-audio-replay-confirm-no">{{ _("Cancel") }}</button>

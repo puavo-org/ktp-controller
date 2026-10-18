@@ -1,6 +1,7 @@
 (function () {
+  const prefix = window.KTP_WUI_PREFIX || "";
   const scheme = location.protocol === "https:" ? "wss" : "ws";
-  const wsUrl = `${scheme}://${location.host}/invigilator/ws`;
+  const wsUrl = `${scheme}://${location.host}${prefix}/invigilator/ws`;
   let reconnectDelay = 1000;
   const maxReconnectDelay = 8000;
   // Set once the socket has disconnected at least once. Distinguishes
@@ -81,7 +82,7 @@
     }
     try {
       const res = await fetch(location.pathname);
-      if (res.redirected && new URL(res.url).pathname === "/login") {
+      if (res.redirected && new URL(res.url).pathname === `${prefix}/login`) {
         location.href = res.url;
         return;
       }

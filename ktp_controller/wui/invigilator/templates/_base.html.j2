@@ -6,13 +6,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="/static/pico.min.css">
-    <link rel="stylesheet" href="/static/app.css">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="stylesheet" href="{{ prefix }}/static/pico.min.css">
+    <link rel="stylesheet" href="{{ prefix }}/static/app.css">
+    <link rel="icon" type="image/x-icon" href="{{ prefix }}/static/favicon.ico">
     <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
-    <script src="/static/htmx.min.js"></script>
-    <script src="/static/status_updates.js"></script>
-    <script src="/static/locale_switcher.js"></script>
+    <script src="{{ prefix }}/static/htmx.min.js"></script>
+    <script>window.KTP_WUI_PREFIX = "{{ prefix | e }}";</script>
+    <script src="{{ prefix }}/static/status_updates.js"></script>
+    <script src="{{ prefix }}/static/locale_switcher.js"></script>
     {% block extra_scripts %}{% endblock %}
 </head>
 <body>
@@ -29,9 +30,9 @@
     <header class="container">
         <nav>
             <ul>
-                <li>{{ logo.img() }}</li>
-                <li><a href="/invigilator/" {% if request.url.path == "/invigilator/" %}aria-current="page"{% endif %}>{{ _("Exams") }}</a></li>
-                <li><a href="/invigilator/student_access_code" {% if request.url.path == "/invigilator/student_access_code" %}aria-current="page"{% endif %}>{{ _("Student access code") }}</a></li>
+                <li>{{ logo.img(prefix) }}</li>
+                <li><a href="{{ prefix }}/invigilator/" {% if request.url.path == "/invigilator/" %}aria-current="page"{% endif %}>{{ _("Exams") }}</a></li>
+                <li><a href="{{ prefix }}/invigilator/student_access_code" {% if request.url.path == "/invigilator/student_access_code" %}aria-current="page"{% endif %}>{{ _("Student access code") }}</a></li>
             </ul>
             {% include "partials/student_state_counts.html.j2" %}
             <ul>
@@ -40,10 +41,10 @@
                         <summary>{{ locale_menu.flag(locale) }} {{ user }}</summary>
                         <ul>
                             <li>
-                                {{ locale_menu.form("post", "/locale", "locale", request.url.path, locale, _('Language')) }}
+                                {{ locale_menu.form("post", prefix ~ "/locale", "locale", prefix ~ request.url.path, locale, _('Language')) }}
                             </li>
                             <li>
-                                <form method="post" action="/logout">
+                                <form method="post" action="{{ prefix }}/logout">
                                     <button type="submit" class="secondary">{{ _("Log out") }}</button>
                                 </form>
                             </li>

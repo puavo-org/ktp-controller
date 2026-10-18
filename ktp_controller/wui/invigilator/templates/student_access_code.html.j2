@@ -3,7 +3,7 @@
 {% block title %}{{ _("Student access code") }}{% endblock %}
 
 {% block extra_scripts %}
-    <script src="/static/change_access_code_confirm.js"></script>
+    <script src="{{ prefix }}/static/change_access_code_confirm.js"></script>
 {% endblock %}
 
 {% block modals %}
@@ -13,7 +13,7 @@
             <p>{{ _("Really change the student access code? The current code will stop working for every student using it.") }}</p>
             <div class="modal-overlay-actions">
                 <button class="change-access-code-confirm-yes"
-                        hx-post="/actions/change-student-access-code"
+                        hx-post="{{ prefix }}/actions/change-student-access-code"
                         hx-swap="none">{{ _("Yes") }}</button>
                 <button type="button" class="change-access-code-confirm-no">{{ _("No") }}</button>
             </div>
