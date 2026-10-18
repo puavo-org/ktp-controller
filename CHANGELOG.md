@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- The WUI can now be exposed through a volatile `/remote/<id>` URL
+  prefix in addition to its normal root URL, so that a front door
+  which routes a browser to a specific KTP Controller instance by id
+  can proxy to it directly.
+
+- When running in Puavo OS, the WUI HTTPS reverse proxy now also
+  serves the Puavo host's own fully qualified domain name (using the
+  host's own certificate from `/etc/puavo/certs`), in addition to the
+  Abitti2 domain.
+
+### Fixed
+
+- Fixed the WUI's live status updates (and its automatic
+  reconnection) breaking when the WUI was reached through the
+  `/remote/<id>` prefix.
+
+- Fixed static assets (stylesheets etc.) and some links failing to
+  load when the WUI was reached through the `/remote/<id>` prefix.
+
+- The WUI HTTPS reverse proxy's TLS private key file is now written
+  with stricter file permissions (readable only by its owner).
+
+- The `~/ktp-jako` user-friendly data directory links are now
+  recreated on every fresh start and use relative symlinks, fixing
+  links that could go stale or point outside the data directory.
+
+- An empty `logs/` directory under `~/.puavo/puavo-ers/ktp-controller`
+  is cleaned up, and is not created anymore in production, now that
+  all logs are sent to syslog there.
+
+### Changed
+
+- Updated all dependencies.
+
+
 ## [0.8.0rc7] - 2026-10-13
 
 ### Added
