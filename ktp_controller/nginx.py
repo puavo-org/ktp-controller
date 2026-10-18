@@ -111,6 +111,16 @@ def enable_nginx_wui_tls_reverse_proxy(
     ktp_controller.utils.copy_atomic(crt_filepath, _PATHS.wui_crt_filepath)
     ktp_controller.utils.copy_atomic(key_filepath, _PATHS.wui_key_filepath)
 
+    proxy_headers = """\
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+"""
+
     config = f"""\
 server {{
     listen {port} ssl;
@@ -119,15 +129,27 @@ server {{
     ssl_certificate {_PATHS.wui_crt_filepath};
     ssl_certificate_key {_PATHS.wui_key_filepath};
 
+    # Some front doors (e.g. Exam-O-Matic) route a browser in through a
+    # volatile "/remote/<id>" prefix that selects this particular
+    # KTP Controller instance, without rewriting the path themselves.
+    # Strip it here and tell WUI what was stripped via
+    # X-Forwarded-Prefix, so it can render prefix-correct links back to
+    # the browser (see ktp_controller.wui.middleware.
+    # RootPathFromHeaderMiddleware). WUI itself is reachable this way
+    # as well as via the unprefixed "/" location below.
+    location ~ ^/remote/([0-9]+)$ {{
+        return 308 /remote/$1/;
+    }}
+
+    location ~ ^/remote/([0-9]+)(/.*)$ {{
+        proxy_pass {WUI_UPSTREAM_URL}$2$is_args$args;
+{proxy_headers}\
+        proxy_set_header X-Forwarded-Prefix /remote/$1;
+    }}
+
     location / {{
         proxy_pass {WUI_UPSTREAM_URL};
-        proxy_http_version 1.1;
-        proxy_set_header Host $http_host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
+{proxy_headers}\
     }}
 }}
 """
