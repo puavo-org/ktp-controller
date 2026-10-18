@@ -1,7 +1,7 @@
 {% import "partials/_locale_menu.html.j2" as locale_menu %}
 {% import "partials/_logo.html.j2" as logo %}
 <!DOCTYPE html>
-<html lang="{{ locale }}">
+<html lang="{{ locale }}" data-prefix="{{ prefix }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,7 +11,6 @@
     <link rel="icon" type="image/x-icon" href="{{ prefix }}/static/favicon.ico">
     <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
     <script src="{{ prefix }}/static/htmx.min.js"></script>
-    <script>window.KTP_WUI_PREFIX = "{{ prefix | e }}";</script>
     <script src="{{ prefix }}/static/status_updates.js"></script>
     <script src="{{ prefix }}/static/locale_switcher.js"></script>
     {% block extra_scripts %}{% endblock %}

@@ -93,7 +93,7 @@ def test_invigilator_view_honors_forwarded_prefix(wui_client, override_session, 
     assert response.status_code == 200
     assert b'href="/remote/12345/static/app.css"' in response.content
     assert b'action="/remote/12345/logout"' in response.content
-    assert b'window.KTP_WUI_PREFIX = "/remote/12345";' in response.content
+    assert b'data-prefix="/remote/12345"' in response.content
     assert b'aria-current="page"' in response.content
 
 
@@ -312,7 +312,7 @@ def test_invigilator_view_uses_session_locale(wui_client, override_session, mock
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert '<html lang="en">' in response.text
+    assert '<html lang="en" data-prefix="">' in response.text
     assert ">No exams</p>" in response.text
 
 

@@ -1,5 +1,5 @@
 (function () {
-  const prefix = window.KTP_WUI_PREFIX || "";
+  const prefix = document.documentElement.dataset.prefix || "";
   const scheme = location.protocol === "https:" ? "wss" : "ws";
   const wsUrl = `${scheme}://${location.host}${prefix}/invigilator/ws`;
   let reconnectDelay = 1000;
