@@ -9,6 +9,7 @@ import os.path
 import subprocess
 
 # Internal imports
+import ktp_controller.os
 import ktp_controller.utils
 from ktp_controller import SETTINGS
 
@@ -21,6 +22,9 @@ __all__ = [
 _LOGGER = logging.getLogger(__name__)
 
 WUI_UPSTREAM_URL = f"http://{SETTINGS.wui_host}:{SETTINGS.wui_port}"
+
+PUAVO_HOST_CRT_FILEPATH = "/etc/puavo/certs/host.crt"
+PUAVO_HOST_KEY_FILEPATH = "/etc/puavo/certs/host.key"
 
 
 class _Paths:
@@ -36,6 +40,12 @@ class _Paths:
         )
         self.wui_key_filepath = os.path.join(
             root_conf_dirpath, "ktp-controller-wui.key"
+        )
+        self.wui_puavo_crt_filepath = os.path.join(
+            root_conf_dirpath, "ktp-controller-wui-puavo.crt"
+        )
+        self.wui_puavo_key_filepath = os.path.join(
+            root_conf_dirpath, "ktp-controller-wui-puavo.key"
         )
         self.wui_site_filepath = os.path.join(
             self.sites_available_dirpath, self.wui_site_name
@@ -80,6 +90,15 @@ def disable_nginx_wui_tls_reverse_proxy() -> None:
                 os.remove(fp)
             except Exception as e:
                 exceptions.append(e)
+                continue
+            _LOGGER.info("Deleted %r", fp)
+
+        # Only present when the site was enabled with a Puavo fqdn;
+        # absence here is normal, not a partial-failure condition.
+        for fp in [_PATHS.wui_puavo_key_filepath, _PATHS.wui_puavo_crt_filepath]:
+            try:
+                os.remove(fp)
+            except FileNotFoundError:
                 continue
             _LOGGER.info("Deleted %r", fp)
     finally:
