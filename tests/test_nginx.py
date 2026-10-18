@@ -42,6 +42,7 @@ def test_enable_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
     _write(crt_filepath, "dummy-cert")
     _write(key_filepath, "dummy-key")
 
+    mocker.patch("ktp_controller.os.get_puavo_fqdn", return_value=None)
     run_mock = mocker.patch(
         "ktp_controller.nginx.subprocess.check_call", return_value=None
     )
@@ -80,6 +81,7 @@ def test_enable_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
     assert "location ~ ^/remote/([0-9]+)/ {" in config
     assert "proxy_set_header X-Forwarded-Prefix /remote/$1;" in config
     assert "location / {" in config
+    assert config.count("server {") == 1
 
     enabled_symlink_filepath = os.path.join(
         paths.sites_enabled_dirpath, "ktp-controller-wui"
@@ -107,6 +109,7 @@ def test_enable_nginx_wui_tls_reverse_proxy_replaces_existing_symlink(
     )
     os.symlink(stale_target_filepath, enabled_symlink_filepath)
 
+    mocker.patch("ktp_controller.os.get_puavo_fqdn", return_value=None)
     mocker.patch("ktp_controller.nginx.subprocess.check_call", return_value=None)
 
     ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy(
@@ -127,6 +130,7 @@ def test_enable_nginx_wui_tls_reverse_proxy_raises_exception_on_reload_failure(
     _write(crt_filepath, "dummy-cert")
     _write(key_filepath, "dummy-key")
 
+    mocker.patch("ktp_controller.os.get_puavo_fqdn", return_value=None)
     mocker.patch(
         "ktp_controller.nginx.subprocess.check_call",
         side_effect=subprocess.CalledProcessError(1, ["systemctl", "reload", "nginx"]),
@@ -138,9 +142,90 @@ def test_enable_nginx_wui_tls_reverse_proxy_raises_exception_on_reload_failure(
         )
 
 
+def test_enable_nginx_wui_tls_reverse_proxy_with_puavo_fqdn(
+    monkeypatch, mocker, testdir
+):
+    paths = _patch_nginx_paths(monkeypatch, testdir)
+
+    crt_filepath = os.path.join(testdir, "exam.crt")
+    key_filepath = os.path.join(testdir, "exam.key")
+    _write(crt_filepath, "dummy-cert")
+    _write(key_filepath, "dummy-key")
+
+    puavo_crt_filepath = os.path.join(testdir, "host.crt")
+    puavo_key_filepath = os.path.join(testdir, "host.key")
+    _write(puavo_crt_filepath, "dummy-puavo-cert")
+    _write(puavo_key_filepath, "dummy-puavo-key")
+    monkeypatch.setattr(
+        ktp_controller.nginx, "PUAVO_HOST_CRT_FILEPATH", puavo_crt_filepath
+    )
+    monkeypatch.setattr(
+        ktp_controller.nginx, "PUAVO_HOST_KEY_FILEPATH", puavo_key_filepath
+    )
+
+    mocker.patch(
+        "ktp_controller.os.get_puavo_fqdn",
+        return_value="host123.example.invalid",
+    )
+    run_mock = mocker.patch(
+        "ktp_controller.nginx.subprocess.check_call", return_value=None
+    )
+
+    ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy(
+        "exam.example.invalid", 8443, crt_filepath, key_filepath
+    )
+
+    with open(paths.wui_puavo_crt_filepath, encoding="utf-8") as f:
+        assert f.read() == "dummy-puavo-cert"
+    with open(paths.wui_puavo_key_filepath, encoding="utf-8") as f:
+        assert f.read() == "dummy-puavo-key"
+
+    site_filepath = os.path.join(paths.sites_available_dirpath, "ktp-controller-wui")
+    with open(site_filepath, encoding="utf-8") as f:
+        config = f.read()
+
+    assert config.count("server {") == 2
+    assert "server_name exam.example.invalid;" in config
+    assert "server_name host123.example.invalid;" in config
+    assert f"ssl_certificate {paths.wui_crt_filepath};" in config
+    assert f"ssl_certificate_key {paths.wui_key_filepath};" in config
+    assert f"ssl_certificate {paths.wui_puavo_crt_filepath};" in config
+    assert f"ssl_certificate_key {paths.wui_puavo_key_filepath};" in config
+    # Both server blocks proxy to the same WUI upstream.
+    assert (
+        config.count(f"proxy_pass http://{SETTINGS.wui_host}:{SETTINGS.wui_port};") == 4
+    )
+
+    run_mock.assert_called_once_with(["systemctl", "reload", "nginx"])
+
+
+def test_enable_nginx_wui_tls_reverse_proxy_propagates_get_puavo_fqdn_error(
+    monkeypatch, mocker, testdir
+):
+    _patch_nginx_paths(monkeypatch, testdir)
+
+    crt_filepath = os.path.join(testdir, "exam.crt")
+    key_filepath = os.path.join(testdir, "exam.key")
+    _write(crt_filepath, "dummy-cert")
+    _write(key_filepath, "dummy-key")
+
+    mocker.patch(
+        "ktp_controller.os.get_puavo_fqdn",
+        side_effect=FileNotFoundError("/etc/puavo/hostname"),
+    )
+    mocker.patch("ktp_controller.nginx.subprocess.check_call", return_value=None)
+
+    with pytest.raises(FileNotFoundError):
+        ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy(
+            "exam.example.invalid", 8443, crt_filepath, key_filepath
+        )
+
+
 def test_disable_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
     paths = _patch_nginx_paths(monkeypatch, testdir)
     _enable_site(paths)
+    _write(paths.wui_puavo_crt_filepath, "dummy-puavo-cert")
+    _write(paths.wui_puavo_key_filepath, "dummy-puavo-key")
 
     run_mock = mocker.patch(
         "ktp_controller.nginx.subprocess.check_call", return_value=None
@@ -152,6 +237,28 @@ def test_disable_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
     assert not os.path.exists(paths.wui_site_filepath)
     assert not os.path.exists(paths.wui_crt_filepath)
     assert not os.path.exists(paths.wui_key_filepath)
+    assert not os.path.exists(paths.wui_puavo_crt_filepath)
+    assert not os.path.exists(paths.wui_puavo_key_filepath)
+
+    run_mock.assert_called_once_with(["systemctl", "reload", "nginx"])
+
+
+def test_disable_nginx_wui_tls_reverse_proxy_puavo_files_absent_is_not_an_error(
+    monkeypatch, mocker, testdir
+):
+    # Simulates a single-domain deployment, where
+    # enable_nginx_wui_tls_reverse_proxy() never created the Puavo-fqdn
+    # crt/key because get_puavo_fqdn() returned None.
+    paths = _patch_nginx_paths(monkeypatch, testdir)
+    _enable_site(paths)
+    assert not os.path.exists(paths.wui_puavo_crt_filepath)
+    assert not os.path.exists(paths.wui_puavo_key_filepath)
+
+    run_mock = mocker.patch(
+        "ktp_controller.nginx.subprocess.check_call", return_value=None
+    )
+
+    ktp_controller.nginx.disable_nginx_wui_tls_reverse_proxy()
 
     run_mock.assert_called_once_with(["systemctl", "reload", "nginx"])
 
