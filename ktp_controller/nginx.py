@@ -119,20 +119,42 @@ def enable_nginx_wui_tls_reverse_proxy(
 ) -> None:
     """Configure nginx as a TLS terminating reverse proxy in front of
     WUI (listening at WUI_UPSTREAM_URL), making WUI reachable at
-    https://<domain_name>:<port>/.
+    https://<domain_name>:<port>/ and, when this host has a Puavo fqdn
+    (ktp_controller.os.get_puavo_fqdn()), also at
+    https://<puavo_fqdn>:<port>/.
 
-    crt_filepath and key_filepath are copied into _PATHS.ROOT_CONF_DIRPATH so the
-    TLS certificate and key remain available even if the original
+    crt_filepath and key_filepath (and the Puavo host cert/key, when
+    applicable) are copied into _PATHS.ROOT_CONF_DIRPATH so the TLS
+    certificates and keys remain available even if the original
     files are deleted afterwards.
 
     """
 
-    ktp_controller.utils.copy_atomic(
-        crt_filepath, _PATHS.wui_crt_filepath, modebits=0o0444
-    )
-    ktp_controller.utils.copy_atomic(
-        key_filepath, _PATHS.wui_key_filepath, modebits=0o0400
-    )
+    server_domains = [
+        (
+            domain_name,
+            crt_filepath,
+            key_filepath,
+            _PATHS.wui_crt_filepath,
+            _PATHS.wui_key_filepath,
+        ),
+    ]
+
+    puavo_fqdn = ktp_controller.os.get_puavo_fqdn()
+    if puavo_fqdn is not None:
+        server_domains.append(
+            (
+                puavo_fqdn,
+                PUAVO_HOST_CRT_FILEPATH,
+                PUAVO_HOST_KEY_FILEPATH,
+                _PATHS.wui_puavo_crt_filepath,
+                _PATHS.wui_puavo_key_filepath,
+            )
+        )
+
+    for _, crt_src, key_src, crt_dest, key_dest in server_domains:
+        ktp_controller.utils.copy_atomic(crt_src, crt_dest, modebits=0o0444)
+        ktp_controller.utils.copy_atomic(key_src, key_dest, modebits=0o0400)
 
     proxy_headers = """\
         proxy_http_version 1.1;
@@ -144,13 +166,16 @@ def enable_nginx_wui_tls_reverse_proxy(
         proxy_set_header Connection "upgrade";
 """
 
-    config = f"""\
+    def _render_server_block(
+        server_domain_name: str, crt_dest: str, key_dest: str
+    ) -> str:
+        return f"""\
 server {{
     listen {port} ssl;
-    server_name {domain_name};
+    server_name {server_domain_name};
 
-    ssl_certificate {_PATHS.wui_crt_filepath};
-    ssl_certificate_key {_PATHS.wui_key_filepath};
+    ssl_certificate {crt_dest};
+    ssl_certificate_key {key_dest};
 
     # Some front doors (e.g. Exam-O-Matic) route a browser in through a
     # volatile "/remote/<id>" prefix that selects this particular
@@ -180,6 +205,11 @@ server {{
     }}
 }}
 """
+
+    config = "\n".join(
+        _render_server_block(server_domain_name, crt_dest, key_dest)
+        for server_domain_name, _, _, crt_dest, key_dest in server_domains
+    )
 
     with ktp_controller.utils.open_atomic_write(
         _PATHS.wui_site_filepath, encoding="utf-8"
