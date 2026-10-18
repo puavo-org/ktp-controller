@@ -5,6 +5,7 @@ import typing
 
 # Third-party imports
 import psutil
+import validators
 
 # Internal imports
 import ktp_controller.utils
@@ -111,3 +112,22 @@ def get_release() -> str:
         return "unknown"
 
     return f"{puavo_os_image_release} ({puavo_os_image_name})"
+
+
+def get_puavo_fqdn() -> str | None:
+    if not ktp_controller.utils.is_puavo_os():
+        return None
+
+    with open("/etc/puavo/hostname") as puavo_hostname_file:
+        puavo_hostname = puavo_hostname_file.readline().strip()
+
+    with open("/etc/puavo/domain") as puavo_domain_file:
+        puavo_domain = puavo_domain_file.readline().strip()
+
+    fqdn = f"{puavo_hostname}.{puavo_domain}"
+
+    domain_validation_result = validators.domain(fqdn)
+    if domain_validation_result:
+        return fqdn
+
+    raise domain_validation_result
