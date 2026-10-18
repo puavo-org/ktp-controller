@@ -73,7 +73,11 @@ def open_atomic_write(
     exclusive: bool = False,
     encoding: str | None = None,
     do_makedirs: bool = False,
+    modebits: int = 0o0644,
 ) -> typing.Iterator[typing.IO[typing.Any]]:
+    def _opener(path: str, flags: int) -> int:
+        return os.open(path, flags, mode=modebits)
+
     if exclusive and os.path.exists(dest_filepath):
         raise FileExistsError(dest_filepath)
 
@@ -97,7 +101,9 @@ def open_atomic_write(
         f"{dest_filepath}.{uuid.uuid4().hex}.ktp_controller_open_atomic_write_tmp"
     )
     try:
-        with open(tmp_dest_filepath, tmpfilemode, encoding=encoding) as tmp_dest_file:
+        with open(
+            tmp_dest_filepath, tmpfilemode, encoding=encoding, opener=_opener
+        ) as tmp_dest_file:
             yield tmp_dest_file
             # Force the written bytes to disk before the rename/link
             # below makes them visible under dest_filepath, so a crash
@@ -133,11 +139,16 @@ def open_atomic_write(
             pass
 
 
-def copy_atomic(src_filepath: str, dest_filepath: str, exclusive: bool = False) -> None:
+def copy_atomic(
+    src_filepath: str,
+    dest_filepath: str,
+    exclusive: bool = False,
+    modebits: int = 0o0644,
+) -> None:
     with (
         open(src_filepath, "rb") as src_file,
         open_atomic_write(
-            dest_filepath, exclusive=exclusive, encoding=None
+            dest_filepath, exclusive=exclusive, encoding=None, modebits=modebits
         ) as dest_file,
     ):
         # Advisory shared lock: blocks until a writer holding a

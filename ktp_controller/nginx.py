@@ -108,8 +108,12 @@ def enable_nginx_wui_tls_reverse_proxy(
 
     """
 
-    ktp_controller.utils.copy_atomic(crt_filepath, _PATHS.wui_crt_filepath)
-    ktp_controller.utils.copy_atomic(key_filepath, _PATHS.wui_key_filepath)
+    ktp_controller.utils.copy_atomic(
+        crt_filepath, _PATHS.wui_crt_filepath, modebits=0o0444
+    )
+    ktp_controller.utils.copy_atomic(
+        key_filepath, _PATHS.wui_key_filepath, modebits=0o0400
+    )
 
     proxy_headers = """\
         proxy_http_version 1.1;
