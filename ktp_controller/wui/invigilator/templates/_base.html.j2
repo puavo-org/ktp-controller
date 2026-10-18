@@ -31,8 +31,8 @@
         <nav>
             <ul>
                 <li>{{ logo.img(prefix) }}</li>
-                <li><a href="{{ prefix }}/invigilator/" {% if request.url.path == "/invigilator/" %}aria-current="page"{% endif %}>{{ _("Exams") }}</a></li>
-                <li><a href="{{ prefix }}/invigilator/student_access_code" {% if request.url.path == "/invigilator/student_access_code" %}aria-current="page"{% endif %}>{{ _("Student access code") }}</a></li>
+                <li><a href="{{ prefix }}/invigilator/" {% if request.url.path == prefix + "/invigilator/" %}aria-current="page"{% endif %}>{{ _("Exams") }}</a></li>
+                <li><a href="{{ prefix }}/invigilator/student_access_code" {% if request.url.path == prefix + "/invigilator/student_access_code" %}aria-current="page"{% endif %}>{{ _("Student access code") }}</a></li>
             </ul>
             {% include "partials/student_state_counts.html.j2" %}
             <ul>
@@ -41,7 +41,7 @@
                         <summary>{{ locale_menu.flag(locale) }} {{ user }}</summary>
                         <ul>
                             <li>
-                                {{ locale_menu.form("post", prefix ~ "/locale", "locale", prefix ~ request.url.path, locale, _('Language')) }}
+                                {{ locale_menu.form("post", prefix ~ "/locale", "locale", request.url.path, locale, _('Language')) }}
                             </li>
                             <li>
                                 <form method="post" action="{{ prefix }}/logout">

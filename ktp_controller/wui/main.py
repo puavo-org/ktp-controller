@@ -75,7 +75,11 @@ async def _handle_not_authenticated(
     exc: ktp_controller.wui.auth.NotAuthenticatedError,
 ) -> fastapi.Response:
     prefix = request.scope.get("root_path", "")
-    next_qs = urllib.parse.urlencode({"next": prefix + request.url.path})
+    # request.url.path is already prefix-correct (nginx forwards the
+    # full, un-stripped path - see
+    # ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy), so only
+    # the newly-built /login target needs the prefix prepended.
+    next_qs = urllib.parse.urlencode({"next": request.url.path})
     login_url = f"{prefix}/login?{next_qs}"
 
     if request.headers.get("HX-Request") == "true":

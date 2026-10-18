@@ -43,7 +43,11 @@ def test_get_login_renders_form(wui_client):
 
 
 def test_get_login_renders_form_with_forwarded_prefix(wui_client):
-    response = wui_client.get("/login", headers={"X-Forwarded-Prefix": "/remote/12345"})
+    # nginx forwards the full, un-stripped path alongside the header (see
+    # ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy).
+    response = wui_client.get(
+        "/remote/12345/login", headers={"X-Forwarded-Prefix": "/remote/12345"}
+    )
 
     assert response.status_code == 200
     assert b'action="/remote/12345/login"' in response.content
@@ -129,7 +133,7 @@ def test_post_login_correct_credentials_honors_forwarded_prefix(wui_client, mock
     )
 
     response = wui_client.post(
-        "/login",
+        "/remote/12345/login",
         data={"username": "invigilator1", "password": "s3cret"},
         headers={**_SAME_ORIGIN_HEADERS, "X-Forwarded-Prefix": "/remote/12345"},
     )
@@ -271,7 +275,7 @@ def test_logout_honors_forwarded_prefix(wui_client, mocker):
     session_cookie = login_response.cookies[ktp_controller.wui.auth.SESSION_COOKIE_NAME]
 
     logout_response = wui_client.post(
-        "/logout",
+        "/remote/12345/logout",
         cookies={ktp_controller.wui.auth.SESSION_COOKIE_NAME: session_cookie},
         headers={**_SAME_ORIGIN_HEADERS, "X-Forwarded-Prefix": "/remote/12345"},
     )

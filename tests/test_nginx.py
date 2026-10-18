@@ -72,15 +72,12 @@ def test_enable_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
 
     # A volatile "/remote/<id>" prefix (added by a front door that
     # routes browsers to a specific KTP Controller instance) is
-    # stripped here and reported to WUI via X-Forwarded-Prefix, while
-    # the unprefixed "/" location keeps working unchanged.
+    # forwarded to WUI UNCHANGED (ASGI root_path semantics expect the
+    # full, un-stripped path) and reported via X-Forwarded-Prefix,
+    # while the unprefixed "/" location keeps working unchanged.
     assert "location ~ ^/remote/([0-9]+)$ {" in config
     assert "return 308 /remote/$1/;" in config
-    assert "location ~ ^/remote/([0-9]+)(/.*)$ {" in config
-    assert (
-        f"proxy_pass http://{SETTINGS.wui_host}:{SETTINGS.wui_port}$2$is_args$args;"
-        in config
-    )
+    assert "location ~ ^/remote/([0-9]+)/ {" in config
     assert "proxy_set_header X-Forwarded-Prefix /remote/$1;" in config
     assert "location / {" in config
 

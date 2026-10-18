@@ -87,13 +87,14 @@ def test_invigilator_view_honors_forwarded_prefix(wui_client, override_session, 
     )
 
     response = wui_client.get(
-        "/invigilator/", headers={"X-Forwarded-Prefix": "/remote/12345"}
+        "/remote/12345/invigilator/", headers={"X-Forwarded-Prefix": "/remote/12345"}
     )
 
     assert response.status_code == 200
     assert b'href="/remote/12345/static/app.css"' in response.content
     assert b'action="/remote/12345/logout"' in response.content
     assert b'window.KTP_WUI_PREFIX = "/remote/12345";' in response.content
+    assert b'aria-current="page"' in response.content
 
 
 def test_invigilator_view_shows_user_menu_dropdown(

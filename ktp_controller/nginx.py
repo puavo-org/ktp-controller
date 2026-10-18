@@ -136,7 +136,11 @@ server {{
     # Some front doors (e.g. Exam-O-Matic) route a browser in through a
     # volatile "/remote/<id>" prefix that selects this particular
     # KTP Controller instance, without rewriting the path themselves.
-    # Strip it here and tell WUI what was stripped via
+    # Forward the request to WUI with its path UNCHANGED (ASGI's
+    # root_path mechanism expects the full, un-stripped path - Starlette
+    # recomputes each route's/mount's relative path on the fly by
+    # subtracting root_path, rather than relying on it having already
+    # been stripped) and tell WUI what the prefix is via
     # X-Forwarded-Prefix, so it can render prefix-correct links back to
     # the browser (see ktp_controller.wui.middleware.
     # RootPathFromHeaderMiddleware). WUI itself is reachable this way
@@ -145,8 +149,8 @@ server {{
         return 308 /remote/$1/;
     }}
 
-    location ~ ^/remote/([0-9]+)(/.*)$ {{
-        proxy_pass {WUI_UPSTREAM_URL}$2$is_args$args;
+    location ~ ^/remote/([0-9]+)/ {{
+        proxy_pass {WUI_UPSTREAM_URL};
 {proxy_headers}\
         proxy_set_header X-Forwarded-Prefix /remote/$1;
     }}
