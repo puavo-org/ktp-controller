@@ -143,6 +143,7 @@ def template_context_processor(request: fastapi.Request) -> dict[str, typing.Any
         "locale": locale,
         "gettext": _newstyle_gettext(translations.gettext),
         "ngettext": _newstyle_ngettext(translations.ngettext),
+        "prefix": request.scope.get("root_path", ""),
     }
 
 

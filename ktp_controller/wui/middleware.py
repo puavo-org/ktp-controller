@@ -1,11 +1,14 @@
 # Standard library imports
 import collections.abc
+import re
 import urllib.parse
 
 # Third-party imports
+import starlette.datastructures
 import starlette.middleware.base
 import starlette.requests
 import starlette.responses
+import starlette.types
 
 # Internal imports
 from ktp_controller import SETTINGS
@@ -15,6 +18,7 @@ from ktp_controller import SETTINGS
 
 __all__ = [
     "OriginCheckMiddleware",
+    "RootPathFromHeaderMiddleware",
     "SecurityHeadersMiddleware",
 ]
 
@@ -25,6 +29,40 @@ _CallNext = collections.abc.Callable[
 ]
 
 _UNSAFE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+
+_FORWARDED_PREFIX_RE = re.compile(r"\A/remote/[0-9]+\Z")
+
+
+class RootPathFromHeaderMiddleware:
+    """Sets ASGI `root_path` from a nginx-supplied `X-Forwarded-Prefix`.
+
+    WUI may be reached through a reverse proxy that strips a volatile
+    `/remote/<id>` prefix before forwarding the request (see
+    ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy). The id isn't
+    known at process start, so it can't be a static uvicorn --root-path;
+    it must be read per-request instead. This is a plain ASGI middleware
+    (not BaseHTTPMiddleware) because BaseHTTPMiddleware passes non-"http"
+    scopes through untouched, which would silently skip the "websocket"
+    scope used by the live-status socket.
+    """
+
+    def __init__(self, app: starlette.types.ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(
+        self,
+        scope: starlette.types.Scope,
+        receive: starlette.types.Receive,
+        send: starlette.types.Send,
+    ) -> None:
+        if scope["type"] in ("http", "websocket"):
+            headers = starlette.datastructures.Headers(scope=scope)
+            prefix = headers.get("x-forwarded-prefix")
+            if prefix is not None and _FORWARDED_PREFIX_RE.match(prefix):
+                scope = dict(scope)
+                scope["root_path"] = prefix
+
+        await self.app(scope, receive, send)
 
 
 class SecurityHeadersMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
