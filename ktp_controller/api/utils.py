@@ -7,6 +7,8 @@ import typing
 # Third-party imports
 import fastapi
 import redis.asyncio as redis
+import sqlalchemy.orm
+import sqlalchemy.sql
 
 __all__ = [
     "PubSubBroadcaster",
@@ -273,3 +275,21 @@ class PubSubBroadcaster:
             with contextlib.suppress(asyncio.CancelledError):
                 await self.__listener_task
         _LOGGER.info("Stopped PubSubBroadcaster.")
+
+
+def nofail_vacuum(db: sqlalchemy.orm.Session) -> None:
+    try:
+        # VACUUM cannot run inside a transaction, not even an implicit
+        # one, so it needs its own autocommitting connection, separate
+        # from the session's, which auto-begins a transaction as soon
+        # as it is used. ``.engine`` normalizes db.get_bind()'s
+        # Engine|Connection result to an Engine, so .connect() always
+        # opens a genuinely new connection.
+        with (
+            db.get_bind()
+            .engine.connect()
+            .execution_options(isolation_level="AUTOCOMMIT") as conn
+        ):
+            conn.execute(sqlalchemy.sql.text("VACUUM"))
+    except Exception:
+        _LOGGER.exception("Failed to vacuum")

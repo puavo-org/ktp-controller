@@ -10,6 +10,7 @@ import sqlalchemy.orm
 import sqlalchemy.sql
 
 # Internal imports
+import ktp_controller.api.utils
 import ktp_controller.utils
 from ktp_controller.api import models
 from ktp_controller.api.database import get_db
@@ -201,6 +202,8 @@ async def _delete_exam_info(
     ).delete(synchronize_session="fetch")
 
     db.commit()
+
+    ktp_controller.api.utils.nofail_vacuum(db)
 
 
 _VALID_TRANSITIONS = {

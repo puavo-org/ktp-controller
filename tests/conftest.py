@@ -14,6 +14,7 @@ import selenium.webdriver
 # Third-party imports
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 # Internal imports
 import ktp_controller.api.models
@@ -26,10 +27,18 @@ from ktp_controller.api.models import Base
 from .bot import Abitti2Student
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def db_engine():
+    # StaticPool keeps the single ":memory:" connection alive across
+    # checkouts, for the lifetime of this one test's engine. A fresh
+    # engine (and thus a fresh database) per test gives test isolation
+    # without wrapping it in one long-lived outer transaction, which
+    # would block any code under test (like VACUUM) that needs to run
+    # with no transaction open at all.
     engine = create_engine(
-        "sqlite:///:memory:", connect_args={"check_same_thread": False}
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
     )
     Base.metadata.create_all(bind=engine)
     # Mirrors the seed data inserted by
@@ -64,17 +73,14 @@ def db_engine():
         db.commit()
     yield engine
     Base.metadata.drop_all(bind=engine)
+    engine.dispose()
 
 
 @pytest.fixture
 def testdb(db_engine):
-    connection = db_engine.connect()
-    transaction = connection.begin()
-    db = sessionmaker(autocommit=False, autoflush=False, bind=connection)()
+    db = sessionmaker(autocommit=False, autoflush=False, bind=db_engine)()
     yield db
     db.close()
-    transaction.rollback()
-    connection.close()
 
 
 @pytest.fixture

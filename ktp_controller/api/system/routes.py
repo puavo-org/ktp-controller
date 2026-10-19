@@ -143,6 +143,7 @@ async def _save_status_report(
     db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
 ) -> None:
     status_report_count = db.query(models.StatusReport).count()
+    do_vacuum = False
     if status_report_count >= _get_status_report_max_count():
         delete_subquery = (
             db.query(models.StatusReport.dbid)
@@ -154,6 +155,8 @@ async def _save_status_report(
             models.StatusReport.dbid.in_(sqlalchemy.sql.select(delete_subquery))
         ).delete(synchronize_session="fetch")
 
+        do_vacuum = True
+
     internal_status_report_dict = json.loads(request.model_dump_json())
 
     db_status_report = models.StatusReport(
@@ -161,6 +164,9 @@ async def _save_status_report(
     )
     db.add(db_status_report)
     db.commit()
+
+    if do_vacuum:
+        ktp_controller.api.utils.nofail_vacuum(db)
 
     status_report_dict = internal_status_report_dict.copy()
     status_report_dict.pop("reported_at")
