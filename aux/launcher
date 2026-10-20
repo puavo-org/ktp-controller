@@ -54,8 +54,8 @@ case "$OS" in
         exit 1
         ;;
     'Puavo OS')
-        case "${THIS_CANONICAL_FILEPATH}" in
-            /opt/ktp-controller/ktp-controller)
+        case "${THIS_FILENAME}" in
+            ktp-controller)
                 RUN_MODE='prod'
                 ;;
             *)
