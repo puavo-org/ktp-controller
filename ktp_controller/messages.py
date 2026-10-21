@@ -57,6 +57,7 @@ class Command(enum.StrEnum):
     )
     ALLOW_AUDIO_REPLAY = "allow_audio_replay"
     END_STUDENT_EXAM = "end_student_exam"
+    REFRESH_EXAM_INFO = "refresh_exam_info"
 
     def __str__(self) -> str:
         return self.value
@@ -103,6 +104,7 @@ class SimpleCommandData(ktp_controller.pydantic.BaseModel):
         Command.CRASH_AGENT,
         Command.CREATE_STATUS_REPORT,
         Command.CHANGE_STUDENT_ACCESS_CODE,
+        Command.REFRESH_EXAM_INFO,
     ]
 
 

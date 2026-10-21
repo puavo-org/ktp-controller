@@ -211,6 +211,9 @@ class Agent:
             str(
                 ktp_controller.messages.Command.END_STUDENT_EXAM
             ): self.__command_end_student_exam,
+            str(
+                ktp_controller.messages.Command.REFRESH_EXAM_INFO
+            ): self.__command_refresh_exam_info,
         }
 
     @property
@@ -423,6 +426,26 @@ class Agent:
 
         return ktp_controller.messages.CommandResultData(
             command_uuid=command_uuid, command_status=command_status
+        )
+
+    async def __command_refresh_exam_info(
+        self,
+        command_uuid: pydantic.UUID4,
+        command_data: ktp_controller.messages.CommandData,
+    ) -> ktp_controller.messages.CommandResultData:
+        try:
+            async with self.__refresh_exams_lock:
+                return await self.__refresh_exams(is_spontaneous=False)
+        except Exception as exception:
+            return ktp_controller.messages.CommandResultData(
+                command_uuid=command_uuid,
+                command_status=ktp_controller.messages.CommandStatus.ERROR,
+                error_message=str(exception),
+            )
+
+        return ktp_controller.messages.CommandResultData(
+            command_uuid=command_uuid,
+            command_status=ktp_controller.messages.CommandStatus.OK,
         )
 
     async def __change_student_access_code(self) -> bool:
