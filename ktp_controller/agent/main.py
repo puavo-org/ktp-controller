@@ -1063,33 +1063,25 @@ class Agent:
                 )
                 examomatic_stats.last_message_received_at = received_at
 
+                _LOGGER.info("received %r message from Exam-O-Matic", message["type"])
+
                 if message["type"] == "pong":
-                    _LOGGER.info("received pong message from Exam-O-Matic")
                     examomatic_stats.ping_pong_count += 1
                     continue  # pongs are not acked
 
                 if message["type"] == "change_keycode":
-                    _LOGGER.info("received change_keycode message from Exam-O-Matic")
                     if not self.__is_auto_control_enabled:
                         _LOGGER.error(
                             "Keycode cannot be changed by Exam-O-Matic, because auto control is not enabled."
                         )
                         continue
-                    try:
-                        if not await self.__change_student_access_code():
-                            continue
-                    except Exception:
-                        _LOGGER.exception("Failed to changed student access code")
-                        continue  # Failed requests are not acked
-                    _LOGGER.info("Keycode changed.")
+                    ktp_controller.api.client.async_command(
+                        ktp_controller.messages.Command.CHANGE_STUDENT_ACCESS_CODE
+                    )
                 elif message["type"] == "refresh_exams":
-                    _LOGGER.info("received refresh_exams message from Exam-O-Matic")
-                    try:
-                        async with self.__refresh_exams_lock:
-                            await self.__refresh_exams(is_spontaneous=False)
-                    except Exception:
-                        _LOGGER.exception("Failed to refresh exams")
-                        continue  # Failed requests are not acked
+                    ktp_controller.api.client.async_command(
+                        ktp_controller.messages.Command.REFRESH_EXAM_INFO
+                    )
                 else:
                     _LOGGER.error(
                         "received message of unknown type %r from Exam-O-Matic",
