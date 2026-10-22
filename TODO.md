@@ -5,7 +5,7 @@ TODO2 and so on. When an item is done, remove it from this document.
 
 When adding new items, always update the following line to define the
 ID of the next TODO item.
-Next ID: TODO19
+Next ID: TODO20
 
 ## TODO1
 Examine and handle currently unhandled messages from Abitti2 1.37.1:
@@ -22,3 +22,41 @@ Sep 26 2026 17:03:29 testvirtkan1 supervisord: ktp-controller-agent WARNING:2026
 Unify/merge `ktp_controller.wui.utils.BrowserSocketRegistry` with
 `ktp_controller.api.utils.PubSubBroadcaster` and place it for example
 in `ktp_controller.redis`. Naturally, adapt all call sites.
+
+## TODO19
+
+### WUI: landing page
+
+Endpoint `GET /` must return a landing page, which displays general
+information about the system and the app.
+
+The landing page requires authentication; unauthenticated users must
+be redirected to `/login` just like all other existing pages already
+do. The landing page must require `wui.main.view` permission, and all
+the existing roles must grant it.
+
+The contents of the landing page depends on the roles of the current
+user. Currently there's only one role, `invigilator`, but in near
+future there will be others too. Implementation must be made so that
+the adaptation of the landing is easy when new roles are
+added. Perhaps the most flexible layout is a set of cards / a
+dashboard where the set of roles the user has defines the cards which
+will be visible. Other solution suggestions are welcome.
+
+The title of the landing is simply: Exam server (Koepalvelin in
+Finnish, Prov server in Swedish).
+
+The landing page must display the same kind of navbar as the
+Invigilator's view.
+
+Initially, there shall be two cards:
+
+1. Title: General information
+   Contents (see @ktp_controller/schemas.py, there class _KTPController):
+     - The version of the KTP Controller
+     - When KTP Controller is started
+     - Is auto control enabled or not
+
+2. Title: Abitti2
+   Contents:
+     - The current Abitti2 version
