@@ -3,7 +3,12 @@
 {% block title %}{{ _("Student access code") }}{% endblock %}
 
 {% block extra_scripts %}
+    <script src="{{ prefix }}/static/status_updates.js"></script>
     <script src="{{ prefix }}/static/change_access_code_confirm.js"></script>
+{% endblock %}
+
+{% block nav_live_status %}
+    {% include "partials/student_state_counts.html.j2" %}
 {% endblock %}
 
 {% block modals %}

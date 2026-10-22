@@ -11,7 +11,6 @@
     <link rel="icon" type="image/x-icon" href="{{ prefix }}/static/favicon.ico">
     <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
     <script src="{{ prefix }}/static/htmx.min.js"></script>
-    <script src="{{ prefix }}/static/status_updates.js"></script>
     <script src="{{ prefix }}/static/locale_switcher.js"></script>
     {% block extra_scripts %}{% endblock %}
 </head>
@@ -33,7 +32,7 @@
                 <li><a href="{{ prefix }}/invigilator/" {% if request.url.path == prefix + "/invigilator/" %}aria-current="page"{% endif %}>{{ _("Exams") }}</a></li>
                 <li><a href="{{ prefix }}/invigilator/student_access_code" {% if request.url.path == prefix + "/invigilator/student_access_code" %}aria-current="page"{% endif %}>{{ _("Student access code") }}</a></li>
             </ul>
-            {% include "partials/student_state_counts.html.j2" %}
+            {% block nav_live_status %}{% endblock %}
             <ul>
                 <li>
                     <details class="dropdown">

@@ -3,10 +3,15 @@
 {% block title %}{{ _("Invigilator's view") }}{% endblock %}
 
 {% block extra_scripts %}
+    <script src="{{ prefix }}/static/status_updates.js"></script>
     <script src="{{ prefix }}/static/end_exam_confirm.js"></script>
     <script src="{{ prefix }}/static/allow_audio_replay_confirm.js"></script>
     <script src="{{ prefix }}/static/toggle_exam_groups.js"></script>
     <script src="{{ prefix }}/static/preserve_exam_group_state.js"></script>
+{% endblock %}
+
+{% block nav_live_status %}
+    {% include "partials/student_state_counts.html.j2" %}
 {% endblock %}
 
 {% block modals %}
