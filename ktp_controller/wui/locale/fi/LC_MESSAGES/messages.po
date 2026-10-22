@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-13 22:58+0300\n"
+"POT-Creation-Date: 2026-10-22 22:53+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ktp_controller/wui/auth_routes.py:70
+#: ktp_controller/wui/auth_routes.py:81
 msgid "Too many login attempts, please try again later."
 msgstr "Liian monta kirjautumisyritystä, yritä myöhemmin uudelleen."
 
-#: ktp_controller/wui/auth_routes.py:80
+#: ktp_controller/wui/auth_routes.py:91
 msgid "Incorrect username or password"
 msgstr "Väärä käyttäjätunnus tai salasana"
 
@@ -90,56 +90,27 @@ msgstr "Tuntematon koe"
 msgid "Unknown issue"
 msgstr "Tuntematon ongelma"
 
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:22
-msgid "Connection lost at"
-msgstr "Yhteys katkesi"
-
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:23
-msgid "The page will reload automatically once it's back."
-msgstr "Sivu latautuu automaattisesti uudelleen, kun yhteys palautuu."
-
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:33
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:48
-msgid "Exams"
-msgstr "Kokeet"
-
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:34
-#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
-#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:27
-msgid "Student access code"
-msgstr "Kokelaiden pääsykoodi"
-
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:43
-#: ktp_controller/wui/templates/login.html.j2:24
-msgid "Language"
-msgstr "Kieli"
-
-#: ktp_controller/wui/invigilator/templates/_base.html.j2:47
-#: ktp_controller/wui/templates/login.html.j2:39
-msgid "Log out"
-msgstr "Kirjaudu ulos"
-
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:3
 msgid "Invigilator's view"
 msgstr "Valvojan näkymä"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:16
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:21
 msgid "Really end exam for <strong id=\"end-exam-confirm-name\"></strong>?"
 msgstr ""
 "Päätetäänkö varmasti kokelaan <strong id=\"end-exam-confirm-"
 "name\"></strong> koe?"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:23
-#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:17
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:28
+#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:22
 msgid "Yes"
 msgstr "Kyllä"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:24
-#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:18
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:29
+#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:23
 msgid "No"
 msgstr "Ei"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:32
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:37
 msgid ""
 "Allow student <strong id=\"allow-audio-replay-confirm-name\"></strong> to"
 " replay audio <strong id=\"allow-audio-replay-confirm-last-"
@@ -151,28 +122,39 @@ msgstr ""
 "audio\"></strong> uudelleenkuuntelu kokeessa <strong id=\"allow-audio-"
 "replay-confirm-exam-title\"></strong>?"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:38
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:43
 msgid "Allow"
 msgstr "Salli"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:39
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:44
 msgid "Cancel"
 msgstr "Peruuta"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:55
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:53
+#: ktp_controller/wui/templates/_base.html.j2:32
+msgid "Exams"
+msgstr "Kokeet"
+
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:60
 msgid "Filter by student name or birthday..."
 msgstr "Suodata kokelaan nimen tai syntymäajan mukaan..."
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:63
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:68
 msgid "Expand all"
 msgstr "Laajenna kaikki"
 
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:64
-#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:65
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:69
+#: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:70
 msgid "Collapse all"
 msgstr "Pienennä kaikki"
 
-#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:13
+#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
+#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:32
+#: ktp_controller/wui/templates/_base.html.j2:33
+msgid "Student access code"
+msgstr "Kokelaiden pääsykoodi"
+
+#: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:18
 msgid ""
 "Really change the student access code? The current code will stop working"
 " for every student using it."
@@ -210,10 +192,62 @@ msgstr "Ei hakua '%(query)s' vastaavia kokelaita"
 msgid "No students"
 msgstr "Ei kokelaita"
 
+#: ktp_controller/wui/landing/templates/landing_index.html.j2:3
+#: ktp_controller/wui/landing/templates/landing_index.html.j2:7
 #: ktp_controller/wui/templates/login.html.j2:9
 #: ktp_controller/wui/templates/login.html.j2:32
 msgid "Exam server"
 msgstr "Koepalvelin"
+
+#: ktp_controller/wui/landing/templates/landing_index.html.j2:13
+msgid "General information"
+msgstr "Yleiset tiedot"
+
+#: ktp_controller/wui/landing/templates/landing_index.html.j2:15
+#: ktp_controller/wui/landing/templates/landing_index.html.j2:34
+#, python-format
+msgid "Version: %(version)s"
+msgstr "Versio: %(version)s"
+
+#: ktp_controller/wui/landing/templates/landing_index.html.j2:16
+#, python-format
+msgid "Started at: %(started_at)s"
+msgstr "Käynnistetty: %(started_at)s"
+
+#: ktp_controller/wui/landing/templates/landing_index.html.j2:19
+msgid "Auto control is enabled."
+msgstr "Automaattiohjaus on käytössä."
+
+#: ktp_controller/wui/landing/templates/landing_index.html.j2:21
+msgid "Auto control is disabled."
+msgstr "Automaattiohjaus ei ole käytössä."
+
+#: ktp_controller/wui/landing/templates/landing_index.html.j2:25
+#: ktp_controller/wui/landing/templates/landing_index.html.j2:36
+msgid "Not available yet."
+msgstr "Ei vielä saatavilla."
+
+#: ktp_controller/wui/landing/templates/landing_index.html.j2:32
+msgid "Abitti2"
+msgstr "Abitti2"
+
+#: ktp_controller/wui/templates/_base.html.j2:21
+msgid "Connection lost at"
+msgstr "Yhteys katkesi"
+
+#: ktp_controller/wui/templates/_base.html.j2:22
+msgid "The page will reload automatically once it's back."
+msgstr "Sivu latautuu automaattisesti uudelleen, kun yhteys palautuu."
+
+#: ktp_controller/wui/templates/_base.html.j2:42
+#: ktp_controller/wui/templates/login.html.j2:24
+msgid "Language"
+msgstr "Kieli"
+
+#: ktp_controller/wui/templates/_base.html.j2:46
+#: ktp_controller/wui/templates/login.html.j2:39
+msgid "Log out"
+msgstr "Kirjaudu ulos"
 
 #: ktp_controller/wui/templates/login.html.j2:9
 #: ktp_controller/wui/templates/login.html.j2:33
