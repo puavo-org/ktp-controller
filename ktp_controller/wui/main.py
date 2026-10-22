@@ -18,6 +18,7 @@ import ktp_controller.wui.actions.routes
 import ktp_controller.wui.auth
 import ktp_controller.wui.auth_routes
 import ktp_controller.wui.invigilator.routes
+import ktp_controller.wui.landing.routes
 import ktp_controller.wui.middleware
 import ktp_controller.wui.utils
 from ktp_controller import SETTINGS
@@ -60,6 +61,7 @@ APP.add_middleware(ktp_controller.wui.middleware.RootPathFromHeaderMiddleware)
 APP.include_router(ktp_controller.wui.invigilator.routes.router, prefix="/invigilator")
 APP.include_router(ktp_controller.wui.actions.routes.router, prefix="/actions")
 APP.include_router(ktp_controller.wui.auth_routes.router)
+APP.include_router(ktp_controller.wui.landing.routes.router)
 APP.mount(
     "/static",
     fastapi.staticfiles.StaticFiles(
@@ -93,22 +95,6 @@ async def _handle_not_authenticated(
 
     return fastapi.responses.RedirectResponse(
         url=login_url, status_code=fastapi.status.HTTP_303_SEE_OTHER
-    )
-
-
-@APP.get("/")
-def _get_root(request: fastapi.Request) -> fastapi.responses.RedirectResponse:
-    # Redirect straight to the trailing-slash form. Redirecting to
-    # "/invigilator" instead would make Starlette's own
-    # redirect_slashes handling issue a second, *absolute* redirect
-    # to add the slash, built from the request's Host header instead
-    # of the relative path the browser is already on. Behind a
-    # reverse proxy that forwards Host without its port (see
-    # ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy), that
-    # second redirect drops the port.
-    prefix = request.scope.get("root_path", "")
-    return fastapi.responses.RedirectResponse(
-        url=f"{prefix}/invigilator/", status_code=fastapi.status.HTTP_303_SEE_OTHER
     )
 
 
