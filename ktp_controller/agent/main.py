@@ -435,7 +435,7 @@ class Agent:
     ) -> ktp_controller.messages.CommandResultData:
         try:
             async with self.__refresh_exams_lock:
-                return await self.__refresh_exams(is_spontaneous=False)
+                await self.__refresh_exams(is_spontaneous=False)
         except Exception as exception:
             return ktp_controller.messages.CommandResultData(
                 command_uuid=command_uuid,
@@ -1075,11 +1075,11 @@ class Agent:
                             "Keycode cannot be changed by Exam-O-Matic, because auto control is not enabled."
                         )
                         continue
-                    ktp_controller.api.client.async_command(
+                    await ktp_controller.api.client.async_command(
                         ktp_controller.messages.Command.CHANGE_STUDENT_ACCESS_CODE
                     )
                 elif message["type"] == "refresh_exams":
-                    ktp_controller.api.client.async_command(
+                    await ktp_controller.api.client.async_command(
                         ktp_controller.messages.Command.REFRESH_EXAM_INFO
                     )
                 else:
