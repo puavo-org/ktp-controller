@@ -124,8 +124,21 @@ header .logo {
 .exam-group + .exam-group {
   margin-top: 1rem;
 }
+.exam-group-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.5rem;
+}
+.exam-group-header h3 {
+  grid-column: 1;
+  justify-self: start;
+  margin: 0;
+}
 .exam-student-state-counts {
-  margin: 0.25rem 0 0.75rem;
+  grid-column: 2;
+  justify-self: center;
+  margin: 0;
   font-size: 0.85rem;
 }
 .exam-student-state-counts ul {
