@@ -46,13 +46,6 @@ header .logo {
   width: auto;
   display: block;
 }
-header .dashboard-link {
-  display: block;
-  line-height: 0;
-}
-header .dashboard-link svg {
-  display: block;
-}
 
 /* invigilator_index.html.j2 */
 #filters {
