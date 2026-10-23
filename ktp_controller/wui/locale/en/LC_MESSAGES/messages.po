@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-23 18:00+0300\n"
+"POT-Creation-Date: 2026-10-23 18:06+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -129,7 +129,7 @@ msgid "Cancel"
 msgstr "Cancel"
 
 #: ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:53
-#: ktp_controller/wui/templates/_base.html.j2:32
+#: ktp_controller/wui/templates/_base.html.j2:42
 msgid "Exams"
 msgstr "Exams"
 
@@ -148,7 +148,7 @@ msgstr "Collapse all"
 
 #: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
 #: ktp_controller/wui/invigilator/templates/student_access_code.html.j2:32
-#: ktp_controller/wui/templates/_base.html.j2:33
+#: ktp_controller/wui/templates/_base.html.j2:43
 msgid "Student access code"
 msgstr "Student access code"
 
@@ -192,6 +192,7 @@ msgstr "No students"
 
 #: ktp_controller/wui/landing/templates/landing_index.html.j2:3
 #: ktp_controller/wui/landing/templates/landing_index.html.j2:7
+#: ktp_controller/wui/templates/_base.html.j2:32
 #: ktp_controller/wui/templates/login.html.j2:9
 #: ktp_controller/wui/templates/login.html.j2:32
 msgid "Exam server"
@@ -237,12 +238,12 @@ msgstr "Connection lost at"
 msgid "The page will reload automatically once it's back."
 msgstr "The page will reload automatically once it's back."
 
-#: ktp_controller/wui/templates/_base.html.j2:42
+#: ktp_controller/wui/templates/_base.html.j2:52
 #: ktp_controller/wui/templates/login.html.j2:24
 msgid "Language"
 msgstr "Language"
 
-#: ktp_controller/wui/templates/_base.html.j2:46
+#: ktp_controller/wui/templates/_base.html.j2:56
 #: ktp_controller/wui/templates/login.html.j2:39
 msgid "Log out"
 msgstr "Log out"
