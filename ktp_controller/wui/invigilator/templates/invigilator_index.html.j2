@@ -50,19 +50,22 @@
 
 {% block content %}
 
-    <h2>{{ _("Exams") }}</h2>
+    <div id="exams-header">
+        <h2>{{ _("Exams") }}</h2>
 
-    <div id="filters">
-        <input type="text"
-               id="name_birthday_filter"
-               name="name_birthday_filter"
-               value="{{ name_birthday_filter }}"
-               placeholder="{{ _('Filter by student name or birthday...') }}"
-               hx-get=""
-               hx-trigger="keyup changed delay:350ms"
-               hx-target="#student-list-groups"
-               hx-swap="outerHTML"
-               hx-include="#filters">
+        <div id="filters">
+            <input type="text"
+                   id="name_birthday_filter"
+                   name="name_birthday_filter"
+                   value="{{ name_birthday_filter }}"
+                   placeholder="{{ _('Filter by student name or birthday...') }}"
+                   hx-get=""
+                   hx-trigger="keyup changed delay:350ms"
+                   hx-target="#student-list-groups"
+                   hx-swap="outerHTML"
+                   hx-include="#filters">
+        </div>
+
         <button type="button"
                 id="toggle-exam-groups-button"
                 data-expand-label="{{ _('Expand all') }}"
