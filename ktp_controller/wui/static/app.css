@@ -55,16 +55,17 @@ header .logo {
 #filters {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
 }
 #name_birthday_filter {
+  max-height: 10px;
   max-width: 44ch;
 }
 
 /* student_state_counts.html.j2 */
 #student-state-counts {
-  margin: 0.25rem 0 1.25rem;
-  font-size: 0.85rem;
+    margin: 0;
+    font-size: 0.85rem;
 }
 .pill {
   display: inline-block;
@@ -169,4 +170,9 @@ header .logo {
 }
 header nav ul.locale-nav {
   margin-left: auto;
+}
+
+#toggle-exam-groups-button {
+  --pico-form-element-spacing-vertical: 0rem;
+  margin: 0;
 }
