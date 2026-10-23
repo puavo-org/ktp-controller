@@ -97,6 +97,7 @@ header .logo {
 }
 
 /* student_access_code.html.j2 */
+#student-access-code-server-name,
 #student-access-code-value {
   font-size: 6rem;
   font-weight: 700;

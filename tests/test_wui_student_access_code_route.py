@@ -39,9 +39,12 @@ def test_student_access_code_view_allowed_with_permission(
     wui_client, override_session, mocker
 ):
     mocker.patch(
-        "ktp_controller.api.client.get_student_access_code",
-        return_value=ktp_controller.schemas.StudentAccessCode(
-            key_code="1234", verification_code="xx"
+        "ktp_controller.api.client.get_student_access_code_and_server_name",
+        return_value=ktp_controller.schemas.StudentAccessCodeAndServerName(
+            student_access_code=ktp_controller.schemas.StudentAccessCode(
+                key_code="1234", verification_code="xx"
+            ),
+            server_name="top-men",
         ),
     )
     mocker.patch(
@@ -58,6 +61,7 @@ def test_student_access_code_view_allowed_with_permission(
     response = wui_client.get("/invigilator/student_access_code")
 
     assert response.status_code == 200
+    assert "top-men" in response.text
     assert "1234 xx" in response.text
     assert b"alice" in response.content
 
@@ -65,7 +69,10 @@ def test_student_access_code_view_allowed_with_permission(
 def test_student_access_code_view_shows_students_nav_link(
     wui_client, override_session, mocker
 ):
-    mocker.patch("ktp_controller.api.client.get_student_access_code", return_value=None)
+    mocker.patch(
+        "ktp_controller.api.client.get_student_access_code_and_server_name",
+        return_value=None,
+    )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages", return_value=[]
     )
@@ -86,7 +93,10 @@ def test_student_access_code_view_shows_students_nav_link(
 def test_student_access_code_view_shows_placeholder_without_code(
     wui_client, override_session, mocker
 ):
-    mocker.patch("ktp_controller.api.client.get_student_access_code", return_value=None)
+    mocker.patch(
+        "ktp_controller.api.client.get_student_access_code_and_server_name",
+        return_value=None,
+    )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages", return_value=[]
     )
@@ -102,13 +112,17 @@ def test_student_access_code_view_shows_placeholder_without_code(
     response = wui_client.get("/invigilator/student_access_code")
 
     assert response.status_code == 200
+    assert "No server name available" in response.text
     assert "No access code available" in response.text
 
 
 def test_student_access_code_view_forbidden_without_permission(
     wui_client, override_session, mocker
 ):
-    mocker.patch("ktp_controller.api.client.get_student_access_code", return_value=None)
+    mocker.patch(
+        "ktp_controller.api.client.get_student_access_code_and_server_name",
+        return_value=None,
+    )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages", return_value=[]
     )
@@ -128,7 +142,10 @@ def test_student_access_code_view_forbidden_without_permission(
 def test_student_access_code_view_shows_change_button_with_permission(
     wui_client, override_session, mocker
 ):
-    mocker.patch("ktp_controller.api.client.get_student_access_code", return_value=None)
+    mocker.patch(
+        "ktp_controller.api.client.get_student_access_code_and_server_name",
+        return_value=None,
+    )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages", return_value=[]
     )
@@ -156,7 +173,10 @@ def test_student_access_code_view_shows_change_button_with_permission(
 def test_student_access_code_view_hides_change_button_without_permission(
     wui_client, override_session, mocker
 ):
-    mocker.patch("ktp_controller.api.client.get_student_access_code", return_value=None)
+    mocker.patch(
+        "ktp_controller.api.client.get_student_access_code_and_server_name",
+        return_value=None,
+    )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages", return_value=[]
     )
@@ -178,7 +198,10 @@ def test_student_access_code_view_hides_change_button_without_permission(
 def test_student_access_code_view_renders_student_state_counts(
     wui_client, override_session, mocker
 ):
-    mocker.patch("ktp_controller.api.client.get_student_access_code", return_value=None)
+    mocker.patch(
+        "ktp_controller.api.client.get_student_access_code_and_server_name",
+        return_value=None,
+    )
     _mock_abitti2_state(
         mocker,
         student_count=4,
@@ -215,7 +238,10 @@ def test_student_access_code_view_renders_student_state_counts(
 def test_student_access_code_view_student_state_counts_present_in_htmx_partial(
     wui_client, override_session, mocker
 ):
-    mocker.patch("ktp_controller.api.client.get_student_access_code", return_value=None)
+    mocker.patch(
+        "ktp_controller.api.client.get_student_access_code_and_server_name",
+        return_value=None,
+    )
     _mock_abitti2_state(
         mocker,
         student_count=4,
