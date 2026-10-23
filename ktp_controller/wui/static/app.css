@@ -107,6 +107,17 @@ header .logo {
 }
 
 /* student_list_table.html.j2 */
+/* Pico's --pico-spacing/--pico-form-element-spacing-* are fixed root
+   values, not derived from each other, so redefining one of them here
+   in terms of itself (e.g. calc(var(--pico-spacing) / 2)) is a cyclic
+   custom property reference: it resolves to invalid, which collapses
+   every padding using it to zero. Override with literal values
+   instead (half of Pico's defaults: 1rem, 0.75rem, 1rem). */
+.student-list-table {
+  --pico-spacing: 0.15rem;
+  --pico-form-element-spacing-vertical: 0.15rem;
+
+}
 .sortable-column {
   cursor: pointer;
 }
