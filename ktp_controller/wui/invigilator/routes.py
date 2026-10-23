@@ -352,7 +352,9 @@ async def _get_student_access_code(
         ktp_controller.wui.auth.get_current_session
     ),
 ) -> fastapi.responses.HTMLResponse:
-    student_access_code = await ktp_controller.api.client.get_student_access_code()
+    student_access_code_and_server_name = (
+        await ktp_controller.api.client.get_student_access_code_and_server_name()
+    )
 
     student_list_items = await _get_student_list_items()
     student_state_counts = _count_student_states(student_list_items)
@@ -361,7 +363,7 @@ async def _get_student_access_code(
     _ = ktp_controller.wui.i18n.get_gettext(session.locale)
 
     context = {
-        "student_access_code": student_access_code,
+        "student_access_code_and_server_name": student_access_code_and_server_name,
         "user": session.username,
         "can_change_access_code": (
             "wui.actions.change-student-access-code" in session.permissions
