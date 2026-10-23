@@ -1150,6 +1150,36 @@ def test_invigilator_view_groups_students_by_exam_title(
     assert "Exam title" not in response.text
 
 
+def test_invigilator_view_collapses_exam_group_with_no_students_by_default(
+    wui_client, override_session, mocker
+):
+    _mock_abitti2_state(
+        mocker,
+        student_count=1,
+        exam_titles=["Matematiikka", "Englanti"],
+        student_exam_titles=["Matematiikka"],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert '<details class="exam-group" data-exam-title="Matematiikka" open>' in (
+        response.text
+    )
+    assert '<details class="exam-group" data-exam-title="Englanti" >' in response.text
+    assert '<details class="exam-group" data-exam-title="Englanti" open>' not in (
+        response.text
+    )
+
+
 def test_invigilator_view_groups_student_with_missing_exam_title_as_question_marks(
     wui_client, override_session, mocker
 ):
