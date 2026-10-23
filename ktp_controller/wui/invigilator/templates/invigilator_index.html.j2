@@ -10,10 +10,6 @@
     <script src="{{ prefix }}/static/preserve_exam_group_state.js"></script>
 {% endblock %}
 
-{% block nav_live_status %}
-    {% include "partials/student_state_counts.html.j2" %}
-{% endblock %}
-
 {% block modals %}
     {% if can_end_exam %}
     <div id="end-exam-confirm-overlay" class="modal-overlay">
@@ -49,6 +45,8 @@
 {% endblock %}
 
 {% block content %}
+
+    {% include "partials/student_state_counts.html.j2" %}
 
     <h2>{{ _("Exams") }}</h2>
 

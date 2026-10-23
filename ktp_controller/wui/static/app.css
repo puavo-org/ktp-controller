@@ -62,6 +62,16 @@ header .logo {
   margin: 0.25rem 0 1.25rem;
   font-size: 0.85rem;
 }
+#student-state-counts ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+#student-state-counts li {
+  list-style: none;
+}
 .pill {
   display: inline-block;
   padding: 0.15rem 0.65rem;
