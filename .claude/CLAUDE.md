@@ -81,6 +81,9 @@ Key technology: Python3, FastAPI, Uvicorn, htmx, Redis
   and `make i18n-compile` (in that order) to add/refresh the `fi`/`sv`/`en`
   `.po`/`.mo` files before `make check`'s `check-i18n` target will pass.
 
+- When you are trying to run `make test`, but it fails because `make
+  dev-run` is already running, you can stop the `make dev-run` without
+  asking me first and then retry `make test`.
 
 # Git instructions
 
