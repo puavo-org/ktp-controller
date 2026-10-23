@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-22 22:53+0300\n"
+"POT-Creation-Date: 2026-10-23 18:00+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -215,12 +215,12 @@ msgid "Started at: %(started_at)s"
 msgstr "Käynnistetty: %(started_at)s"
 
 #: ktp_controller/wui/landing/templates/landing_index.html.j2:19
-msgid "Auto control is enabled."
-msgstr "Automaattiohjaus on käytössä."
+msgid "Auto control: enabled"
+msgstr "Automaattiohjaus: päällä"
 
 #: ktp_controller/wui/landing/templates/landing_index.html.j2:21
-msgid "Auto control is disabled."
-msgstr "Automaattiohjaus ei ole käytössä."
+msgid "Auto control: disabled"
+msgstr "Automaattiohjaus: pois päältä"
 
 #: ktp_controller/wui/landing/templates/landing_index.html.j2:25
 #: ktp_controller/wui/landing/templates/landing_index.html.j2:36
@@ -294,4 +294,10 @@ msgstr "Kirjaudu sisään"
 
 #~ msgid "Logged in"
 #~ msgstr "Kirjauduttu sisään"
+
+#~ msgid "Auto control is enabled."
+#~ msgstr "Automaattiohjaus on käytössä."
+
+#~ msgid "Auto control is disabled."
+#~ msgstr "Automaattiohjaus ei ole käytössä."
 

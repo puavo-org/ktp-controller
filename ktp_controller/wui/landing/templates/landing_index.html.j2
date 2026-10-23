@@ -16,9 +16,9 @@
             <p>{% trans started_at=general_info.started_at|localize_datetime(locale) %}Started at: {{ started_at }}{% endtrans %}</p>
             <p>
                 {% if general_info.is_auto_control_enabled %}
-                {{ _("Auto control is enabled.") }}
+                {{ _("Auto control: enabled") }}
                 {% else %}
-                {{ _("Auto control is disabled.") }}
+                {{ _("Auto control: disabled") }}
                 {% endif %}
             </p>
             {% else %}
