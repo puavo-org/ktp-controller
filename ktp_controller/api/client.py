@@ -1,6 +1,7 @@
 # Standard library imports
 import json
 import logging
+import re
 import typing
 
 import ktp_controller.api.exam.schemas
@@ -153,7 +154,9 @@ async def get_last_status_report(
     )
 
 
-async def get_student_access_code() -> ktp_controller.schemas.StudentAccessCode | None:
+async def get_student_access_code_and_server_name() -> (
+    ktp_controller.schemas.StudentAccessCodeAndServerName | None
+):
     last_status_report = await get_last_status_report()
     if last_status_report is None:
         return None
@@ -166,10 +169,35 @@ async def get_student_access_code() -> ktp_controller.schemas.StudentAccessCode 
         # afterall that we didn't write data migration for it.
         return None
 
-    if student_access_code is None:
+    domain = last_status_report["abitti2"]["domain"]
+
+    if student_access_code is None or domain is None:
         return None
 
-    return ktp_controller.schemas.StudentAccessCode.model_validate(student_access_code)
+    domain_match = re.match(
+        r"^([a-z]+-[a-z]+)\.koe\.abitti\.net$", domain.lower().strip()
+    )
+    if not domain_match:
+        _LOGGER.error("Unexpected Abitti2 domain: %r", domain)
+        return None
+    server_name = domain_match.group(1)
+
+    return ktp_controller.schemas.StudentAccessCodeAndServerName.model_validate(
+        {
+            "student_access_code": student_access_code,
+            "server_name": server_name,
+        }
+    )
+
+
+async def get_student_access_code() -> ktp_controller.schemas.StudentAccessCode | None:
+    student_access_code_and_server_name = (
+        await get_student_access_code_and_server_name()
+    )
+    if student_access_code_and_server_name is None:
+        return None
+
+    return student_access_code_and_server_name.student_access_code
 
 
 async def get_locked_exam_packages(

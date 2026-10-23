@@ -18,6 +18,7 @@ __all__ = [
     "CachedFile",
     "CachedFiles",
     "StudentAccessCode",
+    "StudentAccessCodeAndServerName",
     "StudentFlag",
 ]
 
@@ -36,6 +37,11 @@ class StudentAccessCode(ktp_controller.pydantic.BaseModel):
 
     def __str__(self) -> str:
         return f"{self.key_code} {self.verification_code}"
+
+
+class StudentAccessCodeAndServerName(ktp_controller.pydantic.BaseModel):
+    student_access_code: StudentAccessCode
+    server_name: pydantic.StrictStr = Field(examples=["ostelu-solmu"])
 
 
 class CachedFile(ktp_controller.pydantic.BaseModel):
