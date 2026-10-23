@@ -52,14 +52,32 @@ header .logo {
 }
 
 /* invigilator_index.html.j2 */
+#exams-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--pico-spacing);
+}
+#exams-header h2 {
+  grid-column: 1;
+  justify-self: start;
+  margin: 0;
+}
 #filters {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0px;
+  grid-column: 2;
+  justify-self: center;
 }
 #name_birthday_filter {
   max-height: 10px;
   max-width: 44ch;
+  min-width: 44ch;
+  margin-bottom: 0;
+}
+#toggle-exam-groups-button {
+  grid-column: 3;
+  justify-self: end;
+  --pico-form-element-spacing-vertical: 0rem;
+  margin: 0;
 }
 
 /* student_state_counts.html.j2 */
@@ -170,9 +188,4 @@ header .logo {
 }
 header nav ul.locale-nav {
   margin-left: auto;
-}
-
-#toggle-exam-groups-button {
-  --pico-form-element-spacing-vertical: 0rem;
-  margin: 0;
 }
