@@ -28,17 +28,8 @@
     <header class="container">
         <nav>
             <ul>
-                <li>
-                    <a class="dashboard-link" href="{{ prefix }}/" aria-label="{{ _('Exam server') }}" {% if request.url.path == prefix + "/" %}aria-current="page"{% endif %}>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                            <rect x="3" y="3" width="7" height="7" rx="1"></rect>
-                            <rect x="14" y="3" width="7" height="7" rx="1"></rect>
-                            <rect x="3" y="14" width="7" height="7" rx="1"></rect>
-                            <rect x="14" y="14" width="7" height="7" rx="1"></rect>
-                        </svg>
-                    </a>
-                </li>
                 <li>{{ logo.img(prefix) }}</li>
+                <li><a href="{{ prefix }}/" {% if request.url.path == prefix + "/" %}aria-current="page"{% endif %}>{{ _("Exam server") }}</a></li>
                 <li><a href="{{ prefix }}/invigilator/" {% if request.url.path == prefix + "/invigilator/" %}aria-current="page"{% endif %}>{{ _("Exams") }}</a></li>
                 <li><a href="{{ prefix }}/invigilator/student_access_code" {% if request.url.path == prefix + "/invigilator/student_access_code" %}aria-current="page"{% endif %}>{{ _("Student access code") }}</a></li>
             </ul>
