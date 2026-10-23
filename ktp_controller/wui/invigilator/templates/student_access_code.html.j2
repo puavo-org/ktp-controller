@@ -7,10 +7,6 @@
     <script src="{{ prefix }}/static/change_access_code_confirm.js"></script>
 {% endblock %}
 
-{% block nav_live_status %}
-    {% include "partials/student_state_counts.html.j2" %}
-{% endblock %}
-
 {% block modals %}
     {% if can_change_access_code %}
     <div id="change-access-code-confirm-overlay" class="modal-overlay">
@@ -28,6 +24,8 @@
 {% endblock %}
 
 {% block content %}
+
+    {% include "partials/student_state_counts.html.j2" %}
 
     <h2>{{ _("Student access code") }}</h2>
 
