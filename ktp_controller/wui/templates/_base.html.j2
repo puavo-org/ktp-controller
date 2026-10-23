@@ -33,6 +33,7 @@
                 <li><a href="{{ prefix }}/invigilator/" {% if request.url.path == prefix + "/invigilator/" %}aria-current="page"{% endif %}>{{ _("Exams") }}</a></li>
                 <li><a href="{{ prefix }}/invigilator/student_access_code" {% if request.url.path == prefix + "/invigilator/student_access_code" %}aria-current="page"{% endif %}>{{ _("Student access code") }}</a></li>
             </ul>
+            {% block nav_live_status %}{% endblock %}
             <ul>
                 <li>
                     <details class="dropdown">
