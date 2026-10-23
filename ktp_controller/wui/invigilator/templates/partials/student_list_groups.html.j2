@@ -7,10 +7,12 @@
     {% if ungrouped_student_list_items %}
     <details class="exam-group unknown" data-exam-title="???" open>
         <summary>
+        <div class="exam-group-header">
         <h3>???</h3>
         {% with state_counts = ungrouped_student_state_counts %}
         {% include "partials/exam_student_state_counts.html.j2" %}
         {% endwith %}
+        </div>
         </summary>
         {% include "partials/student_list_table.html.j2" %}
     </details>
@@ -18,10 +20,12 @@
     {% for exam_title, student_list_items in grouped_student_list_items.items() %}
     <details class="exam-group" data-exam-title="{{ exam_title }}" open>
         <summary>
+        <div class="exam-group-header">
         <h3>{{ exam_title }}</h3>
         {% with state_counts = grouped_student_state_counts[exam_title] %}
         {% include "partials/exam_student_state_counts.html.j2" %}
         {% endwith %}
+        </div>
         </summary>
         {% include "partials/student_list_table.html.j2" %}
     </details>
