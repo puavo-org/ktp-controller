@@ -2,7 +2,33 @@
     <thead>
         <tr>
         {% for column_key, column_label, is_sortable in columns %}
-        {% if is_sortable %}
+        {% if column_key == "birthday" %}
+            <th>
+                <span hx-get="?sort_by={{ column_key }}&order={{ order_next if sort_by == column_key else 'asc' }}"
+                      hx-target="#student-list-groups"
+                      hx-swap="outerHTML"
+                      hx-include="#filters"
+                      class="sortable-column">
+                    {{ column_label }}
+                    {% if sort_by == column_key %}{{ '▲' if order_now == 'asc' else '▼' }}{% endif %}
+                </span>
+                <button type="button"
+                        class="toggle-birthday-visibility-button"
+                        aria-pressed="false"
+                        aria-label="{{ _('Show birthdays') }}"
+                        data-show-label="{{ _('Show birthdays') }}"
+                        data-hide-label="{{ _('Hide birthdays') }}">
+                    <svg class="icon-eye-open" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" fill="none" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <svg class="icon-eye-closed" viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden>
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" fill="none" stroke="currentColor" stroke-width="2"/>
+                        <line x1="2" y1="2" x2="22" y2="22" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </button>
+            </th>
+        {% elif is_sortable %}
             <th hx-get="?sort_by={{ column_key }}&order={{ order_next if sort_by == column_key else 'asc' }}"
                 hx-target="#student-list-groups"
                 hx-swap="outerHTML"
@@ -21,7 +47,7 @@
         {% for student_list_item in student_list_items %}
         <tr>
             <td>{{ student_list_item.name }}</td>
-            <td>{{ student_list_item.birthday | format_ddmmyy }}</td>
+            <td><span class="birthday-value" data-birthday="{{ student_list_item.birthday | format_ddmmyy }}">••••••</span></td>
             <td><span class="pill pill-{{ student_list_item.state }}">{{ (student_list_item.flags | sort | map('extract', flag_labels) | join(', ')) if student_list_item.state == "has_problems" else state_labels[student_list_item.state] }}</span></td>
             <td>{{ '-' if not student_list_item.last_changed_at else student_list_item.last_changed_at | localize_datetime(locale) }}</td>
             <td>{% if student_list_item.wants_to_use_browser %}

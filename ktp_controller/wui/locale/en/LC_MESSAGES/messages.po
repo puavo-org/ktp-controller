@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-23 19:45+0300\n"
+"POT-Creation-Date: 2026-10-24 15:59+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -26,67 +26,67 @@ msgstr "Too many login attempts, please try again later."
 msgid "Incorrect username or password"
 msgstr "Incorrect username or password"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:209
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:210
 msgid "Waiting"
 msgstr "Waiting"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:210
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:211
 msgid "In exam"
 msgstr "In exam"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:211
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:212
 msgid "Has problems"
 msgstr "Has problems"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:212
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:213
 msgid "Finished"
 msgstr "Finished"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:285
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:297
 msgid "Name"
 msgstr "Name"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:286
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:298
 msgid "Birthday"
 msgstr "Birthday"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:287
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:299
 msgid "State"
 msgstr "State"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:288
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:300
 msgid "Last changed at"
 msgstr "Last changed at"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:295
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:307
 msgid "Allowed to use browsers"
 msgstr "Allowed to use browsers"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:296
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:308
 msgid "Last played audio"
 msgstr "Last played audio"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:297
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:309
 msgid "Action"
 msgstr "Action"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:303
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:315
 msgid "Disconnected"
 msgstr "Disconnected"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:304
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:316
 msgid "Idle"
 msgstr "Idle"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:305
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:317
 msgid "Waiting for auth"
 msgstr "Waiting for auth"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:306
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:318
 msgid "Undefined exam"
 msgstr "Undefined exam"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:307
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:319
 msgid "Unknown issue"
 msgstr "Unknown issue"
 
@@ -94,21 +94,21 @@ msgstr "Unknown issue"
 msgid "Invigilator's view"
 msgstr "Invigilator's view"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:17
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:22
 msgid "Really end exam for <strong id=\"end-exam-confirm-name\"></strong>?"
 msgstr "Really end exam for <strong id=\"end-exam-confirm-name\"></strong>?"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:24
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:18
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:29
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:22
 msgid "Yes"
 msgstr "Yes"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:25
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:19
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:30
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:23
 msgid "No"
 msgstr "No"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:33
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:38
 msgid ""
 "Allow student <strong id=\"allow-audio-replay-confirm-name\"></strong> to"
 " replay audio <strong id=\"allow-audio-replay-confirm-last-"
@@ -120,39 +120,40 @@ msgstr ""
 "audio\"></strong> in exam <strong id=\"allow-audio-replay-confirm-exam-"
 "title\"></strong>?"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:39
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:44
 msgid "Allow"
 msgstr "Allow"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:40
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:45
 msgid "Cancel"
 msgstr "Cancel"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:51
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:55
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:33
 msgid "Exams"
 msgstr "Exams"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:58
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:62
 msgid "Filter by student name or birthday..."
 msgstr "Filter by student name or birthday..."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:66
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:72
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:74
 msgid "Expand all"
 msgstr "Expand all"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:67
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:68
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:73
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:74
 msgid "Collapse all"
 msgstr "Collapse all"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:30
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:32
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:34
 msgid "Student access code"
 msgstr "Student access code"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:14
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:18
 msgid ""
 "Really change the student access code? The current code will stop working"
 " for every student using it."
@@ -172,25 +173,34 @@ msgstr "No access code available"
 msgid "Change access code"
 msgstr "Change access code"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_list_groups.html.j2:29
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_list_groups.html.j2:33
 msgid "No exams"
 msgstr "No exams"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:55
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:18
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:19
+msgid "Show birthdays"
+msgstr "Show birthdays"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:20
+msgid "Hide birthdays"
+msgstr "Hide birthdays"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:81
 #, python-format
 msgid "Allow replaying audio %(n)s"
 msgstr "Allow replaying audio %(n)s"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:67
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:93
 msgid "End exam"
 msgstr "End exam"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:73
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:99
 #, python-format
 msgid "No students matching '%(query)s'"
 msgstr "No students matching '%(query)s'"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:73
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_list_table.html.j2:99
 msgid "No students"
 msgstr "No students"
 
@@ -242,12 +252,12 @@ msgstr "Connection lost at"
 msgid "The page will reload automatically once it's back."
 msgstr "The page will reload automatically once it's back."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:42
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:43
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:24
 msgid "Language"
 msgstr "Language"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:46
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:47
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:39
 msgid "Log out"
 msgstr "Log out"
