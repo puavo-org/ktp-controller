@@ -71,7 +71,16 @@
                 id="toggle-exam-groups-button"
                 data-expand-label="{{ _('Expand all') }}"
                 data-collapse-label="{{ _('Collapse all') }}"
-                {% if not grouped_student_list_items %}disabled{% endif %}>{{ _('Collapse all') if any_exam_group_open else _('Expand all') }}</button>
+                title="{{ _('Collapse all') if any_exam_group_open else _('Expand all') }}"
+                aria-label="{{ _('Collapse all') if any_exam_group_open else _('Expand all') }}"
+                {% if not grouped_student_list_items %}disabled{% endif %}>
+            <svg class="icon-chevron-up" viewBox="0 0 24 24" aria-hidden="true" focusable="false" {% if not any_exam_group_open %}hidden{% endif %}>
+                <polyline points="6 15 12 9 18 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <svg class="icon-chevron-down" viewBox="0 0 24 24" aria-hidden="true" focusable="false" {% if any_exam_group_open %}hidden{% endif %}>
+                <polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
     </div>
 
     {% include "partials/student_list_groups.html.j2" %}

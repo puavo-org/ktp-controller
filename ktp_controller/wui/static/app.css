@@ -76,9 +76,15 @@ header .logo {
 #toggle-exam-groups-button {
   grid-column: 3;
   justify-self: end;
+  display: inline-flex;
+  align-items: center;
   --pico-form-element-spacing-vertical: 0rem;
   --pico-form-element-spacing-horizontal: 0.15rem;
   margin: 0;
+}
+#toggle-exam-groups-button svg {
+  width: 1rem;
+  height: 1rem;
 }
 
 /* student_state_counts.html.j2 */

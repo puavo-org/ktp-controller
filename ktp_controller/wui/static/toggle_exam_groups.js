@@ -9,8 +9,12 @@
     groups.forEach((details) => {
       details.open = !anyOpen;
     });
-    trigger.textContent = anyOpen
+    const label = anyOpen
       ? trigger.dataset.expandLabel
       : trigger.dataset.collapseLabel;
+    trigger.title = label;
+    trigger.setAttribute("aria-label", label);
+    trigger.querySelector(".icon-chevron-up").toggleAttribute("hidden", anyOpen);
+    trigger.querySelector(".icon-chevron-down").toggleAttribute("hidden", !anyOpen);
   });
 })();
