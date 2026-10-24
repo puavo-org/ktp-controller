@@ -5,12 +5,12 @@ import pydantic
 import ktp_controller.pydantic
 
 __all__ = [
-    "GeneralInfo",
+    "ControllerInfo",
     "Abitti2Info",
 ]
 
 
-class GeneralInfo(ktp_controller.pydantic.BaseModel):
+class ControllerInfo(ktp_controller.pydantic.BaseModel):
     version: pydantic.StrictStr
     started_at: ktp_controller.pydantic.DateTime
     is_auto_control_enabled: pydantic.StrictBool

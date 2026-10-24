@@ -8,23 +8,23 @@
 
     <div class="grid">
 
-        {% if "general_info" in visible_card_keys %}
+        {% if "controller_info" in visible_card_keys %}
         <article>
-            <header>{{ _("General information") }}</header>
-            {% if general_info %}
+            <header>{{ _("Controller info") }}</header>
+            {% if controller_info %}
             <table class="landing-card-table">
                 <tr>
                     <td>{{ _("Version") }}</td>
-                    <td>{{ general_info.version }}</td>
+                    <td>{{ controller_info.version }}</td>
                 </tr>
                 <tr>
                     <td>{{ _("Started at") }}</td>
-                    <td>{{ general_info.started_at|localize_datetime(locale) }}</td>
+                    <td>{{ controller_info.started_at|localize_datetime(locale) }}</td>
                 </tr>
                 <tr>
                     <td>{{ _("Auto control") }}</td>
                     <td>
-                        {% if general_info.is_auto_control_enabled %}
+                        {% if controller_info.is_auto_control_enabled %}
                         {{ _("enabled") }}
                         {% else %}
                         {{ _("disabled") }}

@@ -50,7 +50,7 @@ class _Card:
 
 # Cards shown on the landing page, in display order.
 _CARDS = (
-    _Card(key="general_info", required_permission=None),
+    _Card(key="controller_info", required_permission=None),
     _Card(key="abitti2", required_permission=None),
 )
 
@@ -64,13 +64,13 @@ def _visible_card_keys(session: ktp_controller.wui.auth.Session) -> list[str]:
     ]
 
 
-def _get_general_info(
+def _get_controller_info(
     report: dict[str, typing.Any] | None,
-) -> schemas.GeneralInfo | None:
+) -> schemas.ControllerInfo | None:
     if report is None:
         return None
     ktp_controller_report = report["ktp_controller"]
-    return schemas.GeneralInfo(
+    return schemas.ControllerInfo(
         version=ktp_controller_report["version"],
         started_at=ktp_controller_report["started_at"],
         is_auto_control_enabled=ktp_controller_report["is_auto_control_enabled"],
@@ -101,7 +101,7 @@ async def _get_landing(
     context = {
         "user": session.username,
         "visible_card_keys": _visible_card_keys(session),
-        "general_info": _get_general_info(report),
+        "controller_info": _get_controller_info(report),
         "abitti2_info": _get_abitti2_info(report),
     }
 

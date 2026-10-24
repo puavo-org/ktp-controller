@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-24 22:09+0300\n"
+"POT-Creation-Date: 2026-10-24 22:49+0300\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -217,8 +217,8 @@ msgid "Exam server"
 msgstr "Koepalvelin"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:13
-msgid "General information"
-msgstr "Yleiset tiedot"
+msgid "Controller info"
+msgstr "Ohjaimen tiedot"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:17
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:47
@@ -331,4 +331,7 @@ msgstr "Kirjaudu sisään"
 
 #~ msgid "Auto control: disabled"
 #~ msgstr "Automaattiohjaus: pois päältä"
+
+#~ msgid "Control panel"
+#~ msgstr "Ohjauspaneeli"
 
