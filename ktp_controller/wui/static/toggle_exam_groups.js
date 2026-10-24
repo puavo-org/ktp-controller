@@ -14,7 +14,7 @@
       : trigger.dataset.collapseLabel;
     trigger.title = label;
     trigger.setAttribute("aria-label", label);
-    trigger.querySelector(".icon-chevron-up").toggleAttribute("hidden", anyOpen);
-    trigger.querySelector(".icon-chevron-down").toggleAttribute("hidden", !anyOpen);
+    trigger.querySelector(".icon-chevron-right").toggleAttribute("hidden", !anyOpen);
+    trigger.querySelector(".icon-chevron-down").toggleAttribute("hidden", anyOpen);
   });
 })();
