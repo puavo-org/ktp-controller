@@ -1307,6 +1307,30 @@ def test_invigilator_view_shows_expand_collapse_all_button(
     assert static_response.status_code == 200
 
 
+def test_invigilator_view_shows_expand_all_label_when_all_exam_groups_collapsed(
+    wui_client, override_session, mocker
+):
+    _mock_abitti2_state(
+        mocker, exam_titles=["Matematiikka"], student_statuses=["session-ended"]
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert '<details class="exam-group" data-exam-title="Matematiikka" >' in (
+        response.text
+    )
+    assert ">Expand all</button>" in response.text
+
+
 def test_invigilator_view_disables_expand_collapse_all_button_when_no_students(
     wui_client, override_session, mocker
 ):
