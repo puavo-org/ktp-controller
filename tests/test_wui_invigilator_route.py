@@ -293,7 +293,7 @@ def test_invigilator_view_renders_student_without_uuid_columns(
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert "Maija1 Meikäläinen" in response.text
+    assert "Meikäläinen, Maija1" in response.text
     assert "Student uuid" not in response.text
     assert "Session uuid" not in response.text
 
@@ -929,10 +929,10 @@ def test_invigilator_view_student_state_counts_ignore_name_birthday_filter(
     )
 
     assert response.status_code == 200
-    assert "Maija1 Meikäläinen" in response.text
-    assert "Maija2 Meikäläinen" not in response.text
-    assert "Maija3 Meikäläinen" not in response.text
-    assert "Maija4 Meikäläinen" not in response.text
+    assert "Meikäläinen, Maija1" in response.text
+    assert "Meikäläinen, Maija2" not in response.text
+    assert "Meikäläinen, Maija3" not in response.text
+    assert "Meikäläinen, Maija4" not in response.text
     assert '<span class="pill pill-has_problems">Has problems 1</span>' in (
         response.text
     )

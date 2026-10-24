@@ -158,7 +158,7 @@ async def _get_student_list_items() -> list[schemas.StudentListItem]:
             state = schemas.StudentState.HAS_PROBLEMS
 
         student_list_item = schemas.StudentListItem(
-            name=f"{raw_abitti2_student['firstNames']} {raw_abitti2_student['lastName']}",
+            name=f"{raw_abitti2_student['lastName']}, {raw_abitti2_student['firstNames']}",
             birthday=birthday,
             state=state,
             flags=state_info["flags"],
