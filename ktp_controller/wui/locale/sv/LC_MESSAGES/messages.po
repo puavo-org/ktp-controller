@@ -223,23 +223,23 @@ msgstr "Allmän information"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:17
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:47
 msgid "Version"
-msgstr ""
+msgstr "Version"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:21
 msgid "Started at"
-msgstr ""
+msgstr "Startade"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:25
 msgid "Auto control"
-msgstr ""
+msgstr "Automatisk styrning"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:28
 msgid "enabled"
-msgstr ""
+msgstr "Aktiverad"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:30
 msgid "disabled"
-msgstr ""
+msgstr "Inaktiverad"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:36
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:52
