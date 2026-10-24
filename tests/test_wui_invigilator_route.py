@@ -24,6 +24,12 @@ def _end_exam_button_tag(html):
     return match.group(0)
 
 
+def _svg_tag(html, svg_class):
+    match = re.search(rf'<svg[^>]*class="{svg_class}"[^>]*>', html, re.DOTALL)
+    assert match, f"{svg_class} svg not found in response"
+    return match.group(0)
+
+
 @pytest.fixture
 def wui_client():
     return fastapi.testclient.TestClient(
@@ -1372,11 +1378,15 @@ def test_invigilator_view_shows_expand_collapse_all_button(
     assert 'id="toggle-exam-groups-button"' in response.text
     assert 'data-expand-label="Expand all"' in response.text
     assert 'data-collapse-label="Collapse all"' in response.text
-    assert ">Collapse all</button>" in response.text
-    assert (
-        "disabled"
-        not in response.text.split('id="toggle-exam-groups-button"')[1].split(">")[0]
-    )
+    button_tag = response.text.split('id="toggle-exam-groups-button"')[1].split(">")[0]
+    assert 'title="Collapse all"' in button_tag
+    assert 'aria-label="Collapse all"' in button_tag
+    assert "disabled" not in button_tag
+    button_html = response.text.split('id="toggle-exam-groups-button"')[1].split(
+        "</button>"
+    )[0]
+    assert not _svg_tag(button_html, "icon-chevron-up").endswith(" hidden>")
+    assert _svg_tag(button_html, "icon-chevron-down").endswith(" hidden>")
     assert '<script src="/static/toggle_exam_groups.js">' in response.text
 
     static_response = wui_client.get("/static/toggle_exam_groups.js")
@@ -1404,7 +1414,14 @@ def test_invigilator_view_shows_expand_all_label_when_all_exam_groups_collapsed(
     assert '<details class="exam-group" data-exam-title="Matematiikka" >' in (
         response.text
     )
-    assert ">Expand all</button>" in response.text
+    button_tag = response.text.split('id="toggle-exam-groups-button"')[1].split(">")[0]
+    assert 'title="Expand all"' in button_tag
+    assert 'aria-label="Expand all"' in button_tag
+    button_html = response.text.split('id="toggle-exam-groups-button"')[1].split(
+        "</button>"
+    )[0]
+    assert _svg_tag(button_html, "icon-chevron-up").endswith(" hidden>")
+    assert not _svg_tag(button_html, "icon-chevron-down").endswith(" hidden>")
 
 
 def test_invigilator_view_disables_expand_collapse_all_button_when_no_students(
