@@ -255,8 +255,10 @@ async def _get_invigilator(
 
     student_state_counts = _count_student_states(student_list_items)
 
-    exam_titles_with_students = {
-        item.exam_title for item in student_list_items if item.exam_title is not None
+    exam_titles_with_unfinished_students = {
+        item.exam_title
+        for item in student_list_items
+        if item.exam_title is not None and item.state != schemas.StudentState.FINISHED
     }
 
     if name_birthday_filter:
@@ -314,7 +316,7 @@ async def _get_invigilator(
     context = {
         "grouped_student_list_items": grouped_student_list_items,
         "ungrouped_student_list_items": ungrouped_student_list_items,
-        "exam_titles_with_students": exam_titles_with_students,
+        "exam_titles_with_unfinished_students": exam_titles_with_unfinished_students,
         "grouped_student_state_counts": grouped_student_state_counts,
         "ungrouped_student_state_counts": ungrouped_student_state_counts,
         "state_labels": state_labels,

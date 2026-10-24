@@ -18,7 +18,7 @@
     </details>
     {% endif %}
     {% for exam_title, student_list_items in grouped_student_list_items.items() %}
-    <details class="exam-group" data-exam-title="{{ exam_title }}" {% if exam_title in exam_titles_with_students %}open{% endif %}>
+    <details class="exam-group" data-exam-title="{{ exam_title }}" {% if exam_title in exam_titles_with_unfinished_students %}open{% endif %}>
         <summary>
         <div class="exam-group-header">
         <h3>{{ exam_title }}</h3>
