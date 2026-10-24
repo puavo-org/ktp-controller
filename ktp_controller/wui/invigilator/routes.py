@@ -284,6 +284,11 @@ async def _get_invigilator(
     }
     ungrouped_student_state_counts = _count_student_states(ungrouped_student_list_items)
 
+    any_exam_group_open = bool(ungrouped_student_list_items) or any(
+        exam_title in exam_titles_with_unfinished_students
+        for exam_title in grouped_student_list_items
+    )
+
     request.state.locale = session.locale
     _ = ktp_controller.wui.i18n.get_gettext(session.locale)
 
@@ -317,6 +322,7 @@ async def _get_invigilator(
         "grouped_student_list_items": grouped_student_list_items,
         "ungrouped_student_list_items": ungrouped_student_list_items,
         "exam_titles_with_unfinished_students": exam_titles_with_unfinished_students,
+        "any_exam_group_open": any_exam_group_open,
         "grouped_student_state_counts": grouped_student_state_counts,
         "ungrouped_student_state_counts": ungrouped_student_state_counts,
         "state_labels": state_labels,

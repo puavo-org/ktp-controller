@@ -70,7 +70,7 @@
                 id="toggle-exam-groups-button"
                 data-expand-label="{{ _('Expand all') }}"
                 data-collapse-label="{{ _('Collapse all') }}"
-                {% if not grouped_student_list_items %}disabled{% endif %}>{{ _('Collapse all') }}</button>
+                {% if not grouped_student_list_items %}disabled{% endif %}>{{ _('Collapse all') if any_exam_group_open else _('Expand all') }}</button>
     </div>
 
     {% include "partials/student_list_groups.html.j2" %}
