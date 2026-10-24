@@ -77,6 +77,7 @@ header .logo {
   grid-column: 3;
   justify-self: end;
   --pico-form-element-spacing-vertical: 0rem;
+  --pico-form-element-spacing-horizontal: 0.15rem;
   margin: 0;
 }
 
@@ -87,10 +88,10 @@ header .logo {
 }
 .pill {
   display: inline-block;
-  padding: 0.15rem 0.65rem;
+  padding: 0.15rem 0.5rem;
   border-radius: 1rem;
   font-weight: 600;
-  margin-right: 0.5rem;
+  margin-right: 0.25rem;
 }
 .pill-waiting {
   background-color: #fff3cd;
@@ -127,9 +128,10 @@ header .logo {
    every padding using it to zero. Override with literal values
    instead (half of Pico's defaults: 1rem, 0.75rem, 1rem). */
 .student-list-table {
+  font-size: 0.75rem;
   --pico-spacing: 0.15rem;
-  --pico-form-element-spacing-vertical: 0.15rem;
-
+  --pico-form-element-spacing-vertical: 0rem;
+  --pico-form-element-spacing-horizontal: 0.15rem;
 }
 .sortable-column {
   cursor: pointer;
