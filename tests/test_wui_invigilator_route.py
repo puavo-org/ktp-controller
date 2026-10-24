@@ -1385,8 +1385,8 @@ def test_invigilator_view_shows_expand_collapse_all_button(
     button_html = response.text.split('id="toggle-exam-groups-button"')[1].split(
         "</button>"
     )[0]
-    assert not _svg_tag(button_html, "icon-chevron-up").endswith(" hidden>")
-    assert _svg_tag(button_html, "icon-chevron-down").endswith(" hidden>")
+    assert _svg_tag(button_html, "icon-chevron-right").endswith(" hidden>")
+    assert not _svg_tag(button_html, "icon-chevron-down").endswith(" hidden>")
     assert '<script src="/static/toggle_exam_groups.js">' in response.text
 
     static_response = wui_client.get("/static/toggle_exam_groups.js")
@@ -1420,8 +1420,8 @@ def test_invigilator_view_shows_expand_all_label_when_all_exam_groups_collapsed(
     button_html = response.text.split('id="toggle-exam-groups-button"')[1].split(
         "</button>"
     )[0]
-    assert _svg_tag(button_html, "icon-chevron-up").endswith(" hidden>")
-    assert not _svg_tag(button_html, "icon-chevron-down").endswith(" hidden>")
+    assert not _svg_tag(button_html, "icon-chevron-right").endswith(" hidden>")
+    assert _svg_tag(button_html, "icon-chevron-down").endswith(" hidden>")
 
 
 def test_invigilator_view_disables_expand_collapse_all_button_when_no_students(
