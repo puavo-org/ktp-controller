@@ -136,6 +136,18 @@ header .logo {
 .sortable-column {
   cursor: pointer;
 }
+.toggle-birthday-visibility-button {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.25rem;
+  --pico-form-element-spacing-vertical: 0rem;
+  --pico-form-element-spacing-horizontal: 0.25rem;
+  line-height: 1;
+}
+.toggle-birthday-visibility-button svg {
+  width: 1rem;
+  height: 1rem;
+}
 .text-center {
   text-align: center;
 }
