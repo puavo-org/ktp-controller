@@ -12,15 +12,26 @@
         <article>
             <header>{{ _("General information") }}</header>
             {% if general_info %}
-            <p>{% trans version=general_info.version %}Version: {{ version }}{% endtrans %}</p>
-            <p>{% trans started_at=general_info.started_at|localize_datetime(locale) %}Started at: {{ started_at }}{% endtrans %}</p>
-            <p>
-                {% if general_info.is_auto_control_enabled %}
-                {{ _("Auto control: enabled") }}
-                {% else %}
-                {{ _("Auto control: disabled") }}
-                {% endif %}
-            </p>
+            <table class="landing-card-table">
+                <tr>
+                    <td>{{ _("Version") }}</td>
+                    <td>{{ general_info.version }}</td>
+                </tr>
+                <tr>
+                    <td>{{ _("Started at") }}</td>
+                    <td>{{ general_info.started_at|localize_datetime(locale) }}</td>
+                </tr>
+                <tr>
+                    <td>{{ _("Auto control") }}</td>
+                    <td>
+                        {% if general_info.is_auto_control_enabled %}
+                        {{ _("enabled") }}
+                        {% else %}
+                        {{ _("disabled") }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
             {% else %}
             <p>{{ _("Not available yet.") }}</p>
             {% endif %}
@@ -31,7 +42,12 @@
         <article>
             <header>{{ _("Abitti2") }}</header>
             {% if abitti2_info and abitti2_info.version %}
-            <p>{% trans version=abitti2_info.version %}Version: {{ version }}{% endtrans %}</p>
+            <table class="landing-card-table">
+                <tr>
+                    <td>{{ _("Version") }}</td>
+                    <td>{{ abitti2_info.version }}</td>
+                </tr>
+            </table>
             {% else %}
             <p>{{ _("Not available yet.") }}</p>
             {% endif %}
