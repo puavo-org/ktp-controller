@@ -511,3 +511,8 @@ def parse_ddmmyy(ddmmyy: str, /) -> datetime.date:
 
     # Handles leap years and invalid calendar dates natively via constructor
     return datetime.datetime(year=year, month=month, day=day)
+
+
+def format_ddmmyy(d: datetime.date, /) -> str:
+    """Formats a date as a 'ddmmyy' string, the inverse of parse_ddmmyy()."""
+    return d.strftime("%d%m%y")
