@@ -209,3 +209,21 @@ header .logo {
 header nav ul.locale-nav {
   margin-left: auto;
 }
+
+/* landing_index.html.j2 */
+.landing-card-table {
+  width: 100%;
+}
+.landing-card-table td {
+  border-bottom: none;
+  padding: 0.25rem 0.75rem;
+}
+.landing-card-table td:first-child {
+  text-align: right;
+  width: 50%;
+  border-right: 1px solid var(--pico-table-border-color);
+  white-space: nowrap;
+}
+.landing-card-table td:last-child {
+  text-align: left;
+}
