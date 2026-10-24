@@ -62,6 +62,7 @@
               <input type="checkbox"
                      name="allow"
                      class="browser-permission-checkbox"
+                     role="switch"
                      hx-post="{{ prefix }}/actions/set-exam-session-permission-to-use-browsers"
                      hx-include="#browser-permission-session-uuid-{{ student_list_item.session_uuid }}, #browser-permission-student-uuid-{{ student_list_item.student_uuid }}"
                      hx-swap="none"
