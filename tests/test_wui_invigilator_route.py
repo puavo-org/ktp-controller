@@ -332,7 +332,64 @@ def test_invigilator_view_formats_birthday_as_ddmmyy_regardless_of_locale(
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert "<td>010105</td>" in response.text
+    assert "<td>010105</td>" not in response.text
+    assert (
+        '<span class="birthday-value" data-birthday="010105">••••••</span>'
+        in response.text
+    )
+
+
+def test_invigilator_view_shows_toggle_birthday_visibility_button(
+    wui_client, override_session, mocker
+):
+    _mock_abitti2_state(mocker, exam_titles=["Matematiikka"])
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert 'class="toggle-birthday-visibility-button"' in response.text
+    button_tag = response.text.split('class="toggle-birthday-visibility-button"')[
+        1
+    ].split(">")[0]
+    assert 'aria-pressed="false"' in button_tag
+    assert 'aria-label="Show birthdays"' in button_tag
+    assert 'data-show-label="Show birthdays"' in button_tag
+    assert 'data-hide-label="Hide birthdays"' in button_tag
+    assert '<svg class="icon-eye-open" viewBox' in response.text
+    assert (
+        '<svg class="icon-eye-closed" viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden>'
+        in response.text
+    )
+
+
+def test_invigilator_view_loads_toggle_birthdays_script(
+    wui_client, override_session, mocker
+):
+    _mock_abitti2_state(mocker, is_empty=True)
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert '<script src="/static/toggle_birthdays.js">' in response.text
+
+    static_response = wui_client.get("/static/toggle_birthdays.js")
+    assert static_response.status_code == 200
 
 
 def test_invigilator_view_locale_switcher_has_no_inline_script(
