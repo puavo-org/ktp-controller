@@ -22,7 +22,6 @@ from . import auth
 __all__ = [
     "get_gettext",
     "get_locale",
-    "localize_date",
     "localize_datetime",
     "negotiate_locale",
     "template_context_processor",
@@ -145,14 +144,6 @@ def template_context_processor(request: fastapi.Request) -> dict[str, typing.Any
         "ngettext": _newstyle_ngettext(translations.ngettext),
         "prefix": request.scope.get("root_path", ""),
     }
-
-
-def localize_date(d: datetime.date, locale: str) -> str:
-    # Babel's "short" format truncates the year to two digits in some
-    # locales (e.g. en: "1/1/05"), which is ambiguous for a birthday. The
-    # "yMd" skeleton keeps a full four-digit year while still following
-    # each locale's usual field order.
-    return babel.dates.format_skeleton("yMd", d, locale=locale)
 
 
 def localize_datetime(dt: datetime.datetime, locale: str) -> str:

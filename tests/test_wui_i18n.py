@@ -1,5 +1,3 @@
-import datetime
-
 import ktp_controller.wui.i18n as i18n
 from ktp_controller import SETTINGS
 
@@ -23,13 +21,3 @@ def test_compiled_catalogs_translate_known_strings():
 
     assert fi_gettext("Log in") == "Kirjaudu sisään"
     assert en_gettext("Log in") == "Log in"
-
-
-def test_localize_date_differs_by_locale_format():
-    d = datetime.date(2005, 1, 1)
-
-    fi_str = i18n.localize_date(d, "fi")
-    en_str = i18n.localize_date(d, "en")
-
-    assert "." in fi_str
-    assert fi_str != en_str
