@@ -15,6 +15,7 @@ import fastapi.templating
 import ktp_controller.abitti2.utils
 import ktp_controller.api.client
 import ktp_controller.schemas
+import ktp_controller.utils
 import ktp_controller.wui.auth
 import ktp_controller.wui.i18n
 import ktp_controller.wui.utils
@@ -44,8 +45,8 @@ _templates = fastapi.templating.Jinja2Templates(
 _templates.env.autoescape = True
 _templates.env.add_extension("jinja2.ext.i18n")
 _templates.env.install_null_translations(newstyle=True)  # type: ignore[attr-defined]
-_templates.env.filters["localize_date"] = ktp_controller.wui.i18n.localize_date
 _templates.env.filters["localize_datetime"] = ktp_controller.wui.i18n.localize_datetime
+_templates.env.filters["format_ddmmyy"] = ktp_controller.utils.format_ddmmyy
 _templates.env.filters["extract"] = ktp_controller.wui.utils.extract_filter
 
 
