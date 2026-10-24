@@ -316,6 +316,25 @@ def test_invigilator_view_uses_session_locale(wui_client, override_session, mock
     assert ">No exams</p>" in response.text
 
 
+def test_invigilator_view_formats_birthday_as_ddmmyy_regardless_of_locale(
+    wui_client, override_session, mocker
+):
+    _mock_abitti2_state(mocker)
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert "<td>010105</td>" in response.text
+
+
 def test_invigilator_view_locale_switcher_has_no_inline_script(
     wui_client, override_session, mocker
 ):
