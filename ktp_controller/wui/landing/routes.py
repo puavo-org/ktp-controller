@@ -103,6 +103,9 @@ async def _get_landing(
         "visible_card_keys": _visible_card_keys(session),
         "controller_info": _get_controller_info(report),
         "abitti2_info": _get_abitti2_info(report),
+        # Hardcoded until a "wui.actions.toggle-auto-control" permission
+        # and its action endpoint exist.
+        "can_toggle_auto_control": False,
     }
 
     return _templates.TemplateResponse(

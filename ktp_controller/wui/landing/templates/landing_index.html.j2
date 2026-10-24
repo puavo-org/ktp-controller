@@ -24,11 +24,18 @@
                 <tr>
                     <td>{{ _("Auto control") }}</td>
                     <td>
-                        {% if controller_info.is_auto_control_enabled %}
-                        {{ _("enabled") }}
-                        {% else %}
-                        {{ _("disabled") }}
-                        {% endif %}
+                        {# Not wired to an action yet: add
+                           hx-post="{{ prefix }}/actions/toggle-auto-control"
+                           hx-swap="none" (dispatching
+                           Command.ENABLE_AUTO_CONTROL /
+                           Command.DISABLE_AUTO_CONTROL) once that endpoint
+                           and its wui.actions.toggle-auto-control permission
+                           exist. #}
+                        <input type="checkbox"
+                               role="switch"
+                               aria-label="{{ _('Auto control') }}"
+                               {{ "checked" if controller_info.is_auto_control_enabled else "" }}
+                               {{ "" if can_toggle_auto_control else "disabled" }}>
                     </td>
                 </tr>
             </table>
