@@ -39,6 +39,14 @@ _EXAM_FILE_INFOS = {
         "file_uuid": "53d3594c-cde8-43af-ae00-403ed134eba3",  # UUID from oma.abitti.fi/school/exams
         "decrypt_code": "sanelin hurskaus sermi dokaus",
     },
+    "Odotusaulakoe kaikilla vastaustyypeillä": {
+        "exam_title": "Odotusaulakoe kaikilla vastaustyypeillä",
+        "file_name": "exam_Odotusaulakoe_kaikki_vastaustyypit_a_ja_b.mex",
+        "file_size": 27776567,
+        "file_sha256": "d9afcc7eb49ed0a1358d5d34c203fa43a756e81fc154b4a7f35c4ecb46d86c32",
+        "file_uuid": "7fff87f0-699d-40f5-b290-038aa1fad997",  # Random UUID
+        "decrypt_code": "abitti2",
+    },
 }
 
 
