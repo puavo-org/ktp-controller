@@ -14,6 +14,7 @@ from collections.abc import Callable
 # Internal imports
 import ktp_controller.api.client
 import ktp_controller.examomatic.client
+import ktp_controller.examomatic.mock.client
 import ktp_controller.schemas
 import ktp_controller.utils
 
@@ -258,17 +259,13 @@ def assert_exam_scheduling_and_download(
     if utcnow is None:
         utcnow = ktp_controller.utils.utcnow()
     response = asyncio.run(
-        ktp_controller.examomatic.client._post(
-            "/mock/set_exam_info",
-            json={
-                "exam_title": exam_title,
-                "start_time": (
-                    utcnow + datetime.timedelta(seconds=seconds_until_start)
-                ).isoformat(),
-                "duration_seconds": duration_seconds,
-                "lock_time_duration_seconds": lock_time_duration_seconds,
-                "number_of_duplicates": number_of_duplicates,
-            },
+        ktp_controller.examomatic.mock.client.set_exam_info(
+            exam_title=exam_title,
+            seconds_until_start=seconds_until_start,
+            utcnow=utcnow,
+            duration_seconds=duration_seconds,
+            lock_time_duration_seconds=lock_time_duration_seconds,
+            number_of_duplicates=number_of_duplicates,
         )
     )
     assert response.status_code == 200
