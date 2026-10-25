@@ -58,8 +58,12 @@ case "$OS" in
             ktp-controller)
                 RUN_MODE='prod'
                 ;;
-            *)
+            *-run)
                 RUN_MODE="${THIS_FILENAME%-run}"
+                ;;
+            *)
+                echo 'ERROR: Unknown run mode!' >&2
+                exit 1
                 ;;
         esac
         ;;
