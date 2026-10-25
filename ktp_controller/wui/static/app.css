@@ -157,6 +157,9 @@ header .logo {
 .text-center {
   text-align: center;
 }
+.end-exam-button {
+  width: var(--end-exam-button-width, auto);
+}
 
 /* student_list_groups.html.j2 */
 .exam-group {
