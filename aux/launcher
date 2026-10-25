@@ -148,9 +148,6 @@ case "$COMMAND" in
         acquire_singleton_lock || exit 1
         ${EXEC_CMD} supervisord -c "$RUNCONF"
         ;;
-    tui)
-        ${EXEC_CMD} ktp-controller-tui "$@"
-        ;;
     wui)
         ${EXEC_CMD} ktp-controller-wui "$@"
         ;;
