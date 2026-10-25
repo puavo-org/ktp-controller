@@ -148,9 +148,6 @@ case "$COMMAND" in
         acquire_singleton_lock || exit 1
         ${EXEC_CMD} supervisord -c "$RUNCONF"
         ;;
-    wui)
-        ${EXEC_CMD} ktp-controller-wui "$@"
-        ;;
     *)
         KTP_CONTROLLER_LOGGING_LEVEL=WARNING ${EXEC_CMD} ktp-controller-cli "$COMMAND" "$@"
         ;;
