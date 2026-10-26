@@ -73,6 +73,10 @@ def test_landing_view_allowed_with_permission(wui_client, override_session, mock
         "ktp_controller.api.client.get_last_status_report",
         return_value=_status_report(),
     )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -97,6 +101,10 @@ def test_landing_view_shows_placeholder_without_status_report(
         "ktp_controller.api.client.get_last_status_report",
         return_value=None,
     )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -119,6 +127,10 @@ def test_landing_view_shows_placeholder_without_abitti2_version(
         "ktp_controller.api.client.get_last_status_report",
         return_value=_status_report(abitti2_version=None),
     )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -138,6 +150,10 @@ def test_landing_view_honors_forwarded_prefix(wui_client, override_session, mock
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
         return_value=_status_report(),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
     )
     override_session(
         ktp_controller.wui.auth.Session(

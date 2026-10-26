@@ -13,6 +13,7 @@ import fastapi.templating
 import ktp_controller.api.client
 import ktp_controller.wui.auth
 import ktp_controller.wui.i18n
+import ktp_controller.wui.students
 
 # Relative imports
 from . import schemas
@@ -98,6 +99,12 @@ async def _get_landing(
     request.state.locale = session.locale
     _ = ktp_controller.wui.i18n.get_gettext(session.locale)
 
+    student_list_items = await ktp_controller.wui.students.get_student_list_items()
+    student_state_counts = ktp_controller.wui.students.count_student_states(
+        student_list_items
+    )
+    state_labels = ktp_controller.wui.students.get_student_state_labels(_)
+
     context = {
         "user": session.username,
         "visible_card_keys": _visible_card_keys(session),
@@ -106,6 +113,8 @@ async def _get_landing(
         # Hardcoded until a "wui.actions.toggle-auto-control" permission
         # and its action endpoint exist.
         "can_toggle_auto_control": False,
+        "student_state_counts": student_state_counts,
+        "state_labels": state_labels,
     }
 
     return _templates.TemplateResponse(
