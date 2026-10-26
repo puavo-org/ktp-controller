@@ -299,7 +299,14 @@ async def _invigilator_ws(websock: fastapi.WebSocket) -> None:
     except ktp_controller.wui.auth.NotAuthenticatedError:
         await websock.close(code=4401)
         return
-    if "wui.invigilator.view" not in session.permissions:
+    # The broadcast is a content-free nudge ("abitti2_stats_changed");
+    # actual student data stays gated per-route on the subsequent HTTP
+    # GET, so accepting either page's view permission here is safe and
+    # lets the landing page's pills also receive live updates.
+    if (
+        "wui.invigilator.view" not in session.permissions
+        and "wui.landing.view" not in session.permissions
+    ):
         await websock.close(code=4403)
         return
 

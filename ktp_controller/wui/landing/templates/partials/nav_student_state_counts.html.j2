@@ -1,0 +1,11 @@
+{% import "partials/_student_state_count_pills.html.j2" as pills %}
+{# Self-refreshing (not oob): unlike invigilator's header pills, which
+   piggyback on another element's self-triggered swap, landing has no
+   such element, so the pills div re-fetches itself directly. #}
+<div id="student-state-counts"
+     hx-get="{{ prefix }}/"
+     hx-trigger="invigilator-live-update from:body throttle:2s"
+     hx-target="this"
+     hx-swap="outerHTML">
+    {{ pills.render(state_labels, student_state_counts) }}
+</div>

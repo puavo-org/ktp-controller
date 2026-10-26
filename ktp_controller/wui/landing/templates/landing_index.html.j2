@@ -2,6 +2,14 @@
 
 {% block title %}{{ _("Exam server") }}{% endblock %}
 
+{% block extra_scripts %}
+    <script src="{{ prefix }}/static/status_updates.js"></script>
+{% endblock %}
+
+{% block nav_live_status %}
+    {% include "partials/nav_student_state_counts.html.j2" %}
+{% endblock %}
+
 {% block content %}
 
     <h2>{{ _("Exam server") }}</h2>

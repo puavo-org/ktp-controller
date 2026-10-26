@@ -117,6 +117,13 @@ async def _get_landing(
         "state_labels": state_labels,
     }
 
+    # If the request comes from htmx, return only the pills partial
+    if request.headers.get("HX-Request"):
+        return _templates.TemplateResponse(
+            request, name="partials/nav_student_state_counts.html.j2", context=context
+        )
+
+    # Otherwise return the full page
     return _templates.TemplateResponse(
         request, name="landing_index.html.j2", context=context
     )
