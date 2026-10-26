@@ -267,7 +267,10 @@ def test_student_access_code_view_student_state_counts_present_in_htmx_partial(
     )
 
     assert response.status_code == 200
-    assert 'id="student-state-counts" hx-swap-oob="true"' in response.text
+    assert (
+        'id="student-state-counts" class="state-counts" hx-swap-oob="true"'
+        in response.text
+    )
     assert '<span class="pill pill-has_problems">Has problems 1</span>' in (
         response.text
     )

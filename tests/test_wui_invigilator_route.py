@@ -361,10 +361,12 @@ def test_invigilator_view_shows_toggle_birthday_visibility_button(
     response = wui_client.get("/invigilator/")
 
     assert response.status_code == 200
-    assert 'class="toggle-birthday-visibility-button"' in response.text
-    button_tag = response.text.split('class="toggle-birthday-visibility-button"')[
-        1
-    ].split(">")[0]
+    assert (
+        'class="toggle-birthday-visibility-button icon-toggle-button"' in response.text
+    )
+    button_tag = response.text.split(
+        'class="toggle-birthday-visibility-button icon-toggle-button"'
+    )[1].split(">")[0]
     assert 'aria-pressed="false"' in button_tag
     assert 'aria-label="Show birthdays"' in button_tag
     assert 'data-show-label="Show birthdays"' in button_tag
@@ -1064,7 +1066,10 @@ def test_invigilator_view_student_state_counts_present_in_htmx_partial(
     response = wui_client.get("/invigilator/", headers={"HX-Request": "true"})
 
     assert response.status_code == 200
-    assert 'id="student-state-counts" hx-swap-oob="true"' in response.text
+    assert (
+        'id="student-state-counts" class="state-counts" hx-swap-oob="true"'
+        in response.text
+    )
     assert '<span class="pill pill-has_problems">Has problems 1</span>' in (
         response.text
     )
