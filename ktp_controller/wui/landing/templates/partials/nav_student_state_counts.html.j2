@@ -3,6 +3,7 @@
    piggyback on another element's self-triggered swap, landing has no
    such element, so the pills div re-fetches itself directly. #}
 <div id="student-state-counts"
+     class="state-counts"
      hx-get="{{ prefix }}/"
      hx-trigger="invigilator-live-update from:body throttle:2s"
      hx-target="this"

@@ -52,7 +52,7 @@
 
 {% block content %}
 
-    <div id="exams-header">
+    <div class="header-grid">
         <h2>{{ _("Exams") }}</h2>
 
         <div id="filters">
@@ -70,6 +70,7 @@
 
         <button type="button"
                 id="toggle-exam-groups-button"
+                class="icon-toggle-button"
                 data-expand-label="{{ _('Expand all') }}"
                 data-collapse-label="{{ _('Collapse all') }}"
                 title="{{ _('Collapse all') if any_exam_group_open else _('Expand all') }}"

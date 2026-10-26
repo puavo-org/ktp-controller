@@ -51,18 +51,47 @@ header .logo {
   display: block;
 }
 
-/* invigilator_index.html.j2 */
-#exams-header {
+/* Shared component patterns, reused by more than one template below.
+   Standardization rule: an #id selector is used only when that id
+   exists for a non-styling reason (HTMX hx-include/hx-target source or
+   hx-swap-oob target, JS DOM lookup, form field name/id/label pairing).
+   Everything else, including elements that are unique per page, is
+   styled by class. */
+
+/* 3-column header grid: title (left) | widget (center) | action (right) */
+.header-grid {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: var(--pico-spacing);
 }
-#exams-header h2 {
+.header-grid > h2,
+.header-grid > h3 {
   grid-column: 1;
   justify-self: start;
   margin: 0;
 }
+
+/* Student state-count pill strip, used standalone and inside headers */
+.state-counts {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+/* Compact icon-only toggle buttons */
+.icon-toggle-button {
+  display: inline-flex;
+  align-items: center;
+  --pico-form-element-spacing-vertical: 0rem;
+  --pico-form-element-spacing-horizontal: 0.25rem;
+  margin: 0;
+}
+.icon-toggle-button svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* invigilator_index.html.j2 */
 #filters {
   grid-column: 2;
   justify-self: center;
@@ -76,22 +105,9 @@ header .logo {
 #toggle-exam-groups-button {
   grid-column: 3;
   justify-self: end;
-  display: inline-flex;
-  align-items: center;
-  --pico-form-element-spacing-vertical: 0rem;
-  --pico-form-element-spacing-horizontal: 0.15rem;
-  margin: 0;
-}
-#toggle-exam-groups-button svg {
-  width: 1rem;
-  height: 1rem;
 }
 
 /* student_state_counts.html.j2 */
-#student-state-counts {
-    margin: 0;
-    font-size: 0.85rem;
-}
 .pill {
   display: inline-block;
   padding: 0.15rem 0.5rem;
@@ -117,8 +133,7 @@ header .logo {
 }
 
 /* student_access_code.html.j2 */
-#student-access-code-server-name,
-#student-access-code-value {
+.access-code-text {
   font-size: 6rem;
   font-weight: 700;
   letter-spacing: 0.15em;
@@ -143,16 +158,8 @@ header .logo {
   cursor: pointer;
 }
 .toggle-birthday-visibility-button {
-  display: inline-flex;
-  align-items: center;
   margin-left: 0.25rem;
-  --pico-form-element-spacing-vertical: 0rem;
-  --pico-form-element-spacing-horizontal: 0.25rem;
   line-height: 1;
-}
-.toggle-birthday-visibility-button svg {
-  width: 1rem;
-  height: 1rem;
 }
 .text-center {
   text-align: center;
@@ -172,21 +179,11 @@ header .logo {
   margin-top: 1rem;
 }
 .exam-group-header {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
   gap: 0.5rem;
-}
-.exam-group-header h3 {
-  grid-column: 1;
-  justify-self: start;
-  margin: 0;
 }
 .exam-student-state-counts {
   grid-column: 2;
   justify-self: center;
-  margin: 0;
-  font-size: 0.85rem;
 }
 .exam-student-state-counts ul {
   display: flex;
@@ -198,7 +195,7 @@ header .logo {
   list-style: none;
 }
 
-.exam-group .unknown h3 {
+.exam-group.is-unknown h3 {
     color: var(--pico-del-color);
 }
 

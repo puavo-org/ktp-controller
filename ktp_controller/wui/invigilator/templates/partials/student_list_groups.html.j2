@@ -5,9 +5,9 @@
      hx-swap="outerHTML"
      hx-include="#filters">
     {% if ungrouped_student_list_items %}
-    <details class="exam-group unknown" data-exam-title="???" open>
+    <details class="exam-group is-unknown" data-exam-title="???" open>
         <summary>
-        <div class="exam-group-header">
+        <div class="exam-group-header header-grid">
         <h3>???</h3>
         {% with state_counts = ungrouped_student_state_counts %}
         {% include "partials/exam_student_state_counts.html.j2" %}
@@ -20,7 +20,7 @@
     {% for exam_title, student_list_items in grouped_student_list_items.items() %}
     <details class="exam-group" data-exam-title="{{ exam_title }}" {% if exam_title in exam_titles_with_unfinished_students %}open{% endif %}>
         <summary>
-        <div class="exam-group-header">
+        <div class="exam-group-header header-grid">
         <h3>{{ exam_title }}</h3>
         {% with state_counts = grouped_student_state_counts[exam_title] %}
         {% include "partials/exam_student_state_counts.html.j2" %}

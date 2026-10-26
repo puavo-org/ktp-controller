@@ -1,4 +1,4 @@
 {% import "partials/_student_state_count_pills.html.j2" as pills %}
-<div id="student-state-counts" hx-swap-oob="true">
+<div id="student-state-counts" class="state-counts" hx-swap-oob="true">
     {{ pills.render(state_labels, student_state_counts) }}
 </div>
