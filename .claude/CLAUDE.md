@@ -81,6 +81,21 @@ Key technology: Python3, FastAPI, Uvicorn, htmx, Redis
   and `make i18n-compile` (in that order) to add/refresh the `fi`/`sv`/`en`
   `.po`/`.mo` files before `make check`'s `check-i18n` target will pass.
 
+- To visually verify a WUI CSS/template change, run `make dev-run`,
+  then log in and screenshot pages headlessly with
+  `uv run aux/wui_screenshot.py --username <user> --password '<password>'
+  <path> [<path> ...]` (paths are WUI routes, e.g. `/invigilator/`,
+  `/invigilator/student_access_code`, `/`). Pass `--expand-details` to
+  force-open `<details>` elements (e.g. exam groups) before capturing.
+  Screenshots are written to `workdirs/dev/screenshots/` by default
+  (override with `--out-dir`). The `valvoja` (invigilator) user always
+  exists in dev-run; get its password with `uv run python -c "import
+  ktp_controller.abitti2.naksu2; print(ktp_controller.abitti2.naksu2.read_supervisor_passphrase())"`.
+  For any other user, ask me for credentials rather than reading them
+  out of `workdirs/dev/ktp_controller.env` or similar files yourself —
+  that's treated as credential material. Shut `dev-run` down afterwards
+  with `./dev-run shutdown-wait`.
+
 - When you are trying to run `make test`, but it fails because `make
   dev-run` is already running, you can stop the `make dev-run` without
   asking me first and then retry `make test`.
