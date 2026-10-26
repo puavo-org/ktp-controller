@@ -533,6 +533,33 @@ def test_invigilator_ws_registers_and_unregisters(wui_client, mocker):
     unregister_mock.assert_awaited_once()
 
 
+def test_invigilator_ws_accepts_with_only_landing_permission(wui_client, mocker):
+    mocker.patch(
+        "ktp_controller.wui.auth.get_current_session",
+        return_value=ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+        ),
+    )
+    register_mock = mocker.patch.object(
+        ktp_controller.wui.main.APP.state.invigilator_ws_registry,
+        "register",
+        new=mocker.AsyncMock(),
+    )
+    unregister_mock = mocker.patch.object(
+        ktp_controller.wui.main.APP.state.invigilator_ws_registry,
+        "unregister",
+        new=mocker.AsyncMock(),
+    )
+
+    with wui_client.websocket_connect("/invigilator/ws"):
+        pass
+
+    register_mock.assert_awaited_once()
+    unregister_mock.assert_awaited_once()
+
+
 def test_invigilator_view_shows_end_exam_button_with_permission(
     wui_client, override_session, mocker
 ):
