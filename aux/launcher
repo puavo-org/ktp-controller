@@ -141,6 +141,9 @@ case "$COMMAND" in
     shutdown)
         ${EXEC_CMD} supervisorctl -c "$RUNCONF" shutdown
         ;;
+    shutdown-wait)
+        ${EXEC_CMD} bash -c "supervisorctl -c '$RUNCONF' maintail -f >/dev/null & supervisorctl -c '$RUNCONF' shutdown && wait -f"
+        ;;
     supervisorctl)
         ${EXEC_CMD} supervisorctl -c "$RUNCONF" "$@"
         ;;
