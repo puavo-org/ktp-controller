@@ -52,7 +52,7 @@ class _Card:
 # Cards shown on the landing page, in display order.
 _CARDS = (
     _Card(key="controller_info", required_permission=None),
-    _Card(key="abitti2", required_permission=None),
+    _Card(key="abitti2_info", required_permission=None),
 )
 
 
@@ -83,7 +83,12 @@ def _get_abitti2_info(
 ) -> schemas.Abitti2Info | None:
     if report is None:
         return None
-    return schemas.Abitti2Info(version=report["abitti2"]["version"])
+    return schemas.Abitti2Info(
+        version=report["abitti2"]["version"],
+        server_name=ktp_controller.abitti2.utils.parse_server_name(
+            report["abitti2"]["domain"]
+        ),
+    )
 
 
 @router.get("/", response_class=fastapi.responses.HTMLResponse)

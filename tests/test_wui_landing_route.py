@@ -26,7 +26,12 @@ def override_session():
     ktp_controller.wui.main.APP.dependency_overrides.clear()
 
 
-def _status_report(*, ktp_controller_version="0.8.0rc10", abitti2_version="1.27.0"):
+def _status_report(
+    *,
+    ktp_controller_version="0.8.0rc10",
+    abitti2_version="1.27.0",
+    abitti2_domain="what-not.koe.abitti.net",
+):
     return {
         "ktp_controller": {
             "version": ktp_controller_version,
@@ -35,6 +40,7 @@ def _status_report(*, ktp_controller_version="0.8.0rc10", abitti2_version="1.27.
         },
         "abitti2": {
             "version": abitti2_version,
+            "domain": abitti2_domain,
         },
     }
 
@@ -92,6 +98,7 @@ def test_landing_view_allowed_with_permission(wui_client, override_session, mock
     assert b"alice" in response.content
     assert "0.8.0rc10" in response.text
     assert "1.27.0" in response.text
+    assert "what-not" in response.text
 
 
 def test_landing_view_shows_placeholder_without_status_report(
@@ -126,6 +133,32 @@ def test_landing_view_shows_placeholder_without_abitti2_version(
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
         return_value=_status_report(abitti2_version=None),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    assert "Not available yet." in response.text
+
+
+def test_landing_view_shows_placeholder_without_abitti2_domain(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=_status_report(abitti2_domain=None),
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",

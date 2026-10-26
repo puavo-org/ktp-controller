@@ -18,3 +18,4 @@ class ControllerInfo(ktp_controller.pydantic.BaseModel):
 
 class Abitti2Info(ktp_controller.pydantic.BaseModel):
     version: pydantic.StrictStr | None
+    server_name: pydantic.StrictStr | None

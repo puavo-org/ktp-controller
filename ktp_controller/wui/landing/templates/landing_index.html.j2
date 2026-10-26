@@ -53,14 +53,18 @@
         </article>
         {% endif %}
 
-        {% if "abitti2" in visible_card_keys %}
+        {% if "abitti2_info" in visible_card_keys %}
         <article>
             <header>{{ _("Abitti2") }}</header>
-            {% if abitti2_info and abitti2_info.version %}
+            {% if abitti2_info and abitti2_info.version and abitti2_info.server_name %}
             <table class="landing-card-table">
                 <tr>
                     <td>{{ _("Version") }}</td>
                     <td>{{ abitti2_info.version }}</td>
+                </tr>
+                <tr>
+                    <td>{{ _("Server name") }}</td>
+                    <td>{{ abitti2_info.server_name }}</td>
                 </tr>
             </table>
             {% else %}
