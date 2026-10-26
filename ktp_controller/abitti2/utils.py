@@ -1,6 +1,7 @@
 # Standard library imports
 import datetime
 import logging
+import re
 import typing
 
 # Internal imports
@@ -224,3 +225,40 @@ async def allow_students_to_use_browsers(
             student_uuid,
             session_uuid,
         )
+
+
+def parse_server_name(domain: str | None) -> str | None:
+    """
+    >>> parse_server_name(None)
+
+    >>> parse_server_name("taattu-sumuttaa.koe.abitti.net")
+    'taattu-sumuttaa'
+
+    >>> parse_server_name("what-not.koe.abitti.net")
+    'what-not'
+
+    >>> parse_server_name("sumuttaa.koe.abitti.net")
+    Traceback (most recent call last):
+    ...
+    ValueError: ('invalid domain', 'sumuttaa.koe.abitti.net')
+
+    >>> parse_server_name("what-not.koe.abitti.fi")
+    Traceback (most recent call last):
+    ...
+    ValueError: ('invalid domain', 'what-not.koe.abitti.fi')
+
+    >>> parse_server_name("")
+    Traceback (most recent call last):
+    ...
+    ValueError: ('invalid domain', '')
+    """
+    if domain is None:
+        return None
+
+    domain_match = re.match(
+        r"^([a-z]+-[a-z]+)\.koe\.abitti\.net$", domain.lower().strip()
+    )
+    if not domain_match:
+        raise ValueError("invalid domain", domain)
+
+    return domain_match.group(1)
