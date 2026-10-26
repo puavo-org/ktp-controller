@@ -102,9 +102,13 @@ Key technology: Python3, FastAPI, Uvicorn, htmx, Redis
 
 # Git instructions
 
-- Do not sign commits.
-- Always ensure `make check` and `make test` succeeds before committing.
+- NEVER sign commits.
+- ALWAYS ensure `make check` and `make test` succeeds before committing.
 - Prefer many smaller logical commits than one massive.
+- NEVER use broad staging commands like `git add .` or `git add -A`.
+- ALWAYS stage specific files individually by their exact path (e.g., `git add path/to/file.ts`).
+- Break down changes into small, logical, atomic commits. NEVER bundle unrelated modifications.
+- Before running any commit, run `git diff --cached` to double-check exactly what is staged.
 
 ## Layered commit order for multi-file features
 
