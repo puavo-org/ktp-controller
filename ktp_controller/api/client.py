@@ -1,14 +1,13 @@
 # Standard library imports
 import json
 import logging
-import re
 import typing
 
+# Internal imports
+import ktp_controller.abitti2.utils
 import ktp_controller.api.exam.schemas
 import ktp_controller.api.system.schemas
 import ktp_controller.api.user.schemas
-
-# Internal imports
 import ktp_controller.httpx
 import ktp_controller.messages
 import ktp_controller.schemas
@@ -174,13 +173,11 @@ async def get_student_access_code_and_server_name() -> (
     if student_access_code is None or domain is None:
         return None
 
-    domain_match = re.match(
-        r"^([a-z]+-[a-z]+)\.koe\.abitti\.net$", domain.lower().strip()
-    )
-    if not domain_match:
-        _LOGGER.error("Unexpected Abitti2 domain: %r", domain)
+    try:
+        server_name = ktp_controller.abitti2.utils.parse_server_name(domain)
+    except ValueError as value_error:
+        _LOGGER.error("Unexpected Abitti2 domain %r: %s", domain, value_error)
         return None
-    server_name = domain_match.group(1)
 
     return ktp_controller.schemas.StudentAccessCodeAndServerName.model_validate(
         {
