@@ -466,11 +466,14 @@ class Agent:
             )
             return False
 
-        _LOGGER.info(
-            "Requesting Abitti2 to change student access code to ensure students "
-            "cannot access exams with code (%r).",
-            self.__old_security_code,
-        )
+        if self.__old_security_code:
+            _LOGGER.info(
+                "Requesting Abitti2 to change student access code to ensure students "
+                "cannot access exams with code (%r).",
+                self.__old_security_code,
+            )
+        else:
+            _LOGGER.info("Requesting Abitti2 to change student access code.")
         await ktp_controller.abitti2.client.change_student_access_code()
         self.__last_student_access_code_change_request_at = utcnow
         return True
@@ -1470,6 +1473,8 @@ class Agent:
 
     async def __clear_abitti2_caches(self) -> None:
         self.__cached_abitti2_version = None
+        self.__last_received_security_code = None
+        self.__old_security_code = None
         _LOGGER.info("All cached Abitti2 information has been cleared.")
 
     async def __communicate_with_abitti2(
