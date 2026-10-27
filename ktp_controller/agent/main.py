@@ -1521,30 +1521,32 @@ class Agent:
     async def __maintain_websocket_connection(
         self,
         name: Component,
-        url: str,
+        url_func: typing.Callable[[], str],
         asyncfuncs: typing.Iterable[
             typing.Callable[..., typing.Coroutine[typing.Any, typing.Any, typing.Any]]
         ],
         *,
         connection_stats_class: type[ktp_controller.agent.stats.ConnectionStats],
-        additional_headers: dict[str, str] | None = None,
+        additional_headers_func: typing.Callable[[], dict[str, str]] | None = None,
         on_exit_coro: typing.Awaitable[typing.Any] | None = None,
     ) -> None:
         started = False
-        async with _task(
-            f"websocket maintenance to {name} ({url!r})", on_exit_coro=on_exit_coro
-        ):
+        async with _task(f"websocket maintenance to {name}", on_exit_coro=on_exit_coro):
             while not _SHUTDOWN_EVENT.is_set():
                 try:
                     if started:
                         _LOGGER.error(
-                            "Reconnect to %s (%r) in approximately %d seconds...",
+                            "Reconnect to %s in approximately %d seconds...",
                             name,
-                            url,
                             self.__approx_reconnect_timeout_sec,
                         )
                         await asyncio.sleep(self.__approx_reconnect_timeout_sec)
                     started = True
+                    url = url_func()
+                    additional_headers = None
+                    if additional_headers_func is not None:
+                        additional_headers = additional_headers_func()
+                    _LOGGER.info("Connecting to %s...", url)
                     async with websockets.connect(
                         url,
                         additional_headers=additional_headers,
@@ -1573,7 +1575,7 @@ class Agent:
     async def __maintain_websocket_connection_to_api(self) -> None:
         await self.__maintain_websocket_connection(
             Component.API,
-            ktp_controller.api.client.get_agent_websock_url(),
+            ktp_controller.api.client.get_agent_websock_url,
             [
                 self.__send_pings_to_api,
                 self.__communicate_with_api,
@@ -1584,24 +1586,24 @@ class Agent:
     async def __maintain_websocket_connection_to_examomatic(self) -> None:
         await self.__maintain_websocket_connection(
             Component.EXAMOMATIC,
-            ktp_controller.examomatic.client.get_examomatic_websock_url(),
+            ktp_controller.examomatic.client.get_examomatic_websock_url,
             [
                 self.__send_pings_to_examomatic,
                 self.__communicate_with_examomatic,
             ],
             connection_stats_class=ktp_controller.agent.stats.ExamomaticConnectionStats,
-            additional_headers=ktp_controller.examomatic.client.get_basic_auth(),
+            additional_headers_func=ktp_controller.examomatic.client.get_basic_auth,
         )
 
     async def __maintain_websocket_connection_to_abitti2(self) -> None:
         await self.__maintain_websocket_connection(
             Component.ABITTI2,
-            ktp_controller.abitti2.client.get_abitti2_websock_url(),
+            ktp_controller.abitti2.client.get_abitti2_websock_url,
             [
                 self.__communicate_with_abitti2,
             ],
             connection_stats_class=ktp_controller.agent.stats.Abitti2ConnectionStats,
-            additional_headers=ktp_controller.abitti2.client.get_basic_auth(),
+            additional_headers_func=ktp_controller.abitti2.client.get_basic_auth,
             on_exit_coro=self.__clear_abitti2_caches(),
         )
 
