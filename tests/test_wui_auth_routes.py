@@ -63,10 +63,10 @@ def test_get_login_shows_logged_in_state_with_valid_session(wui_client, mocker):
     session_id = asyncio.run(
         ktp_controller.wui.auth.create_session("alice", locale="fi")
     )
+    wui_client.cookies = {ktp_controller.wui.auth.SESSION_COOKIE_NAME: session_id}
     try:
         response = wui_client.get(
             "/login",
-            cookies={ktp_controller.wui.auth.SESSION_COOKIE_NAME: session_id},
         )
 
         assert response.status_code == 200
@@ -203,18 +203,15 @@ def test_post_locale_persists_choice_in_session(wui_client, mocker):
     )
     session_cookie = login_response.cookies[ktp_controller.wui.auth.SESSION_COOKIE_NAME]
 
+    wui_client.cookies = {ktp_controller.wui.auth.SESSION_COOKIE_NAME: session_cookie}
     locale_response = wui_client.post(
         "/locale",
         data={"locale": "en", "next": "/login"},
-        cookies={ktp_controller.wui.auth.SESSION_COOKIE_NAME: session_cookie},
         headers=_SAME_ORIGIN_HEADERS,
     )
     assert locale_response.status_code == 303
 
-    response = wui_client.get(
-        "/login",
-        cookies={ktp_controller.wui.auth.SESSION_COOKIE_NAME: session_cookie},
-    )
+    response = wui_client.get("/login")
     assert b'<html lang="en">' in response.content
 
 
@@ -246,9 +243,9 @@ def test_logout_clears_session(wui_client, mocker):
     )
     session_cookie = login_response.cookies[ktp_controller.wui.auth.SESSION_COOKIE_NAME]
 
+    wui_client.cookies = {ktp_controller.wui.auth.SESSION_COOKIE_NAME: session_cookie}
     logout_response = wui_client.post(
         "/logout",
-        cookies={ktp_controller.wui.auth.SESSION_COOKIE_NAME: session_cookie},
         headers=_SAME_ORIGIN_HEADERS,
     )
 
@@ -274,9 +271,9 @@ def test_logout_honors_forwarded_prefix(wui_client, mocker):
     )
     session_cookie = login_response.cookies[ktp_controller.wui.auth.SESSION_COOKIE_NAME]
 
+    wui_client.cookies = {ktp_controller.wui.auth.SESSION_COOKIE_NAME: session_cookie}
     logout_response = wui_client.post(
         "/remote/12345/logout",
-        cookies={ktp_controller.wui.auth.SESSION_COOKIE_NAME: session_cookie},
         headers={**_SAME_ORIGIN_HEADERS, "X-Forwarded-Prefix": "/remote/12345"},
     )
 
