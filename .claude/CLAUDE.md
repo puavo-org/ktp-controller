@@ -18,7 +18,7 @@ the unit test run.
 tests. Execution takes 20-30mins. During execution, a testbot launches
 and uses a browser window on the host.
 
-`make dev-run` uses @supervisor/puavo_os-dev-run.conf to launch the
+`./dev-run` uses @supervisor/puavo_os-dev-run.conf to launch the
 whole orchestra. It takes about 1min to get all processes up and
 running. The working directory for dev-run is `workdirs/dev`. It
 contains all the artifacts from the dev run.
@@ -81,7 +81,7 @@ Key technology: Python3, FastAPI, Uvicorn, htmx, Redis
   and `make i18n-compile` (in that order) to add/refresh the `fi`/`sv`/`en`
   `.po`/`.mo` files before `make check`'s `check-i18n` target will pass.
 
-- To visually verify a WUI CSS/template change, run `make dev-run`,
+- To visually verify a WUI CSS/template change, run `./dev-run`,
   then log in and screenshot pages headlessly with
   `uv run aux/wui_screenshot.py --username <user> --password '<password>'
   <path> [<path> ...]` (paths are WUI routes, e.g. `/invigilator/`,
@@ -97,7 +97,7 @@ Key technology: Python3, FastAPI, Uvicorn, htmx, Redis
   with `./dev-run shutdown-wait`.
 
 - When you are trying to run `make test`, but it fails because `make
-  dev-run` is already running, you can stop the `make dev-run` without
+  dev-run` is already running, you can stop the `./dev-run` without
   asking me first and then retry `make test`.
 
 # Git instructions

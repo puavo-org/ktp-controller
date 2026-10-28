@@ -1,4 +1,4 @@
-"""Log into a running WUI (e.g. `make dev-run`) and save screenshots of pages.
+"""Log into a running WUI (e.g. `./dev-run`) and save screenshots of pages.
 
 Handy for visually reviewing CSS/template changes without a full browser
 session. Requires the `selenium` dev dependency (already declared in

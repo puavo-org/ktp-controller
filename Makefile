@@ -79,10 +79,6 @@ $(integration_test_targets): integration-test-%:
 .PHONY: integration-test
 integration-test: $(integration_test_targets)
 
-.PHONY: dev-run
-dev-run:
-	'$(project_root)/dev-run'
-
 .PHONY: dev-install
 dev-install:
 	command -v uv >/dev/null || { curl -LsSf https://astral.sh/uv/install.sh | sh; }
