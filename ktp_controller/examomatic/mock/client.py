@@ -2,7 +2,7 @@
 import datetime
 
 # Third-party imports
-import httpx2 as httpx
+import httpx2
 
 # Internal imports
 import ktp_controller.examomatic.client
@@ -17,7 +17,7 @@ async def set_exam_info(
     lock_time_duration_seconds: int = 30,
     utcnow: datetime.datetime | None = None,
     number_of_duplicates: int = 0,
-) -> httpx.Response:
+) -> httpx2.Response:
     if utcnow is None:
         utcnow = ktp_controller.utils.utcnow()
     return await ktp_controller.examomatic.client._post(

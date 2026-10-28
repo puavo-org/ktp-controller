@@ -18,7 +18,7 @@ import time
 import typing
 
 # Third-party imports
-import httpx2 as httpx
+import httpx2
 import pydantic
 import websockets
 
@@ -641,7 +641,7 @@ class Agent:
                     session_uuid=student["session_uuid"],
                     student_uuid=student["uuid"],
                 )
-            except httpx.HTTPStatusError as http_status_error:
+            except httpx2.HTTPStatusError as http_status_error:
                 if http_status_error.response.status_code == 409 and (
                     ktp_controller.schemas.StudentFlag.DISCONNECTED in student["flags"]
                 ):
@@ -1713,7 +1713,7 @@ class Agent:
 
         try:
             eom_exam_info = await ktp_controller.examomatic.client.get_exam_info()
-        except httpx.HTTPStatusError as http_error:
+        except httpx2.HTTPStatusError as http_error:
             if http_error.response.status_code == 404:
                 if is_spontaneous:
                     # It's ok that there are no exam infos, because we

@@ -6,7 +6,7 @@ import os.path
 import typing
 
 # Third-party imports
-import httpx2 as httpx
+import httpx2
 
 import ktp_controller.httpx
 
@@ -44,7 +44,7 @@ def _get_auth() -> tuple[str, str] | None:
     return None
 
 
-async def _get(path: str, **kwargs: typing.Any) -> httpx.Response:
+async def _get(path: str, **kwargs: typing.Any) -> httpx2.Response:
     params = {
         "domain": SETTINGS.domain,
         "hostname": SETTINGS.hostname,
@@ -63,7 +63,7 @@ async def _get(path: str, **kwargs: typing.Any) -> httpx.Response:
     return await ktp_controller.httpx.get(url, **kwargs)
 
 
-async def _post(path: str, **kwargs: typing.Any) -> httpx.Response:
+async def _post(path: str, **kwargs: typing.Any) -> httpx2.Response:
     url = ktp_controller.utils.get_url(
         SETTINGS.examomatic_host,
         path,

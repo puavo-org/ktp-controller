@@ -7,7 +7,7 @@ import re
 import typing
 
 # Third-party imports
-import httpx2 as httpx
+import httpx2
 
 import ktp_controller.abitti2.naksu2
 
@@ -43,7 +43,7 @@ __all__ = [
 ABITTI2_SUPERVISOR_USERNAME = "valvoja"
 
 
-async def _get(path: str, **kwargs: typing.Any) -> httpx.Response:
+async def _get(path: str, **kwargs: typing.Any) -> httpx2.Response:
     host = ktp_controller.abitti2.naksu2.read_domain()
     url = ktp_controller.utils.get_url(host, path)
 
@@ -55,7 +55,7 @@ async def _get(path: str, **kwargs: typing.Any) -> httpx.Response:
     return await ktp_controller.httpx.get(url, **kwargs)
 
 
-async def _post(path: str, **kwargs: typing.Any) -> httpx.Response:
+async def _post(path: str, **kwargs: typing.Any) -> httpx2.Response:
     kwargs.setdefault("json", {})
 
     kwargs["auth"] = (
@@ -92,7 +92,7 @@ async def get_current_abitti2_version() -> str:
         # Abitti2 1.26.0+
         response = await _get("/api/server-info")
         version: str = response.json()["version"]
-    except httpx.HTTPStatusError as http_error:
+    except httpx2.HTTPStatusError as http_error:
         if http_error.response.status_code != 404:
             raise
         # Pre Abitti2 1.26.0
@@ -224,9 +224,9 @@ async def download_answers_file(dest_filepath: str, **kwargs: typing.Any) -> str
                 dest_file.write(chunk)
                 sha256sum.update(chunk)
 
-        except httpx.ConnectTimeout as connect_timeout:
+        except httpx2.ConnectTimeout as connect_timeout:
             raise TimeoutError("Connect timed out.") from connect_timeout
-        except (httpx.ReadTimeout, httpx.ReadError) as read_error:
+        except (httpx2.ReadTimeout, httpx2.ReadError) as read_error:
             raise TimeoutError("Read timed out.") from read_error
 
     return sha256sum.hexdigest()

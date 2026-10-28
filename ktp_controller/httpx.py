@@ -3,7 +3,7 @@ import logging
 import typing
 
 # Third-party imports
-import httpx2 as httpx
+import httpx2
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -13,12 +13,12 @@ TimeoutT: typing.TypeAlias = NumberT | tuple[NumberT, NumberT] | None
 DEFAULT_TIMEOUT: TimeoutT = (3.1, 60)
 
 
-def _parse_timeout(timeout: TimeoutT) -> httpx.Timeout | NumberT | None:
-    """Convert requests-style timeout tuple (connect, read) to httpx.Timeout."""
+def _parse_timeout(timeout: TimeoutT) -> httpx2.Timeout | NumberT | None:
+    """Convert requests-style timeout tuple (connect, read) to httpx2.Timeout."""
     if isinstance(timeout, tuple):
         if len(timeout) != 2:
             raise ValueError("timeout must be a pair of NumberT")
-        return httpx.Timeout(timeout[1], connect=timeout[0])
+        return httpx2.Timeout(timeout[1], connect=timeout[0])
     return timeout
 
 
@@ -29,8 +29,8 @@ async def get(
     params: dict[str, str] | None = None,
     headers: dict[str, str] | None = None,
     timeout: TimeoutT = DEFAULT_TIMEOUT,
-) -> httpx.Response:
-    async with httpx.AsyncClient() as client:
+) -> httpx2.Response:
+    async with httpx2.AsyncClient() as client:
         response = await client.get(
             url,
             auth=auth,
@@ -38,7 +38,7 @@ async def get(
         )
     try:
         response.raise_for_status()
-    except httpx.HTTPStatusError as http_status_error:
+    except httpx2.HTTPStatusError as http_status_error:
         if http_status_error.response.text:
             _LOGGER.error(
                 "HTTP error %d: %s",
@@ -60,12 +60,12 @@ async def post(
     content: bytes | None = None,
     files: dict[str, typing.Any] | None = None,
     timeout: TimeoutT = DEFAULT_TIMEOUT,
-) -> httpx.Response:
+) -> httpx2.Response:
 
-    async with httpx.AsyncClient() as client:
+    async with httpx2.AsyncClient() as client:
         response = await client.post(
             url,
-            # httpx accepts None to mean "no auth"; its stubs disallow it.
+            # httpx2 accepts None to mean "no auth"; its stubs disallow it.
             auth=auth,  # type: ignore[arg-type]
             params=params,
             headers=headers,
@@ -78,7 +78,7 @@ async def post(
 
     try:
         response.raise_for_status()
-    except httpx.HTTPStatusError as http_status_error:
+    except httpx2.HTTPStatusError as http_status_error:
         if http_status_error.response.text:
             _LOGGER.error(
                 "HTTP error %d: %s",
@@ -98,7 +98,7 @@ async def stream_read(
     timeout: TimeoutT = DEFAULT_TIMEOUT,
     chunk_size: int = 4096,
 ) -> typing.AsyncIterator[bytes]:
-    async with httpx.AsyncClient() as client:
+    async with httpx2.AsyncClient() as client:
         try:
             async with client.stream(
                 "GET",
@@ -113,7 +113,7 @@ async def stream_read(
                 # Iterate over chunks asynchronously
                 async for chunk in response.aiter_bytes(chunk_size=chunk_size):
                     yield chunk
-        except httpx.HTTPStatusError as http_status_error:
+        except httpx2.HTTPStatusError as http_status_error:
             if http_status_error.response.text:
                 _LOGGER.error(
                     "HTTP error %d: %s",
