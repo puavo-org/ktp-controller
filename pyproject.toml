@@ -16,7 +16,6 @@ maintainers = [{ name = "Opinsys Developers", email = "dev@opinsys.fi" }]
 dependencies = [
     "asyncinotify",
     "fastapi",
-    "httpx",
     "httpx2",
     "jinja2",
     "uvicorn[standard]",
@@ -48,7 +47,6 @@ dev = [
     "pytest",
     "pytest-mock",
     "coverage",
-    "httpx",
     "httpx2",
     "selenium",
     "ruff",
