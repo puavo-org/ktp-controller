@@ -8,7 +8,7 @@ import typing
 # Third-party imports
 import httpx2
 
-import ktp_controller.httpx
+import ktp_controller.httpx2
 
 # Internal imports
 import ktp_controller.schemas
@@ -60,7 +60,7 @@ async def _get(path: str, **kwargs: typing.Any) -> httpx2.Response:
 
     kwargs["auth"] = _get_auth()
 
-    return await ktp_controller.httpx.get(url, **kwargs)
+    return await ktp_controller.httpx2.get(url, **kwargs)
 
 
 async def _post(path: str, **kwargs: typing.Any) -> httpx2.Response:
@@ -78,7 +78,7 @@ async def _post(path: str, **kwargs: typing.Any) -> httpx2.Response:
 
     kwargs["auth"] = _get_auth()
 
-    return await ktp_controller.httpx.post(url, **kwargs)
+    return await ktp_controller.httpx2.post(url, **kwargs)
 
 
 def get_basic_auth() -> dict[str, str]:
@@ -165,7 +165,7 @@ async def get_exam_file_stream(
 
     sha256sum_of_downloaded_file = hashlib.sha256()
 
-    async for chunk in ktp_controller.httpx.stream_read(url, **kwargs):
+    async for chunk in ktp_controller.httpx2.stream_read(url, **kwargs):
         sha256sum_of_downloaded_file.update(chunk)
         yield chunk
 

@@ -8,7 +8,7 @@ import ktp_controller.abitti2.utils
 import ktp_controller.api.exam.schemas
 import ktp_controller.api.system.schemas
 import ktp_controller.api.user.schemas
-import ktp_controller.httpx
+import ktp_controller.httpx2
 import ktp_controller.messages
 import ktp_controller.schemas
 import ktp_controller.utils
@@ -43,7 +43,7 @@ async def _post(path: str, **kwargs: typing.Any) -> typing.Any:
         f"{SETTINGS.api_host}:{SETTINGS.api_port}", path, scheme="http"
     )
 
-    response = await ktp_controller.httpx.post(url, **kwargs)
+    response = await ktp_controller.httpx2.post(url, **kwargs)
     return response.json()
 
 

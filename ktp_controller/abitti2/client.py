@@ -13,7 +13,7 @@ import ktp_controller.abitti2.naksu2
 
 # Internal imports
 import ktp_controller.files
-import ktp_controller.httpx
+import ktp_controller.httpx2
 import ktp_controller.utils
 
 _LOGGER = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ async def _get(path: str, **kwargs: typing.Any) -> httpx2.Response:
         ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
     )
 
-    return await ktp_controller.httpx.get(url, **kwargs)
+    return await ktp_controller.httpx2.get(url, **kwargs)
 
 
 async def _post(path: str, **kwargs: typing.Any) -> httpx2.Response:
@@ -66,7 +66,7 @@ async def _post(path: str, **kwargs: typing.Any) -> httpx2.Response:
     host = ktp_controller.abitti2.naksu2.read_domain()
     url = ktp_controller.utils.get_url(host, path)
 
-    return await ktp_controller.httpx.post(url, **kwargs)
+    return await ktp_controller.httpx2.post(url, **kwargs)
 
 
 def get_basic_auth() -> dict[str, str]:
@@ -139,7 +139,7 @@ async def upload_exam_package(
                 "application/zip",
             )
         }
-        response = await ktp_controller.httpx.post(url, **kwargs)
+        response = await ktp_controller.httpx2.post(url, **kwargs)
         return typing.cast(list[str], response.json())
 
 
@@ -220,7 +220,7 @@ async def download_answers_file(dest_filepath: str, **kwargs: typing.Any) -> str
         do_makedirs=True,
     ) as dest_file:
         try:
-            async for chunk in ktp_controller.httpx.stream_read(url, **kwargs):
+            async for chunk in ktp_controller.httpx2.stream_read(url, **kwargs):
                 dest_file.write(chunk)
                 sha256sum.update(chunk)
 
