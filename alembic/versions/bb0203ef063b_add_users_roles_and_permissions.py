@@ -100,7 +100,7 @@ def upgrade() -> None:
 
 
 def _seed_default_role_and_permission() -> None:
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.UTC)
 
     permissions_table = sa.table(
         "permissions",

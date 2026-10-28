@@ -241,7 +241,7 @@ async def websock_send_json(websock: typing.Any, data: typing.Any) -> str:
 
 
 def utcnow() -> datetime.datetime:
-    return datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
+    return datetime.datetime.now(datetime.UTC)
 
 
 def now() -> datetime.datetime:

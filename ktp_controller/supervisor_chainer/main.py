@@ -19,7 +19,7 @@ def _write_stdout(s: str) -> None:
 
 
 def _write_stderr(s: str) -> None:
-    utcnow = datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
+    utcnow = datetime.datetime.now(datetime.UTC)
     sys.stderr.write(f"{utcnow.isoformat(timespec='seconds')}  {s}")
     sys.stderr.flush()
 

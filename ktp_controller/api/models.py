@@ -9,6 +9,9 @@ import sqlalchemy
 import sqlalchemy.orm
 from sqlalchemy.orm import Mapped, mapped_column
 
+# Internal imports
+import ktp_controller.utils
+
 __all__ = [
     # Types:
     "Base",
@@ -40,7 +43,7 @@ class ExamFileInfo(Base):  # type: ignore
     )
     dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
         sqlalchemy.DateTime,
-        default=datetime.datetime.utcnow,
+        default=ktp_controller.utils.utcnow,
         nullable=False,
     )
 
@@ -68,7 +71,7 @@ class ExamFileInfo(Base):  # type: ignore
     )
     modified_at: Mapped[datetime.datetime] = mapped_column(
         sqlalchemy.DateTime,
-        default=datetime.datetime.utcnow,
+        default=ktp_controller.utils.utcnow,
         nullable=False,
     )
 
@@ -88,7 +91,7 @@ class ScheduledExam(Base):  # type: ignore
     )
     dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
         sqlalchemy.DateTime,
-        default=datetime.datetime.utcnow,
+        default=ktp_controller.utils.utcnow,
         nullable=False,
         index=True,
     )
@@ -124,7 +127,7 @@ class ScheduledExam(Base):  # type: ignore
     )
     modified_at: Mapped[datetime.datetime] = mapped_column(
         sqlalchemy.DateTime,
-        default=datetime.datetime.utcnow,
+        default=ktp_controller.utils.utcnow,
         nullable=False,
     )
 
@@ -146,7 +149,7 @@ class ScheduledExamPackage(Base):  # type: ignore
     )
     dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
         sqlalchemy.DateTime,
-        default=datetime.datetime.utcnow,
+        default=ktp_controller.utils.utcnow,
         nullable=False,
         index=True,
     )
@@ -225,7 +228,7 @@ class ExamInfo(Base):  # type: ignore
     )
     dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
         sqlalchemy.DateTime,
-        default=datetime.datetime.utcnow,
+        default=ktp_controller.utils.utcnow,
         nullable=False,
         index=True,
     )
@@ -254,7 +257,7 @@ class StatusReport(Base):  # type: ignore
     )
     dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
         sqlalchemy.DateTime,
-        default=datetime.datetime.utcnow,
+        default=ktp_controller.utils.utcnow,
         nullable=False,
         index=True,
     )
@@ -308,7 +311,7 @@ class User(Base):  # type: ignore
     )
     dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
         sqlalchemy.DateTime,
-        default=datetime.datetime.utcnow,
+        default=ktp_controller.utils.utcnow,
         nullable=False,
         index=True,
     )
@@ -336,7 +339,7 @@ class Role(Base):  # type: ignore
     )
     dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
         sqlalchemy.DateTime,
-        default=datetime.datetime.utcnow,
+        default=ktp_controller.utils.utcnow,
         nullable=False,
         index=True,
     )
@@ -367,7 +370,7 @@ class Permission(Base):  # type: ignore
     )
     dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
         sqlalchemy.DateTime,
-        default=datetime.datetime.utcnow,
+        default=ktp_controller.utils.utcnow,
         nullable=False,
         index=True,
     )

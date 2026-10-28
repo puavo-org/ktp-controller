@@ -55,7 +55,7 @@ def _select_permission_dbid(conn: sa.Connection) -> int | None:
 
 def upgrade() -> None:
     """Upgrade schema."""
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.UTC)
 
     conn = op.get_bind()
 

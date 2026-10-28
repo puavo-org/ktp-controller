@@ -106,7 +106,7 @@ def anyio_backend():
 
 @pytest.fixture
 def utcnow():
-    return datetime.datetime.utcnow().replace(tzinfo=datetime.UTC)
+    return datetime.datetime.now(datetime.UTC)
 
 
 @pytest.fixture(scope="session")
