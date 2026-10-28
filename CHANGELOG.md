@@ -7,9 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Web UI: display student state counts also on the landing page.
+
+- Web UI: display the Abitti2 server name on the landing page.
+
+- Add `shutdown-wait` subcommand to the command line interface. It
+  shuts KTP Controller down and waits until all processes have
+  terminated.
+
 ### Changed
 
 - Updated all dependencies.
+
+### Removed
+
+- Remove `tui` and `wui` subcommands from the command line interface.
 
 
 ## [0.8.1] - 2026-10-27
