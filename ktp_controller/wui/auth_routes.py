@@ -133,7 +133,7 @@ async def _post_locale(
 ) -> fastapi.responses.Response:
     if locale not in SETTINGS.supported_locales:
         raise fastapi.HTTPException(
-            status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=fastapi.status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Unsupported locale",
         )
 
