@@ -18,7 +18,7 @@ import time
 import typing
 
 # Third-party imports
-import httpx
+import httpx2 as httpx
 import pydantic
 import websockets
 

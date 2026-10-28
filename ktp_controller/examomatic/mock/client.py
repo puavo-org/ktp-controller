@@ -2,7 +2,7 @@
 import datetime
 
 # Third-party imports
-import httpx
+import httpx2 as httpx
 
 # Internal imports
 import ktp_controller.examomatic.client

@@ -3,7 +3,7 @@ import logging
 import typing
 
 # Third-party imports
-import httpx
+import httpx2 as httpx
 
 _LOGGER = logging.getLogger(__name__)
 

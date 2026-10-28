@@ -6,7 +6,7 @@ import os.path
 import typing
 
 # Third-party imports
-import httpx
+import httpx2 as httpx
 
 import ktp_controller.httpx
 
