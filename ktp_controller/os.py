@@ -114,6 +114,22 @@ def get_release() -> str:
     return f"{puavo_os_image_release} ({puavo_os_image_name})"
 
 
+def get_puavo_os_image_name() -> str | None:
+    try:
+        return ktp_controller.utils.readfirstline("/etc/puavo-image/name")
+    except Exception:
+        _LOGGER.exception("Failed to read Puavo OS image name")
+        return None
+
+
+def get_puavo_os_image_release() -> str | None:
+    try:
+        return ktp_controller.utils.readfirstline("/etc/puavo-image/release")
+    except Exception:
+        _LOGGER.exception("Failed to read Puavo OS image release")
+        return None
+
+
 def get_puavo_fqdn() -> str | None:
     if not ktp_controller.utils.is_puavo_os():
         return None
