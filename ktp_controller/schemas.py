@@ -141,6 +141,15 @@ class _Abitti2Stats(ktp_controller.pydantic.BaseModel):
     exams: list[_Abitti2ExamStats] | None
 
 
+class _Cert(ktp_controller.pydantic.BaseModel):
+    domains: set[pydantic.StrictStr] = Field(
+        ..., min_length=1, examples=[{"ostelu-solmu.koe.abitti.net"}]
+    )
+    expires_at: ktp_controller.pydantic.DateTime = Field(
+        ..., examples=["2026-12-09T23:59:59.999+0000"]
+    )
+
+
 class _Abitti2(ktp_controller.pydantic.BaseModel):
     stats: _Abitti2Stats
     answer_count: ktp_controller.pydantic.StrictNonNegativeInt | None = Field(

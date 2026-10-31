@@ -56,6 +56,15 @@ All fields are always present.
 | `finished_students_count` | `integer` | How many students have finished the exam                                                                                   | `0`               | minimum: `0` |
 | `flagged_students_count`  | `integer` | How many students have been flagged as having some kind of issue, e.g. disconnected, idle, waiting for authorization, etc. | `1`               | minimum: `0` |
 
+#### Cert
+
+All fields are always present.
+
+| Field        | Type                | Description | Example                           | Notes |
+| ------------ | ------------------- | ----------- | --------------------------------- | ----- |
+| `domains`    | `array` of `string` |             | `["ostelu-solmu.koe.abitti.net"]` |       |
+| `expires_at` | `datetime`          |             | `"2026-05-03T16:29:20.007+0000"`  |       |
+
 #### StudentAccessCode
 
 All fields are always present.
