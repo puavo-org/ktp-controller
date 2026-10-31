@@ -70,7 +70,7 @@
                     <td>{{ _("Certificate expires") }}</td>
                     <td{% if abitti2_info.cert_expiring_soon %} class="value-warning"{% endif %}>
                         <span class="value-with-icon">
-                            <span>{{ abitti2_info.cert_expires_at|localize_datetime(locale) if abitti2_info.cert_expires_at else "???" }}</span>
+                            <span>{{ abitti2_info.cert_expires_at|localize_date(locale) if abitti2_info.cert_expires_at else "???" }}</span>
                             {% if abitti2_info.cert_expiring_soon %}
                             <svg class="severity-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                                 <path d="M12 3 1 21h22L12 3z" stroke-width="2"/>
@@ -79,6 +79,9 @@
                             </svg>
                             {% endif %}
                         </span>
+                        {% if abitti2_info.cert_expiry_countdown_text %}
+                        <small class="severity-caption">{{ abitti2_info.cert_expiry_countdown_text }}</small>
+                        {% endif %}
                     </td>
                 </tr>
             </table>

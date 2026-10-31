@@ -128,6 +128,12 @@ header .logo {
   stroke: currentColor;
   fill: none;
 }
+/* Secondary caption under a severity-highlighted value, e.g. a
+   "N days left" countdown under an expiry date. */
+.severity-caption {
+  display: block;
+  font-size: 0.8rem;
+}
 
 /* invigilator_index.html.j2 */
 #filters {
