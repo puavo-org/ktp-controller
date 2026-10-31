@@ -102,6 +102,7 @@ def test_landing_view_allowed_with_permission(wui_client, override_session, mock
     assert b"alice" in response.content
     assert "0.8.0rc10" in response.text
     assert "1.27.0" in response.text
+    assert "O2611 Broom" in response.text
     assert "what-not" in response.text
 
 
