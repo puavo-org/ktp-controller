@@ -15,6 +15,7 @@ license = "GPL-2.0-only"
 maintainers = [{ name = "Opinsys Developers", email = "dev@opinsys.fi" }]
 dependencies = [
     "asyncinotify",
+    "cryptography",
     "fastapi",
     "httpx2",
     "jinja2",
