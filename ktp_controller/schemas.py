@@ -165,6 +165,14 @@ class _Abitti2(ktp_controller.pydantic.BaseModel):
     last_message_received_at: ktp_controller.pydantic.DateTime | None = Field(
         examples=["2026-05-03T16:29:20.007+0000"]
     )
+    cert: _Cert | None = Field(
+        examples=[
+            {
+                "domains": {"ostelu-solmu.koe.abitti.net"},
+                "expires_at": "2026-12-09T23:59:59.999+0000",
+            }
+        ]
+    )
     exams: list[_Exam] | None
     students: list[_Student] | None
 
