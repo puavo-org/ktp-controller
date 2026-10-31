@@ -7,6 +7,7 @@ import ktp_controller.pydantic
 __all__ = [
     "ControllerInfo",
     "Abitti2Info",
+    "OsInfo",
 ]
 
 
@@ -19,3 +20,7 @@ class ControllerInfo(ktp_controller.pydantic.BaseModel):
 class Abitti2Info(ktp_controller.pydantic.BaseModel):
     version: pydantic.StrictStr | None
     server_name: pydantic.StrictStr | None
+
+
+class OsInfo(ktp_controller.pydantic.BaseModel):
+    release: pydantic.StrictStr
