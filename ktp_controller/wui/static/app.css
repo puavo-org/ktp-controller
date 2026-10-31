@@ -91,16 +91,40 @@ header .logo {
   height: 1rem;
 }
 
-/* Warning highlight for a card/field value, e.g. an expiry date that
-   is approaching. Reusable across any card, not tied to one page. */
+/* Warning/error highlight for a card/field value, e.g. an expiry date
+   that is approaching, or a value that is in an error state.
+   Reusable across any card, not tied to one page. Pico has a
+   theme-aware red (--pico-del-color, reused here for errors) but no
+   amber equivalent, so --severity-warning-color is defined here with
+   its own light/dark values, the same way Pico itself pairs colors
+   with a prefers-color-scheme override. */
+:root {
+  --severity-warning-color: #9a6700;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --severity-warning-color: #d29922;
+  }
+}
 .value-warning {
+  color: var(--severity-warning-color);
+  font-weight: bold;
+}
+.value-error {
   color: var(--pico-del-color);
   font-weight: bold;
 }
-.icon-warning {
-  width: 1rem;
-  height: 1rem;
-  vertical-align: text-bottom;
+/* Pairs a value with a trailing severity icon without the icon
+   wrapping onto its own line in a narrow column. */
+.value-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+}
+.severity-icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
   stroke: currentColor;
   fill: none;
 }
