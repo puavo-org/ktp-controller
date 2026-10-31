@@ -1337,6 +1337,12 @@ class Agent:
             abitti2_version = None
 
         try:
+            cert = ktp_controller.abitti2.naksu2.read_cert()
+        except Exception:
+            _LOGGER.exception("failed to read Abitti2 cert")
+            cert = None
+
+        try:
             locked_exam_packages = (
                 await ktp_controller.api.client.get_locked_exam_packages()
             )
@@ -1389,6 +1395,7 @@ class Agent:
                 "supervisor_passphrase": supervisor_passphrase,
                 "version": abitti2_version,
                 "last_message_received_at": self.__last_message_from_abitti2_received_at,
+                "cert": cert,
                 "exams": self.__last_received_exam_list,
                 "students": self.__last_received_students,
             },
