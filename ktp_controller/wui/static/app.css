@@ -91,6 +91,20 @@ header .logo {
   height: 1rem;
 }
 
+/* Warning highlight for a card/field value, e.g. an expiry date that
+   is approaching. Reusable across any card, not tied to one page. */
+.value-warning {
+  color: var(--pico-del-color);
+  font-weight: bold;
+}
+.icon-warning {
+  width: 1rem;
+  height: 1rem;
+  vertical-align: text-bottom;
+  stroke: currentColor;
+  fill: none;
+}
+
 /* invigilator_index.html.j2 */
 #filters {
   grid-column: 2;
