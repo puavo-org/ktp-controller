@@ -20,6 +20,8 @@ class ControllerInfo(ktp_controller.pydantic.BaseModel):
 class Abitti2Info(ktp_controller.pydantic.BaseModel):
     version: pydantic.StrictStr | None
     server_name: pydantic.StrictStr | None
+    cert_expires_at: ktp_controller.pydantic.DateTime | None = None
+    cert_expiring_soon: pydantic.StrictBool = False
 
 
 class OsInfo(ktp_controller.pydantic.BaseModel):
