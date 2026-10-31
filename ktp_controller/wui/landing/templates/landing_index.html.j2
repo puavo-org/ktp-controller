@@ -76,11 +76,11 @@
         {% if "os_info" in visible_card_keys %}
         <article>
             <header>{{ _("Operating system") }}</header>
-            {% if os_info %}
+            {% if os_info and os_info.puavo_os_image_release %}
             <table class="landing-card-table">
                 <tr>
                     <td>{{ _("Release") }}</td>
-                    <td>{{ os_info.release }}</td>
+                    <td{% if os_info.puavo_os_image_name %} title="{{ os_info.puavo_os_image_name }}"{% endif %}>{{ os_info.puavo_os_image_release }}</td>
                 </tr>
             </table>
             {% else %}

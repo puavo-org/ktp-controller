@@ -31,7 +31,8 @@ def _status_report(
     ktp_controller_version="0.8.0rc10",
     abitti2_version="1.27.0",
     abitti2_domain="what-not.koe.abitti.net",
-    os_release="O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
+    puavo_os_image_release="O2611 Broom",
+    puavo_os_image_name="opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
 ):
     return {
         "ktp_controller": {
@@ -44,7 +45,8 @@ def _status_report(
             "domain": abitti2_domain,
         },
         "os": {
-            "release": os_release,
+            "puavo_os_image_release": puavo_os_image_release,
+            "puavo_os_image_name": puavo_os_image_name,
         },
     }
 
@@ -103,6 +105,10 @@ def test_landing_view_allowed_with_permission(wui_client, override_session, mock
     assert "0.8.0rc10" in response.text
     assert "1.27.0" in response.text
     assert "O2611 Broom" in response.text
+    assert (
+        'title="opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img"'
+        in response.text
+    )
     assert "what-not" in response.text
 
 

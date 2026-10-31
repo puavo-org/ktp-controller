@@ -97,7 +97,10 @@ def _get_os_info(
 ) -> schemas.OsInfo | None:
     if report is None:
         return None
-    return schemas.OsInfo(release=report["os"]["release"])
+    return schemas.OsInfo(
+        puavo_os_image_release=report["os"]["puavo_os_image_release"],
+        puavo_os_image_name=report["os"]["puavo_os_image_name"],
+    )
 
 
 @router.get("/", response_class=fastapi.responses.HTMLResponse)

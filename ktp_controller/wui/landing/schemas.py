@@ -23,4 +23,5 @@ class Abitti2Info(ktp_controller.pydantic.BaseModel):
 
 
 class OsInfo(ktp_controller.pydantic.BaseModel):
-    release: pydantic.StrictStr
+    puavo_os_image_release: pydantic.StrictStr | None
+    puavo_os_image_name: pydantic.StrictStr | None
