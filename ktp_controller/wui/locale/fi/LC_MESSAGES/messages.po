@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-26 19:06+0200\n"
+"POT-Creation-Date: 2026-10-31 18:52+0200\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -139,15 +139,15 @@ msgstr "Kokeet"
 msgid "Filter by student name or birthday..."
 msgstr "Suodata kokelaan nimen tai syntymäajan mukaan..."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:73
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:75
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:74
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:76
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:77
 msgid "Expand all"
 msgstr "Laajenna kaikki"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:74
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:75
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:76
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:77
 msgid "Collapse all"
 msgstr "Pienennä kaikki"
 
@@ -236,6 +236,7 @@ msgstr "Automaattiohjaus"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:51
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:71
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:87
 msgid "Not available yet."
 msgstr "Ei vielä saatavilla."
 
@@ -246,6 +247,14 @@ msgstr "Abitti2"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:66
 msgid "Server name"
 msgstr "Palvelimen nimi"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:78
+msgid "Operating system"
+msgstr "Käyttöjärjestelmä"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:82
+msgid "Release"
+msgstr "Julkaisu"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:21
 msgid "Connection lost at"

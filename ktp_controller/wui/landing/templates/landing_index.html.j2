@@ -73,6 +73,22 @@
         </article>
         {% endif %}
 
+        {% if "os_info" in visible_card_keys %}
+        <article>
+            <header>{{ _("Operating system") }}</header>
+            {% if os_info %}
+            <table class="landing-card-table">
+                <tr>
+                    <td>{{ _("Release") }}</td>
+                    <td>{{ os_info.release }}</td>
+                </tr>
+            </table>
+            {% else %}
+            <p>{{ _("Not available yet.") }}</p>
+            {% endif %}
+        </article>
+        {% endif %}
+
     </div>
 
 {% endblock %}
