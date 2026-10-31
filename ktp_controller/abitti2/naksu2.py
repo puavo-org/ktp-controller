@@ -5,11 +5,14 @@ import re
 import typing
 
 # Third-party imports
+import cryptography.x509
+
 # Internal imports
 import ktp_controller.abitti2.words
 
 __all__ = [
     "cleanup_rotated_logs",
+    "read_cert",
     "read_domain",
     "read_supervisor_passphrase",
 ]
@@ -42,6 +45,38 @@ def read_domain() -> str:
         encoding="utf-8",
     ) as f:
         return f.read().strip()
+
+
+def read_cert(*, filepath: str | None = None) -> dict[str, typing.Any]:
+    if filepath is None:
+        filepath = os.path.join(
+            os.path.expanduser(_NAKSU2_CONF_DIR_PATH), "certs", "cert.pem"
+        )
+
+    with open(filepath, "rb") as f:
+        cert = cryptography.x509.load_pem_x509_certificate(f.read())
+
+    domains = {
+        attr.value
+        for attr in cert.subject.get_attributes_for_oid(
+            cryptography.x509.oid.NameOID.COMMON_NAME
+        )
+        if isinstance(attr.value, str)
+    }
+
+    try:
+        san = cert.extensions.get_extension_for_oid(
+            cryptography.x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+        ).value
+        assert isinstance(san, cryptography.x509.SubjectAlternativeName)
+        domains.update(san.get_values_for_type(cryptography.x509.DNSName))
+    except cryptography.x509.ExtensionNotFound:
+        pass
+
+    if not domains:
+        raise ValueError("cert has no CN or subject alternative DNS names", filepath)
+
+    return {"domains": domains, "expires_at": cert.not_valid_after_utc}
 
 
 def cleanup_rotated_logs(
