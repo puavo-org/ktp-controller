@@ -143,6 +143,8 @@ class Agent:
         )
         self.__cached_abitti2_version: str | None = None
         self.__os_release = ktp_controller.os.get_release()
+        self.__puavo_os_image_name = ktp_controller.os.get_puavo_os_image_name()
+        self.__puavo_os_image_release = ktp_controller.os.get_puavo_os_image_release()
         self.__status_report_should_be_created = asyncio.Event()
 
         self.__approx_api_ping_interval_sec = approx_api_ping_interval_sec
@@ -1402,6 +1404,8 @@ class Agent:
             "os": {
                 "stats": ktp_controller.os.get_stats(),
                 "release": self.__os_release,
+                "puavo_os_image_name": self.__puavo_os_image_name,
+                "puavo_os_image_release": self.__puavo_os_image_release,
             },
         }
         try:
