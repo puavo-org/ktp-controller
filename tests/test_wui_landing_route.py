@@ -190,6 +190,32 @@ def test_landing_view_shows_placeholder_without_abitti2_domain(
     assert "Not available yet." in response.text
 
 
+def test_landing_view_shows_question_marks_without_os_release(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=_status_report(puavo_os_image_release=None),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    assert "???" in response.text
+
+
 def _raw_abitti2_stats_messages(statuses_and_connected):
     students = []
     for index, (status, is_connected) in enumerate(statuses_and_connected, start=1):
