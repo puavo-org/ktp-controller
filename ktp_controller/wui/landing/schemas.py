@@ -22,6 +22,7 @@ class Abitti2Info(ktp_controller.pydantic.BaseModel):
     server_name: pydantic.StrictStr | None
     cert_expires_at: ktp_controller.pydantic.DateTime | None = None
     cert_expiring_soon: pydantic.StrictBool = False
+    cert_expiry_countdown_text: pydantic.StrictStr | None = None
 
 
 class OsInfo(ktp_controller.pydantic.BaseModel):
