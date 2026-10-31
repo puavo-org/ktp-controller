@@ -66,6 +66,19 @@
                     <td>{{ _("Server name") }}</td>
                     <td>{{ abitti2_info.server_name }}</td>
                 </tr>
+                <tr>
+                    <td>{{ _("Certificate expires") }}</td>
+                    <td{% if abitti2_info.cert_expiring_soon %} class="value-warning"{% endif %}>
+                        {% if abitti2_info.cert_expiring_soon %}
+                        <svg class="icon-warning" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M12 3 1 21h22L12 3z" stroke-width="2"/>
+                            <line x1="12" y1="9" x2="12" y2="14" stroke-width="2"/>
+                            <circle cx="12" cy="17.5" r="1" fill="currentColor" stroke="none"/>
+                        </svg>
+                        {% endif %}
+                        {{ abitti2_info.cert_expires_at|localize_datetime(locale) if abitti2_info.cert_expires_at else "???" }}
+                    </td>
+                </tr>
             </table>
             {% else %}
             <p>{{ _("Not available yet.") }}</p>
