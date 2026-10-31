@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   shuts KTP Controller down and waits until all processes have
   terminated.
 
+- Status report: add `os.puavo_os_image_name` and
+  `os.puavo_os_image_release` fields, read from
+  `/etc/puavo-image/name` and `/etc/puavo-image/release`.
+
 ### Changed
 
 - Updated all dependencies.
