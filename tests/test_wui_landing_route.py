@@ -1,6 +1,9 @@
+import datetime
+
 import fastapi.testclient
 import pytest
 
+import ktp_controller.utils
 import ktp_controller.wui.auth
 import ktp_controller.wui.main
 
@@ -31,19 +34,26 @@ def _status_report(
     ktp_controller_version="0.8.0rc10",
     abitti2_version="1.27.0",
     abitti2_domain="what-not.koe.abitti.net",
+    abitti2_cert_expires_at="2099-01-01T00:00:00.000+0000",
     puavo_os_image_release="O2611 Broom",
     puavo_os_image_name="opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
 ):
+    abitti2 = {
+        "version": abitti2_version,
+        "domain": abitti2_domain,
+    }
+    if abitti2_cert_expires_at is not None:
+        abitti2["cert"] = {
+            "domains": [abitti2_domain],
+            "expires_at": abitti2_cert_expires_at,
+        }
     return {
         "ktp_controller": {
             "version": ktp_controller_version,
             "started_at": "2026-05-03T16:28:51.975+0000",
             "is_auto_control_enabled": True,
         },
-        "abitti2": {
-            "version": abitti2_version,
-            "domain": abitti2_domain,
-        },
+        "abitti2": abitti2,
         "os": {
             "puavo_os_image_release": puavo_os_image_release,
             "puavo_os_image_name": puavo_os_image_name,
@@ -104,6 +114,8 @@ def test_landing_view_allowed_with_permission(wui_client, override_session, mock
     assert b"alice" in response.content
     assert "0.8.0rc10" in response.text
     assert "1.27.0" in response.text
+    assert "1/1/99" in response.text
+    assert 'class="value-warning"' not in response.text
     assert "O2611 Broom" in response.text
     assert (
         'title="opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img"'
@@ -188,6 +200,93 @@ def test_landing_view_shows_placeholder_without_abitti2_domain(
 
     assert response.status_code == 200
     assert "Not available yet." in response.text
+
+
+def test_landing_view_shows_warning_for_soon_expiring_cert(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=_status_report(
+            abitti2_cert_expires_at=(
+                ktp_controller.utils.utcnow() + datetime.timedelta(days=1)
+            ).isoformat()
+        ),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    assert 'class="value-warning"' in response.text
+
+
+def test_landing_view_no_warning_for_cert_expiring_far_in_the_future(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=_status_report(
+            abitti2_cert_expires_at=(
+                ktp_controller.utils.utcnow() + datetime.timedelta(days=30)
+            ).isoformat()
+        ),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    assert 'class="value-warning"' not in response.text
+
+
+def test_landing_view_shows_question_marks_without_cert(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=_status_report(abitti2_cert_expires_at=None),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    assert "???" in response.text
+    assert 'class="value-warning"' not in response.text
 
 
 def test_landing_view_shows_question_marks_without_os_release(
