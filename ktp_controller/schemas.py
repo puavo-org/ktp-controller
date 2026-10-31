@@ -250,6 +250,16 @@ class _OS(ktp_controller.pydantic.BaseModel):
             "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)"
         ],
     )
+    puavo_os_image_name: str | None = Field(
+        default=None,
+        description="First line of /etc/puavo-image/name, or null if not available",
+        examples=["opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img"],
+    )
+    puavo_os_image_release: str | None = Field(
+        default=None,
+        description="First line of /etc/puavo-image/release, or null if not available",
+        examples=["O2611 Broom"],
+    )
 
 
 class StatusReport(ktp_controller.pydantic.BaseModel):
