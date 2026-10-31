@@ -89,20 +89,21 @@ def _get_abitti2_info(
     if report is None:
         return None
     cert = report["abitti2"].get("cert")
-    cert_expires_at = cert["expires_at"] if cert else None
-    cert_expiring_soon = (
-        cert_expires_at is not None
-        and cert_expires_at - ktp_controller.utils.utcnow()
-        < _CERT_EXPIRY_WARNING_THRESHOLD
-    )
-    return schemas.Abitti2Info(
+    abitti2_info = schemas.Abitti2Info(
         version=report["abitti2"]["version"],
         server_name=ktp_controller.abitti2.utils.parse_server_name(
             report["abitti2"]["domain"]
         ),
-        cert_expires_at=cert_expires_at,
-        cert_expiring_soon=cert_expiring_soon,
+        cert_expires_at=cert["expires_at"] if cert else None,
     )
+    # cert_expires_at above is validated/parsed into a real datetime by
+    # pydantic, even though the raw report value is a JSON string.
+    if abitti2_info.cert_expires_at is not None:
+        abitti2_info.cert_expiring_soon = (
+            abitti2_info.cert_expires_at - ktp_controller.utils.utcnow()
+            < _CERT_EXPIRY_WARNING_THRESHOLD
+        )
+    return abitti2_info
 
 
 def _get_os_info(
