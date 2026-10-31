@@ -1,6 +1,10 @@
+import datetime
 import os.path
 
+import cryptography.x509
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ed25519
 
 import ktp_controller.abitti2.naksu2
 
@@ -196,3 +200,143 @@ def test_cleanup_rotated_logs_default_logs_dirpath(monkeypatch, testdir):
 
     assert os.listdir(logs_dirpath) == []
     assert deleted_log_filepaths == {os.path.join(logs_dirpath, rotated_log_filename)}
+
+
+def _make_cert_pem(
+    *,
+    common_name=None,
+    san_dns_names=None,
+    not_valid_after=None,
+):
+    if not_valid_after is None:
+        not_valid_after = datetime.datetime.now(datetime.UTC) + datetime.timedelta(
+            days=365
+        )
+
+    key = ed25519.Ed25519PrivateKey.generate()
+
+    name_attributes = []
+    if common_name is not None:
+        name_attributes.append(
+            cryptography.x509.NameAttribute(
+                cryptography.x509.oid.NameOID.COMMON_NAME, common_name
+            )
+        )
+    name = cryptography.x509.Name(name_attributes)
+
+    builder = (
+        cryptography.x509.CertificateBuilder()
+        .subject_name(name)
+        .issuer_name(name)
+        .public_key(key.public_key())
+        .serial_number(cryptography.x509.random_serial_number())
+        .not_valid_before(
+            datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=1)
+        )
+        .not_valid_after(not_valid_after)
+    )
+
+    if san_dns_names:
+        builder = builder.add_extension(
+            cryptography.x509.SubjectAlternativeName(
+                [cryptography.x509.DNSName(n) for n in san_dns_names]
+            ),
+            critical=False,
+        )
+
+    cert = builder.sign(key, None)
+    return cert.public_bytes(serialization.Encoding.PEM)
+
+
+def test_read_cert_returns_domains_from_common_name(testdir):
+    cert_filepath = os.path.join(testdir, "cert.pem")
+    with open(cert_filepath, "wb") as f:
+        f.write(_make_cert_pem(common_name="taattu-sumuttaa.koe.abitti.net"))
+
+    cert = ktp_controller.abitti2.naksu2.read_cert(filepath=cert_filepath)
+
+    assert cert["domains"] == {"taattu-sumuttaa.koe.abitti.net"}
+
+
+def test_read_cert_returns_domains_from_common_name_and_san(testdir):
+    cert_filepath = os.path.join(testdir, "cert.pem")
+    with open(cert_filepath, "wb") as f:
+        f.write(
+            _make_cert_pem(
+                common_name="taattu-sumuttaa.koe.abitti.net",
+                san_dns_names=[
+                    "taattu-sumuttaa.koe.abitti.net",
+                    "www.taattu-sumuttaa.koe.abitti.net",
+                ],
+            )
+        )
+
+    cert = ktp_controller.abitti2.naksu2.read_cert(filepath=cert_filepath)
+
+    assert cert["domains"] == {
+        "taattu-sumuttaa.koe.abitti.net",
+        "www.taattu-sumuttaa.koe.abitti.net",
+    }
+
+
+def test_read_cert_returns_domains_from_san_only(testdir):
+    cert_filepath = os.path.join(testdir, "cert.pem")
+    with open(cert_filepath, "wb") as f:
+        f.write(_make_cert_pem(san_dns_names=["taattu-sumuttaa.koe.abitti.net"]))
+
+    cert = ktp_controller.abitti2.naksu2.read_cert(filepath=cert_filepath)
+
+    assert cert["domains"] == {"taattu-sumuttaa.koe.abitti.net"}
+
+
+def test_read_cert_returns_expires_at_from_not_valid_after(testdir):
+    not_valid_after = datetime.datetime(2030, 1, 1, 12, 0, 0, tzinfo=datetime.UTC)
+    cert_filepath = os.path.join(testdir, "cert.pem")
+    with open(cert_filepath, "wb") as f:
+        f.write(
+            _make_cert_pem(
+                common_name="taattu-sumuttaa.koe.abitti.net",
+                not_valid_after=not_valid_after,
+            )
+        )
+
+    cert = ktp_controller.abitti2.naksu2.read_cert(filepath=cert_filepath)
+
+    assert cert["expires_at"] == not_valid_after
+
+
+def test_read_cert_raises_value_error_without_cn_or_san(testdir):
+    cert_filepath = os.path.join(testdir, "cert.pem")
+    with open(cert_filepath, "wb") as f:
+        f.write(_make_cert_pem())
+
+    with pytest.raises(ValueError, match="cert has no CN"):
+        ktp_controller.abitti2.naksu2.read_cert(filepath=cert_filepath)
+
+
+def test_read_cert_raises_on_missing_file(testdir):
+    with pytest.raises(FileNotFoundError):
+        ktp_controller.abitti2.naksu2.read_cert(
+            filepath=os.path.join(testdir, "does-not-exist.pem")
+        )
+
+
+def test_read_cert_raises_on_invalid_pem(testdir):
+    cert_filepath = os.path.join(testdir, "cert.pem")
+    with open(cert_filepath, "wb") as f:
+        f.write(b"not a certificate")
+
+    with pytest.raises(ValueError, match="Unable to load PEM file"):
+        ktp_controller.abitti2.naksu2.read_cert(filepath=cert_filepath)
+
+
+def test_read_cert_default_filepath(monkeypatch, testdir):
+    monkeypatch.setattr(ktp_controller.abitti2.naksu2, "_NAKSU2_CONF_DIR_PATH", testdir)
+    certs_dirpath = os.path.join(testdir, "certs")
+    os.makedirs(certs_dirpath)
+    with open(os.path.join(certs_dirpath, "cert.pem"), "wb") as f:
+        f.write(_make_cert_pem(common_name="taattu-sumuttaa.koe.abitti.net"))
+
+    cert = ktp_controller.abitti2.naksu2.read_cert()
+
+    assert cert["domains"] == {"taattu-sumuttaa.koe.abitti.net"}
