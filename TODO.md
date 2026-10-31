@@ -7,16 +7,6 @@ When adding new items, always update the following line to define the
 ID of the next TODO item.
 Next ID: TODO25
 
-## TODO23
-
-WUI: Add new card to the landing page: title = Operating system (en),
-Käyttöjärjestelmä (fi). Add translation for Swedish.
-
-The card must display a field Release (en), Julkaisu (fi). Add
-translation for Swedish. The field displays `os.release` values from
-the latest status report.
-
-
 ## TODO24
 
 WUI: include cert expired_at information in Abitti2 card on the
