@@ -280,7 +280,7 @@ class _OS(ktp_controller.pydantic.BaseModel):
 
 
 class StatusReport(ktp_controller.pydantic.BaseModel):
-    v: Literal[2] = 2
+    v: Literal[3] = 3
     created_at: ktp_controller.pydantic.DateTime = Field(
         examples=["2026-05-03T16:29:20.495+0000"]
     )
