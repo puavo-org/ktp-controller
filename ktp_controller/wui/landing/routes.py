@@ -1,5 +1,6 @@
 # Standard library imports
 import dataclasses
+import datetime
 import logging
 import os.path
 import typing
@@ -11,6 +12,7 @@ import fastapi.templating
 
 # Internal imports
 import ktp_controller.api.client
+import ktp_controller.utils
 import ktp_controller.wui.auth
 import ktp_controller.wui.i18n
 import ktp_controller.wui.students
@@ -23,6 +25,8 @@ __all__ = [
 ]
 
 _LOGGER = logging.getLogger(__name__)
+
+_CERT_EXPIRY_WARNING_THRESHOLD = datetime.timedelta(days=8)
 
 router = fastapi.APIRouter(tags=["htmx"])
 _thisdir = os.path.dirname(__file__)
@@ -84,11 +88,20 @@ def _get_abitti2_info(
 ) -> schemas.Abitti2Info | None:
     if report is None:
         return None
+    cert = report["abitti2"].get("cert")
+    cert_expires_at = cert["expires_at"] if cert else None
+    cert_expiring_soon = (
+        cert_expires_at is not None
+        and cert_expires_at - ktp_controller.utils.utcnow()
+        < _CERT_EXPIRY_WARNING_THRESHOLD
+    )
     return schemas.Abitti2Info(
         version=report["abitti2"]["version"],
         server_name=ktp_controller.abitti2.utils.parse_server_name(
             report["abitti2"]["domain"]
         ),
+        cert_expires_at=cert_expires_at,
+        cert_expiring_soon=cert_expiring_soon,
     )
 
 
