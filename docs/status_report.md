@@ -2,11 +2,6 @@
 
 Auto-generated API documentation for the `StatusReport` schema.
 
-Examples:
-
-- [status_report_v2_example1.json](status_report_v2_example1.json)
-- [status_report_v2_example2.json](status_report_v2_example2.json)
-
 
 ## StatusReport
 
@@ -14,7 +9,7 @@ All fields are always present.
 
 | Field            | Type                            | Description | Example                          | Notes      |
 | ---------------- | ------------------------------- | ----------- | -------------------------------- | ---------- |
-| `v`              | `integer`                       |             |                                  | const: `2` |
+| `v`              | `integer`                       |             |                                  | const: `3` |
 | `created_at`     | `datetime`                      |             | `"2026-05-03T16:29:20.495+0000"` |            |
 | `abitti2`        | [Abitti2](#abitti2)             |             |                                  |            |
 | `ktp_controller` | [KTPController](#ktpcontroller) |             |                                  |            |
@@ -24,18 +19,19 @@ All fields are always present.
 
 All fields are always present.
 
-| Field                      | Type                                              | Description | Example                              | Notes        |
-| -------------------------- | ------------------------------------------------- | ----------- | ------------------------------------ | ------------ |
-| `stats`                    | [Abitti2Stats](#abitti2stats)                     |             |                                      |              |
-| `answer_count`             | `integer` or `null`                               |             | `1`                                  | minimum: `0` |
-| `domain`                   | `string` or `null`                                |             | `"ostelu-solmu.koe.abitti.net"`      |              |
-| `student_access_code`      | [StudentAccessCode](#studentaccesscode) or `null` |             |                                      |              |
-| `supervisor_username`      | `string`                                          |             | `"valvoja"`                          |              |
-| `supervisor_passphrase`    | `string` or `null`                                |             | `"jogurtti lihota vaivutus vigilia"` |              |
-| `version`                  | `string` or `null`                                |             | `"1.27.0"`                           |              |
-| `last_message_received_at` | `datetime` or `null`                              |             | `"2026-05-03T16:29:20.007+0000"`     |              |
-| `exams`                    | (`array` of [Exam](#exam)) or `null`              |             |                                      |              |
-| `students`                 | (`array` of [Student](#student)) or `null`        |             |                                      |              |
+| Field                      | Type                                              | Description | Example                                                                                      | Notes        |
+| -------------------------- | ------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------- | ------------ |
+| `stats`                    | [Abitti2Stats](#abitti2stats)                     |             |                                                                                              |              |
+| `answer_count`             | `integer` or `null`                               |             | `1`                                                                                          | minimum: `0` |
+| `domain`                   | `string` or `null`                                |             | `"ostelu-solmu.koe.abitti.net"`                                                              |              |
+| `student_access_code`      | [StudentAccessCode](#studentaccesscode) or `null` |             |                                                                                              |              |
+| `supervisor_username`      | `string`                                          |             | `"valvoja"`                                                                                  |              |
+| `supervisor_passphrase`    | `string` or `null`                                |             | `"jogurtti lihota vaivutus vigilia"`                                                         |              |
+| `version`                  | `string` or `null`                                |             | `"1.27.0"`                                                                                   |              |
+| `last_message_received_at` | `datetime` or `null`                              |             | `"2026-05-03T16:29:20.007+0000"`                                                             |              |
+| `cert`                     | [Cert](#cert) or `null`                           |             | `{"domains": ["ostelu-solmu.koe.abitti.net"], "expires_at": "2026-12-09T23:59:59.999+0000"}` |              |
+| `exams`                    | (`array` of [Exam](#exam)) or `null`              |             |                                                                                              |              |
+| `students`                 | (`array` of [Student](#student)) or `null`        |             |                                                                                              |              |
 
 #### Abitti2Stats
 
@@ -56,15 +52,6 @@ All fields are always present.
 | `finished_students_count` | `integer` | How many students have finished the exam                                                                                   | `0`               | minimum: `0` |
 | `flagged_students_count`  | `integer` | How many students have been flagged as having some kind of issue, e.g. disconnected, idle, waiting for authorization, etc. | `1`               | minimum: `0` |
 
-#### Cert
-
-All fields are always present.
-
-| Field        | Type                | Description | Example                           | Notes |
-| ------------ | ------------------- | ----------- | --------------------------------- | ----- |
-| `domains`    | `array` of `string` |             | `["ostelu-solmu.koe.abitti.net"]` |       |
-| `expires_at` | `datetime`          |             | `"2026-05-03T16:29:20.007+0000"`  |       |
-
 #### StudentAccessCode
 
 All fields are always present.
@@ -73,6 +60,15 @@ All fields are always present.
 | ------------------- | -------- | ----------- | -------- | ----- |
 | `key_code`          | `string` |             | `"1234"` |       |
 | `verification_code` | `string` |             | `"xx"`   |       |
+
+#### Cert
+
+All fields are always present.
+
+| Field        | Type                | Description | Example                           | Notes |
+| ------------ | ------------------- | ----------- | --------------------------------- | ----- |
+| `domains`    | `array` of `string` |             | `["ostelu-solmu.koe.abitti.net"]` |       |
+| `expires_at` | `datetime`          |             | `"2026-12-09T23:59:59.999+0000"`  |       |
 
 #### Exam
 
@@ -108,7 +104,7 @@ All fields are always present.
 
 | Field                     | Type                                                | Description                                                                                   | Example                          | Notes             |
 | ------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------- | ----------------- |
-| `version`                 | `string`                                            |                                                                                               |                                  | const: `0.8.0rc6` |
+| `version`                 | `string`                                            |                                                                                               |                                  | const: `0.9.0rc1` |
 | `started_at`              | `datetime`                                          | When the program has started.                                                                 | `"2026-05-03T16:28:51.975+0000"` |                   |
 | `is_auto_control_enabled` | `boolean`                                           |                                                                                               | `true`                           |                   |
 | `cached_files`            | [CachedFiles](#cachedfiles)                         |                                                                                               |                                  |                   |
@@ -213,10 +209,12 @@ All fields are always present.
 
 All fields are always present.
 
-| Field     | Type                | Description                          | Example                                                                   | Notes |
-| --------- | ------------------- | ------------------------------------ | ------------------------------------------------------------------------- | ----- |
-| `stats`   | [OSStats](#osstats) |                                      |                                                                           |       |
-| `release` | `string`            | OS-specific release / version string | `"O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)"` |       |
+| Field                    | Type                | Description                                                      | Example                                                                   | Notes |
+| ------------------------ | ------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------- | ----- |
+| `stats`                  | [OSStats](#osstats) |                                                                  |                                                                           |       |
+| `release`                | `string`            | OS-specific release / version string                             | `"O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)"` |       |
+| `puavo_os_image_name`    | `string` or `null`  | First line of /etc/puavo-image/name, or null if not available    | `"opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img"`               |       |
+| `puavo_os_image_release` | `string` or `null`  | First line of /etc/puavo-image/release, or null if not available | `"O2611 Broom"`                                                           |       |
 
 #### OSStats
 
