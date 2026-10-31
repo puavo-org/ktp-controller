@@ -41,6 +41,7 @@ _templates.env.autoescape = True
 _templates.env.add_extension("jinja2.ext.i18n")
 _templates.env.install_null_translations(newstyle=True)  # type: ignore[attr-defined]
 _templates.env.filters["localize_datetime"] = ktp_controller.wui.i18n.localize_datetime
+_templates.env.filters["localize_date"] = ktp_controller.wui.i18n.localize_date
 
 
 @dataclasses.dataclass(frozen=True)
