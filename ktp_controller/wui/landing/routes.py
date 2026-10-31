@@ -53,6 +53,7 @@ class _Card:
 _CARDS = (
     _Card(key="controller_info", required_permission=None),
     _Card(key="abitti2_info", required_permission=None),
+    _Card(key="os_info", required_permission=None),
 )
 
 
@@ -91,6 +92,14 @@ def _get_abitti2_info(
     )
 
 
+def _get_os_info(
+    report: dict[str, typing.Any] | None,
+) -> schemas.OsInfo | None:
+    if report is None:
+        return None
+    return schemas.OsInfo(release=report["os"]["release"])
+
+
 @router.get("/", response_class=fastapi.responses.HTMLResponse)
 @ktp_controller.wui.auth.require_permission("wui.landing.view")
 async def _get_landing(
@@ -115,6 +124,7 @@ async def _get_landing(
         "visible_card_keys": _visible_card_keys(session),
         "controller_info": _get_controller_info(report),
         "abitti2_info": _get_abitti2_info(report),
+        "os_info": _get_os_info(report),
         # Hardcoded until a "wui.actions.toggle-auto-control" permission
         # and its action endpoint exist.
         "can_toggle_auto_control": False,

@@ -31,6 +31,7 @@ def _status_report(
     ktp_controller_version="0.8.0rc10",
     abitti2_version="1.27.0",
     abitti2_domain="what-not.koe.abitti.net",
+    os_release="O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
 ):
     return {
         "ktp_controller": {
@@ -41,6 +42,9 @@ def _status_report(
         "abitti2": {
             "version": abitti2_version,
             "domain": abitti2_domain,
+        },
+        "os": {
+            "release": os_release,
         },
     }
 
