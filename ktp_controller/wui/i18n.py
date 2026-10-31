@@ -22,6 +22,8 @@ from . import auth
 __all__ = [
     "get_gettext",
     "get_locale",
+    "get_ngettext",
+    "localize_date",
     "localize_datetime",
     "negotiate_locale",
     "template_context_processor",
@@ -96,6 +98,10 @@ def get_gettext(locale: str) -> typing.Callable[[str], str]:
     return _get_translations(locale).gettext
 
 
+def get_ngettext(locale: str) -> typing.Callable[[str, str, int], str]:
+    return _get_translations(locale).ngettext
+
+
 def _newstyle_gettext(
     gettext_func: typing.Callable[[str], str],
 ) -> typing.Callable[..., str]:
@@ -148,3 +154,7 @@ def template_context_processor(request: fastapi.Request) -> dict[str, typing.Any
 
 def localize_datetime(dt: datetime.datetime, locale: str) -> str:
     return babel.dates.format_datetime(dt, format="short", locale=locale)
+
+
+def localize_date(dt: datetime.datetime, locale: str) -> str:
+    return babel.dates.format_date(dt, format="short", locale=locale)
