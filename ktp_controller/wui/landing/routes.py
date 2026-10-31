@@ -84,8 +84,22 @@ def _get_controller_info(
     )
 
 
+def _format_cert_expiry_countdown(remaining: datetime.timedelta, locale: str) -> str:
+    _ = ktp_controller.wui.i18n.get_gettext(locale)
+    ngettext = ktp_controller.wui.i18n.get_ngettext(locale)
+    if remaining <= datetime.timedelta(0):
+        return _("Expired")
+    if remaining.days >= 1:
+        return ngettext("%(num)s day left", "%(num)s days left", remaining.days) % {
+            "num": remaining.days
+        }
+    hours = remaining.seconds // 3600
+    return ngettext("%(num)s hour left", "%(num)s hours left", hours) % {"num": hours}
+
+
 def _get_abitti2_info(
     report: dict[str, typing.Any] | None,
+    locale: str,
 ) -> schemas.Abitti2Info | None:
     if report is None:
         return None
@@ -100,10 +114,12 @@ def _get_abitti2_info(
     # cert_expires_at above is validated/parsed into a real datetime by
     # pydantic, even though the raw report value is a JSON string.
     if abitti2_info.cert_expires_at is not None:
-        abitti2_info.cert_expiring_soon = (
-            abitti2_info.cert_expires_at - ktp_controller.utils.utcnow()
-            < _CERT_EXPIRY_WARNING_THRESHOLD
-        )
+        remaining = abitti2_info.cert_expires_at - ktp_controller.utils.utcnow()
+        abitti2_info.cert_expiring_soon = remaining < _CERT_EXPIRY_WARNING_THRESHOLD
+        if abitti2_info.cert_expiring_soon:
+            abitti2_info.cert_expiry_countdown_text = _format_cert_expiry_countdown(
+                remaining, locale
+            )
     return abitti2_info
 
 
@@ -141,7 +157,7 @@ async def _get_landing(
         "user": session.username,
         "visible_card_keys": _visible_card_keys(session),
         "controller_info": _get_controller_info(report),
-        "abitti2_info": _get_abitti2_info(report),
+        "abitti2_info": _get_abitti2_info(report, session.locale),
         "os_info": _get_os_info(report),
         # Hardcoded until a "wui.actions.toggle-auto-control" permission
         # and its action endpoint exist.
