@@ -15,6 +15,7 @@ import ktp_controller.api.client
 import ktp_controller.utils
 import ktp_controller.wui.auth
 import ktp_controller.wui.i18n
+import ktp_controller.wui.schemas
 import ktp_controller.wui.students
 
 # Relative imports
@@ -22,6 +23,7 @@ from . import schemas
 
 __all__ = [
     "router",
+    "get_nav_severity",
 ]
 
 _LOGGER = logging.getLogger(__name__)
@@ -134,6 +136,20 @@ def _get_os_info(
     )
 
 
+def get_nav_severity(
+    report: dict[str, typing.Any] | None, locale: str
+) -> ktp_controller.wui.schemas.Severity | None:
+    return ktp_controller.wui.schemas.highest_severity(
+        info.severity
+        for info in (
+            _get_controller_info(report),
+            _get_abitti2_info(report, locale),
+            _get_os_info(report),
+        )
+        if info is not None
+    )
+
+
 @router.get("/", response_class=fastapi.responses.HTMLResponse)
 @ktp_controller.wui.auth.require_permission("wui.landing.view")
 async def _get_landing(
@@ -159,6 +175,7 @@ async def _get_landing(
         "controller_info": _get_controller_info(report),
         "abitti2_info": _get_abitti2_info(report, session.locale),
         "os_info": _get_os_info(report),
+        "nav_severity": get_nav_severity(report, session.locale),
         # Hardcoded until a "wui.actions.toggle-auto-control" permission
         # and its action endpoint exist.
         "can_toggle_auto_control": False,
