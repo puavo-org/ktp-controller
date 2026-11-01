@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-01 17:16+0200\n"
+"POT-Creation-Date: 2026-11-01 22:38+0200\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -225,54 +225,94 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:4
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:17
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:18
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:9
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:32
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/nav_exam_server_link.html.j2:11
 msgid "Exam server"
 msgstr "Exam server"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:23
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:24
 msgid "Controller info"
 msgstr "Controller info"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:27
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:64
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:28
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:77
 msgid "Version"
 msgstr ""
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:31
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:32
 msgid "Started at"
 msgstr ""
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:35
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:46
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:37
+#, python-brace-format
+msgid "{n} second ago"
+msgstr ""
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:38
+#, python-brace-format
+msgid "{n} seconds ago"
+msgstr ""
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:39
+#, python-brace-format
+msgid "{n} minute ago"
+msgstr ""
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:40
+#, python-brace-format
+msgid "{n} minutes ago"
+msgstr ""
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:41
+#, python-brace-format
+msgid "{n} hour ago"
+msgstr ""
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:42
+#, python-brace-format
+msgid "{n} hours ago"
+msgstr ""
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:43
+#, python-brace-format
+msgid "{n} day ago"
+msgstr ""
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:44
+#, python-brace-format
+msgid "{n} days ago"
+msgstr ""
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:48
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:59
 msgid "Auto control"
 msgstr ""
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:53
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:85
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:101
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:66
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:98
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:114
 msgid "Not available yet."
 msgstr "Not available yet."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:60
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:73
 msgid "Abitti2"
 msgstr "Abitti2"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:68
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:81
 msgid "Server name"
 msgstr "Server name"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:72
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:85
 msgid "Certificate expires"
 msgstr ""
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:92
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:105
 msgid "Operating system"
 msgstr ""
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:96
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:109
 msgid "Release"
 msgstr ""
 
@@ -284,25 +324,25 @@ msgstr "Connection lost at"
 msgid "The page will reload automatically once it's back."
 msgstr "The page will reload automatically once it's back."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:40
-#, python-brace-format
-msgid "Page refreshed {n} second ago"
-msgstr "Page refreshed {n} second ago"
-
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:41
-#, python-brace-format
-msgid "Page refreshed {n} seconds ago"
-msgstr "Page refreshed {n} seconds ago"
-
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:48
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:43
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:24
 msgid "Language"
 msgstr "Language"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:52
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:47
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:39
 msgid "Log out"
 msgstr "Log out"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:63
+#, python-brace-format
+msgid "Page refreshed {n} second ago"
+msgstr "Page refreshed {n} second ago"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:64
+#, python-brace-format
+msgid "Page refreshed {n} seconds ago"
+msgstr "Page refreshed {n} seconds ago"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:9
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:33

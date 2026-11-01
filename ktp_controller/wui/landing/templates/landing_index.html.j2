@@ -6,6 +6,7 @@
 {% block extra_scripts %}
     <script src="{{ prefix }}/static/status_updates.js"></script>
     <script src="{{ prefix }}/static/page_refreshed_status.js"></script>
+    <script src="{{ prefix }}/static/controller_started_at.js"></script>
 {% endblock %}
 
 {% block nav_live_status %}
@@ -29,7 +30,19 @@
                 </tr>
                 <tr>
                     <td>{{ _("Started at") }}</td>
-                    <td>{{ controller_info.started_at|localize_datetime(locale) }}</td>
+                    <td>
+                        <span id="controller-started-at"
+                              title="{{ controller_info.started_at|localize_datetime(locale) }}"
+                              data-started-at="{{ controller_info.started_at.isoformat() }}"
+                              data-seconds-one="{{ _('{n} second ago') }}"
+                              data-seconds-other="{{ _('{n} seconds ago') }}"
+                              data-minutes-one="{{ _('{n} minute ago') }}"
+                              data-minutes-other="{{ _('{n} minutes ago') }}"
+                              data-hours-one="{{ _('{n} hour ago') }}"
+                              data-hours-other="{{ _('{n} hours ago') }}"
+                              data-days-one="{{ _('{n} day ago') }}"
+                              data-days-other="{{ _('{n} days ago') }}"></span>
+                    </td>
                 </tr>
                 <tr>
                     <td>{{ _("Auto control") }}</td>
