@@ -109,6 +109,42 @@ def utcnow():
     return datetime.datetime.now(datetime.UTC)
 
 
+@pytest.fixture
+def make_status_report():
+    def _make(
+        *,
+        ktp_controller_version="0.8.0rc10",
+        abitti2_version="1.27.0",
+        abitti2_domain="what-not.koe.abitti.net",
+        abitti2_cert_expires_at="2099-01-01T00:00:00.000+0000",
+        puavo_os_image_release="O2611 Broom",
+        puavo_os_image_name="opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
+    ):
+        abitti2 = {
+            "version": abitti2_version,
+            "domain": abitti2_domain,
+        }
+        if abitti2_cert_expires_at is not None:
+            abitti2["cert"] = {
+                "domains": [abitti2_domain],
+                "expires_at": abitti2_cert_expires_at,
+            }
+        return {
+            "ktp_controller": {
+                "version": ktp_controller_version,
+                "started_at": "2026-05-03T16:28:51.975+0000",
+                "is_auto_control_enabled": True,
+            },
+            "abitti2": abitti2,
+            "os": {
+                "puavo_os_image_release": puavo_os_image_release,
+                "puavo_os_image_name": puavo_os_image_name,
+            },
+        }
+
+    return _make
+
+
 @pytest.fixture(scope="session")
 def browser_chrome():
     options = selenium.webdriver.ChromeOptions()

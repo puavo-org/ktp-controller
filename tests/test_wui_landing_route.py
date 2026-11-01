@@ -39,38 +39,6 @@ def override_session():
     ktp_controller.wui.main.APP.dependency_overrides.clear()
 
 
-def _status_report(
-    *,
-    ktp_controller_version="0.8.0rc10",
-    abitti2_version="1.27.0",
-    abitti2_domain="what-not.koe.abitti.net",
-    abitti2_cert_expires_at="2099-01-01T00:00:00.000+0000",
-    puavo_os_image_release="O2611 Broom",
-    puavo_os_image_name="opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
-):
-    abitti2 = {
-        "version": abitti2_version,
-        "domain": abitti2_domain,
-    }
-    if abitti2_cert_expires_at is not None:
-        abitti2["cert"] = {
-            "domains": [abitti2_domain],
-            "expires_at": abitti2_cert_expires_at,
-        }
-    return {
-        "ktp_controller": {
-            "version": ktp_controller_version,
-            "started_at": "2026-05-03T16:28:51.975+0000",
-            "is_auto_control_enabled": True,
-        },
-        "abitti2": abitti2,
-        "os": {
-            "puavo_os_image_release": puavo_os_image_release,
-            "puavo_os_image_name": puavo_os_image_name,
-        },
-    }
-
-
 def test_landing_view_requires_login(wui_client):
     response = wui_client.get("/")
 
@@ -100,10 +68,12 @@ def test_landing_view_forbidden_without_permission(wui_client, override_session)
     assert response.status_code == 403
 
 
-def test_landing_view_allowed_with_permission(wui_client, override_session, mocker):
+def test_landing_view_allowed_with_permission(
+    wui_client, override_session, mocker, make_status_report
+):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
-        return_value=_status_report(),
+        return_value=make_status_report(),
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -162,11 +132,11 @@ def test_landing_view_shows_placeholder_without_status_report(
 
 
 def test_landing_view_shows_placeholder_without_abitti2_version(
-    wui_client, override_session, mocker
+    wui_client, override_session, mocker, make_status_report
 ):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
-        return_value=_status_report(abitti2_version=None),
+        return_value=make_status_report(abitti2_version=None),
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -188,11 +158,11 @@ def test_landing_view_shows_placeholder_without_abitti2_version(
 
 
 def test_landing_view_shows_placeholder_without_abitti2_domain(
-    wui_client, override_session, mocker
+    wui_client, override_session, mocker, make_status_report
 ):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
-        return_value=_status_report(abitti2_domain=None),
+        return_value=make_status_report(abitti2_domain=None),
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -214,11 +184,11 @@ def test_landing_view_shows_placeholder_without_abitti2_domain(
 
 
 def test_landing_view_shows_warning_for_soon_expiring_cert(
-    wui_client, override_session, mocker
+    wui_client, override_session, mocker, make_status_report
 ):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
-        return_value=_status_report(
+        return_value=make_status_report(
             abitti2_cert_expires_at=(
                 ktp_controller.utils.utcnow() + datetime.timedelta(days=1)
             ).isoformat()
@@ -251,11 +221,11 @@ def test_landing_view_shows_warning_for_soon_expiring_cert(
 
 
 def test_landing_view_shows_days_left_caption_for_expiring_cert(
-    wui_client, override_session, mocker
+    wui_client, override_session, mocker, make_status_report
 ):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
-        return_value=_status_report(
+        return_value=make_status_report(
             abitti2_cert_expires_at=(
                 ktp_controller.utils.utcnow() + datetime.timedelta(days=5, hours=12)
             ).isoformat()
@@ -281,11 +251,11 @@ def test_landing_view_shows_days_left_caption_for_expiring_cert(
 
 
 def test_landing_view_shows_hours_left_caption_for_cert_expiring_within_a_day(
-    wui_client, override_session, mocker
+    wui_client, override_session, mocker, make_status_report
 ):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
-        return_value=_status_report(
+        return_value=make_status_report(
             abitti2_cert_expires_at=(
                 ktp_controller.utils.utcnow() + datetime.timedelta(hours=5, minutes=30)
             ).isoformat()
@@ -311,11 +281,11 @@ def test_landing_view_shows_hours_left_caption_for_cert_expiring_within_a_day(
 
 
 def test_landing_view_shows_expired_caption_for_already_expired_cert(
-    wui_client, override_session, mocker
+    wui_client, override_session, mocker, make_status_report
 ):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
-        return_value=_status_report(
+        return_value=make_status_report(
             abitti2_cert_expires_at=(
                 ktp_controller.utils.utcnow() - datetime.timedelta(hours=1)
             ).isoformat()
@@ -341,11 +311,11 @@ def test_landing_view_shows_expired_caption_for_already_expired_cert(
 
 
 def test_landing_view_no_warning_for_cert_expiring_far_in_the_future(
-    wui_client, override_session, mocker
+    wui_client, override_session, mocker, make_status_report
 ):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
-        return_value=_status_report(
+        return_value=make_status_report(
             abitti2_cert_expires_at=(
                 ktp_controller.utils.utcnow() + datetime.timedelta(days=30)
             ).isoformat()
@@ -377,11 +347,11 @@ def test_landing_view_no_warning_for_cert_expiring_far_in_the_future(
 
 
 def test_landing_view_shows_question_marks_without_cert(
-    wui_client, override_session, mocker
+    wui_client, override_session, mocker, make_status_report
 ):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
-        return_value=_status_report(abitti2_cert_expires_at=None),
+        return_value=make_status_report(abitti2_cert_expires_at=None),
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -404,11 +374,11 @@ def test_landing_view_shows_question_marks_without_cert(
 
 
 def test_landing_view_shows_question_marks_without_os_release(
-    wui_client, override_session, mocker
+    wui_client, override_session, mocker, make_status_report
 ):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
-        return_value=_status_report(puavo_os_image_release=None),
+        return_value=make_status_report(puavo_os_image_release=None),
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -453,11 +423,11 @@ def _raw_abitti2_stats_messages(statuses_and_connected):
 
 
 def test_landing_view_renders_student_state_counts(
-    wui_client, override_session, mocker
+    wui_client, override_session, mocker, make_status_report
 ):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
-        return_value=_status_report(),
+        return_value=make_status_report(),
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -492,11 +462,11 @@ def test_landing_view_renders_student_state_counts(
 
 
 def test_landing_view_student_state_counts_present_in_htmx_partial(
-    wui_client, override_session, mocker
+    wui_client, override_session, mocker, make_status_report
 ):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
-        return_value=_status_report(),
+        return_value=make_status_report(),
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -547,10 +517,12 @@ def test_landing_ws_route_reachable_with_landing_permission_only(wui_client, moc
     unregister_mock.assert_awaited_once()
 
 
-def test_landing_view_honors_forwarded_prefix(wui_client, override_session, mocker):
+def test_landing_view_honors_forwarded_prefix(
+    wui_client, override_session, mocker, make_status_report
+):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
-        return_value=_status_report(),
+        return_value=make_status_report(),
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
