@@ -1,4 +1,5 @@
 {% extends "_base.html.j2" %}
+{% import "partials/_severity.html.j2" as severity_macros %}
 
 {% block title %}{{ _("Exam server") }}{% endblock %}
 
@@ -18,7 +19,7 @@
 
         {% if "controller_info" in visible_card_keys %}
         <article>
-            <header>{{ _("Controller info") }}</header>
+            {{ severity_macros.card_header(_("Controller info"), controller_info.severity if controller_info else None) }}
             {% if controller_info %}
             <table class="landing-card-table">
                 <tr>
@@ -55,7 +56,7 @@
 
         {% if "abitti2_info" in visible_card_keys %}
         <article>
-            <header>{{ _("Abitti2") }}</header>
+            {{ severity_macros.card_header(_("Abitti2"), abitti2_info.severity if abitti2_info else None) }}
             {% if abitti2_info and abitti2_info.version and abitti2_info.server_name %}
             <table class="landing-card-table">
                 <tr>
@@ -68,16 +69,10 @@
                 </tr>
                 <tr>
                     <td>{{ _("Certificate expires") }}</td>
-                    <td{% if abitti2_info.cert_expiring_soon %} class="value-warning"{% endif %}>
+                    <td{% if abitti2_info.severity %} class="value-{{ abitti2_info.severity }}"{% endif %}>
                         <span class="value-with-icon">
                             <span{% if abitti2_info.cert_expires_at %} title="{{ abitti2_info.cert_expires_at|localize_datetime(locale) }}"{% endif %}>{{ abitti2_info.cert_expires_at|localize_date(locale) if abitti2_info.cert_expires_at else "???" }}</span>
-                            {% if abitti2_info.cert_expiring_soon %}
-                            <svg class="severity-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path d="M12 3 1 21h22L12 3z" stroke-width="2"/>
-                                <line x1="12" y1="9" x2="12" y2="14" stroke-width="2"/>
-                                <circle cx="12" cy="17.5" r="1" fill="currentColor" stroke="none"/>
-                            </svg>
-                            {% endif %}
+                            {% if abitti2_info.severity %}{{ severity_macros.icon() }}{% endif %}
                         </span>
                         {% if abitti2_info.cert_expiry_countdown_text %}
                         <small class="severity-caption">{{ abitti2_info.cert_expiry_countdown_text }}</small>
@@ -93,7 +88,7 @@
 
         {% if "os_info" in visible_card_keys %}
         <article>
-            <header>{{ _("Operating system") }}</header>
+            {{ severity_macros.card_header(_("Operating system"), os_info.severity if os_info else None) }}
             {% if os_info %}
             <table class="landing-card-table">
                 <tr>
