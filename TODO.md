@@ -13,22 +13,3 @@ WUI: render a blueish/cyanish/greenish (whatever neutral color
 pico.css already provides and which works in both light and dark
 themes) dashed underline on all texts wich have tooltips.
 
-## TODO31
-
-WUI, landing page: In the "Controller info" card there's "Started at"
-field. Instead of displaying an exact timestamp, display a time
-relative to the current time, like so:
-
-If "Started at" is less than 1m ago, display "1 second ago / N seconds ago".
-If "Started at" is less than 1h ago, display "1 minute ago / N minutes ago".
-If "Started at" is less than 24h ago, display "1 hour ago / N hours ago".
-Otherwise display "1 day ago / N days ago".
-
-The relative time difference must be calculated on the browser,
-independently from the backend to give the end user reliable timing
-information. Just like TODO30.
-
-In addition, if "Started at" is less than 1 minute ago, highlight the
-value as a warning.
-
-Display the exact started_at timestamp as a tooltip.
