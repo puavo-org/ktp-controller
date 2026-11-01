@@ -14,6 +14,15 @@ def wui_client():
     )
 
 
+@pytest.fixture(autouse=True)
+def _mock_last_status_report(mocker):
+    # This page doesn't otherwise care about the status report; it only
+    # needs nav_severity's get_last_status_report() call to not hit the
+    # network. Tests exercising nav_severity itself override this with
+    # their own mocker.patch(...).
+    mocker.patch("ktp_controller.api.client.get_last_status_report", return_value=None)
+
+
 @pytest.fixture
 def override_session():
     def _override(session):

@@ -15,6 +15,7 @@ import ktp_controller.schemas
 import ktp_controller.utils
 import ktp_controller.wui.auth
 import ktp_controller.wui.i18n
+import ktp_controller.wui.landing.routes
 import ktp_controller.wui.schemas
 import ktp_controller.wui.students
 import ktp_controller.wui.utils
@@ -131,6 +132,8 @@ async def _get_invigilator(
         reverse=order == "desc",
     )
 
+    report = await ktp_controller.api.client.get_last_status_report()
+
     exams = await _get_exams()
 
     can_reset_audio = any(item.last_audio is not None for item in student_list_items)
@@ -230,6 +233,9 @@ async def _get_invigilator(
             "wui.actions.allow-audio-replay" in session.permissions
         ),
         "student_state_counts": student_state_counts,
+        "nav_severity": ktp_controller.wui.landing.routes.get_nav_severity(
+            report, session.locale
+        ),
     }
 
     # If the request comes from htmx, return only the table partial
@@ -261,6 +267,8 @@ async def _get_student_access_code(
         student_list_items
     )
 
+    report = await ktp_controller.api.client.get_last_status_report()
+
     request.state.locale = session.locale
     _ = ktp_controller.wui.i18n.get_gettext(session.locale)
 
@@ -272,6 +280,9 @@ async def _get_student_access_code(
         ),
         "student_state_counts": student_state_counts,
         "state_labels": ktp_controller.wui.students.get_student_state_labels(_),
+        "nav_severity": ktp_controller.wui.landing.routes.get_nav_severity(
+            report, session.locale
+        ),
     }
 
     # If the request comes from htmx, return only the code display partial
