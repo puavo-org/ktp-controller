@@ -21,7 +21,12 @@
 
         {% if "controller_info" in visible_card_keys %}
         <article>
-            {{ severity_macros.card_header(_("Controller info"), controller_info.severity if controller_info else None) }}
+            <header id="controller-info-header">
+                <span class="value-with-icon">
+                    {{ _("Controller info") }}
+                    {{ severity_macros.icon(id="controller-info-header-icon", hidden=True) }}
+                </span>
+            </header>
             {% if controller_info %}
             <table class="landing-card-table">
                 <tr>
@@ -30,18 +35,21 @@
                 </tr>
                 <tr>
                     <td>{{ _("Started at") }}</td>
-                    <td>
-                        <span id="controller-started-at"
-                              title="{{ controller_info.started_at|localize_datetime(locale) }}"
-                              data-started-at="{{ controller_info.started_at.isoformat() }}"
-                              data-seconds-one="{{ _('{n} second ago') }}"
-                              data-seconds-other="{{ _('{n} seconds ago') }}"
-                              data-minutes-one="{{ _('{n} minute ago') }}"
-                              data-minutes-other="{{ _('{n} minutes ago') }}"
-                              data-hours-one="{{ _('{n} hour ago') }}"
-                              data-hours-other="{{ _('{n} hours ago') }}"
-                              data-days-one="{{ _('{n} day ago') }}"
-                              data-days-other="{{ _('{n} days ago') }}"></span>
+                    <td id="controller-started-at-cell">
+                        <span class="value-with-icon">
+                            <span id="controller-started-at"
+                                  title="{{ controller_info.started_at|localize_datetime(locale) }}"
+                                  data-started-at="{{ controller_info.started_at.isoformat() }}"
+                                  data-seconds-one="{{ _('{n} second ago') }}"
+                                  data-seconds-other="{{ _('{n} seconds ago') }}"
+                                  data-minutes-one="{{ _('{n} minute ago') }}"
+                                  data-minutes-other="{{ _('{n} minutes ago') }}"
+                                  data-hours-one="{{ _('{n} hour ago') }}"
+                                  data-hours-other="{{ _('{n} hours ago') }}"
+                                  data-days-one="{{ _('{n} day ago') }}"
+                                  data-days-other="{{ _('{n} days ago') }}"></span>
+                            {{ severity_macros.icon(id="controller-started-at-icon", hidden=True) }}
+                        </span>
                     </td>
                 </tr>
                 <tr>

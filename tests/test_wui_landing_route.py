@@ -101,6 +101,14 @@ def test_landing_view_allowed_with_permission(
     assert b"alice" in response.content
     assert "0.8.0rc10" in response.text
     assert "1.27.0" in response.text
+    assert 'id="controller-info-header"' in response.text
+    assert (
+        'id="controller-info-header-icon" class="severity-icon" hidden' in response.text
+    )
+    assert 'id="controller-started-at-cell"' in response.text
+    assert (
+        'id="controller-started-at-icon" class="severity-icon" hidden' in response.text
+    )
     assert 'id="controller-started-at"' in response.text
     assert 'data-started-at="2026-05-03T16:28:51.975000+00:00"' in response.text
     assert 'data-seconds-one="{n} second ago"' in response.text
@@ -364,11 +372,15 @@ def test_landing_view_no_warning_for_cert_expiring_far_in_the_future(
     assert response.status_code == 200
     assert 'class="value-warning"' not in response.text
     assert "severity-caption" not in response.text
-    for title in ("Controller info", "Abitti2", "Operating system"):
+    for title in ("Abitti2", "Operating system"):
         header = _header_tag(response.text, title)
         assert "value-warning" not in header
         assert "value-error" not in header
         assert "severity-icon" not in header
+    controller_header = _header_tag(response.text, "Controller info")
+    assert "value-warning" not in controller_header
+    assert "value-error" not in controller_header
+    assert 'class="severity-icon" hidden' in controller_header
     nav_item = _nav_item_tag(response.text, "Exam server")
     assert "value-warning" not in nav_item
     assert "value-error" not in nav_item

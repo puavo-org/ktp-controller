@@ -1,5 +1,5 @@
-{% macro icon() %}
-<svg class="severity-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+{% macro icon(id=None, hidden=False) %}
+<svg{% if id %} id="{{ id }}"{% endif %} class="severity-icon"{% if hidden %} hidden{% endif %} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     <path d="M12 3 1 21h22L12 3z" stroke-width="2"/>
     <line x1="12" y1="9" x2="12" y2="14" stroke-width="2"/>
     <circle cx="12" cy="17.5" r="1" fill="currentColor" stroke="none"/>

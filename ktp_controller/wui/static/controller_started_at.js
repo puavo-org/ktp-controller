@@ -6,6 +6,17 @@
     return template.replace("{n}", n);
   }
 
+  // SVGElement doesn't reflect the `.hidden` IDL property back to the
+  // `hidden` content attribute the way HTMLElement does, so toggle the
+  // attribute directly instead.
+  function setHidden(el, hide) {
+    if (hide) {
+      el.setAttribute("hidden", "");
+    } else {
+      el.removeAttribute("hidden");
+    }
+  }
+
   function update() {
     const el = document.getElementById("controller-started-at");
     if (el === null) {
@@ -24,7 +35,24 @@
       text = pick(Math.floor(seconds / 86400), el.dataset.daysOne, el.dataset.daysOther);
     }
     el.textContent = text;
-    el.classList.toggle("value-warning", seconds < 60);
+
+    const warn = seconds < 60;
+    const cell = document.getElementById("controller-started-at-cell");
+    if (cell !== null) {
+      cell.classList.toggle("value-warning", warn);
+    }
+    const valueIcon = document.getElementById("controller-started-at-icon");
+    if (valueIcon !== null) {
+      setHidden(valueIcon, !warn);
+    }
+    const header = document.getElementById("controller-info-header");
+    if (header !== null) {
+      header.classList.toggle("value-warning", warn);
+    }
+    const headerIcon = document.getElementById("controller-info-header-icon");
+    if (headerIcon !== null) {
+      setHidden(headerIcon, !warn);
+    }
   }
 
   // This script runs in <head>, before <body> (and #controller-started-at)
