@@ -50,6 +50,11 @@ header .logo {
   width: auto;
   display: block;
 }
+.page-refreshed-status {
+  display: block;
+  text-align: right;
+  font-size: 0.7rem;
+}
 
 /* Shared component patterns, reused by more than one template below.
    Standardization rule: an #id selector is used only when that id
