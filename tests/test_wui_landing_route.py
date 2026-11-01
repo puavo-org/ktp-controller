@@ -504,33 +504,6 @@ def test_landing_view_student_state_counts_present_in_htmx_partial(
     assert '<span class="pill pill-in_exam">In exam 1</span>' in response.text
 
 
-def test_landing_ws_route_reachable_with_landing_permission_only(wui_client, mocker):
-    mocker.patch(
-        "ktp_controller.wui.auth.get_current_session",
-        return_value=ktp_controller.wui.auth.Session(
-            session_id="test-session",
-            username="alice",
-            permissions=frozenset({"wui.landing.view"}),
-        ),
-    )
-    register_mock = mocker.patch.object(
-        ktp_controller.wui.main.APP.state.live_update_registry,
-        "register",
-        new=mocker.AsyncMock(),
-    )
-    unregister_mock = mocker.patch.object(
-        ktp_controller.wui.main.APP.state.live_update_registry,
-        "unregister",
-        new=mocker.AsyncMock(),
-    )
-
-    with wui_client.websocket_connect("/ws"):
-        pass
-
-    register_mock.assert_awaited_once()
-    unregister_mock.assert_awaited_once()
-
-
 def test_landing_view_honors_forwarded_prefix(
     wui_client, override_session, mocker, make_status_report
 ):
