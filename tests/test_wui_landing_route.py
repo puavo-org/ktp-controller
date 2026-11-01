@@ -1,4 +1,5 @@
 import datetime
+import re
 
 import fastapi.testclient
 import pytest
@@ -6,6 +7,15 @@ import pytest
 import ktp_controller.utils
 import ktp_controller.wui.auth
 import ktp_controller.wui.main
+
+
+def _header_tag(html, title):
+    for match in re.finditer(
+        r"<header[^>]*>(?:(?!</header>).)*?</header>", html, re.DOTALL
+    ):
+        if title in match.group(0):
+            return match.group(0)
+    raise AssertionError(f"header for {title!r} not found in response")
 
 
 @pytest.fixture
@@ -231,6 +241,13 @@ def test_landing_view_shows_warning_for_soon_expiring_cert(
 
     assert response.status_code == 200
     assert 'class="value-warning"' in response.text
+    abitti2_header = _header_tag(response.text, "Abitti2")
+    assert 'class="value-warning"' in abitti2_header
+    assert "severity-icon" in abitti2_header
+    controller_header = _header_tag(response.text, "Controller info")
+    assert "value-warning" not in controller_header
+    os_header = _header_tag(response.text, "Operating system")
+    assert "value-warning" not in os_header
 
 
 def test_landing_view_shows_days_left_caption_for_expiring_cert(
@@ -352,6 +369,11 @@ def test_landing_view_no_warning_for_cert_expiring_far_in_the_future(
     assert response.status_code == 200
     assert 'class="value-warning"' not in response.text
     assert "severity-caption" not in response.text
+    for title in ("Controller info", "Abitti2", "Operating system"):
+        header = _header_tag(response.text, title)
+        assert "value-warning" not in header
+        assert "value-error" not in header
+        assert "severity-icon" not in header
 
 
 def test_landing_view_shows_question_marks_without_cert(
