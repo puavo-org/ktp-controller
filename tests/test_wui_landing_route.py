@@ -101,6 +101,17 @@ def test_landing_view_allowed_with_permission(
     assert b"alice" in response.content
     assert "0.8.0rc10" in response.text
     assert "1.27.0" in response.text
+    assert 'id="controller-started-at"' in response.text
+    assert 'data-started-at="2026-05-03T16:28:51.975000+00:00"' in response.text
+    assert 'data-seconds-one="{n} second ago"' in response.text
+    assert 'data-seconds-other="{n} seconds ago"' in response.text
+    assert 'data-minutes-one="{n} minute ago"' in response.text
+    assert 'data-minutes-other="{n} minutes ago"' in response.text
+    assert 'data-hours-one="{n} hour ago"' in response.text
+    assert 'data-hours-other="{n} hours ago"' in response.text
+    assert 'data-days-one="{n} day ago"' in response.text
+    assert 'data-days-other="{n} days ago"' in response.text
+    assert "static/controller_started_at.js" in response.text
     assert "1/1/99" in response.text
     assert 'title="1/1/99, 12:00\u202fAM"' in response.text
     assert 'class="value-warning"' not in response.text
