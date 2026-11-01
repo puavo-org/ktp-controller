@@ -56,22 +56,42 @@ header .logo {
 /* UX concept test: a "heartbeat" indicator instead of rendered text.
    Charges to full size/color on refresh, then slowly discharges down
    to half size and a pale green over 30s, then flips to red over the
-   next 5s as a "something's wrong" signal. transform/background-color
-   are written every animation frame by page_refreshed_status.js
-   (not a CSS transition/keyframes): tweening a 29s background-color
-   change via the browser's own transition engine renders visibly
-   coarser in Firefox than in Chrome, so the JS interpolates every
-   frame itself instead. These two values are just the pre-JS/initial
-   paint, matching the fully-charged state. */
+   next 5s as a "something's wrong" signal.
+
+   page_refreshed_status.js writes transform/opacity every animation
+   frame (not a CSS transition/keyframes). The "color" is three
+   stacked, identically-sized circles (base/lighten/alarm) instead of
+   a literally animated background-color: a repaint-triggering
+   property like background-color is cheap enough for Chrome to
+   repaint every frame, but measurably (confirmed by analyzing
+   screen-capture video frame-by-frame) drops frames in Firefox under
+   continuous updates. transform and opacity are compositor-only in
+   both engines, so crossfading opacity between fixed-color layers
+   renders identically smoothly everywhere. */
 .page-refreshed-beacon {
+  position: relative;
   display: inline-block;
   width: 1rem;
   height: 1rem;
-  border-radius: 50%;
-  background-color: #16a34a;
   transform: scale(1);
   transform-origin: center;
   vertical-align: middle;
+}
+.page-refreshed-beacon-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+.page-refreshed-beacon-base {
+  background-color: #16a34a; /* vivid green, fixed */
+}
+.page-refreshed-beacon-lighten {
+  background-color: #ffffff; /* whitens the base green towards pale green */
+  opacity: 0;
+}
+.page-refreshed-beacon-alarm {
+  background-color: #dc2626; /* alarming red, fixed */
+  opacity: 0;
 }
 
 /* Shared component patterns, reused by more than one template below.
