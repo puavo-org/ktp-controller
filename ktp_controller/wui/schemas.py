@@ -1,4 +1,5 @@
 # Standard library imports
+import collections.abc
 import datetime
 import enum
 import logging
@@ -13,6 +14,8 @@ __all__ = [
     "StudentState",
     "StudentStateCounts",
     "StudentListItem",
+    "Severity",
+    "highest_severity",
 ]
 
 _LOGGER = logging.getLogger(__name__)
@@ -23,6 +26,23 @@ class StudentState(enum.StrEnum):
     IN_EXAM = "in_exam"
     WAITING = "waiting"
     HAS_PROBLEMS = "has_problems"
+
+
+class Severity(enum.StrEnum):
+    """Matches the `value-<severity>` CSS classes in app.css."""
+
+    WARNING = "warning"
+    ERROR = "error"
+
+
+_SEVERITY_RANK = {Severity.WARNING: 1, Severity.ERROR: 2}
+
+
+def highest_severity(
+    severities: collections.abc.Iterable[Severity | None],
+) -> Severity | None:
+    present = [s for s in severities if s is not None]
+    return max(present, key=lambda s: _SEVERITY_RANK[s], default=None)
 
 
 class StudentStateCounts(pydantic.BaseModel):
