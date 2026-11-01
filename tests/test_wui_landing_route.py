@@ -110,6 +110,10 @@ def test_landing_view_allowed_with_permission(
         in response.text
     )
     assert "what-not" in response.text
+    assert "static/page_refreshed_status.js" in response.text
+    assert 'id="page-refreshed-status"' in response.text
+    assert 'data-template-one="Page refreshed {n} second ago"' in response.text
+    assert 'data-template-other="Page refreshed {n} seconds ago"' in response.text
 
 
 def test_landing_view_shows_placeholder_without_status_report(

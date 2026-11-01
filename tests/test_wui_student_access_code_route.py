@@ -112,6 +112,10 @@ def test_student_access_code_view_hides_nav_warning_by_default(
     assert "severity-icon" not in nav_item
     assert 'hx-get="/nav_status"' in nav_item
     assert 'hx-trigger="live-update from:body throttle:2s"' in nav_item
+    assert "static/page_refreshed_status.js" in response.text
+    assert 'id="page-refreshed-status"' in response.text
+    assert 'data-template-one="Page refreshed {n} second ago"' in response.text
+    assert 'data-template-other="Page refreshed {n} seconds ago"' in response.text
 
 
 def test_student_access_code_view_shows_nav_warning_for_soon_expiring_cert(
