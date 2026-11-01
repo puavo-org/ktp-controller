@@ -54,7 +54,7 @@
       if (event.detail.successful) {
         // Left busy on purpose: cleared for real when the next live
         // table refresh replaces this button with a fresh one (see
-        // student_list_groups.html.j2 / invigilator-live-update).
+        // student_list_groups.html.j2 / live-update).
         return;
       }
       if (button.isConnected) {

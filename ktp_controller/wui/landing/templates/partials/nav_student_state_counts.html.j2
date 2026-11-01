@@ -5,7 +5,7 @@
 <div id="student-state-counts"
      class="state-counts"
      hx-get="{{ prefix }}/"
-     hx-trigger="invigilator-live-update from:body throttle:2s"
+     hx-trigger="live-update from:body throttle:2s"
      hx-target="this"
      hx-swap="outerHTML">
     {{ pills.render(state_labels, student_state_counts) }}
