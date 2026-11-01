@@ -110,6 +110,8 @@ def test_student_access_code_view_hides_nav_warning_by_default(
     nav_item = _nav_item_tag(response.text, "Exam server")
     assert "value-warning" not in nav_item
     assert "severity-icon" not in nav_item
+    assert 'hx-get="/nav_status"' in nav_item
+    assert 'hx-trigger="live-update from:body throttle:2s"' in nav_item
 
 
 def test_student_access_code_view_shows_nav_warning_for_soon_expiring_cert(

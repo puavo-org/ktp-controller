@@ -358,6 +358,8 @@ def test_landing_view_no_warning_for_cert_expiring_far_in_the_future(
     assert "value-warning" not in nav_item
     assert "value-error" not in nav_item
     assert "severity-icon" not in nav_item
+    assert 'hx-get="/nav_status"' in nav_item
+    assert 'hx-trigger="live-update from:body throttle:2s"' in nav_item
 
 
 def test_landing_view_shows_question_marks_without_cert(
