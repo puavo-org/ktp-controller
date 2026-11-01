@@ -18,6 +18,13 @@ def _header_tag(html, title):
     raise AssertionError(f"header for {title!r} not found in response")
 
 
+def _nav_item_tag(html, link_text):
+    for match in re.finditer(r"<li[^>]*>(?:(?!</li>).)*?</li>", html, re.DOTALL):
+        if link_text in match.group(0):
+            return match.group(0)
+    raise AssertionError(f"nav item for {link_text!r} not found in response")
+
+
 @pytest.fixture
 def wui_client():
     return fastapi.testclient.TestClient(
@@ -218,6 +225,9 @@ def test_landing_view_shows_warning_for_soon_expiring_cert(
     assert "value-warning" not in controller_header
     os_header = _header_tag(response.text, "Operating system")
     assert "value-warning" not in os_header
+    nav_item = _nav_item_tag(response.text, "Exam server")
+    assert "value-warning" in nav_item
+    assert "severity-icon" in nav_item
 
 
 def test_landing_view_shows_days_left_caption_for_expiring_cert(
@@ -344,6 +354,10 @@ def test_landing_view_no_warning_for_cert_expiring_far_in_the_future(
         assert "value-warning" not in header
         assert "value-error" not in header
         assert "severity-icon" not in header
+    nav_item = _nav_item_tag(response.text, "Exam server")
+    assert "value-warning" not in nav_item
+    assert "value-error" not in nav_item
+    assert "severity-icon" not in nav_item
 
 
 def test_landing_view_shows_question_marks_without_cert(

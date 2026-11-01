@@ -1,3 +1,6 @@
+import datetime
+import re
+
 import fastapi.testclient
 import pytest
 
@@ -5,6 +8,13 @@ import ktp_controller.schemas
 import ktp_controller.wui.auth
 import ktp_controller.wui.main
 from tests.test_wui_invigilator_route import _mock_abitti2_state
+
+
+def _nav_item_tag(html, link_text):
+    for match in re.finditer(r"<li[^>]*>(?:(?!</li>).)*?</li>", html, re.DOTALL):
+        if link_text in match.group(0):
+            return match.group(0)
+    raise AssertionError(f"nav item for {link_text!r} not found in response")
 
 
 @pytest.fixture
@@ -73,6 +83,68 @@ def test_student_access_code_view_allowed_with_permission(
     assert "top-men" in response.text
     assert "1234 xx" in response.text
     assert b"alice" in response.content
+
+
+def test_student_access_code_view_hides_nav_warning_by_default(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_student_access_code_and_server_name",
+        return_value=None,
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages", return_value=[]
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/student_access_code")
+
+    assert response.status_code == 200
+    nav_item = _nav_item_tag(response.text, "Exam server")
+    assert "value-warning" not in nav_item
+    assert "severity-icon" not in nav_item
+
+
+def test_student_access_code_view_shows_nav_warning_for_soon_expiring_cert(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_student_access_code_and_server_name",
+        return_value=None,
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages", return_value=[]
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(
+            abitti2_cert_expires_at=(
+                datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1)
+            ).isoformat()
+        ),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/student_access_code")
+
+    assert response.status_code == 200
+    nav_item = _nav_item_tag(response.text, "Exam server")
+    assert "value-warning" in nav_item
+    assert "severity-icon" in nav_item
 
 
 def test_student_access_code_view_shows_students_nav_link(

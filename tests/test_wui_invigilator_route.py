@@ -30,6 +30,13 @@ def _svg_tag(html, svg_class):
     return match.group(0)
 
 
+def _nav_item_tag(html, link_text):
+    for match in re.finditer(r"<li[^>]*>(?:(?!</li>).)*?</li>", html, re.DOTALL):
+        if link_text in match.group(0):
+            return match.group(0)
+    raise AssertionError(f"nav item for {link_text!r} not found in response")
+
+
 @pytest.fixture
 def wui_client():
     return fastapi.testclient.TestClient(
@@ -90,6 +97,56 @@ def test_invigilator_view_allowed_with_permission(wui_client, override_session, 
     assert response.status_code == 200
     assert b"alice" in response.content
     assert b'action="/logout"' in response.content
+
+
+def test_invigilator_view_hides_nav_warning_by_default(
+    wui_client, override_session, mocker
+):
+    _mock_abitti2_state(mocker, is_empty=True)
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    nav_item = _nav_item_tag(response.text, "Exam server")
+    assert "value-warning" not in nav_item
+    assert "severity-icon" not in nav_item
+
+
+def test_invigilator_view_shows_nav_warning_for_soon_expiring_cert(
+    wui_client, override_session, mocker, make_status_report
+):
+    _mock_abitti2_state(mocker, is_empty=True)
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(
+            abitti2_cert_expires_at=(
+                datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1)
+            ).isoformat()
+        ),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    nav_item = _nav_item_tag(response.text, "Exam server")
+    assert "value-warning" in nav_item
+    assert "severity-icon" in nav_item
 
 
 def test_invigilator_view_honors_forwarded_prefix(wui_client, override_session, mocker):
