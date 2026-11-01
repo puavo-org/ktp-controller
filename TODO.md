@@ -7,14 +7,6 @@ When adding new items, always update the following line to define the
 ID of the next TODO item.
 Next ID: TODO29
 
-## TODO26
-
-WUI: On the landing page
-(`ktp_controller/wui/landing/templates/landing_index.html.j2`), if
-values in a card/article have warnings, then display the warning icon
-also on the header of the card and highlight the title of the card
-with the warning color.
-
 ## TODO27
 
 WUI: If any of the landing page cards have warnings, then display the
