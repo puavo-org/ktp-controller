@@ -36,6 +36,11 @@
             {% block nav_live_status %}{% endblock %}
             <ul>
                 <li>
+                    <small id="page-refreshed-status"
+                           data-template-one="{{ _('Page refreshed {n} second ago') }}"
+                           data-template-other="{{ _('Page refreshed {n} seconds ago') }}"></small>
+                </li>
+                <li>
                     <details class="dropdown">
                         <summary>{{ locale_menu.flag(locale) }} {{ user }}</summary>
                         <ul>

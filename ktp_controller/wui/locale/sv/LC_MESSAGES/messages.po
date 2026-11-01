@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-31 22:16+0200\n"
+"POT-Creation-Date: 2026-11-01 17:16+0200\n"
 "PO-Revision-Date: 2026-09-27 20:42+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv\n"
@@ -42,51 +42,51 @@ msgstr "Problem"
 msgid "Finished"
 msgstr "Avslutad"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:183
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:186
 msgid "Name"
 msgstr "Namn"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:184
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:187
 msgid "Birthday"
 msgstr "Födelsedatum"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:185
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:188
 msgid "State"
 msgstr "Status"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:186
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:189
 msgid "Last changed at"
 msgstr "Senast ändrad"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:193
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:196
 msgid "Allowed to use browsers"
 msgstr "Tillåten att använda webbläsare"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:194
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:197
 msgid "Last played audio"
 msgstr "Den senast lyssnade inspelningen"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:195
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:198
 msgid "Action"
 msgstr "Åtgärd"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:201
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:204
 msgid "Disconnected"
 msgstr "Frånkopplad"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:202
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:205
 msgid "Idle"
 msgstr "Inaktiv"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:203
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:206
 msgid "Waiting for auth"
 msgstr "Väntar på autentisering"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:204
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:207
 msgid "Undefined exam"
 msgstr "Odefinierat prov"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:205
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:208
 msgid "Unknown issue"
 msgstr "Okänt problem"
 
@@ -94,23 +94,23 @@ msgstr "Okänt problem"
 msgid "Invigilator's view"
 msgstr "Övervakarens vy"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:23
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:24
 msgid "Really end exam for <strong id=\"end-exam-confirm-name\"></strong>?"
 msgstr ""
 "Avsluta verkligen provet för <strong id=\"end-exam-confirm-"
 "name\"></strong>?"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:30
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:22
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:31
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:23
 msgid "Yes"
 msgstr "Ja"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:31
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:23
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:32
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:24
 msgid "No"
 msgstr "Nej"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:39
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:40
 msgid ""
 "Allow student <strong id=\"allow-audio-replay-confirm-name\"></strong> to"
 " replay audio <strong id=\"allow-audio-replay-confirm-last-"
@@ -122,42 +122,42 @@ msgstr ""
 "replay-confirm-last-audio\"></strong> igen i provet <strong id=\"allow-"
 "audio-replay-confirm-exam-title\"></strong>?"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:45
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:46
 msgid "Allow"
 msgstr "Tillåt"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:46
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:47
 msgid "Cancel"
 msgstr "Avbryt"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:56
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:57
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:33
 msgid "Exams"
 msgstr "Proven"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:63
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:64
 msgid "Filter by student name or birthday..."
 msgstr "Filtrera enligt studerandes namn eller födelsedatum..."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:74
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:76
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:75
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:77
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:78
 msgid "Expand all"
 msgstr "Expandera alla"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:75
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:76
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:77
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:78
 msgid "Collapse all"
 msgstr "Fäll ihop alla"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:32
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:33
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:34
 msgid "Student access code"
 msgstr "Studerandes åtkomstkod"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:18
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:19
 msgid ""
 "Really change the student access code? The current code will stop working"
 " for every student using it."
@@ -208,73 +208,73 @@ msgstr "Inga studerande matchar '%(query)s'"
 msgid "No students"
 msgstr "Inga studerande"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:91
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:93
 msgid "Expired"
 msgstr "Utgånget"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:93
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:95
 #, python-format
 msgid "%(num)s day left"
 msgid_plural "%(num)s days left"
 msgstr[0] "%(num)s dag kvar"
 msgstr[1] "%(num)s dagar kvar"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:97
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:99
 #, python-format
 msgid "%(num)s hour left"
 msgid_plural "%(num)s hours left"
 msgstr[0] "%(num)s timme kvar"
 msgstr[1] "%(num)s timmar kvar"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:3
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:15
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:32
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:4
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:17
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:9
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:32
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/nav_exam_server_link.html.j2:11
 msgid "Exam server"
 msgstr "Provserver"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:21
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:23
 msgid "Controller info"
 msgstr "Styrenhet info"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:25
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:62
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:27
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:64
 msgid "Version"
 msgstr "Version"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:29
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:31
 msgid "Started at"
 msgstr "Startade"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:33
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:44
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:35
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:46
 msgid "Auto control"
 msgstr "Automatisk styrning"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:51
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:89
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:105
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:53
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:85
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:101
 msgid "Not available yet."
 msgstr "Inte tillgänglig ännu."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:58
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:60
 msgid "Abitti2"
 msgstr "Abitti2"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:66
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:68
 msgid "Server name"
 msgstr "Server namn"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:70
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:72
 msgid "Certificate expires"
 msgstr "Certifikatet upphör"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:96
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:92
 msgid "Operating system"
 msgstr "Operativsystem"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:100
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:96
 msgid "Release"
 msgstr "Utgåva"
 
@@ -286,12 +286,22 @@ msgstr "Anslutningen bröts"
 msgid "The page will reload automatically once it's back."
 msgstr "Sidan laddas om automatiskt när anslutningen återställts."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:43
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:40
+#, python-brace-format
+msgid "Page refreshed {n} second ago"
+msgstr "Sidan uppdaterades för {n} sekund sedan"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:41
+#, python-brace-format
+msgid "Page refreshed {n} seconds ago"
+msgstr "Sidan uppdaterades för {n} sekunder sedan"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:48
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:24
 msgid "Language"
 msgstr "Språk"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:47
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:52
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:39
 msgid "Log out"
 msgstr "Logga ut"
