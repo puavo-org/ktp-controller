@@ -17,7 +17,10 @@
     update();
   });
 
+  // This script runs in <head>, before <body> (and #page-refreshed-status)
+  // exist, so the element isn't there yet for this first call to find.
   update();
+  document.addEventListener("DOMContentLoaded", update);
   setTimeout(() => {
     update();
     setInterval(update, TICK_MS);
