@@ -236,6 +236,7 @@ async def _get_invigilator(
         "nav_severity": ktp_controller.wui.landing.routes.get_nav_severity(
             report, session.locale
         ),
+        "current_path": request.url.path,
     }
 
     # If the request comes from htmx, return only the table partial
@@ -283,6 +284,7 @@ async def _get_student_access_code(
         "nav_severity": ktp_controller.wui.landing.routes.get_nav_severity(
             report, session.locale
         ),
+        "current_path": request.url.path,
     }
 
     # If the request comes from htmx, return only the code display partial

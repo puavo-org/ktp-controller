@@ -176,6 +176,7 @@ async def _get_landing(
         "abitti2_info": _get_abitti2_info(report, session.locale),
         "os_info": _get_os_info(report),
         "nav_severity": get_nav_severity(report, session.locale),
+        "current_path": request.url.path,
         # Hardcoded until a "wui.actions.toggle-auto-control" permission
         # and its action endpoint exist.
         "can_toggle_auto_control": False,

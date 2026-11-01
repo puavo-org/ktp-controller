@@ -1,6 +1,5 @@
 {% import "partials/_locale_menu.html.j2" as locale_menu %}
 {% import "partials/_logo.html.j2" as logo %}
-{% import "partials/_severity.html.j2" as severity_macros %}
 <!DOCTYPE html>
 <html lang="{{ locale }}" data-prefix="{{ prefix }}">
 <head>
@@ -30,12 +29,7 @@
         <nav>
             <ul>
                 <li>{{ logo.img(prefix) }}</li>
-                <li><a href="{{ prefix }}/" {% if request.url.path == prefix + "/" %}aria-current="page"{% endif %}>
-                    <span class="value-with-icon{% if nav_severity %} value-{{ nav_severity }}{% endif %}">
-                        {{ _("Exam server") }}
-                        {% if nav_severity %}{{ severity_macros.icon() }}{% endif %}
-                    </span>
-                </a></li>
+                {% include "partials/nav_exam_server_link.html.j2" %}
                 <li><a href="{{ prefix }}/invigilator/" {% if request.url.path == prefix + "/invigilator/" %}aria-current="page"{% endif %}>{{ _("Exams") }}</a></li>
                 <li><a href="{{ prefix }}/invigilator/student_access_code" {% if request.url.path == prefix + "/invigilator/student_access_code" %}aria-current="page"{% endif %}>{{ _("Student access code") }}</a></li>
             </ul>
