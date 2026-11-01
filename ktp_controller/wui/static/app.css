@@ -57,9 +57,12 @@ header .logo {
    Charges to full size/color on refresh, then slowly discharges down
    to half size and a pale green over 30s, then flips to red over the
    next 5s as a "something's wrong" signal. transform/background-color
-   are plain inline styles (not keyframes), so transition-duration can
-   be swapped per phase from JS to get three different speeds out of
-   one continuous transition. */
+   are written every animation frame by page_refreshed_status.js
+   (not a CSS transition/keyframes): tweening a 29s background-color
+   change via the browser's own transition engine renders visibly
+   coarser in Firefox than in Chrome, so the JS interpolates every
+   frame itself instead. These two values are just the pre-JS/initial
+   paint, matching the fully-charged state. */
 .page-refreshed-beacon {
   display: inline-block;
   width: 1rem;
@@ -68,21 +71,7 @@ header .logo {
   background-color: #16a34a;
   transform: scale(1);
   transform-origin: center;
-  will-change: transform, background-color;
-  transition-property: transform, background-color;
-  /* ease-in-out (not linear) so each phase's speed tapers to ~0 at
-     both ends: consecutive transitions meet at a near-zero velocity
-     instead of an abrupt change of pace at each phase boundary. */
-  transition-timing-function: ease-in-out;
-  transition-duration: 1s;
   vertical-align: middle;
-}
-.page-refreshed-beacon.is-discharged {
-  transform: scale(0.5);
-  background-color: #dcfce7;
-}
-.page-refreshed-beacon.is-alarm {
-  background-color: #dc2626;
 }
 
 /* Shared component patterns, reused by more than one template below.
