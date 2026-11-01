@@ -1,0 +1,15 @@
+{% import "partials/_severity.html.j2" as severity_macros %}
+{# Self-refreshing: carries its own hx-* attributes so they're re-emitted
+   on every swap and the live-update trigger stays wired. #}
+<li id="nav-exam-server-link"
+    hx-get="{{ prefix }}/nav_status"
+    hx-trigger="live-update from:body throttle:2s"
+    hx-target="this"
+    hx-swap="outerHTML">
+    <a href="{{ prefix }}/" {% if current_path == prefix + "/" %}aria-current="page"{% endif %}>
+        <span class="value-with-icon{% if nav_severity %} value-{{ nav_severity }}{% endif %}">
+            {{ _("Exam server") }}
+            {% if nav_severity %}{{ severity_macros.icon() }}{% endif %}
+        </span>
+    </a>
+</li>
