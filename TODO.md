@@ -13,17 +13,6 @@ WUI: render a blueish (color wich pico.css already provides and which
 works in both light and dark themes) dashed underline on all texts
 wich have tooltips.
 
-## TODO30
-
-WUI: Display "Page refreshed N seconds ago". This text must itself get
-refreshed (once every ~5secs, starting at 00, then 05, etc.) solely by
-the browser and independently of WUI backend, websockets, whatnot. N
-is the number of seconds since the last request (no matter what data
-the response actually brought in). It's main purpose is to the give
-the end user reliable information about the last time any data got
-updated in the browser view. If there are better ways to display or
-obtain this information, let me know.
-
 ## TODO31
 
 WUI, landing page: In the "Controller info" card there's "Started at"
