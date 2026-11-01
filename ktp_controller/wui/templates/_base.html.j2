@@ -26,10 +26,6 @@
     {% block modals %}{% endblock %}
 
     <header class="container">
-        <small id="page-refreshed-status"
-               class="page-refreshed-status"
-               data-template-one="{{ _('Page refreshed {n} second ago') }}"
-               data-template-other="{{ _('Page refreshed {n} seconds ago') }}"></small>
         <nav>
             <ul>
                 <li>{{ logo.img(prefix) }}</li>
@@ -61,6 +57,11 @@
     <main class="container">
         {% block content %}{% endblock %}
     </main>
-
+    <footer class="container">
+      <small id="page-refreshed-status"
+             class="page-refreshed-status"
+             data-template-one="{{ _('Page refreshed {n} second ago') }}"
+             data-template-other="{{ _('Page refreshed {n} seconds ago') }}"></small>
+    </footer>
 </body>
 </html>
