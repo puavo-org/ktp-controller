@@ -9,9 +9,9 @@ Next ID: TODO32
 
 ## TODO28
 
-WUI: render a blueish (color wich pico.css already provides and which
-works in both light and dark themes) dashed underline on all texts
-wich have tooltips.
+WUI: render a blueish/cyanish/greenish (whatever neutral color
+pico.css already provides and which works in both light and dark
+themes) dashed underline on all texts wich have tooltips.
 
 ## TODO31
 
@@ -26,7 +26,7 @@ Otherwise display "1 day ago / N days ago".
 
 The relative time difference must be calculated on the browser,
 independently from the backend to give the end user reliable timing
-information. Just like TODO29.
+information. Just like TODO30.
 
 In addition, if "Started at" is less than 1 minute ago, highlight the
 value as a warning.
