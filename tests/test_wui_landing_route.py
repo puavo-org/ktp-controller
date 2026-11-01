@@ -514,17 +514,17 @@ def test_landing_ws_route_reachable_with_landing_permission_only(wui_client, moc
         ),
     )
     register_mock = mocker.patch.object(
-        ktp_controller.wui.main.APP.state.invigilator_ws_registry,
+        ktp_controller.wui.main.APP.state.live_update_registry,
         "register",
         new=mocker.AsyncMock(),
     )
     unregister_mock = mocker.patch.object(
-        ktp_controller.wui.main.APP.state.invigilator_ws_registry,
+        ktp_controller.wui.main.APP.state.live_update_registry,
         "unregister",
         new=mocker.AsyncMock(),
     )
 
-    with wui_client.websocket_connect("/invigilator/ws"):
+    with wui_client.websocket_connect("/ws"):
         pass
 
     register_mock.assert_awaited_once()

@@ -62,7 +62,7 @@ async def _post_end_exam(
     ),
 ) -> fastapi.responses.Response:
     # Fire-and-forget: the student list refreshes itself via
-    # /invigilator/ws once Abitti2 reports the change.
+    # /ws once Abitti2 reports the change.
     background_tasks.add_task(
         _end_student_exam,
         session_uuid=str(session_uuid),
@@ -98,7 +98,7 @@ async def _post_change_student_access_code(
         ktp_controller.wui.auth.get_current_session
     ),
 ) -> fastapi.responses.Response:
-    # Fire-and-forget: the page refreshes itself via /invigilator/ws
+    # Fire-and-forget: the page refreshes itself via /ws
     # once the agent reports the new code in a status report.
     background_tasks.add_task(_change_student_access_code, username=session.username)
     return fastapi.responses.Response(status_code=fastapi.status.HTTP_202_ACCEPTED)
@@ -153,7 +153,7 @@ async def _post_set_exam_session_permission_to_use_browsers(
     ),
 ) -> fastapi.responses.Response:
     # Fire-and-forget: the student list refreshes itself via
-    # /invigilator/ws once Abitti2 reports the change.
+    # /ws once Abitti2 reports the change.
     background_tasks.add_task(
         _set_exam_session_permission_to_use_browsers,
         session_uuid=str(session_uuid),
@@ -195,7 +195,7 @@ async def _post_allow_audio_replay(
     ),
 ) -> fastapi.responses.Response:
     # Fire-and-forget: the student list refreshes itself via
-    # /invigilator/ws once Abitti2 reports the change.
+    # /ws once Abitti2 reports the change.
     background_tasks.add_task(
         _allow_audio_replay,
         student_uuid=str(student_uuid),

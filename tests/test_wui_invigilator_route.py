@@ -552,7 +552,7 @@ def test_invigilator_ws_rejects_without_session(wui_client, mocker):
     )
 
     with pytest.raises(starlette.testclient.WebSocketDisconnect) as exc_info:
-        with wui_client.websocket_connect("/invigilator/ws"):
+        with wui_client.websocket_connect("/ws"):
             pass
 
     assert exc_info.value.code == 4401
@@ -569,7 +569,7 @@ def test_invigilator_ws_rejects_without_permission(wui_client, mocker):
     )
 
     with pytest.raises(starlette.testclient.WebSocketDisconnect) as exc_info:
-        with wui_client.websocket_connect("/invigilator/ws"):
+        with wui_client.websocket_connect("/ws"):
             pass
 
     assert exc_info.value.code == 4403
@@ -585,17 +585,17 @@ def test_invigilator_ws_registers_and_unregisters(wui_client, mocker):
         ),
     )
     register_mock = mocker.patch.object(
-        ktp_controller.wui.main.APP.state.invigilator_ws_registry,
+        ktp_controller.wui.main.APP.state.live_update_registry,
         "register",
         new=mocker.AsyncMock(),
     )
     unregister_mock = mocker.patch.object(
-        ktp_controller.wui.main.APP.state.invigilator_ws_registry,
+        ktp_controller.wui.main.APP.state.live_update_registry,
         "unregister",
         new=mocker.AsyncMock(),
     )
 
-    with wui_client.websocket_connect("/invigilator/ws"):
+    with wui_client.websocket_connect("/ws"):
         pass
 
     register_mock.assert_awaited_once()
@@ -612,17 +612,17 @@ def test_invigilator_ws_accepts_with_only_landing_permission(wui_client, mocker)
         ),
     )
     register_mock = mocker.patch.object(
-        ktp_controller.wui.main.APP.state.invigilator_ws_registry,
+        ktp_controller.wui.main.APP.state.live_update_registry,
         "register",
         new=mocker.AsyncMock(),
     )
     unregister_mock = mocker.patch.object(
-        ktp_controller.wui.main.APP.state.invigilator_ws_registry,
+        ktp_controller.wui.main.APP.state.live_update_registry,
         "unregister",
         new=mocker.AsyncMock(),
     )
 
-    with wui_client.websocket_connect("/invigilator/ws"):
+    with wui_client.websocket_connect("/ws"):
         pass
 
     register_mock.assert_awaited_once()

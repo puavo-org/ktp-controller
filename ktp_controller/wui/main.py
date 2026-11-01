@@ -19,6 +19,7 @@ import ktp_controller.wui.auth
 import ktp_controller.wui.auth_routes
 import ktp_controller.wui.invigilator.routes
 import ktp_controller.wui.landing.routes
+import ktp_controller.wui.live_updates.routes
 import ktp_controller.wui.middleware
 import ktp_controller.wui.utils
 from ktp_controller import SETTINGS
@@ -38,7 +39,7 @@ async def _lifespan(app: fastapi.FastAPI) -> collections.abc.AsyncIterator[None]
 
     status_report_listener_task = asyncio.create_task(
         ktp_controller.wui.utils.raw_abitti2_stats_message_listener(
-            app.state.invigilator_ws_registry
+            app.state.live_update_registry
         )
     )
 
@@ -54,7 +55,7 @@ async def _lifespan(app: fastapi.FastAPI) -> collections.abc.AsyncIterator[None]
 
 
 APP = fastapi.FastAPI(lifespan=_lifespan)
-APP.state.invigilator_ws_registry = ktp_controller.wui.utils.BrowserSocketRegistry()
+APP.state.live_update_registry = ktp_controller.wui.utils.BrowserSocketRegistry()
 APP.add_middleware(ktp_controller.wui.middleware.OriginCheckMiddleware)
 APP.add_middleware(ktp_controller.wui.middleware.SecurityHeadersMiddleware)
 APP.add_middleware(ktp_controller.wui.middleware.RootPathFromHeaderMiddleware)
@@ -62,6 +63,7 @@ APP.include_router(ktp_controller.wui.invigilator.routes.router, prefix="/invigi
 APP.include_router(ktp_controller.wui.actions.routes.router, prefix="/actions")
 APP.include_router(ktp_controller.wui.auth_routes.router)
 APP.include_router(ktp_controller.wui.landing.routes.router)
+APP.include_router(ktp_controller.wui.live_updates.routes.router)
 APP.mount(
     "/static",
     fastapi.staticfiles.StaticFiles(

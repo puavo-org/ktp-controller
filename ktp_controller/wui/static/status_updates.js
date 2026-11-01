@@ -1,7 +1,7 @@
 (function () {
   const prefix = document.documentElement.dataset.prefix || "";
   const scheme = location.protocol === "https:" ? "wss" : "ws";
-  const wsUrl = `${scheme}://${location.host}${prefix}/invigilator/ws`;
+  const wsUrl = `${scheme}://${location.host}${prefix}/ws`;
   let reconnectDelay = 1000;
   const maxReconnectDelay = 8000;
   // Set once the socket has disconnected at least once. Distinguishes
