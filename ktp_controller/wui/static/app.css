@@ -50,39 +50,10 @@ header .logo {
   width: auto;
   display: block;
 }
-.page-refreshed-beacon-row {
+.page-refreshed-status {
+  display: block;
   text-align: right;
-}
-/* UX concept test: a "heartbeat" indicator instead of rendered text.
-   Charges to full size/color on refresh, then slowly discharges down
-   to half size and a pale green over 30s, then flips to red over the
-   next 5s as a "something's wrong" signal. transform/background-color
-   are plain inline styles (not keyframes), so transition-duration can
-   be swapped per phase from JS to get three different speeds out of
-   one continuous transition. */
-.page-refreshed-beacon {
-  display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  border-radius: 50%;
-  background-color: #16a34a;
-  transform: scale(1);
-  transform-origin: center;
-  will-change: transform, background-color;
-  transition-property: transform, background-color;
-  /* ease-in-out (not linear) so each phase's speed tapers to ~0 at
-     both ends: consecutive transitions meet at a near-zero velocity
-     instead of an abrupt change of pace at each phase boundary. */
-  transition-timing-function: ease-in-out;
-  transition-duration: 1s;
-  vertical-align: middle;
-}
-.page-refreshed-beacon.is-discharged {
-  transform: scale(0.5);
-  background-color: #dcfce7;
-}
-.page-refreshed-beacon.is-alarm {
-  background-color: #dc2626;
+  font-size: 0.7rem;
 }
 
 /* Shared component patterns, reused by more than one template below.
