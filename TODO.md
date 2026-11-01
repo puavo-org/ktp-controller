@@ -13,18 +13,6 @@ WUI: render a blueish (color wich pico.css already provides and which
 works in both light and dark themes) dashed underline on all texts
 wich have tooltips.
 
-## TODO29
-
-WUI: the invigilator-path live-update websocket mechanism
-(`ktp_controller/wui/invigilator/routes.py`'s `/invigilator/ws` route,
-`ktp_controller/wui/utils.py`'s `BrowserSocketRegistry`/
-`raw_abitti2_stats_message_listener`, and
-`ktp_controller/wui/static/status_updates.js`) already serves pages
-outside `/invigilator/` (the landing page's student-count pills). Move
-it out of the invigilator-specific path into a shared location, and
-use it to make the nav bar's severity icon (added for the previous
-TODO27) update live instead of only at page load.
-
 ## TODO30
 
 WUI: Display "Page refreshed N seconds ago". This text must itself get
