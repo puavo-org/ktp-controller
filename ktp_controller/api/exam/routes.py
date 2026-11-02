@@ -280,7 +280,18 @@ async def _get_locked_db_exam_packages(
         db.query(models.ScheduledExamPackage).filter_by(current=True).one_or_none()
     )
     if db_current_exam_package is not None:
-        db_locked_exam_packages.append(db_current_exam_package)
+        if (
+            db_current_exam_package.state is None
+            and db_current_exam_package.end_time.replace(tzinfo=datetime.UTC) < utcnow
+        ):
+            # The current exam package has not been even prepared yet
+            # (state is not set) and it's already past its schedule:
+            # => abort processing
+            db_current_exam_package.aborted_at = utcnow
+            db_current_exam_package.current = False
+            db.commit()
+        else:
+            db_locked_exam_packages.append(db_current_exam_package)
 
     db_locked_exam_packages.extend(
         db.query(models.ScheduledExamPackage)
