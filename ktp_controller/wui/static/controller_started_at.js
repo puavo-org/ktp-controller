@@ -23,6 +23,17 @@
       return;
     }
     const startedAt = Date.parse(el.dataset.startedAt);
+
+    // "long" includes the timezone name/offset, and with no explicit
+    // `timeZone` option this renders in the browser's local timezone.
+    el.setAttribute(
+      "data-tooltip",
+      new Date(startedAt).toLocaleString(document.documentElement.lang, {
+        dateStyle: "long",
+        timeStyle: "long",
+      }),
+    );
+
     const seconds = Math.max(0, Math.round((Date.now() - startedAt) / 1000));
     let text;
     if (seconds < 60) {
