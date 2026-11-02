@@ -19,8 +19,10 @@ from sqlalchemy.pool import StaticPool
 # Internal imports
 import ktp_controller.api.models
 import ktp_controller.schemas
+import ktp_controller.utils
 import ktp_controller.wui.auth
 import ktp_controller.wui.main
+from ktp_controller import SETTINGS, VERSION
 from ktp_controller.api.database import get_db
 from ktp_controller.api.main import APP
 from ktp_controller.api.models import Base
@@ -162,6 +164,111 @@ def make_status_report():
             "os": {
                 "puavo_os_image_release": puavo_os_image_release,
                 "puavo_os_image_name": puavo_os_image_name,
+            },
+        }
+
+    return _make
+
+
+_DEFAULT_V3_STATUS_REPORT_CACHED_FILES = {
+    "exams": [
+        {
+            "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
+            "size": 25353142,
+            "modified_at": "2025-11-05T15:22:26.379+0000",
+        }
+    ],
+    "exam_packages": [
+        {
+            "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
+            "size": 25353354,
+            "modified_at": "2026-01-07T17:32:27.423+0000",
+        }
+    ],
+    "answers": [
+        {
+            "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
+            "size": 223604,
+            "modified_at": "2026-01-07T17:34:42.968+0000",
+        }
+    ],
+}
+
+
+@pytest.fixture
+def make_v3_status_report(utcnow):
+    def _format(value):
+        if isinstance(value, datetime.datetime):
+            return ktp_controller.utils.strfdt(value)
+        return value
+
+    def _make(
+        *,
+        created_at: datetime.datetime | str | None = None,
+        reported_at: datetime.datetime | str | None = None,
+        last_message_received_at: datetime.datetime | str | None = None,
+        domain: str | None = "funny-server.example.invalid",
+        supervisor_passphrase: str = "",
+        abitti2_version: str = "",
+        exams: list | None = None,
+        is_auto_control_enabled: bool = False,
+        current_exam_package: dict | None = None,
+        next_exam_packages: list | None = (),
+        cached_files: dict | None = None,
+    ):
+        if created_at is None:
+            created_at = utcnow
+        if reported_at is None:
+            reported_at = utcnow
+        if last_message_received_at is None:
+            last_message_received_at = created_at
+        if exams is None:
+            exams = []
+        if cached_files is None:
+            cached_files = _DEFAULT_V3_STATUS_REPORT_CACHED_FILES
+
+        return {
+            "v": 3,
+            "created_at": _format(created_at),
+            "reported_at": _format(reported_at),
+            "abitti2": {
+                "stats": {"exams": None},
+                "answer_count": 0,
+                "domain": domain,
+                "student_access_code": {
+                    "key_code": "1234",
+                    "verification_code": "xx",
+                },
+                "supervisor_username": "valvoja",
+                "supervisor_passphrase": supervisor_passphrase,
+                "version": abitti2_version,
+                "last_message_received_at": _format(last_message_received_at),
+                "cert": None,
+                "exams": exams,
+                "students": [],
+            },
+            "os": {
+                "stats": {
+                    "disk_usage": None,
+                    "load_average": None,
+                    "memory": None,
+                    "uptime": None,
+                },
+                "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
+                "puavo_os_image_name": "opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
+                "puavo_os_image_release": "O2611 Broom",
+            },
+            "ktp_controller": {
+                "settings": SETTINGS.model_dump(),
+                "version": VERSION,
+                "started_at": "1970-01-01T01:01:01.010+0000",
+                "is_auto_control_enabled": is_auto_control_enabled,
+                "current_exam_package": current_exam_package,
+                "next_exam_packages": (
+                    None if next_exam_packages is None else list(next_exam_packages)
+                ),
+                "cached_files": cached_files,
+                "stats": None,
             },
         }
 

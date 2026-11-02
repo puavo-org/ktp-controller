@@ -2,14 +2,14 @@
 import asyncio
 import datetime
 
+import pytest
+
 import ktp_controller.messages
 import ktp_controller.redis
 
 # Third-party imports
 # import fastapi
-# import pytest
 # Internal imports
-from ktp_controller import SETTINGS, VERSION
 from ktp_controller.api import models
 
 # Relative imports
@@ -42,7 +42,7 @@ from .utils import assert_response
 #         }
 
 
-def test_save_status_report__invalid_input(client, testdb, utcnow):
+def test_save_status_report__invalid_input(client, testdb, make_v3_status_report):
     assert testdb.query(models.StatusReport).all() == []
 
     response = client.post("/api/v1/system/save_status_report", data={})
@@ -51,73 +51,8 @@ def test_save_status_report__invalid_input(client, testdb, utcnow):
     response = client.post("/api/v1/system/save_status_report", json={})
     assert_response(response, expected_status_code=422)
 
-    status_report_with_extra_field = {
-        "v": 3,
-        "created_at": ktp_controller.utils.strfdt(utcnow),
-        "reported_at": ktp_controller.utils.strfdt(utcnow),
-        "something_extra": True,
-        "abitti2": {
-            "stats": {
-                "exams": None,
-            },
-            "answer_count": 0,
-            "domain": "funny-server.example.invalid",
-            "student_access_code": {
-                "key_code": "1234",
-                "verification_code": "xx",
-            },
-            "supervisor_username": "valvoja",
-            "supervisor_passphrase": "",
-            "version": "",
-            "last_message_received_at": ktp_controller.utils.strfdt(utcnow),
-            "cert": None,
-            "exams": [],
-            "students": [],
-        },
-        "os": {
-            "stats": {
-                "disk_usage": None,
-                "load_average": None,
-                "memory": None,
-                "uptime": None,
-            },
-            "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
-            "puavo_os_image_name": "opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
-            "puavo_os_image_release": "O2611 Broom",
-        },
-        "ktp_controller": {
-            "settings": SETTINGS.model_dump(),
-            "version": VERSION,
-            "started_at": "1970-01-01T01:01:01.010+0000",
-            "is_auto_control_enabled": True,
-            "current_exam_package": None,
-            "next_exam_packages": [],
-            "cached_files": {
-                "exams": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
-                        "size": 25353142,
-                        "modified_at": "2025-11-05T15:22:26.379+0000",
-                    }
-                ],
-                "exam_packages": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
-                        "size": 25353354,
-                        "modified_at": "2026-01-07T17:32:27.423+0000",
-                    }
-                ],
-                "answers": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
-                        "size": 223604,
-                        "modified_at": "2026-01-07T17:34:42.968+0000",
-                    }
-                ],
-            },
-            "stats": None,
-        },
-    }
+    status_report_with_extra_field = make_v3_status_report(is_auto_control_enabled=True)
+    status_report_with_extra_field["something_extra"] = True
 
     response = client.post(
         "/api/v1/system/save_status_report",
@@ -125,72 +60,9 @@ def test_save_status_report__invalid_input(client, testdb, utcnow):
     )
     assert_response(response, expected_status_code=422)
 
-    status_report_with_invalid_exams = {
-        "v": 3,
-        "created_at": ktp_controller.utils.strfdt(utcnow),
-        "reported_at": ktp_controller.utils.strfdt(utcnow),
-        "abitti2": {
-            "stats": {
-                "exams": None,
-            },
-            "answer_count": 0,
-            "domain": "funny-server.example.invalid",
-            "student_access_code": {
-                "key_code": "1234",
-                "verification_code": "xx",
-            },
-            "supervisor_username": "valvoja",
-            "supervisor_passphrase": "",
-            "version": "",
-            "last_message_received_at": ktp_controller.utils.strfdt(utcnow),
-            "cert": None,
-            "exams": [1],
-            "students": [],
-        },
-        "os": {
-            "stats": {
-                "disk_usage": None,
-                "load_average": None,
-                "memory": None,
-                "uptime": None,
-            },
-            "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
-            "puavo_os_image_name": "opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
-            "puavo_os_image_release": "O2611 Broom",
-        },
-        "ktp_controller": {
-            "settings": SETTINGS.model_dump(),
-            "version": VERSION,
-            "started_at": "1970-01-01T01:01:01.010+0000",
-            "is_auto_control_enabled": True,
-            "current_exam_package": None,
-            "next_exam_packages": [],
-            "cached_files": {
-                "exams": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
-                        "size": 25353142,
-                        "modified_at": "2025-11-05T15:22:26.379+0000",
-                    }
-                ],
-                "exam_packages": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
-                        "size": 25353354,
-                        "modified_at": "2026-01-07T17:32:27.423+0000",
-                    }
-                ],
-                "answers": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
-                        "size": 223604,
-                        "modified_at": "2026-01-07T17:34:42.968+0000",
-                    }
-                ],
-            },
-            "stats": None,
-        },
-    }
+    status_report_with_invalid_exams = make_v3_status_report(
+        is_auto_control_enabled=True, exams=[1]
+    )
 
     response = client.post(
         "/api/v1/system/save_status_report",
@@ -202,75 +74,14 @@ def test_save_status_report__invalid_input(client, testdb, utcnow):
     assert testdb.query(models.StatusReport).all() == []
 
 
-def test_save_status_report__valid_minimal_input(client, testdb, utcnow):
+def test_save_status_report__valid_minimal_input(
+    client, testdb, utcnow, make_v3_status_report
+):
     assert testdb.query(models.StatusReport).all() == []
 
-    status_report = {
-        "v": 3,
-        "created_at": ktp_controller.utils.strfdt(utcnow),
-        "reported_at": ktp_controller.utils.strfdt(utcnow),
-        "abitti2": {
-            "stats": {
-                "exams": None,
-            },
-            "answer_count": 0,
-            "domain": None,
-            "student_access_code": {
-                "key_code": "1234",
-                "verification_code": "xx",
-            },
-            "supervisor_username": "valvoja",
-            "supervisor_passphrase": "",
-            "version": "",
-            "last_message_received_at": ktp_controller.utils.strfdt(utcnow),
-            "cert": None,
-            "exams": [],
-            "students": [],
-        },
-        "os": {
-            "stats": {
-                "disk_usage": None,
-                "load_average": None,
-                "memory": None,
-                "uptime": None,
-            },
-            "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
-            "puavo_os_image_name": "opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
-            "puavo_os_image_release": "O2611 Broom",
-        },
-        "ktp_controller": {
-            "settings": SETTINGS.model_dump(),
-            "version": VERSION,
-            "started_at": "1970-01-01T01:01:01.010+0000",
-            "is_auto_control_enabled": True,
-            "current_exam_package": None,
-            "next_exam_packages": None,
-            "cached_files": {
-                "exams": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
-                        "size": 25353142,
-                        "modified_at": "2025-11-05T15:22:26.379+0000",
-                    }
-                ],
-                "exam_packages": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
-                        "size": 25353354,
-                        "modified_at": "2026-01-07T17:32:27.423+0000",
-                    }
-                ],
-                "answers": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
-                        "size": 223604,
-                        "modified_at": "2026-01-07T17:34:42.968+0000",
-                    }
-                ],
-            },
-            "stats": None,
-        },
-    }
+    status_report = make_v3_status_report(
+        domain=None, is_auto_control_enabled=True, next_exam_packages=None
+    )
 
     response = client.post("/api/v1/system/save_status_report", json=status_report)
     assert_response(response, expected_status_code=200)
@@ -286,75 +97,12 @@ def test_save_status_report__valid_minimal_input(client, testdb, utcnow):
     assert response.json() == status_report
 
 
-def test_save_status_report__same_valid_minimal_input_twice(client, testdb, utcnow):
+def test_save_status_report__same_valid_minimal_input_twice(
+    client, testdb, utcnow, make_v3_status_report
+):
     assert testdb.query(models.StatusReport).all() == []
 
-    status_report = {
-        "v": 3,
-        "created_at": ktp_controller.utils.strfdt(utcnow),
-        "reported_at": ktp_controller.utils.strfdt(utcnow),
-        "abitti2": {
-            "stats": {
-                "exams": None,
-            },
-            "answer_count": 0,
-            "domain": None,
-            "student_access_code": {
-                "key_code": "1234",
-                "verification_code": "xx",
-            },
-            "supervisor_username": "valvoja",
-            "supervisor_passphrase": "",
-            "version": "",
-            "last_message_received_at": ktp_controller.utils.strfdt(utcnow),
-            "cert": None,
-            "exams": [],
-            "students": [],
-        },
-        "os": {
-            "stats": {
-                "disk_usage": None,
-                "load_average": None,
-                "memory": None,
-                "uptime": None,
-            },
-            "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
-            "puavo_os_image_name": "opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
-            "puavo_os_image_release": "O2611 Broom",
-        },
-        "ktp_controller": {
-            "settings": SETTINGS.model_dump(),
-            "version": VERSION,
-            "started_at": "1970-01-01T01:01:01.010+0000",
-            "is_auto_control_enabled": True,
-            "current_exam_package": None,
-            "next_exam_packages": [],
-            "cached_files": {
-                "exams": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
-                        "size": 25353142,
-                        "modified_at": "2025-11-05T15:22:26.379+0000",
-                    }
-                ],
-                "exam_packages": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
-                        "size": 25353354,
-                        "modified_at": "2026-01-07T17:32:27.423+0000",
-                    }
-                ],
-                "answers": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
-                        "size": 223604,
-                        "modified_at": "2026-01-07T17:34:42.968+0000",
-                    }
-                ],
-            },
-            "stats": None,
-        },
-    }
+    status_report = make_v3_status_report(domain=None, is_auto_control_enabled=True)
 
     response = client.post("/api/v1/system/save_status_report", json=status_report)
     assert_response(response, expected_status_code=200)
@@ -373,81 +121,20 @@ def test_save_status_report__same_valid_minimal_input_twice(client, testdb, utcn
     assert db_status_report1.raw_data == db_status_report2.raw_data == status_report
 
 
-def test_save_status_report__valid_but_highly_unlikely_status(client, testdb, utcnow):
+def test_save_status_report__valid_but_highly_unlikely_status(
+    client, testdb, utcnow, make_v3_status_report
+):
     assert testdb.query(models.StatusReport).all() == []
 
-    status_report = {
-        "v": 3,
-        "created_at": ktp_controller.utils.strfdt(utcnow),
-        "reported_at": ktp_controller.utils.strfdt(utcnow),
-        "abitti2": {
-            "stats": {
-                "exams": None,
-            },
-            "answer_count": 0,
-            "domain": "funny-server.example.invalid",
-            "student_access_code": {
-                "key_code": "1234",
-                "verification_code": "xx",
-            },
-            "supervisor_username": "valvoja",
-            "supervisor_passphrase": "",
-            "version": "",
-            "last_message_received_at": ktp_controller.utils.strfdt(utcnow),
-            "cert": None,
-            "exams": [
-                {
-                    "uuid": "c7390604-e359-473c-a751-9bd265ad798f",
-                    "title": "myexam",
-                    "started_at": "2025-03-01T10:00:00.000+0000",
-                }
-            ],
-            "students": [],
-        },
-        "os": {
-            "stats": {
-                "disk_usage": None,
-                "load_average": None,
-                "memory": None,
-                "uptime": None,
-            },
-            "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
-            "puavo_os_image_name": "opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
-            "puavo_os_image_release": "O2611 Broom",
-        },
-        "ktp_controller": {
-            "settings": SETTINGS.model_dump(),
-            "version": VERSION,
-            "started_at": "1970-01-01T01:01:01.010+0000",
-            "is_auto_control_enabled": False,
-            "current_exam_package": None,
-            "next_exam_packages": [],
-            "cached_files": {
-                "exams": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
-                        "size": 25353142,
-                        "modified_at": "2025-11-05T15:22:26.379+0000",
-                    }
-                ],
-                "exam_packages": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
-                        "size": 25353354,
-                        "modified_at": "2026-01-07T17:32:27.423+0000",
-                    }
-                ],
-                "answers": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
-                        "size": 223604,
-                        "modified_at": "2026-01-07T17:34:42.968+0000",
-                    }
-                ],
-            },
-            "stats": None,
-        },
-    }
+    status_report = make_v3_status_report(
+        exams=[
+            {
+                "uuid": "c7390604-e359-473c-a751-9bd265ad798f",
+                "title": "myexam",
+                "started_at": "2025-03-01T10:00:00.000+0000",
+            }
+        ],
+    )
 
     response = client.post("/api/v1/system/save_status_report", json=status_report)
     assert_response(response, expected_status_code=200)
@@ -458,154 +145,39 @@ def test_save_status_report__valid_but_highly_unlikely_status(client, testdb, ut
     assert db_status_report.raw_data == status_report
 
 
-def test_save_status_report__two_different_reports(client, testdb, utcnow):
+def test_save_status_report__two_different_reports(
+    client, testdb, utcnow, make_v3_status_report
+):
     assert testdb.query(models.StatusReport).all() == []
 
-    status_report1 = {
-        "v": 3,
-        "created_at": "2025-01-01T10:00:00.000+0000",
-        "reported_at": "2025-01-01T10:00:05.000+0000",
-        "abitti2": {
-            "stats": {
-                "exams": None,
-            },
-            "answer_count": 0,
-            "domain": "funny-server.example.invalid",
-            "student_access_code": {
-                "key_code": "1234",
-                "verification_code": "xx",
-            },
-            "supervisor_username": "valvoja",
-            "supervisor_passphrase": "first report",
-            "version": "1.6.0",
-            "last_message_received_at": "2025-01-01T10:00:00.000+0000",
-            "cert": None,
-            "exams": [],
-            "students": [],
-        },
-        "os": {
-            "stats": {
-                "disk_usage": None,
-                "load_average": None,
-                "memory": None,
-                "uptime": None,
-            },
-            "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
-            "puavo_os_image_name": "opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
-            "puavo_os_image_release": "O2611 Broom",
-        },
-        "ktp_controller": {
-            "settings": SETTINGS.model_dump(),
-            "version": VERSION,
-            "started_at": "1970-01-01T01:01:01.010+0000",
-            "is_auto_control_enabled": False,
-            "current_exam_package": None,
-            "next_exam_packages": [],
-            "cached_files": {
-                "exams": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
-                        "size": 25353142,
-                        "modified_at": "2025-11-05T15:22:26.379+0000",
-                    }
-                ],
-                "exam_packages": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
-                        "size": 25353354,
-                        "modified_at": "2026-01-07T17:32:27.423+0000",
-                    }
-                ],
-                "answers": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
-                        "size": 223604,
-                        "modified_at": "2026-01-07T17:34:42.968+0000",
-                    }
-                ],
-            },
-            "stats": None,
-        },
-    }
+    status_report1 = make_v3_status_report(
+        created_at="2025-01-01T10:00:00.000+0000",
+        reported_at="2025-01-01T10:00:05.000+0000",
+        supervisor_passphrase="first report",
+        abitti2_version="1.6.0",
+    )
 
     response = client.post("/api/v1/system/save_status_report", json=status_report1)
     assert_response(response, expected_status_code=200)
 
-    status_report2 = {
-        "v": 3,
-        "created_at": "2024-01-01T10:00:00.000+0000",  # For the sake of testing, agent's clock goes backward between reports
-        "reported_at": "2024-01-01T10:00:05.000+0000",
-        "abitti2": {
-            "stats": {
-                "exams": None,
-            },
-            "answer_count": 0,
-            "domain": "funny-server.example.invalid",
-            "student_access_code": {
-                "key_code": "1234",
-                "verification_code": "xx",
-            },
-            "supervisor_username": "valvoja",
-            "supervisor_passphrase": "second report",
-            "version": "1.7.0",
-            "last_message_received_at": "2025-01-01T10:00:00.000+0000",
-            "cert": None,
-            "exams": [],
-            "students": [],
+    status_report2 = make_v3_status_report(
+        # For the sake of testing, agent's clock goes backward between reports.
+        created_at="2024-01-01T10:00:00.000+0000",
+        reported_at="2024-01-01T10:00:05.000+0000",
+        last_message_received_at="2025-01-01T10:00:00.000+0000",
+        supervisor_passphrase="second report",
+        abitti2_version="1.7.0",
+        current_exam_package={
+            "uuid": "eff706bd-245b-4f45-ae2a-1e7ae760142e",
+            "scheduled_start_time": "1970-01-01T02:00:00.000+0000",
+            "scheduled_end_time": "2970-01-01T01:01:01.010+0000",
+            "scheduled_lock_time": "1970-01-01T01:01:01.010+0000",
+            "state": "running",
+            "state_changed_at": "1970-01-01T02:01:01.010+0000",
+            "started_at": "1970-01-01T02:01:01.010+0000",
+            "archived_at": None,
         },
-        "os": {
-            "stats": {
-                "disk_usage": None,
-                "load_average": None,
-                "memory": None,
-                "uptime": None,
-            },
-            "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
-            "puavo_os_image_name": "opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
-            "puavo_os_image_release": "O2611 Broom",
-        },
-        "ktp_controller": {
-            "settings": SETTINGS.model_dump(),
-            "version": VERSION,
-            "started_at": "1970-01-01T01:01:01.010+0000",
-            "is_auto_control_enabled": False,
-            "current_exam_package": {
-                "uuid": "eff706bd-245b-4f45-ae2a-1e7ae760142e",
-                "scheduled_start_time": "1970-01-01T02:00:00.000+0000",
-                "scheduled_end_time": "2970-01-01T01:01:01.010+0000",
-                "scheduled_lock_time": "1970-01-01T01:01:01.010+0000",
-                "state": "running",
-                "state_changed_at": "1970-01-01T02:01:01.010+0000",
-                "started_at": "1970-01-01T02:01:01.010+0000",
-                "archived_at": None,
-            },
-            "next_exam_packages": [],
-            "cached_files": {
-                "exams": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
-                        "size": 25353142,
-                        "modified_at": "2025-11-05T15:22:26.379+0000",
-                    }
-                ],
-                "exam_packages": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
-                        "size": 25353354,
-                        "modified_at": "2026-01-07T17:32:27.423+0000",
-                    }
-                ],
-                "answers": [
-                    {
-                        "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
-                        "size": 223604,
-                        "modified_at": "2026-01-07T17:34:42.968+0000",
-                    }
-                ],
-            },
-            "stats": None,
-        },
-    }
+    )
     response = client.post("/api/v1/system/save_status_report", json=status_report2)
     assert_response(response, expected_status_code=200)
 
@@ -627,431 +199,71 @@ def test_save_status_report__two_different_reports(client, testdb, utcnow):
     assert response.json() == status_report2
 
 
-def test_save_status_report__multiple_reports_exactly_max_count(
-    client, testdb, utcnow, mocker
-):
-    assert testdb.query(models.StatusReport).all() == []
-
-    max_count = 6
-    preserve_count = 3
-
-    mocked_get_status_report_max_count = mocker.patch(
-        "ktp_controller.api.system.routes._get_status_report_max_count"
-    )
-    mocked_get_status_report_max_count.return_value = max_count
-
-    mocked_get_status_report_preserve_count = mocker.patch(
-        "ktp_controller.api.system.routes._get_status_report_preserve_count"
-    )
-    mocked_get_status_report_preserve_count.return_value = preserve_count
-
-    status_reports = []
-    for i in range(max_count):
-        status_report = {
-            "v": 3,
-            "created_at": ktp_controller.utils.strfdt(
-                utcnow + datetime.timedelta(seconds=i * 5)
-            ),
-            "reported_at": ktp_controller.utils.strfdt(
-                utcnow + datetime.timedelta(seconds=i * 5 + 2)
-            ),
-            "abitti2": {
-                "stats": {
-                    "exams": None,
-                },
-                "answer_count": 0,
-                "domain": "funny-server.example.invalid",
-                "student_access_code": {
-                    "key_code": "1234",
-                    "verification_code": "xx",
-                },
-                "supervisor_username": "valvoja",
-                "supervisor_passphrase": "pass",
-                "version": "1.11.0",
-                "last_message_received_at": ktp_controller.utils.strfdt(
-                    utcnow + datetime.timedelta(seconds=i * 5)
-                ),
-                "cert": None,
-                "exams": [],
-                "students": [],
-            },
-            "os": {
-                "stats": {
-                    "disk_usage": None,
-                    "load_average": None,
-                    "memory": None,
-                    "uptime": None,
-                },
-                "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
-                "puavo_os_image_name": "opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
-                "puavo_os_image_release": "O2611 Broom",
-            },
-            "ktp_controller": {
-                "settings": SETTINGS.model_dump(),
-                "version": VERSION,
-                "started_at": "1970-01-01T01:01:01.010+0000",
-                "is_auto_control_enabled": False,
-                "current_exam_package": None,
-                "next_exam_packages": [],
-                "cached_files": {
-                    "exams": [
-                        {
-                            "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
-                            "size": 25353142,
-                            "modified_at": "2025-11-05T15:22:26.379+0000",
-                        }
-                    ],
-                    "exam_packages": [
-                        {
-                            "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
-                            "size": 25353354,
-                            "modified_at": "2026-01-07T17:32:27.423+0000",
-                        }
-                    ],
-                    "answers": [
-                        {
-                            "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
-                            "size": 223604,
-                            "modified_at": "2026-01-07T17:34:42.968+0000",
-                        }
-                    ],
-                },
-                "stats": None,
-            },
-        }
-
-        response = client.post("/api/v1/system/save_status_report", json=status_report)
-        assert_response(response, expected_status_code=200)
-        status_reports.append(status_report)
-
-    db_status_reports = (
-        testdb.query(models.StatusReport).order_by(models.StatusReport.dbid).all()
-    )
-
-    assert len(db_status_reports) == max_count
-
-    assert [db_sr.raw_data for db_sr in db_status_reports] == status_reports
-
-    response = client.post("/api/v1/system/get_last_status_report")
-    assert_response(response, expected_status_code=200)
-
-    assert response.json() == status_reports[-1]
-
-
-def test_save_status_report__multiple_reports_less_than_max_count(
-    client, testdb, utcnow, mocker
-):
-    assert testdb.query(models.StatusReport).all() == []
-
-    max_count = 6
-    preserve_count = 3
-    send_count = 5
-
-    mocked_get_status_report_max_count = mocker.patch(
-        "ktp_controller.api.system.routes._get_status_report_max_count"
-    )
-    mocked_get_status_report_max_count.return_value = max_count
-
-    mocked_get_status_report_preserve_count = mocker.patch(
-        "ktp_controller.api.system.routes._get_status_report_preserve_count"
-    )
-    mocked_get_status_report_preserve_count.return_value = preserve_count
-
-    status_reports = []
-    for i in range(send_count):
-        status_report = {
-            "v": 3,
-            "created_at": ktp_controller.utils.strfdt(
-                utcnow + datetime.timedelta(seconds=i * 5)
-            ),
-            "reported_at": ktp_controller.utils.strfdt(
-                utcnow + datetime.timedelta(seconds=i * 5 + 2)
-            ),
-            "abitti2": {
-                "stats": {
-                    "exams": None,
-                },
-                "answer_count": 0,
-                "domain": "funny-server.example.invalid",
-                "student_access_code": {
-                    "key_code": "1234",
-                    "verification_code": "xx",
-                },
-                "supervisor_username": "valvoja",
-                "supervisor_passphrase": "pass",
-                "version": "1.11.0",
-                "last_message_received_at": ktp_controller.utils.strfdt(
-                    utcnow + datetime.timedelta(seconds=i * 5)
-                ),
-                "cert": None,
-                "exams": [],
-                "students": [],
-            },
-            "os": {
-                "stats": {
-                    "disk_usage": None,
-                    "load_average": None,
-                    "memory": None,
-                    "uptime": None,
-                },
-                "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
-                "puavo_os_image_name": "opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
-                "puavo_os_image_release": "O2611 Broom",
-            },
-            "ktp_controller": {
-                "settings": SETTINGS.model_dump(),
-                "version": VERSION,
-                "started_at": "1970-01-01T01:01:01.010+0000",
-                "is_auto_control_enabled": False,
-                "current_exam_package": None,
-                "next_exam_packages": [],
-                "cached_files": {
-                    "exams": [
-                        {
-                            "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
-                            "size": 25353142,
-                            "modified_at": "2025-11-05T15:22:26.379+0000",
-                        }
-                    ],
-                    "exam_packages": [
-                        {
-                            "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
-                            "size": 25353354,
-                            "modified_at": "2026-01-07T17:32:27.423+0000",
-                        }
-                    ],
-                    "answers": [
-                        {
-                            "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
-                            "size": 223604,
-                            "modified_at": "2026-01-07T17:34:42.968+0000",
-                        }
-                    ],
-                },
-                "stats": None,
-            },
-        }
-
-        response = client.post("/api/v1/system/save_status_report", json=status_report)
-        assert_response(response, expected_status_code=200)
-        status_reports.append(status_report)
-
-    db_status_reports = (
-        testdb.query(models.StatusReport).order_by(models.StatusReport.dbid).all()
-    )
-
-    assert len(db_status_reports) == send_count
-
-    assert [db_sr.raw_data for db_sr in db_status_reports] == status_reports
-
-    response = client.post("/api/v1/system/get_last_status_report")
-    assert_response(response, expected_status_code=200)
-
-    assert response.json() == status_reports[-1]
-
-
-def test_save_status_report__multiple_reports_one_more_than_max_count(
-    client, testdb, utcnow, mocker
-):
-    assert testdb.query(models.StatusReport).all() == []
-
-    max_count = 6
-    preserve_count = 3
-    send_count = 7
-
-    mocked_get_status_report_max_count = mocker.patch(
-        "ktp_controller.api.system.routes._get_status_report_max_count"
-    )
-    mocked_get_status_report_max_count.return_value = max_count
-
-    mocked_get_status_report_preserve_count = mocker.patch(
-        "ktp_controller.api.system.routes._get_status_report_preserve_count"
-    )
-    mocked_get_status_report_preserve_count.return_value = preserve_count
-
-    status_reports = []
-    for i in range(send_count):
-        status_report = {
-            "v": 3,
-            "created_at": ktp_controller.utils.strfdt(
-                utcnow + datetime.timedelta(seconds=i * 5)
-            ),
-            "reported_at": ktp_controller.utils.strfdt(
-                utcnow + datetime.timedelta(seconds=i * 5 + 2)
-            ),
-            "abitti2": {
-                "stats": {
-                    "exams": None,
-                },
-                "answer_count": 0,
-                "domain": "funny-server.example.invalid",
-                "student_access_code": {
-                    "key_code": "1234",
-                    "verification_code": "xx",
-                },
-                "supervisor_username": "valvoja",
-                "supervisor_passphrase": "pass",
-                "version": "1.11.0",
-                "last_message_received_at": ktp_controller.utils.strfdt(
-                    utcnow + datetime.timedelta(seconds=i * 5)
-                ),
-                "cert": None,
-                "exams": [],
-                "students": [],
-            },
-            "os": {
-                "stats": {
-                    "disk_usage": None,
-                    "load_average": None,
-                    "memory": None,
-                    "uptime": None,
-                },
-                "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
-                "puavo_os_image_name": "opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
-                "puavo_os_image_release": "O2611 Broom",
-            },
-            "ktp_controller": {
-                "settings": SETTINGS.model_dump(),
-                "version": VERSION,
-                "started_at": "1970-01-01T01:01:01.010+0000",
-                "is_auto_control_enabled": False,
-                "current_exam_package": None,
-                "next_exam_packages": [],
-                "cached_files": {
-                    "exams": [
-                        {
-                            "path": "/home/puavo-ers/.local/share/ktp-controller/exam-files/c574f93a-ac4d-4441-8679-ca47e565fb7b/exam-file_50d28d5ce4628d9e72c3d42001a49f9fbc146081fbac42610435d6c70d4f6624.mex",
-                            "size": 25353142,
-                            "modified_at": "2025-11-05T15:22:26.379+0000",
-                        }
-                    ],
-                    "exam_packages": [
-                        {
-                            "path": "/home/puavo-ers/.local/share/ktp-controller/exam-packages/a28618bb-1665-425f-9f35-633a50bbd487/exam-package_a5e52fdc62e2b7b0dd50daabdfd1fbd19de0bea30330de604674aef016da604d.zip",
-                            "size": 25353354,
-                            "modified_at": "2026-01-07T17:32:27.423+0000",
-                        }
-                    ],
-                    "answers": [
-                        {
-                            "path": "/home/puavo-ers/.local/share/ktp-controller/answer-files/a28618bb-1665-425f-9f35-633a50bbd487/answers-file_2026-01-07T17:34:42.590+0000_final.meb",
-                            "size": 223604,
-                            "modified_at": "2026-01-07T17:34:42.968+0000",
-                        }
-                    ],
-                },
-                "stats": None,
-            },
-        }
-
-        response = client.post("/api/v1/system/save_status_report", json=status_report)
-        assert_response(response, expected_status_code=200)
-        status_reports.append(status_report)
-
-    db_status_reports = (
-        testdb.query(models.StatusReport).order_by(models.StatusReport.dbid).all()
-    )
-
-    assert len(db_status_reports) == preserve_count + 1
-
-    assert [db_sr.raw_data for db_sr in db_status_reports] == status_reports[
-        -(preserve_count + 1) :
+def _build_status_reports(make_v3_status_report, utcnow, count, *, cached_files=None):
+    return [
+        make_v3_status_report(
+            created_at=utcnow + datetime.timedelta(seconds=i * 5),
+            reported_at=utcnow + datetime.timedelta(seconds=i * 5 + 2),
+            supervisor_passphrase="pass",
+            abitti2_version="1.11.0",
+            cached_files=cached_files,
+        )
+        for i in range(count)
     ]
 
-    response = client.post("/api/v1/system/get_last_status_report")
-    assert_response(response, expected_status_code=200)
 
-    assert response.json() == status_reports[-1]
-
-
-def test_save_status_report__multiple_reports_many_more_than_max_count(
-    client, testdb, utcnow, mocker
+@pytest.mark.parametrize(
+    ("send_count", "expected_kept_count", "cached_files"),
+    [
+        pytest.param(6, 6, None, id="exactly_max_count"),
+        pytest.param(5, 5, None, id="less_than_max_count"),
+        pytest.param(7, 4, None, id="one_more_than_max_count"),
+        # Overflowing by a lot keeps one extra report beyond preserve_count
+        # (apparently a side effect of how the cleanup trims in batches).
+        pytest.param(
+            23,
+            5,
+            {"exams": [], "exam_packages": [], "answers": []},
+            id="many_more_than_max_count",
+        ),
+    ],
+)
+def test_save_status_report__multiple_reports(
+    client,
+    testdb,
+    utcnow,
+    mocker,
+    make_v3_status_report,
+    send_count,
+    expected_kept_count,
+    cached_files,
 ):
     assert testdb.query(models.StatusReport).all() == []
 
-    max_count = 6
     preserve_count = 3
-    send_count = 23
-
-    mocked_get_status_report_max_count = mocker.patch(
-        "ktp_controller.api.system.routes._get_status_report_max_count"
+    mocker.patch(
+        "ktp_controller.api.system.routes._get_status_report_max_count",
+        return_value=6,
     )
-    mocked_get_status_report_max_count.return_value = max_count
-
-    mocked_get_status_report_preserve_count = mocker.patch(
-        "ktp_controller.api.system.routes._get_status_report_preserve_count"
+    mocker.patch(
+        "ktp_controller.api.system.routes._get_status_report_preserve_count",
+        return_value=preserve_count,
     )
-    mocked_get_status_report_preserve_count.return_value = preserve_count
 
-    status_reports = []
-    for i in range(send_count):
-        status_report = {
-            "v": 3,
-            "created_at": ktp_controller.utils.strfdt(
-                utcnow + datetime.timedelta(seconds=i * 5)
-            ),
-            "reported_at": ktp_controller.utils.strfdt(
-                utcnow + datetime.timedelta(seconds=i * 5 + 2)
-            ),
-            "abitti2": {
-                "stats": {
-                    "exams": None,
-                },
-                "answer_count": 0,
-                "domain": "funny-server.example.invalid",
-                "student_access_code": {
-                    "key_code": "1234",
-                    "verification_code": "xx",
-                },
-                "supervisor_username": "valvoja",
-                "supervisor_passphrase": "pass",
-                "version": "1.11.0",
-                "last_message_received_at": ktp_controller.utils.strfdt(
-                    utcnow + datetime.timedelta(seconds=i * 5)
-                ),
-                "cert": None,
-                "exams": [],
-                "students": [],
-            },
-            "os": {
-                "stats": {
-                    "disk_usage": None,
-                    "load_average": None,
-                    "memory": None,
-                    "uptime": None,
-                },
-                "release": "O2611 Broom (opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img)",
-                "puavo_os_image_name": "opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
-                "puavo_os_image_release": "O2611 Broom",
-            },
-            "ktp_controller": {
-                "settings": SETTINGS.model_dump(),
-                "version": VERSION,
-                "started_at": "1970-01-01T01:01:01.010+0000",
-                "is_auto_control_enabled": False,
-                "current_exam_package": None,
-                "next_exam_packages": [],
-                "cached_files": {
-                    "exams": [],
-                    "exam_packages": [],
-                    "answers": [],
-                },
-                "stats": None,
-            },
-        }
-
+    status_reports = _build_status_reports(
+        make_v3_status_report, utcnow, send_count, cached_files=cached_files
+    )
+    for status_report in status_reports:
         response = client.post("/api/v1/system/save_status_report", json=status_report)
         assert_response(response, expected_status_code=200)
-        status_reports.append(status_report)
 
     db_status_reports = (
         testdb.query(models.StatusReport).order_by(models.StatusReport.dbid).all()
     )
 
-    assert len(db_status_reports) == preserve_count + 2
-
+    assert len(db_status_reports) == expected_kept_count
     assert [db_sr.raw_data for db_sr in db_status_reports] == status_reports[
-        -(preserve_count + 2) :
+        -expected_kept_count:
     ]
 
     response = client.post("/api/v1/system/get_last_status_report")
