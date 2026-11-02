@@ -9,25 +9,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Web UI: display student state counts also on the landing page.
+- Web UI:
 
-- Web UI: display the Abitti2 server name on the landing page.
+    - Display student state counts also on the landing page.
 
-- Add `shutdown-wait` subcommand to the command line interface. It
-  shuts KTP Controller down and waits until all processes have
-  terminated.
+    - Display the Abitti2 server name on the landing page.
 
-- Status report: add `os.puavo_os_image_name` and
-  `os.puavo_os_image_release` fields, read from
-  `/etc/puavo-image/name` and `/etc/puavo-image/release`.
+    - Show the Abitti2 TLS certificate's expiry date on the landing
+      page, with a "N days/hours left" caption, an exact-time tooltip,
+      and a warning highlight once it is close to expiring.
+
+    - Highlight landing page cards, and the nav bar's "Exam
+      server" icon, whenever their status needs attention; the nav bar
+      icon updates live, without a page reload.
+
+- CLI: add `shutdown-wait` subcommand to the command line
+  interface. It shuts KTP Controller down and waits until all
+  processes have terminated.
+
+- [Status report v3](docs/status_report.md):
+
+    - Add `os.puavo_os_image_name` and `os.puavo_os_image_release`
+      fields, read from `/etc/puavo-image/name` and
+      `/etc/puavo-image/release`.
+
+    - Add an `abitti2.cert` field with the Abitti2 TLS certificate's
+      domains and expiry time.
+
 
 ### Changed
+
+- Web UI:
+
+    - Rename the "Operating system" card to "Host system" on the
+      landing page.
+
+    - Show the Controller started-at and certificate-expiry tooltips
+      in the viewer's own local timezone instead of UTC.
 
 - Updated all dependencies.
 
 ### Removed
 
-- Remove `tui` and `wui` subcommands from the command line interface.
+- CLI: remove `tui` and `wui` subcommands from the command line interface.
 
 
 ## [0.8.1] - 2026-10-27
