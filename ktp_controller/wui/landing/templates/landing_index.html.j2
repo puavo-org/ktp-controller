@@ -110,7 +110,7 @@
 
         {% if "host_info" in visible_card_keys %}
         <article>
-            {{ severity_macros.card_header(_("Operating system"), host_info.severity if host_info else None) }}
+            {{ severity_macros.card_header(_("Host system"), host_info.severity if host_info else None) }}
             {% if host_info %}
             <table class="landing-card-table">
                 <tr>
