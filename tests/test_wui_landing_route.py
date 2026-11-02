@@ -246,8 +246,8 @@ def test_landing_view_shows_warning_for_soon_expiring_cert(
     assert "severity-icon" in abitti2_header
     controller_header = _header_tag(response.text, "Controller info")
     assert "value-warning" not in controller_header
-    os_header = _header_tag(response.text, "Operating system")
-    assert "value-warning" not in os_header
+    host_header = _header_tag(response.text, "Host system")
+    assert "value-warning" not in host_header
     nav_item = _nav_item_tag(response.text, "Exam server")
     assert "value-warning" in nav_item
     assert "severity-icon" in nav_item
@@ -372,7 +372,7 @@ def test_landing_view_no_warning_for_cert_expiring_far_in_the_future(
     assert response.status_code == 200
     assert 'class="value-warning"' not in response.text
     assert "severity-caption" not in response.text
-    for title in ("Abitti2", "Operating system"):
+    for title in ("Abitti2", "Host system"):
         header = _header_tag(response.text, title)
         assert "value-warning" not in header
         assert "value-error" not in header
@@ -416,7 +416,7 @@ def test_landing_view_shows_question_marks_without_cert(
     assert 'class="value-warning"' not in response.text
 
 
-def test_landing_view_shows_question_marks_without_os_release(
+def test_landing_view_shows_question_marks_without_host_release(
     wui_client, override_session, mocker, make_status_report
 ):
     mocker.patch(
