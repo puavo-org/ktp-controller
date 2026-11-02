@@ -115,7 +115,9 @@
             <table class="landing-card-table">
                 <tr>
                     <td>{{ _("Release") }}</td>
-                    <td{% if os_info.puavo_os_image_name %} data-tooltip="{{ os_info.puavo_os_image_name }}"{% endif %}>{{ os_info.puavo_os_image_release or "???" }}</td>
+                    <td>
+                      <span {% if os_info.puavo_os_image_name %} data-tooltip="{{ os_info.puavo_os_image_name }}"{% endif %}>{{ os_info.puavo_os_image_release or "???" }}</span>
+                    </td>
                 </tr>
             </table>
             {% else %}
