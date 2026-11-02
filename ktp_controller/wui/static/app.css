@@ -262,6 +262,7 @@ header nav ul.locale-nav {
 /* landing_index.html.j2 */
 .landing-card-table {
   width: 100%;
+  font-size: 0.8em;
 }
 .landing-card-table td {
   border-bottom: none;
