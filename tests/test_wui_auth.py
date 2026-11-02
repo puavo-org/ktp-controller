@@ -13,33 +13,21 @@ def _status_report(username="invigilator1", passphrase="s3cret"):
 
 
 @pytest.mark.anyio
-async def test_authenticate_accepts_matching_credentials(mocker):
+@pytest.mark.parametrize(
+    ("username", "password", "expected"),
+    [
+        pytest.param("invigilator1", "s3cret", True, id="matching_credentials"),
+        pytest.param("invigilator1", "wrong", False, id="wrong_password"),
+        pytest.param("someoneelse", "s3cret", False, id="wrong_username"),
+    ],
+)
+async def test_authenticate(mocker, username, password, expected):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
         return_value=_status_report(),
     )
 
-    assert await auth.authenticate("invigilator1", "s3cret") is True
-
-
-@pytest.mark.anyio
-async def test_authenticate_rejects_wrong_password(mocker):
-    mocker.patch(
-        "ktp_controller.api.client.get_last_status_report",
-        return_value=_status_report(),
-    )
-
-    assert await auth.authenticate("invigilator1", "wrong") is False
-
-
-@pytest.mark.anyio
-async def test_authenticate_rejects_wrong_username(mocker):
-    mocker.patch(
-        "ktp_controller.api.client.get_last_status_report",
-        return_value=_status_report(),
-    )
-
-    assert await auth.authenticate("someoneelse", "s3cret") is False
+    assert await auth.authenticate(username, password) is expected
 
 
 @pytest.mark.anyio

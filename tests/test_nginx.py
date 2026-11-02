@@ -9,7 +9,8 @@ import ktp_controller.nginx
 from ktp_controller import SETTINGS
 
 
-def _patch_nginx_paths(monkeypatch, testdir):
+@pytest.fixture
+def nginx_paths(monkeypatch, testdir):
     paths = ktp_controller.nginx._Paths(
         root_conf_dirpath=os.path.join(testdir, "etc-nginx")
     )
@@ -34,8 +35,8 @@ def _enable_site(paths):
     os.symlink(paths.wui_symlink_target, paths.wui_symlink_filepath)
 
 
-def test_enable_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
-    paths = _patch_nginx_paths(monkeypatch, testdir)
+def test_enable_nginx_wui_tls_reverse_proxy(mocker, testdir, nginx_paths):
+    paths = nginx_paths
 
     crt_filepath = os.path.join(testdir, "exam.crt")
     key_filepath = os.path.join(testdir, "exam.key")
@@ -93,9 +94,9 @@ def test_enable_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
 
 
 def test_enable_nginx_wui_tls_reverse_proxy_replaces_existing_symlink(
-    monkeypatch, mocker, testdir
+    mocker, testdir, nginx_paths
 ):
-    paths = _patch_nginx_paths(monkeypatch, testdir)
+    paths = nginx_paths
 
     crt_filepath = os.path.join(testdir, "ktp-controller-wui.crt")
     key_filepath = os.path.join(testdir, "ktp-controller-wui.key")
@@ -121,10 +122,8 @@ def test_enable_nginx_wui_tls_reverse_proxy_replaces_existing_symlink(
 
 
 def test_enable_nginx_wui_tls_reverse_proxy_raises_exception_on_reload_failure(
-    monkeypatch, mocker, testdir
+    mocker, testdir, nginx_paths
 ):
-    _patch_nginx_paths(monkeypatch, testdir)
-
     crt_filepath = os.path.join(testdir, "ktp-controller-wui.crt")
     key_filepath = os.path.join(testdir, "ktp-controller-wui.key")
     _write(crt_filepath, "dummy-cert")
@@ -143,9 +142,9 @@ def test_enable_nginx_wui_tls_reverse_proxy_raises_exception_on_reload_failure(
 
 
 def test_enable_nginx_wui_tls_reverse_proxy_with_puavo_fqdn(
-    monkeypatch, mocker, testdir
+    monkeypatch, mocker, testdir, nginx_paths
 ):
-    paths = _patch_nginx_paths(monkeypatch, testdir)
+    paths = nginx_paths
 
     crt_filepath = os.path.join(testdir, "exam.crt")
     key_filepath = os.path.join(testdir, "exam.key")
@@ -200,10 +199,8 @@ def test_enable_nginx_wui_tls_reverse_proxy_with_puavo_fqdn(
 
 
 def test_enable_nginx_wui_tls_reverse_proxy_propagates_get_puavo_fqdn_error(
-    monkeypatch, mocker, testdir
+    mocker, testdir, nginx_paths
 ):
-    _patch_nginx_paths(monkeypatch, testdir)
-
     crt_filepath = os.path.join(testdir, "exam.crt")
     key_filepath = os.path.join(testdir, "exam.key")
     _write(crt_filepath, "dummy-cert")
@@ -221,8 +218,8 @@ def test_enable_nginx_wui_tls_reverse_proxy_propagates_get_puavo_fqdn_error(
         )
 
 
-def test_disable_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
-    paths = _patch_nginx_paths(monkeypatch, testdir)
+def test_disable_nginx_wui_tls_reverse_proxy(mocker, nginx_paths):
+    paths = nginx_paths
     _enable_site(paths)
     _write(paths.wui_puavo_crt_filepath, "dummy-puavo-cert")
     _write(paths.wui_puavo_key_filepath, "dummy-puavo-key")
@@ -244,12 +241,12 @@ def test_disable_nginx_wui_tls_reverse_proxy(monkeypatch, mocker, testdir):
 
 
 def test_disable_nginx_wui_tls_reverse_proxy_puavo_files_absent_is_not_an_error(
-    monkeypatch, mocker, testdir
+    mocker, nginx_paths
 ):
     # Simulates a single-domain deployment, where
     # enable_nginx_wui_tls_reverse_proxy() never created the Puavo-fqdn
     # crt/key because get_puavo_fqdn() returned None.
-    paths = _patch_nginx_paths(monkeypatch, testdir)
+    paths = nginx_paths
     _enable_site(paths)
     assert not os.path.exists(paths.wui_puavo_crt_filepath)
     assert not os.path.exists(paths.wui_puavo_key_filepath)
@@ -264,10 +261,8 @@ def test_disable_nginx_wui_tls_reverse_proxy_puavo_files_absent_is_not_an_error(
 
 
 def test_disable_nginx_wui_tls_reverse_proxy_missing_symlink(
-    monkeypatch, mocker, caplog, testdir
+    mocker, caplog, nginx_paths
 ):
-    _patch_nginx_paths(monkeypatch, testdir)
-
     run_mock = mocker.patch(
         "ktp_controller.nginx.subprocess.check_call", return_value=None
     )
@@ -280,9 +275,9 @@ def test_disable_nginx_wui_tls_reverse_proxy_missing_symlink(
 
 
 def test_disable_nginx_wui_tls_reverse_proxy_raises_exception_group_on_partial_failure(
-    monkeypatch, mocker, testdir
+    mocker, nginx_paths
 ):
-    paths = _patch_nginx_paths(monkeypatch, testdir)
+    paths = nginx_paths
     # Only the symlink and the site file exist; crt/key are already
     # missing, so removing them fails but the function should still
     # remove what it can and still reload nginx.
@@ -305,9 +300,9 @@ def test_disable_nginx_wui_tls_reverse_proxy_raises_exception_group_on_partial_f
 
 
 def test_disable_nginx_wui_tls_reverse_proxy_raises_exception_on_reload_failure(
-    monkeypatch, mocker, testdir
+    mocker, nginx_paths
 ):
-    paths = _patch_nginx_paths(monkeypatch, testdir)
+    paths = nginx_paths
     _enable_site(paths)
 
     mocker.patch(

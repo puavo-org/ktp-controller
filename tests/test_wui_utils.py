@@ -80,67 +80,12 @@ async def test_registry_failed_send_does_not_block_other_sockets():
 
 
 @pytest.mark.anyio
-async def test_raw_abitti2_stats_message_listener_notifies_only_on_status_report(
-    mocker,
+@pytest.mark.parametrize("kind", ["abitti2_stats_changed", "status_report"])
+async def test_raw_abitti2_stats_message_listener_notifies_on_relevant_kind(
+    mocker, kind
 ):
     messages = [
-        json.dumps({"kind": "abitti2_stats_changed"}),
-        json.dumps({"kind": "ping"}),
-    ]
-    mocker.patch(
-        "ktp_controller.wui.utils.websockets.connect",
-        return_value=_FakeWebsocketConnection(messages),
-    )
-    registry = mocker.Mock()
-    registry.notify_all = mocker.AsyncMock()
-
-    task = asyncio.create_task(
-        ktp_controller.wui.utils.raw_abitti2_stats_message_listener(registry)
-    )
-    try:
-        await asyncio.sleep(0.05)
-    finally:
-        task.cancel()
-        with pytest.raises(asyncio.CancelledError):
-            await task
-
-    registry.notify_all.assert_awaited_once()
-
-
-@pytest.mark.anyio
-async def test_raw_abitti2_stats_message_listener_notifies_on_abitti2_stats_changed(
-    mocker,
-):
-    messages = [
-        json.dumps({"kind": "abitti2_stats_changed"}),
-        json.dumps({"kind": "ping"}),
-    ]
-    mocker.patch(
-        "ktp_controller.wui.utils.websockets.connect",
-        return_value=_FakeWebsocketConnection(messages),
-    )
-    registry = mocker.Mock()
-    registry.notify_all = mocker.AsyncMock()
-
-    task = asyncio.create_task(
-        ktp_controller.wui.utils.raw_abitti2_stats_message_listener(registry)
-    )
-    try:
-        await asyncio.sleep(0.05)
-    finally:
-        task.cancel()
-        with pytest.raises(asyncio.CancelledError):
-            await task
-
-    registry.notify_all.assert_awaited_once()
-
-
-@pytest.mark.anyio
-async def test_raw_abitti2_stats_message_listener_notifies_on_status_report(
-    mocker,
-):
-    messages = [
-        json.dumps({"kind": "status_report"}),
+        json.dumps({"kind": kind}),
         json.dumps({"kind": "ping"}),
     ]
     mocker.patch(
