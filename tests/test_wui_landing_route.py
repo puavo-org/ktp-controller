@@ -1,5 +1,7 @@
 import datetime
 
+import pytest
+
 import ktp_controller.utils
 import ktp_controller.wui.auth
 import ktp_controller.wui.main
@@ -213,15 +215,27 @@ def test_landing_view_shows_warning_for_soon_expiring_cert(
     assert "severity-icon" in nav_item
 
 
-def test_landing_view_shows_days_left_caption_for_expiring_cert(
-    wui_client, override_session, mocker, make_status_report
+@pytest.mark.parametrize(
+    ("delta", "expected_caption"),
+    [
+        pytest.param(
+            datetime.timedelta(days=5, hours=12), "5 days left", id="days_left"
+        ),
+        pytest.param(
+            datetime.timedelta(hours=5, minutes=30),
+            "5 hours left",
+            id="hours_left_within_a_day",
+        ),
+        pytest.param(-datetime.timedelta(hours=1), "Expired", id="already_expired"),
+    ],
+)
+def test_landing_view_shows_cert_expiry_caption(
+    wui_client, override_session, mocker, make_status_report, delta, expected_caption
 ):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
         return_value=make_status_report(
-            abitti2_cert_expires_at=(
-                ktp_controller.utils.utcnow() + datetime.timedelta(days=5, hours=12)
-            ).isoformat()
+            abitti2_cert_expires_at=(ktp_controller.utils.utcnow() + delta).isoformat()
         ),
     )
     mocker.patch(
@@ -240,67 +254,9 @@ def test_landing_view_shows_days_left_caption_for_expiring_cert(
     response = wui_client.get("/")
 
     assert response.status_code == 200
-    assert '<small class="severity-caption">5 days left</small>' in response.text
-
-
-def test_landing_view_shows_hours_left_caption_for_cert_expiring_within_a_day(
-    wui_client, override_session, mocker, make_status_report
-):
-    mocker.patch(
-        "ktp_controller.api.client.get_last_status_report",
-        return_value=make_status_report(
-            abitti2_cert_expires_at=(
-                ktp_controller.utils.utcnow() + datetime.timedelta(hours=5, minutes=30)
-            ).isoformat()
-        ),
+    assert (
+        f'<small class="severity-caption">{expected_caption}</small>' in response.text
     )
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=[],
-    )
-    override_session(
-        ktp_controller.wui.auth.Session(
-            session_id="test-session",
-            username="alice",
-            permissions=frozenset({"wui.landing.view"}),
-            locale="en",
-        )
-    )
-
-    response = wui_client.get("/")
-
-    assert response.status_code == 200
-    assert '<small class="severity-caption">5 hours left</small>' in response.text
-
-
-def test_landing_view_shows_expired_caption_for_already_expired_cert(
-    wui_client, override_session, mocker, make_status_report
-):
-    mocker.patch(
-        "ktp_controller.api.client.get_last_status_report",
-        return_value=make_status_report(
-            abitti2_cert_expires_at=(
-                ktp_controller.utils.utcnow() - datetime.timedelta(hours=1)
-            ).isoformat()
-        ),
-    )
-    mocker.patch(
-        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
-        return_value=[],
-    )
-    override_session(
-        ktp_controller.wui.auth.Session(
-            session_id="test-session",
-            username="alice",
-            permissions=frozenset({"wui.landing.view"}),
-            locale="en",
-        )
-    )
-
-    response = wui_client.get("/")
-
-    assert response.status_code == 200
-    assert '<small class="severity-caption">Expired</small>' in response.text
 
 
 def test_landing_view_no_warning_for_cert_expiring_far_in_the_future(
