@@ -248,45 +248,45 @@ def _make_cert_pem(
     return cert.public_bytes(serialization.Encoding.PEM)
 
 
-def test_read_cert_returns_domains_from_common_name(testdir):
+@pytest.mark.parametrize(
+    ("common_name", "san_dns_names", "expected_domains"),
+    [
+        pytest.param(
+            "taattu-sumuttaa.koe.abitti.net",
+            None,
+            {"taattu-sumuttaa.koe.abitti.net"},
+            id="common_name",
+        ),
+        pytest.param(
+            "taattu-sumuttaa.koe.abitti.net",
+            [
+                "taattu-sumuttaa.koe.abitti.net",
+                "www.taattu-sumuttaa.koe.abitti.net",
+            ],
+            {
+                "taattu-sumuttaa.koe.abitti.net",
+                "www.taattu-sumuttaa.koe.abitti.net",
+            },
+            id="common_name_and_san",
+        ),
+        pytest.param(
+            None,
+            ["taattu-sumuttaa.koe.abitti.net"],
+            {"taattu-sumuttaa.koe.abitti.net"},
+            id="san_only",
+        ),
+    ],
+)
+def test_read_cert_returns_domains(
+    testdir, common_name, san_dns_names, expected_domains
+):
     cert_filepath = os.path.join(testdir, "cert.pem")
     with open(cert_filepath, "wb") as f:
-        f.write(_make_cert_pem(common_name="taattu-sumuttaa.koe.abitti.net"))
+        f.write(_make_cert_pem(common_name=common_name, san_dns_names=san_dns_names))
 
     cert = ktp_controller.abitti2.naksu2.read_cert(filepath=cert_filepath)
 
-    assert cert["domains"] == {"taattu-sumuttaa.koe.abitti.net"}
-
-
-def test_read_cert_returns_domains_from_common_name_and_san(testdir):
-    cert_filepath = os.path.join(testdir, "cert.pem")
-    with open(cert_filepath, "wb") as f:
-        f.write(
-            _make_cert_pem(
-                common_name="taattu-sumuttaa.koe.abitti.net",
-                san_dns_names=[
-                    "taattu-sumuttaa.koe.abitti.net",
-                    "www.taattu-sumuttaa.koe.abitti.net",
-                ],
-            )
-        )
-
-    cert = ktp_controller.abitti2.naksu2.read_cert(filepath=cert_filepath)
-
-    assert cert["domains"] == {
-        "taattu-sumuttaa.koe.abitti.net",
-        "www.taattu-sumuttaa.koe.abitti.net",
-    }
-
-
-def test_read_cert_returns_domains_from_san_only(testdir):
-    cert_filepath = os.path.join(testdir, "cert.pem")
-    with open(cert_filepath, "wb") as f:
-        f.write(_make_cert_pem(san_dns_names=["taattu-sumuttaa.koe.abitti.net"]))
-
-    cert = ktp_controller.abitti2.naksu2.read_cert(filepath=cert_filepath)
-
-    assert cert["domains"] == {"taattu-sumuttaa.koe.abitti.net"}
+    assert cert["domains"] == expected_domains
 
 
 def test_read_cert_returns_expires_at_from_not_valid_after(testdir):
