@@ -1,16 +1,21 @@
 (function () {
   function update() {
     const el = document.getElementById("abitti2-cert-expires-at");
-    if (el === null) {
+    if (el === null || el.dataset.certExpiresAt === undefined) {
       return;
     }
-    const expiresAt = Date.parse(el.dataset.certExpiresAt);
+    const expiresAt = new Date(Date.parse(el.dataset.certExpiresAt));
 
-    // "long" includes the timezone name/offset, and with no explicit
-    // `timeZone` option this renders in the browser's local timezone.
+    // With no explicit `timeZone` option, these render in the browser's
+    // local timezone, replacing the server-rendered UTC date.
+    el.textContent = expiresAt.toLocaleDateString(document.documentElement.lang, {
+      dateStyle: "short",
+    });
+
+    // "long" additionally includes the timezone name/offset.
     el.setAttribute(
       "data-tooltip",
-      new Date(expiresAt).toLocaleString(document.documentElement.lang, {
+      expiresAt.toLocaleString(document.documentElement.lang, {
         dateStyle: "long",
         timeStyle: "long",
       }),
