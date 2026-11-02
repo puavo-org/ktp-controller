@@ -53,6 +53,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - CLI: remove `tui` and `wui` subcommands from the command line interface.
 
+### Fixed
+
+- API: abort scheduled exam packages that never got prepared and are
+  already past their schedule, instead of leaving them stuck as the
+  current package forever.
+
 
 ## [0.8.1] - 2026-10-27
 
