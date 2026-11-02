@@ -8,7 +8,7 @@ import ktp_controller.wui.schemas
 __all__ = [
     "ControllerInfo",
     "Abitti2Info",
-    "OsInfo",
+    "HostInfo",
 ]
 
 
@@ -38,7 +38,7 @@ class Abitti2Info(ktp_controller.pydantic.BaseModel):
         return None
 
 
-class OsInfo(ktp_controller.pydantic.BaseModel):
+class HostInfo(ktp_controller.pydantic.BaseModel):
     puavo_os_image_release: pydantic.StrictStr | None
     puavo_os_image_name: pydantic.StrictStr | None
 

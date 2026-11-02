@@ -108,15 +108,15 @@
         </article>
         {% endif %}
 
-        {% if "os_info" in visible_card_keys %}
+        {% if "host_info" in visible_card_keys %}
         <article>
-            {{ severity_macros.card_header(_("Operating system"), os_info.severity if os_info else None) }}
-            {% if os_info %}
+            {{ severity_macros.card_header(_("Operating system"), host_info.severity if host_info else None) }}
+            {% if host_info %}
             <table class="landing-card-table">
                 <tr>
                     <td>{{ _("Release") }}</td>
                     <td>
-                      <span {% if os_info.puavo_os_image_name %} data-tooltip="{{ os_info.puavo_os_image_name }}"{% endif %}>{{ os_info.puavo_os_image_release or "???" }}</span>
+                      <span {% if host_info.puavo_os_image_name %} data-tooltip="{{ host_info.puavo_os_image_name }}"{% endif %}>{{ host_info.puavo_os_image_release or "???" }}</span>
                     </td>
                 </tr>
             </table>

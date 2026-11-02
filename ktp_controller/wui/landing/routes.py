@@ -60,7 +60,7 @@ class _Card:
 _CARDS = (
     _Card(key="controller_info", required_permission=None),
     _Card(key="abitti2_info", required_permission=None),
-    _Card(key="os_info", required_permission=None),
+    _Card(key="host_info", required_permission=None),
 )
 
 
@@ -125,12 +125,12 @@ def _get_abitti2_info(
     return abitti2_info
 
 
-def _get_os_info(
+def _get_host_info(
     report: dict[str, typing.Any] | None,
-) -> schemas.OsInfo | None:
+) -> schemas.HostInfo | None:
     if report is None:
         return None
-    return schemas.OsInfo(
+    return schemas.HostInfo(
         puavo_os_image_release=report["os"]["puavo_os_image_release"],
         puavo_os_image_name=report["os"]["puavo_os_image_name"],
     )
@@ -144,7 +144,7 @@ def get_nav_severity(
         for info in (
             _get_controller_info(report),
             _get_abitti2_info(report, locale),
-            _get_os_info(report),
+            _get_host_info(report),
         )
         if info is not None
     )
@@ -174,7 +174,7 @@ async def _get_landing(
         "visible_card_keys": _visible_card_keys(session),
         "controller_info": _get_controller_info(report),
         "abitti2_info": _get_abitti2_info(report, session.locale),
-        "os_info": _get_os_info(report),
+        "host_info": _get_host_info(report),
         "nav_severity": get_nav_severity(report, session.locale),
         "current_path": request.url.path,
         # Hardcoded until a "wui.actions.toggle-auto-control" permission
