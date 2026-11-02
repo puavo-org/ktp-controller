@@ -121,11 +121,11 @@ def test_landing_view_allowed_with_permission(
     assert 'data-days-other="{n} days ago"' in response.text
     assert "static/controller_started_at.js" in response.text
     assert "1/1/99" in response.text
-    assert 'title="1/1/99, 12:00\u202fAM"' in response.text
+    assert 'data-tooltip="1/1/99, 12:00\u202fAM"' in response.text
     assert 'class="value-warning"' not in response.text
     assert "O2611 Broom" in response.text
     assert (
-        'title="opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img"'
+        'data-tooltip="opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img"'
         in response.text
     )
     assert "what-not" in response.text
