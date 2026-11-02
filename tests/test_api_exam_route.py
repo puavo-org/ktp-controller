@@ -415,6 +415,192 @@ def test_get_current_exam_package__save_package_which_starts_sooner_than_the_cur
     assert response.json() == api_exam_info1["scheduled_exam_packages"][0]
 
 
+def test_get_current_exam_package__current_unprepared_package_past_end_time_is_aborted(
+    client, testdb, utcnow
+):
+    eom_exam_info = get_synthetic_exam_info(utcnow=utcnow)
+    api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
+        eom_exam_info
+    )
+
+    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
+    assert_response(response, expected_status_code=200)
+
+    response = client.post("/api/v1/exam/get_current_exam_package")
+    assert_response(response, expected_status_code=200)
+    assert response.json() == api_exam_info["scheduled_exam_packages"][0]
+
+    external_id = api_exam_info["scheduled_exam_packages"][0]["external_id"]
+    db_exam_package = (
+        testdb.query(models.ScheduledExamPackage)
+        .filter_by(external_id=external_id)
+        .one()
+    )
+    assert db_exam_package.current
+    assert db_exam_package.state is None
+    assert db_exam_package.aborted_at is None
+
+    # Simulate time passing without the package ever getting
+    # prepared: its end_time is now in the past.
+    db_exam_package.end_time = (utcnow - datetime.timedelta(minutes=1)).replace(
+        tzinfo=None
+    )
+    testdb.commit()
+
+    response = client.post("/api/v1/exam/get_current_exam_package")
+    assert_response(response, expected_status_code=200)
+    assert response.json() is None
+
+    db_exam_package = (
+        testdb.query(models.ScheduledExamPackage)
+        .filter_by(external_id=external_id)
+        .one()
+    )
+    assert db_exam_package.current is False
+    assert db_exam_package.state is None
+    assert db_exam_package.aborted_at is not None
+    assert db_exam_package.aborted_at.replace(tzinfo=datetime.UTC) >= utcnow
+
+
+def test_get_current_exam_package__aborted_package_promotes_next_locked_package(
+    client, testdb, utcnow
+):
+    eom_exam_info1 = get_synthetic_exam_info(
+        start_time=utcnow + datetime.timedelta(minutes=5),
+        utcnow=utcnow,
+    )
+    api_exam_info1 = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
+        eom_exam_info1
+    )
+    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info1)
+    assert_response(response, expected_status_code=200)
+
+    eom_exam_info2 = get_synthetic_exam_info(
+        start_time=utcnow + datetime.timedelta(minutes=10),
+        utcnow=utcnow,
+    )
+    api_exam_info2 = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
+        eom_exam_info2
+    )
+    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info2)
+    assert_response(response, expected_status_code=200)
+
+    response = client.post("/api/v1/exam/get_current_exam_package")
+    assert_response(response, expected_status_code=200)
+    assert response.json() == api_exam_info1["scheduled_exam_packages"][0]
+
+    external_id1 = api_exam_info1["scheduled_exam_packages"][0]["external_id"]
+    db_exam_package1 = (
+        testdb.query(models.ScheduledExamPackage)
+        .filter_by(external_id=external_id1)
+        .one()
+    )
+    db_exam_package1.end_time = (utcnow - datetime.timedelta(minutes=1)).replace(
+        tzinfo=None
+    )
+    testdb.commit()
+
+    response = client.post("/api/v1/exam/get_current_exam_package")
+    assert_response(response, expected_status_code=200)
+    assert response.json() == api_exam_info2["scheduled_exam_packages"][0]
+
+    db_exam_package1 = (
+        testdb.query(models.ScheduledExamPackage)
+        .filter_by(external_id=external_id1)
+        .one()
+    )
+    assert db_exam_package1.current is False
+    assert db_exam_package1.aborted_at is not None
+
+    db_exam_package2 = (
+        testdb.query(models.ScheduledExamPackage)
+        .filter_by(
+            external_id=api_exam_info2["scheduled_exam_packages"][0]["external_id"]
+        )
+        .one()
+    )
+    assert db_exam_package2.current is True
+    assert db_exam_package2.aborted_at is None
+
+
+def test_get_current_exam_package__current_prepared_package_past_end_time_is_not_aborted(
+    client, testdb, utcnow
+):
+    eom_exam_info = get_synthetic_exam_info(utcnow=utcnow)
+    api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
+        eom_exam_info
+    )
+
+    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
+    assert_response(response, expected_status_code=200)
+
+    response = client.post("/api/v1/exam/get_current_exam_package")
+    assert_response(response, expected_status_code=200)
+    assert response.json() == api_exam_info["scheduled_exam_packages"][0]
+
+    external_id = api_exam_info["scheduled_exam_packages"][0]["external_id"]
+    db_exam_package = (
+        testdb.query(models.ScheduledExamPackage)
+        .filter_by(external_id=external_id)
+        .one()
+    )
+    # Simulate the package having already been prepared (state is no
+    # longer None) before its end_time passed.
+    db_exam_package.state = "ready"
+    db_exam_package.start_time = (utcnow - datetime.timedelta(minutes=2)).replace(
+        tzinfo=None
+    )
+    db_exam_package.end_time = (utcnow - datetime.timedelta(minutes=1)).replace(
+        tzinfo=None
+    )
+    testdb.commit()
+
+    response = client.post("/api/v1/exam/get_current_exam_package")
+    assert_response(response, expected_status_code=200)
+    assert response.json() is not None
+    assert response.json()["external_id"] == external_id
+
+    db_exam_package = (
+        testdb.query(models.ScheduledExamPackage)
+        .filter_by(external_id=external_id)
+        .one()
+    )
+    assert db_exam_package.current is True
+    assert db_exam_package.aborted_at is None
+
+
+def test_get_current_exam_package__current_unprepared_package_not_past_end_time_is_not_aborted(
+    client, testdb, utcnow
+):
+    eom_exam_info = get_synthetic_exam_info(utcnow=utcnow)
+    api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
+        eom_exam_info
+    )
+
+    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
+    assert_response(response, expected_status_code=200)
+
+    response = client.post("/api/v1/exam/get_current_exam_package")
+    assert_response(response, expected_status_code=200)
+    assert response.json() == api_exam_info["scheduled_exam_packages"][0]
+
+    # Calling again before end_time has passed must not abort the
+    # package, even though it is still unprepared (state is None).
+    response = client.post("/api/v1/exam/get_current_exam_package")
+    assert_response(response, expected_status_code=200)
+    assert response.json() == api_exam_info["scheduled_exam_packages"][0]
+
+    external_id = api_exam_info["scheduled_exam_packages"][0]["external_id"]
+    db_exam_package = (
+        testdb.query(models.ScheduledExamPackage)
+        .filter_by(external_id=external_id)
+        .one()
+    )
+    assert db_exam_package.current is True
+    assert db_exam_package.state is None
+    assert db_exam_package.aborted_at is None
+
+
 def test_set_current_exam_package_state__empty_database(client, testdb, utcnow):
     response = client.post(
         "/api/v1/exam/set_current_exam_package_state",
