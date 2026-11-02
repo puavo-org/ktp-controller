@@ -38,7 +38,7 @@
                     <td id="controller-started-at-cell">
                         <span class="value-with-icon">
                             <span id="controller-started-at"
-                                  title="{{ controller_info.started_at|localize_datetime(locale) }}"
+                                  data-tooltip="{{ controller_info.started_at|localize_datetime(locale) }}"
                                   data-started-at="{{ controller_info.started_at.isoformat() }}"
                                   data-seconds-one="{{ _('{n} second ago') }}"
                                   data-seconds-other="{{ _('{n} seconds ago') }}"
@@ -93,7 +93,7 @@
                     <td>{{ _("Certificate expires") }}</td>
                     <td{% if abitti2_info.severity %} class="value-{{ abitti2_info.severity }}"{% endif %}>
                         <span class="value-with-icon">
-                            <span{% if abitti2_info.cert_expires_at %} title="{{ abitti2_info.cert_expires_at|localize_datetime(locale) }}"{% endif %}>{{ abitti2_info.cert_expires_at|localize_date(locale) if abitti2_info.cert_expires_at else "???" }}</span>
+                            <span{% if abitti2_info.cert_expires_at %} data-tooltip="{{ abitti2_info.cert_expires_at|localize_datetime(locale) }}"{% endif %}>{{ abitti2_info.cert_expires_at|localize_date(locale) if abitti2_info.cert_expires_at else "???" }}</span>
                             {% if abitti2_info.severity %}{{ severity_macros.icon() }}{% endif %}
                         </span>
                         {% if abitti2_info.cert_expiry_countdown_text %}
@@ -115,7 +115,7 @@
             <table class="landing-card-table">
                 <tr>
                     <td>{{ _("Release") }}</td>
-                    <td{% if os_info.puavo_os_image_name %} title="{{ os_info.puavo_os_image_name }}"{% endif %}>{{ os_info.puavo_os_image_release or "???" }}</td>
+                    <td{% if os_info.puavo_os_image_name %} data-tooltip="{{ os_info.puavo_os_image_name }}"{% endif %}>{{ os_info.puavo_os_image_release or "???" }}</td>
                 </tr>
             </table>
             {% else %}
