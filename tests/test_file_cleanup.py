@@ -5,6 +5,16 @@ import pathlib
 import ktp_controller.files
 import ktp_controller.utils
 
+_EXAM_PACKAGE_EXTERNAL_IDS = [
+    "8ee699fd-5183-4602-a081-8050194a2417",
+    "711aee38-7a1f-43ed-a73e-8ebe2c083502",
+    "0f0e003e-7619-4fe1-88e6-dfbf799c43e8",
+    "a1fd78a4-fbb4-4e75-8939-ba20306c1724",
+    "197c43e5-4635-49b4-ac0f-e805f44f292d",
+    "c38c9bef-1533-4117-a369-47face03613e",
+    "20141293-7241-40f3-a35a-dd2abfd3c870",
+]
+
 
 def _find_all_filepaths(basedir):
     filepaths = []
@@ -30,15 +40,7 @@ def test_cleanup_old_answers_files(testdir):
     ktp_controller.files.ANSWERS_FILE_DIR = os.path.join(basedir, "answers-files")
 
     # One exam package per week, most recent first.
-    exam_package_external_ids = [
-        "8ee699fd-5183-4602-a081-8050194a2417",
-        "711aee38-7a1f-43ed-a73e-8ebe2c083502",
-        "0f0e003e-7619-4fe1-88e6-dfbf799c43e8",
-        "a1fd78a4-fbb4-4e75-8939-ba20306c1724",
-        "197c43e5-4635-49b4-ac0f-e805f44f292d",
-        "c38c9bef-1533-4117-a369-47face03613e",
-        "20141293-7241-40f3-a35a-dd2abfd3c870",
-    ]
+    exam_package_external_ids = _EXAM_PACKAGE_EXTERNAL_IDS
 
     for weeks_ago, exam_package_external_id in enumerate(exam_package_external_ids):
         dt = ktp_controller.utils.utcnow() - datetime.timedelta(weeks=weeks_ago)
@@ -80,15 +82,7 @@ def test_cleanup_old_archived_exam_package_dirs(testdir):
     ktp_controller.files._EXAM_PACKAGE_DIR = os.path.join(basedir, "exam-packages")
 
     # One exam package per day, most recent first.
-    exam_package_external_ids = [
-        "8ee699fd-5183-4602-a081-8050194a2417",
-        "711aee38-7a1f-43ed-a73e-8ebe2c083502",
-        "0f0e003e-7619-4fe1-88e6-dfbf799c43e8",
-        "a1fd78a4-fbb4-4e75-8939-ba20306c1724",
-        "197c43e5-4635-49b4-ac0f-e805f44f292d",
-        "c38c9bef-1533-4117-a369-47face03613e",
-        "20141293-7241-40f3-a35a-dd2abfd3c870",
-    ]
+    exam_package_external_ids = _EXAM_PACKAGE_EXTERNAL_IDS
 
     for days_ago, exam_package_external_id in enumerate(exam_package_external_ids):
         dt = ktp_controller.utils.utcnow() - datetime.timedelta(days=days_ago)
