@@ -2,6 +2,8 @@
 import datetime
 import uuid
 
+import pytest
+
 import ktp_controller.api.client
 import ktp_controller.api.exam.schemas
 
@@ -234,15 +236,56 @@ def test_get_current_exam_package__empty_database(client, testdb, utcnow):
     assert response.json() is None
 
 
-def test_get_current_exam_package__one_package_and_over_15mins_to_start_time_no_current_yet(
-    client, testdb, utcnow
+@pytest.mark.parametrize(
+    ("delta", "overrides", "expect_none"),
+    [
+        pytest.param(
+            datetime.timedelta(minutes=15, seconds=1),
+            {},
+            True,
+            id="over_15mins_to_start_time",
+        ),
+        pytest.param(
+            datetime.timedelta(minutes=15),
+            {},
+            False,
+            id="exactly_15mins_to_start_time",
+        ),
+        pytest.param(
+            datetime.timedelta(minutes=14, seconds=59),
+            {},
+            False,
+            id="under_15mins_to_start_time",
+        ),
+        pytest.param(
+            datetime.timedelta(days=3),
+            # locked is the king, lock_time does not mean anything to us.
+            {"locked": True},
+            False,
+            id="lock_time_is_far_in_future_but_already_locked",
+        ),
+        pytest.param(
+            -datetime.timedelta(seconds=1),
+            {},
+            False,
+            id="it_is_past_start_time",
+        ),
+        pytest.param(
+            -datetime.timedelta(days=1),
+            {},
+            True,
+            id="it_is_past_end_time",
+        ),
+    ],
+)
+def test_get_current_exam_package__one_package_no_current_yet(
+    client, testdb, utcnow, delta, overrides, expect_none
 ):
-    eom_exam_info = get_synthetic_exam_info(
-        start_time=utcnow + datetime.timedelta(minutes=15, seconds=1), utcnow=utcnow
-    )
+    eom_exam_info = get_synthetic_exam_info(start_time=utcnow + delta, utcnow=utcnow)
     api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
         eom_exam_info
     )
+    api_exam_info["scheduled_exam_packages"][0].update(overrides)
 
     response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
     assert_response(response, expected_status_code=200)
@@ -250,27 +293,10 @@ def test_get_current_exam_package__one_package_and_over_15mins_to_start_time_no_
     response = client.post("/api/v1/exam/get_current_exam_package")
     assert_response(response, expected_status_code=200)
 
-    assert response.json() is None  # Still None because start_time 30mins in future
-
-
-def test_get_current_exam_package__one_package_and_exactly_15mins_to_start_time_no_current_yet(
-    client, testdb, utcnow
-):
-    eom_exam_info = get_synthetic_exam_info(
-        start_time=utcnow + datetime.timedelta(minutes=15),
-        utcnow=utcnow,
-    )
-    api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
-        eom_exam_info
-    )
-
-    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
-    assert_response(response, expected_status_code=200)
-
-    response = client.post("/api/v1/exam/get_current_exam_package")
-    assert_response(response, expected_status_code=200)
-
-    assert response.json() == api_exam_info["scheduled_exam_packages"][0]
+    if expect_none:
+        assert response.json() is None
+    else:
+        assert response.json() == api_exam_info["scheduled_exam_packages"][0]
 
 
 def test_get_scheduled_exam_package__non_existing_and_existing_external_ids(
@@ -303,89 +329,6 @@ def test_get_scheduled_exam_package__non_existing_and_existing_external_ids(
     assert_response(response, expected_status_code=200)
 
     assert response.json() == api_exam_info["scheduled_exam_packages"][0]
-
-
-def test_get_current_exam_package__one_package_and_under_15mins_to_start_time_no_current_yet(
-    client, testdb, utcnow
-):
-    eom_exam_info = get_synthetic_exam_info(
-        start_time=utcnow + datetime.timedelta(minutes=14, seconds=59),
-        utcnow=utcnow,
-    )
-    api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
-        eom_exam_info
-    )
-
-    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
-    assert_response(response, expected_status_code=200)
-
-    response = client.post("/api/v1/exam/get_current_exam_package")
-    assert_response(response, expected_status_code=200)
-
-    assert response.json() == api_exam_info["scheduled_exam_packages"][0]
-
-
-def test_get_current_exam_package__one_package_and_lock_time_is_far_in_future_but_already_locked_no_current_yet(
-    client, testdb, utcnow
-):
-    eom_exam_info = get_synthetic_exam_info(
-        start_time=utcnow + datetime.timedelta(days=3),
-        utcnow=utcnow,
-    )
-    api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
-        eom_exam_info
-    )
-    api_exam_info["scheduled_exam_packages"][0]["locked"] = (
-        True  # locked is the king, lock_time does not mean anything to us.
-    )
-
-    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
-    assert_response(response, expected_status_code=200)
-
-    response = client.post("/api/v1/exam/get_current_exam_package")
-    assert_response(response, expected_status_code=200)
-
-    assert response.json() == api_exam_info["scheduled_exam_packages"][0]
-
-
-def test_get_current_exam_package__one_package_and_it_is_past_start_time_no_current_yet(
-    client, testdb, utcnow
-):
-    eom_exam_info = get_synthetic_exam_info(
-        start_time=utcnow - datetime.timedelta(seconds=1),
-        utcnow=utcnow,
-    )
-    api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
-        eom_exam_info
-    )
-
-    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
-    assert_response(response, expected_status_code=200)
-
-    response = client.post("/api/v1/exam/get_current_exam_package")
-    assert_response(response, expected_status_code=200)
-
-    assert response.json() == api_exam_info["scheduled_exam_packages"][0]
-
-
-def test_get_current_exam_package__one_package_and_it_is_past_end_time_no_current_yet(
-    client, testdb, utcnow
-):
-    eom_exam_info = get_synthetic_exam_info(
-        start_time=utcnow - datetime.timedelta(days=1),
-        utcnow=utcnow,
-    )
-    api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
-        eom_exam_info
-    )
-
-    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
-    assert_response(response, expected_status_code=200)
-
-    response = client.post("/api/v1/exam/get_current_exam_package")
-    assert_response(response, expected_status_code=200)
-
-    assert response.json() is None
 
 
 def test_get_current_exam_package__multiple_locked_packages_starting_at_same_time_no_current_yet(
