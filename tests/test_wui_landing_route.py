@@ -1,49 +1,9 @@
 import datetime
-import re
-
-import fastapi.testclient
-import pytest
 
 import ktp_controller.utils
 import ktp_controller.wui.auth
 import ktp_controller.wui.main
-
-
-def _header_tag(html, title):
-    for match in re.finditer(
-        r"<header[^>]*>(?:(?!</header>).)*?</header>", html, re.DOTALL
-    ):
-        if title in match.group(0):
-            return match.group(0)
-    raise AssertionError(f"header for {title!r} not found in response")
-
-
-def _nav_item_tag(html, link_text):
-    for match in re.finditer(r"<li[^>]*>(?:(?!</li>).)*?</li>", html, re.DOTALL):
-        if link_text in match.group(0):
-            return match.group(0)
-    raise AssertionError(f"nav item for {link_text!r} not found in response")
-
-
-@pytest.fixture
-def wui_client():
-    return fastapi.testclient.TestClient(
-        ktp_controller.wui.main.APP, follow_redirects=False
-    )
-
-
-@pytest.fixture
-def override_session():
-    def _override(session):
-        def _get_current_session():
-            return session
-
-        ktp_controller.wui.main.APP.dependency_overrides[
-            ktp_controller.wui.auth.get_current_session
-        ] = _get_current_session
-
-    yield _override
-    ktp_controller.wui.main.APP.dependency_overrides.clear()
+from tests.html_helpers import _header_tag, _nav_item_tag
 
 
 def test_landing_view_requires_login(wui_client):

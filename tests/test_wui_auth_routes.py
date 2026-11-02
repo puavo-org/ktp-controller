@@ -1,19 +1,11 @@
 import asyncio
 
-import fastapi.testclient
 import pytest
 
 import ktp_controller.api.client
 import ktp_controller.wui.auth
 import ktp_controller.wui.auth_routes
 import ktp_controller.wui.main
-
-
-@pytest.fixture
-def wui_client():
-    return fastapi.testclient.TestClient(
-        ktp_controller.wui.main.APP, follow_redirects=False
-    )
 
 
 @pytest.fixture(autouse=True)

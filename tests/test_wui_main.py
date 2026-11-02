@@ -1,16 +1,3 @@
-import fastapi.testclient
-import pytest
-
-import ktp_controller.wui.main
-
-
-@pytest.fixture
-def wui_client():
-    return fastapi.testclient.TestClient(
-        ktp_controller.wui.main.APP, follow_redirects=False
-    )
-
-
 def test_static_file_served_through_forwarded_prefix(wui_client):
     # Regression test: StaticFiles is mounted (APP.mount), and a Mount
     # accumulates root_path for its child scope rather than stripping its

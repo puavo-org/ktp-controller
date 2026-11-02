@@ -2,11 +2,11 @@ import datetime
 import itertools
 import re
 
-import fastapi.testclient
 import pytest
 
 import ktp_controller.wui.auth
 import ktp_controller.wui.main
+from tests.html_helpers import _nav_item_tag
 
 
 def _browser_permission_checkbox_tag(html):
@@ -29,20 +29,6 @@ def _svg_tag(html, svg_class):
     return match.group(0)
 
 
-def _nav_item_tag(html, link_text):
-    for match in re.finditer(r"<li[^>]*>(?:(?!</li>).)*?</li>", html, re.DOTALL):
-        if link_text in match.group(0):
-            return match.group(0)
-    raise AssertionError(f"nav item for {link_text!r} not found in response")
-
-
-@pytest.fixture
-def wui_client():
-    return fastapi.testclient.TestClient(
-        ktp_controller.wui.main.APP, follow_redirects=False
-    )
-
-
 @pytest.fixture(autouse=True)
 def _mock_last_status_report(mocker):
     # The invigilator/student-access-code pages don't otherwise care
@@ -51,20 +37,6 @@ def _mock_last_status_report(mocker):
     # exercising nav_severity itself override this with their own
     # mocker.patch(...).
     mocker.patch("ktp_controller.api.client.get_last_status_report", return_value=None)
-
-
-@pytest.fixture
-def override_session():
-    def _override(session):
-        def _get_current_session():
-            return session
-
-        ktp_controller.wui.main.APP.dependency_overrides[
-            ktp_controller.wui.auth.get_current_session
-        ] = _get_current_session
-
-    yield _override
-    ktp_controller.wui.main.APP.dependency_overrides.clear()
 
 
 def test_invigilator_view_requires_login(wui_client):

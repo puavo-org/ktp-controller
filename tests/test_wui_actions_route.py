@@ -1,31 +1,6 @@
-import fastapi.testclient
-import pytest
-
 import ktp_controller.messages
 import ktp_controller.wui.auth
 import ktp_controller.wui.main
-
-
-@pytest.fixture
-def wui_client():
-    return fastapi.testclient.TestClient(
-        ktp_controller.wui.main.APP, follow_redirects=False
-    )
-
-
-@pytest.fixture
-def override_session():
-    def _override(session):
-        def _get_current_session():
-            return session
-
-        ktp_controller.wui.main.APP.dependency_overrides[
-            ktp_controller.wui.auth.get_current_session
-        ] = _get_current_session
-
-    yield _override
-    ktp_controller.wui.main.APP.dependency_overrides.clear()
-
 
 _SAME_ORIGIN_HEADERS = {"origin": "http://testserver"}
 _STUDENT_UUID = "0b7f4c5e-2a55-4c34-9a8c-7e4f0d3a1b21"

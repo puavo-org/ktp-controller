@@ -19,6 +19,8 @@ from sqlalchemy.pool import StaticPool
 # Internal imports
 import ktp_controller.api.models
 import ktp_controller.schemas
+import ktp_controller.wui.auth
+import ktp_controller.wui.main
 from ktp_controller.api.database import get_db
 from ktp_controller.api.main import APP
 from ktp_controller.api.models import Base
@@ -94,6 +96,27 @@ def client(testdb):
     APP.dependency_overrides[get_db] = override_get_db
     yield fastapi.testclient.TestClient(APP)
     APP.dependency_overrides.clear()
+
+
+@pytest.fixture
+def wui_client():
+    return fastapi.testclient.TestClient(
+        ktp_controller.wui.main.APP, follow_redirects=False
+    )
+
+
+@pytest.fixture
+def override_session():
+    def _override(session):
+        def _get_current_session():
+            return session
+
+        ktp_controller.wui.main.APP.dependency_overrides[
+            ktp_controller.wui.auth.get_current_session
+        ] = _get_current_session
+
+    yield _override
+    ktp_controller.wui.main.APP.dependency_overrides.clear()
 
 
 @pytest.fixture
