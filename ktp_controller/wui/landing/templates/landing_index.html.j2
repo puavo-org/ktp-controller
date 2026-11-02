@@ -7,6 +7,7 @@
     <script src="{{ prefix }}/static/status_updates.js"></script>
     <script src="{{ prefix }}/static/page_refreshed_status.js"></script>
     <script src="{{ prefix }}/static/controller_started_at.js"></script>
+    <script src="{{ prefix }}/static/abitti2_cert_expires_at.js"></script>
 {% endblock %}
 
 {% block nav_live_status %}
@@ -93,7 +94,8 @@
                     <td>{{ _("Certificate expires") }}</td>
                     <td{% if abitti2_info.severity %} class="value-{{ abitti2_info.severity }}"{% endif %}>
                         <span class="value-with-icon">
-                            <span{% if abitti2_info.cert_expires_at %} data-tooltip="{{ abitti2_info.cert_expires_at|localize_datetime(locale) }}"{% endif %}>{{ abitti2_info.cert_expires_at|localize_date(locale) if abitti2_info.cert_expires_at else "???" }}</span>
+                            <span id="abitti2-cert-expires-at"
+                                  {% if abitti2_info.cert_expires_at %}data-tooltip="{{ abitti2_info.cert_expires_at|localize_datetime(locale) }}" data-cert-expires-at="{{ abitti2_info.cert_expires_at.isoformat() }}"{% endif %}>{{ abitti2_info.cert_expires_at|localize_date(locale) if abitti2_info.cert_expires_at else "???" }}</span>
                             {% if abitti2_info.severity %}{{ severity_macros.icon() }}{% endif %}
                         </span>
                         {% if abitti2_info.cert_expiry_countdown_text %}
