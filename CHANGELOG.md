@@ -17,11 +17,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
     - Show the Abitti2 TLS certificate's expiry date on the landing
       page, with a "N days/hours left" caption, an exact-time tooltip,
-      and a warning highlight once it is close to expiring.
+      and a warning highlight once it is close (< 16 days) to expiring.
+
+    - Display host system information on the landing page (Host system
+      card).
 
     - Highlight landing page cards, and the nav bar's "Exam
       server" icon, whenever their status needs attention; the nav bar
       icon updates live, without a page reload.
+
+    - Display "Page refreshed N seconds ago" on every page. It tells
+      the last time the browser received any data from the backend.
 
 - CLI: add `shutdown-wait` subcommand to the command line
   interface. It shuts KTP Controller down and waits until all
@@ -36,16 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Add an `abitti2.cert` field with the Abitti2 TLS certificate's
       domains and expiry time.
 
-
 ### Changed
-
-- Web UI:
-
-    - Rename the "Operating system" card to "Host system" on the
-      landing page.
-
-    - Show the Controller started-at and certificate-expiry tooltips
-      in the viewer's own local timezone instead of UTC.
 
 - Updated all dependencies.
 
