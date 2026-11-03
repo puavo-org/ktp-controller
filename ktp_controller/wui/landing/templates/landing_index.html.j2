@@ -121,6 +121,15 @@
                       <span {% if host_info.puavo_os_image_name %} data-tooltip="{{ host_info.puavo_os_image_name }}"{% endif %}>{{ host_info.puavo_os_image_release or "???" }}</span>
                     </td>
                 </tr>
+                <tr>
+                    <td>{{ _("Free disk space") }}</td>
+                    <td{% if host_info.severity %} class="value-{{ host_info.severity }}"{% endif %}>
+                        <span class="value-with-icon">
+                            <span>{{ disk_space_stage_labels[host_info.free_disk_space_stage] if host_info.free_disk_space_stage else "???" }}</span>
+                            {% if host_info.severity %}{{ severity_macros.icon() }}{% endif %}
+                        </span>
+                    </td>
+                </tr>
             </table>
             {% else %}
             <p>{{ _("Not available yet.") }}</p>
