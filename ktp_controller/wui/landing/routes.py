@@ -28,7 +28,7 @@ __all__ = [
 
 _LOGGER = logging.getLogger(__name__)
 
-_CERT_EXPIRY_WARNING_THRESHOLD = datetime.timedelta(days=8)
+_CERT_EXPIRY_WARNING_THRESHOLD = datetime.timedelta(days=16)
 
 router = fastapi.APIRouter(tags=["htmx"])
 _thisdir = os.path.dirname(__file__)
