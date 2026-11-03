@@ -358,6 +358,93 @@ def test_landing_view_shows_question_marks_without_host_release(
     assert "???" in response.text
 
 
+@pytest.mark.parametrize(
+    ("free_bytes", "expected_label", "expected_severity"),
+    [
+        pytest.param(100 * 1024**2 - 1, "Critical", "error", id="just_below_critical"),
+        pytest.param(100 * 1024**2, "Low", "warning", id="at_critical_threshold"),
+        pytest.param(3 * 1024**3 - 1, "Low", "warning", id="just_below_low"),
+        pytest.param(3 * 1024**3, "Moderate", None, id="at_low_threshold"),
+        pytest.param(10 * 1024**3 - 1, "Moderate", None, id="just_below_moderate"),
+        pytest.param(10 * 1024**3, "Plenty", None, id="at_moderate_threshold"),
+    ],
+)
+def test_landing_view_shows_free_disk_space_stage(
+    wui_client,
+    override_session,
+    mocker,
+    make_status_report,
+    free_bytes,
+    expected_label,
+    expected_severity,
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(
+            disk_usage=[{"mountpoint": "/home", "free": free_bytes}]
+        ),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    host_header = _header_tag(response.text, "Host system")
+    assert f">{expected_label}<" in response.text
+    if expected_severity is None:
+        assert "value-warning" not in host_header
+        assert "value-error" not in host_header
+    else:
+        assert f'class="value-{expected_severity}"' in host_header
+
+
+@pytest.mark.parametrize(
+    ("disk_usage"),
+    [
+        pytest.param(None, id="disk_usage_missing"),
+        pytest.param([], id="disk_usage_empty"),
+        pytest.param([{"mountpoint": "/", "free": 50 * 1024**3}], id="no_home_entry"),
+    ],
+)
+def test_landing_view_shows_question_marks_without_home_disk_usage(
+    wui_client, override_session, mocker, make_status_report, disk_usage
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(disk_usage=disk_usage),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    assert "???" in response.text
+    host_header = _header_tag(response.text, "Host system")
+    assert 'class="value-error"' in host_header
+
+
 def _raw_abitti2_stats_messages(statuses_and_connected):
     students = []
     for index, (status, is_connected) in enumerate(statuses_and_connected, start=1):
