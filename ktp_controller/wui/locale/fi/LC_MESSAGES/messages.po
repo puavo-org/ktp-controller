@@ -232,7 +232,7 @@ msgstr "Runsaasti"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:162
 msgid "Moderate"
-msgstr "Jonkin verran"
+msgstr "Kohtalaisesti"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:163
 msgid "Low"
