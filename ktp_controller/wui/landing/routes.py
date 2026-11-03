@@ -125,15 +125,44 @@ def _get_abitti2_info(
     return abitti2_info
 
 
+def _find_home_disk_usage(
+    report: dict[str, typing.Any],
+) -> dict[str, typing.Any] | None:
+    disk_usage = report["os"].get("stats", {}).get("disk_usage")
+    if not disk_usage:
+        return None
+    return next(
+        (entry for entry in disk_usage if entry.get("mountpoint") == "/home"), None
+    )
+
+
 def _get_host_info(
     report: dict[str, typing.Any] | None,
 ) -> schemas.HostInfo | None:
     if report is None:
         return None
+    home_disk_usage = _find_home_disk_usage(report)
     return schemas.HostInfo(
         puavo_os_image_release=report["os"]["puavo_os_image_release"],
         puavo_os_image_name=report["os"]["puavo_os_image_name"],
+        free_disk_space_stage=(
+            schemas.calculate_disk_space_stage(home_disk_usage["free"])
+            if home_disk_usage is not None
+            else None
+        ),
     )
+
+
+def _get_disk_space_stage_labels(
+    _: typing.Callable[[str], str],
+) -> dict[schemas.DiskSpaceStage, str]:
+    # Insertion order is the rendering order.
+    return {
+        schemas.DiskSpaceStage.PLENTY: _("Plenty"),
+        schemas.DiskSpaceStage.MODERATE: _("Moderate"),
+        schemas.DiskSpaceStage.LOW: _("Low"),
+        schemas.DiskSpaceStage.CRITICAL: _("Critical"),
+    }
 
 
 def get_nav_severity(
@@ -168,6 +197,7 @@ async def _get_landing(
         student_list_items
     )
     state_labels = ktp_controller.wui.students.get_student_state_labels(_)
+    disk_space_stage_labels = _get_disk_space_stage_labels(_)
 
     context = {
         "user": session.username,
@@ -182,6 +212,7 @@ async def _get_landing(
         "can_toggle_auto_control": False,
         "student_state_counts": student_state_counts,
         "state_labels": state_labels,
+        "disk_space_stage_labels": disk_space_stage_labels,
     }
 
     # If the request comes from htmx, return only the pills partial

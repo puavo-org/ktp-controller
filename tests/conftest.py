@@ -144,6 +144,14 @@ def make_status_report():
         abitti2_cert_expires_at="2099-01-01T00:00:00.000+0000",
         puavo_os_image_release="O2611 Broom",
         puavo_os_image_name="opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
+        disk_usage: list[dict] | None = (
+            {
+                "mountpoint": "/home",
+                "total": 100 * 1024**3,
+                "used": 80 * 1024**3,
+                "free": 20 * 1024**3,
+            },
+        ),
     ):
         abitti2 = {
             "version": abitti2_version,
@@ -164,6 +172,11 @@ def make_status_report():
             "os": {
                 "puavo_os_image_release": puavo_os_image_release,
                 "puavo_os_image_name": puavo_os_image_name,
+                "stats": {
+                    "disk_usage": (
+                        list(disk_usage) if disk_usage is not None else None
+                    ),
+                },
             },
         }
 

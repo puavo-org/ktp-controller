@@ -80,7 +80,12 @@ _DISK_SPACE_STAGE_SEVERITY: dict[
 class HostInfo(ktp_controller.pydantic.BaseModel):
     puavo_os_image_release: pydantic.StrictStr | None
     puavo_os_image_name: pydantic.StrictStr | None
+    free_disk_space_stage: DiskSpaceStage | None = None
 
     @property
     def severity(self) -> ktp_controller.wui.schemas.Severity | None:
-        return None
+        # Once a second issue-producing field is added here, switch
+        # this to ktp_controller.wui.schemas.highest_severity([...]).
+        if self.free_disk_space_stage is None:
+            return ktp_controller.wui.schemas.Severity.ERROR
+        return _DISK_SPACE_STAGE_SEVERITY[self.free_disk_space_stage]
