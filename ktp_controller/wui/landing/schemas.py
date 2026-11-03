@@ -1,3 +1,6 @@
+# Standard library imports
+import enum
+
 # Third-party imports
 import pydantic
 
@@ -8,8 +11,17 @@ import ktp_controller.wui.schemas
 __all__ = [
     "ControllerInfo",
     "Abitti2Info",
+    "DiskSpaceStage",
+    "calculate_disk_space_stage",
     "HostInfo",
 ]
+
+_MIB = 1024**2
+_GIB = 1024**3
+
+_DISK_SPACE_CRITICAL_THRESHOLD = 100 * _MIB
+_DISK_SPACE_LOW_THRESHOLD = 3 * _GIB
+_DISK_SPACE_MODERATE_THRESHOLD = 10 * _GIB
 
 
 class ControllerInfo(ktp_controller.pydantic.BaseModel):
@@ -36,6 +48,33 @@ class Abitti2Info(ktp_controller.pydantic.BaseModel):
         if self.cert_expiring_soon:
             return ktp_controller.wui.schemas.Severity.WARNING
         return None
+
+
+class DiskSpaceStage(enum.StrEnum):
+    PLENTY = "plenty"
+    MODERATE = "moderate"
+    LOW = "low"
+    CRITICAL = "critical"
+
+
+def calculate_disk_space_stage(free_bytes: int) -> DiskSpaceStage:
+    if free_bytes < _DISK_SPACE_CRITICAL_THRESHOLD:
+        return DiskSpaceStage.CRITICAL
+    if free_bytes < _DISK_SPACE_LOW_THRESHOLD:
+        return DiskSpaceStage.LOW
+    if free_bytes < _DISK_SPACE_MODERATE_THRESHOLD:
+        return DiskSpaceStage.MODERATE
+    return DiskSpaceStage.PLENTY
+
+
+_DISK_SPACE_STAGE_SEVERITY: dict[
+    DiskSpaceStage, ktp_controller.wui.schemas.Severity | None
+] = {
+    DiskSpaceStage.PLENTY: None,
+    DiskSpaceStage.MODERATE: None,
+    DiskSpaceStage.LOW: ktp_controller.wui.schemas.Severity.WARNING,
+    DiskSpaceStage.CRITICAL: ktp_controller.wui.schemas.Severity.ERROR,
+}
 
 
 class HostInfo(ktp_controller.pydantic.BaseModel):
