@@ -22,7 +22,7 @@ import ktp_controller.wui.landing.routes
 import ktp_controller.wui.live_updates.routes
 import ktp_controller.wui.middleware
 import ktp_controller.wui.utils
-from ktp_controller import SETTINGS
+from ktp_controller import SETTINGS, is_prod_mode
 
 __all__ = [
     "APP",
@@ -54,7 +54,12 @@ async def _lifespan(app: fastapi.FastAPI) -> collections.abc.AsyncIterator[None]
     _LOGGER.info("Stopped KTP Controller WUI.")
 
 
-APP = fastapi.FastAPI(lifespan=_lifespan)
+APP = fastapi.FastAPI(
+    lifespan=_lifespan,
+    openapi_url=None if is_prod_mode() else "/openapi.json",
+    docs_url=None if is_prod_mode() else "/docs",
+    redoc_url=None if is_prod_mode() else "/redoc",
+)
 APP.state.live_update_registry = ktp_controller.wui.utils.BrowserSocketRegistry()
 APP.add_middleware(ktp_controller.wui.middleware.OriginCheckMiddleware)
 APP.add_middleware(ktp_controller.wui.middleware.SecurityHeadersMiddleware)
