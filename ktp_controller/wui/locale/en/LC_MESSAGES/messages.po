@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-03 23:05+0200\n"
+"POT-Creation-Date: 2026-11-04 19:54+0200\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -254,6 +254,7 @@ msgstr "Controller info"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:34
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:86
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:119
 msgid "Version"
 msgstr ""
 
@@ -326,10 +327,6 @@ msgstr ""
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:115
 msgid "Host system"
-msgstr ""
-
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:119
-msgid "Release"
 msgstr ""
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:125
@@ -438,5 +435,8 @@ msgstr "Log in"
 #~ msgstr ""
 
 #~ msgid "Operating system"
+#~ msgstr ""
+
+#~ msgid "Release"
 #~ msgstr ""
 

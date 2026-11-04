@@ -116,7 +116,7 @@
             {% if host_info %}
             <table class="landing-card-table">
                 <tr>
-                    <td>{{ _("Release") }}</td>
+                    <td>{{ _("Version") }}</td>
                     <td>
                       <span {% if host_info.puavo_os_image_name %} data-tooltip="{{ host_info.puavo_os_image_name }}"{% endif %}>{{ host_info.puavo_os_image_release or "???" }}</span>
                     </td>

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-03 23:05+0200\n"
+"POT-Creation-Date: 2026-11-04 19:54+0200\n"
 "PO-Revision-Date: 2026-09-27 20:42+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv\n"
@@ -256,6 +256,7 @@ msgstr "Styrenhet info"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:34
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:86
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:119
 msgid "Version"
 msgstr "Version"
 
@@ -329,10 +330,6 @@ msgstr "Certifikatet upphör"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:115
 msgid "Host system"
 msgstr "Värdsystem"
-
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:119
-msgid "Release"
-msgstr "Utgåva"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:125
 msgid "Free disk space"
@@ -432,4 +429,7 @@ msgstr "Logga in"
 
 #~ msgid "Operating system"
 #~ msgstr "Operativsystem"
+
+#~ msgid "Release"
+#~ msgstr "Utgåva"
 
