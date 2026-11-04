@@ -234,7 +234,8 @@ class _OSStats(ktp_controller.pydantic.BaseModel):
         examples=[
             [
                 {
-                    "mountpoint": "/home",
+                    "dirpath": "/home",
+                    "is_mountpoint": False,
                     "total": 20695207936,
                     "used": 13058498560,
                     "free": 6673039360,

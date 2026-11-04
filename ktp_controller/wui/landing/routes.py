@@ -132,7 +132,7 @@ def _find_home_disk_usage(
     if not disk_usage:
         return None
     return next(
-        (entry for entry in disk_usage if entry.get("mountpoint") == "/home"), None
+        (entry for entry in disk_usage if entry.get("dirpath") == "/home"), None
     )
 
 

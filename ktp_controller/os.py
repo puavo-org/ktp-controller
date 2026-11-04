@@ -24,12 +24,20 @@ def get_disk_usage_stats() -> list[dict[str, typing.Any]]:
     # all=False returns only physical disk partitions, ignoring pseudo-filesystems
     partitions = psutil.disk_partitions(all=False)
 
-    for partition in partitions:
+    mountpoints = {p.mountpoint for p in partitions}
+    dirpaths = {"/home"}
+
+    mountpoints_and_dirpaths = {(mp, True) for mp in mountpoints} | {
+        (dp, False) for dp in dirpaths if dp not in mountpoints
+    }
+
+    for dp, is_mountpoint in mountpoints_and_dirpaths:
         try:
-            usage = psutil.disk_usage(partition.mountpoint)
+            usage = psutil.disk_usage(dp)
             stats.append(
                 {
-                    "mountpoint": partition.mountpoint,
+                    "dirpath": dp,
+                    "is_mountpoint": is_mountpoint,
                     "total": usage.total,
                     "used": usage.used,
                     "free": usage.free,

@@ -146,7 +146,8 @@ def make_status_report():
         puavo_os_image_name="opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
         disk_usage: list[dict] | None = (
             {
-                "mountpoint": "/home",
+                "dirpath": "/home",
+                "is_mountpoint": False,
                 "total": 100 * 1024**3,
                 "used": 80 * 1024**3,
                 "free": 20 * 1024**3,

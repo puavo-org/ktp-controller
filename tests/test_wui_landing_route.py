@@ -381,7 +381,7 @@ def test_landing_view_shows_free_disk_space_stage(
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
         return_value=make_status_report(
-            disk_usage=[{"mountpoint": "/home", "free": free_bytes}]
+            disk_usage=[{"dirpath": "/home", "free": free_bytes}]
         ),
     )
     mocker.patch(
@@ -414,7 +414,7 @@ def test_landing_view_shows_free_disk_space_stage(
     [
         pytest.param(None, id="disk_usage_missing"),
         pytest.param([], id="disk_usage_empty"),
-        pytest.param([{"mountpoint": "/", "free": 50 * 1024**3}], id="no_home_entry"),
+        pytest.param([{"dirpath": "/", "free": 50 * 1024**3}], id="no_home_entry"),
     ],
 )
 def test_landing_view_shows_question_marks_without_home_disk_usage(
