@@ -9,6 +9,7 @@ import validators
 
 # Internal imports
 import ktp_controller.utils
+from ktp_controller import DATADIR, WORKDIR
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ def get_disk_usage_stats() -> list[dict[str, typing.Any]]:
     partitions = psutil.disk_partitions(all=False)
 
     mountpoints = {p.mountpoint for p in partitions}
-    dirpaths = {"/home"}
+    dirpaths = {DATADIR, WORKDIR}
 
     mountpoints_and_dirpaths = {(mp, True) for mp in mountpoints} | {
         (dp, False) for dp in dirpaths if dp not in mountpoints
