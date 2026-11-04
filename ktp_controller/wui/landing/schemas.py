@@ -56,6 +56,10 @@ class DiskSpaceStage(enum.StrEnum):
     LOW = "low"
     CRITICAL = "critical"
 
+    @property
+    def rank(self) -> int:
+        return list(DiskSpaceStage).index(self)
+
 
 def calculate_disk_space_stage(free_bytes: int) -> DiskSpaceStage:
     if free_bytes < _DISK_SPACE_CRITICAL_THRESHOLD:

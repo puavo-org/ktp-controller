@@ -22,7 +22,7 @@ import ktp_controller.schemas
 import ktp_controller.utils
 import ktp_controller.wui.auth
 import ktp_controller.wui.main
-from ktp_controller import SETTINGS, VERSION
+from ktp_controller import DATADIR, SETTINGS, VERSION
 from ktp_controller.api.database import get_db
 from ktp_controller.api.main import APP
 from ktp_controller.api.models import Base
@@ -146,7 +146,7 @@ def make_status_report():
         puavo_os_image_name="opinsys-os-opinsys-bookworm-2026-03-09-100004-amd64.img",
         disk_usage: list[dict] | None = (
             {
-                "dirpath": "/home",
+                "dirpath": DATADIR,
                 "is_mountpoint": False,
                 "total": 100 * 1024**3,
                 "used": 80 * 1024**3,

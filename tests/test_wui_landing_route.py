@@ -5,6 +5,7 @@ import pytest
 import ktp_controller.utils
 import ktp_controller.wui.auth
 import ktp_controller.wui.main
+from ktp_controller import WORKDIR
 from tests.html_helpers import _header_tag, _nav_item_tag
 
 
@@ -381,7 +382,7 @@ def test_landing_view_shows_free_disk_space_stage(
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
         return_value=make_status_report(
-            disk_usage=[{"dirpath": "/home", "free": free_bytes}]
+            disk_usage=[{"dirpath": WORKDIR, "free": free_bytes}]
         ),
     )
     mocker.patch(

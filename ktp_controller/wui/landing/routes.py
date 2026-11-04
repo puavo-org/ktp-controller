@@ -17,6 +17,7 @@ import ktp_controller.wui.auth
 import ktp_controller.wui.i18n
 import ktp_controller.wui.schemas
 import ktp_controller.wui.students
+from ktp_controller import DATADIR, WORKDIR
 
 # Relative imports
 from . import schemas
@@ -125,15 +126,17 @@ def _get_abitti2_info(
     return abitti2_info
 
 
-def _find_home_disk_usage(
+def _get_relevant_disk_usages(
     report: dict[str, typing.Any],
-) -> dict[str, typing.Any] | None:
-    disk_usage = report["os"].get("stats", {}).get("disk_usage")
-    if not disk_usage:
-        return None
-    return next(
-        (entry for entry in disk_usage if entry.get("dirpath") == "/home"), None
-    )
+) -> list[dict[str, typing.Any]]:
+    disk_usage_stats = report["os"].get("stats", {}).get("disk_usage")
+    if not disk_usage_stats:
+        return []
+    return [
+        entry
+        for entry in disk_usage_stats
+        if entry.get("dirpath") in {DATADIR, WORKDIR}
+    ]
 
 
 def _get_host_info(
@@ -141,15 +144,21 @@ def _get_host_info(
 ) -> schemas.HostInfo | None:
     if report is None:
         return None
-    home_disk_usage = _find_home_disk_usage(report)
+    disk_usages = _get_relevant_disk_usages(report)
+    if disk_usages:
+        free_bytes = [du["free"] for du in disk_usages]
+        disk_space_stages = [
+            schemas.calculate_disk_space_stage(fb) for fb in free_bytes
+        ]
+        most_critical_disk_space_stage = sorted(
+            disk_space_stages, key=lambda dss: dss.rank
+        )[-1]
+    else:
+        most_critical_disk_space_stage = None
     return schemas.HostInfo(
         puavo_os_image_release=report["os"]["puavo_os_image_release"],
         puavo_os_image_name=report["os"]["puavo_os_image_name"],
-        free_disk_space_stage=(
-            schemas.calculate_disk_space_stage(home_disk_usage["free"])
-            if home_disk_usage is not None
-            else None
-        ),
+        free_disk_space_stage=most_critical_disk_space_stage,
     )
 
 
