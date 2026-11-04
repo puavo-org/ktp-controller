@@ -13,35 +13,31 @@ import typing
 # Third-party imports
 # Internal imports
 import ktp_controller.utils
-from ktp_controller import is_prod_mode
+from ktp_controller import DATADIR, HOMEDIR, WORKDIR, is_prod_mode
 
 if is_prod_mode():
-    _USER_FRIENDLY_DATA_DIR = os.path.expanduser("~/ktp-jako")
-
-    _LOGS_DIR = os.path.expanduser("~/.puavo/puavo-ers/ktp-controller/logs")
-
-    _BASEDIRPATH = os.path.expanduser("~/.local/share/ktp-controller")
+    _USER_FRIENDLY_DATA_DIR = os.path.join(HOMEDIR, "ktp-jako")
 else:
-    _USER_FRIENDLY_DATA_DIR = "ktp-jako"
-    _LOGS_DIR = "logs"
-    _BASEDIRPATH = os.path.curdir
+    _USER_FRIENDLY_DATA_DIR = os.path.join(WORKDIR, "ktp-jako")
+
+_LOGS_DIR = os.path.join(WORKDIR, "logs")
 
 # All exam files will be stored here like so:
 # ~/.local/share/ktp-controller/exam-files/FILE_UUID/exam-file_FILE_SHA256.mex
-_EXAM_FILE_DIR = os.path.join(_BASEDIRPATH, "exam-files")
+_EXAM_FILE_DIR = os.path.join(DATADIR, "exam-files")
 
 # All exam packages will be stored here like so:
 # ~/.local/share/ktp-controller/exam-packages/EXAM_PACKAGE_UUID/exam-package_COMPOUND_EXAM_FILE_SHA256.zip
-_EXAM_PACKAGE_DIR = os.path.join(_BASEDIRPATH, "exam-packages")
+_EXAM_PACKAGE_DIR = os.path.join(DATADIR, "exam-packages")
 
 # All answers files belonging to a known exam package will be stored here like so:
 # ~/.local/share/ktp-controller/answers-files/EXAM_PACKAGE_UUID/answers-file_TIMESTAMP.meb
-ANSWERS_FILE_DIR = os.path.join(_BASEDIRPATH, "answers-files")
+ANSWERS_FILE_DIR = os.path.join(DATADIR, "answers-files")
 
 
-DUMMY_EXAM_FILE_FILEPATH = os.path.join(_BASEDIRPATH, "dummy-exam-file.mex")
+DUMMY_EXAM_FILE_FILEPATH = os.path.join(DATADIR, "dummy-exam-file.mex")
 
-DUMMY_EXAM_PACKAGE_FILEPATH = os.path.join(_BASEDIRPATH, "dummy-exam-package.zip")
+DUMMY_EXAM_PACKAGE_FILEPATH = os.path.join(DATADIR, "dummy-exam-package.zip")
 
 
 def create_user_friendly_data_dir() -> None:
@@ -273,7 +269,7 @@ def find_empty_dirs_bottom_up(
 
 
 def cleanup_empty_dirs(
-    basedirpath: str | pathlib.Path = _BASEDIRPATH,
+    basedirpath: str | pathlib.Path = DATADIR,
     deleted_paths: set[str] | None = None,
 ) -> None:
     """Recursively finds and deletes empty directories, working
@@ -391,7 +387,7 @@ def find_archived_dirs(
 
 def cleanup_archived_dirs(
     *,
-    basedirpath: pathlib.Path | str = _BASEDIRPATH,
+    basedirpath: pathlib.Path | str = DATADIR,
     archived_timedelta: datetime.timedelta = datetime.timedelta(days=1),
     deleted_paths: set[str] | None = None,
 ) -> None:

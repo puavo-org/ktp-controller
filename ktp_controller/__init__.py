@@ -2,13 +2,35 @@
 import importlib.metadata
 import logging
 import os as _os
+import pathlib
 
 # Relative imports
 from .settings import Settings
 
+__all__ = [
+    "DATADIR",
+    "DEFAULT_LOGGING_FORMAT",
+    "DEFAULT_LOGGING_LEVEL",
+    "HOMEDIR",
+    "SETTINGS",
+    "VERSION",
+    "WORKDIR",
+    "is_prod_mode",
+    "set_logging_level",
+]
+
 
 def is_prod_mode() -> bool:
     return _os.environ.get("_KTPC_PROD_MODE") is not None
+
+
+HOMEDIR = str(pathlib.Path.home().resolve(strict=True))
+WORKDIR = _os.getcwd()
+
+if is_prod_mode():
+    DATADIR = str(pathlib.Path(HOMEDIR) / ".local" / "share" / "ktp-controller")
+else:
+    DATADIR = WORKDIR
 
 
 def set_logging_level(level: str) -> None:
