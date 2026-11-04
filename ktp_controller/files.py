@@ -12,6 +12,7 @@ import typing
 
 # Third-party imports
 # Internal imports
+import ktp_controller.utils
 from ktp_controller import is_prod_mode
 
 if is_prod_mode():
