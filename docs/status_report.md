@@ -183,6 +183,7 @@ All fields are always present.
 | `default_locale`                                   | `string`            |             |         |              |
 | `supported_locales`                                | `array` of `string` |             |         |              |
 | `wui_tls_port`                                     | `integer`           |             |         |              |
+| `allow_cross_site_requests_from_localhost_to_wui`  | `boolean`           |             |         |              |
 
 #### KTPControllerStats
 
@@ -220,9 +221,9 @@ All fields are always present.
 
 All fields are always present.
 
-| Field          | Type                            | Description | Example                                                                                    | Notes |
-| -------------- | ------------------------------- | ----------- | ------------------------------------------------------------------------------------------ | ----- |
-| `disk_usage`   | (`array` of `object`) or `null` |             | `[{"free": 6673039360, "mountpoint": "/home", "total": 20695207936, "used": 13058498560}]` |       |
-| `load_average` | `object` or `null`              |             | `{"15min": 4.7, "1min": 4.9, "5min": 5.0}`                                                 |       |
-| `memory`       | `object` or `null`              |             | `{"available": 3842932736, "free": 968290304, "total": 8307036160, "used": 4464103424}`    |       |
-| `uptime`       | `number` or `null`              |             | `2425.53`                                                                                  |       |
+| Field          | Type                            | Description | Example                                                                                                         | Notes |
+| -------------- | ------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------- | ----- |
+| `disk_usage`   | (`array` of `object`) or `null` |             | `[{"dirpath": "/home", "free": 6673039360, "is_mountpoint": false, "total": 20695207936, "used": 13058498560}]` |       |
+| `load_average` | `object` or `null`              |             | `{"15min": 4.7, "1min": 4.9, "5min": 5.0}`                                                                      |       |
+| `memory`       | `object` or `null`              |             | `{"available": 3842932736, "free": 968290304, "total": 8307036160, "used": 4464103424}`                         |       |
+| `uptime`       | `number` or `null`              |             | `2425.53`                                                                                                       |       |
