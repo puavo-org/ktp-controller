@@ -102,8 +102,12 @@ class OriginCheckMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
         self, request: starlette.requests.Request, call_next: _CallNext
     ) -> starlette.responses.Response:
         if request.method in _UNSAFE_METHODS:
-            origin = self.__request_origin(request)
-            if origin is None or origin != request.url.netloc:
+            origin_url = self.__get_origin_url(request)
+            if (
+                origin_url is None
+                or origin_url.scheme != request.url.scheme
+                or origin_url.netloc != request.url.netloc
+            ):
                 return starlette.responses.PlainTextResponse(
                     "Forbidden: origin check failed", status_code=403
                 )
@@ -111,13 +115,15 @@ class OriginCheckMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
         return await call_next(request)
 
     @staticmethod
-    def __request_origin(request: starlette.requests.Request) -> str | None:
+    def __get_origin_url(
+        request: starlette.requests.Request,
+    ) -> urllib.parse.SplitResult | None:
         origin_header = request.headers.get("origin")
         if origin_header is not None:
-            return urllib.parse.urlsplit(origin_header).netloc
+            return urllib.parse.urlsplit(origin_header)
 
         referer_header = request.headers.get("referer")
         if referer_header is not None:
-            return urllib.parse.urlsplit(referer_header).netloc
+            return urllib.parse.urlsplit(referer_header)
 
         return None
