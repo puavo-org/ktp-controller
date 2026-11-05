@@ -101,18 +101,30 @@ class OriginCheckMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
     async def dispatch(
         self, request: starlette.requests.Request, call_next: _CallNext
     ) -> starlette.responses.Response:
-        if request.method in _UNSAFE_METHODS:
-            origin_url = self.__get_origin_url(request)
-            if (
-                origin_url is None
-                or origin_url.scheme != request.url.scheme
-                or origin_url.netloc != request.url.netloc
-            ):
-                return starlette.responses.PlainTextResponse(
-                    "Forbidden: origin check failed", status_code=403
-                )
+        if request.method in _UNSAFE_METHODS and not self.__is_origin_accepted(request):
+            return starlette.responses.PlainTextResponse(
+                "Forbidden: origin check failed", status_code=403
+            )
 
         return await call_next(request)
+
+    @staticmethod
+    def __is_origin_accepted(
+        request: starlette.requests.Request,
+    ) -> bool:
+        origin_url = OriginCheckMiddleware.__get_origin_url(request)
+        if origin_url is None:
+            return False
+
+        if origin_url.hostname == SETTINGS.examomatic_host:
+            # For requests originating from Exam-O-Matic, port does
+            # not matter.
+            return origin_url.scheme == "https"
+
+        return (
+            origin_url.netloc == request.url.netloc
+            and origin_url.scheme == request.url.scheme
+        )
 
     @staticmethod
     def __get_origin_url(
