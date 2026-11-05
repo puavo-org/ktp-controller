@@ -29,39 +29,42 @@ listeners.
 
 [![Makefile CI](https://github.com/opinsys/ktp-controller/actions/workflows/makefile.yml/badge.svg)](https://github.com/opinsys/ktp-controller/actions/workflows/makefile.yml)
 
-Connection diagram:
+Typical connection setup:
 
 ```
-                            :                   +-------+
-                   Internet : Device            |  CLI  |
-                            :                   +-o-----+
-                            :                     | |
-                            :                  WS | | HTTP
-                            :                     | v
-                            :                   +-o-----+
-                            :                   |       |
-                            :                   |  API  |
-                            :                   |       |
-                            :                   +-o-----+
-+-----------------------+   :                     | ^                      +---------+
-|      Exam-O-Matic     |<------(HTTPS)---+       | |       +--(HTTPS)---->| Abitti2 |
-+---------------------o-+   :             |    WS | | HTTP  |              +---o-----+
-                      |     :             |       | |       |                  |
-                      |     :             +-----+-o-----+---+                  |
-                      |     :                   |       |                      |
-                      +---------(WSS)-----------o Agent o---------(WSS)--------+
-                            :                   |       |
-                            :                   +-------+
+                            :                   +-------+                                :
+                   Internet : Device            |  CLI  |                                : LAN
+                            :                   +-o-----+                                :
+                            :                     | |                                    :
+                            :                  WS | | HTTP                               :
+                            :                     | v                                    :
+                            : +-------+  HTTP   +-o-----+                                :
+                            : |       |-------->|       |                                :
+                  +---------->|  WUI  |         |  API  |                                :
+   HTTPS over VPN |         : |       o---------o       |                                :
+                  |         : +-------+   WS    +-o-----+                                :
++-----------------------+   :                     | ^                      +---------+   :
+|      Exam-O-Matic     |<------(HTTPS)---+       | |       +--(HTTPS)---->| Abitti2 |<--(HTTPS)-- Student
++---------------------o-+   :             |    WS | | HTTP  |              +---o-----+   :         Browser
+       ^              |     :             |       | |       |                  |         :
+       |              |     :             +-----+-o-----+---+                  |         :
+       | HTTPS        |     :                   |       |                      |         :
+       |              +---------(WSS)-----------o Agent o---------(WSS)--------+         :
+    Invigilator             :                   |       |                                :
+      Browser               :                   +-------+                                :
 ```
 
-KTP Controller consists of two **main** components:
+KTP Controller consists of three **main** components:
 - Agent (`ktp_controller/agent/`)
 - API (`ktp_controller/api/`)
+- Web UI (`ktp_controller/wui/`)
 
 Agent is at the heart of this project. It communicates with
 Exam-O-Matic and Abitti2 and is responsible for making them play well
 together. It uses API to store necessary data in a persistent database
-storage.
+storage. Web UI provides invigilators tools to monitor and control the
+exam and admins tools to manage KTP Controller itself. Web UI access
+is proxied by Exam-O-Matic via VPN.
 
 The API application is built on FastAPI (https://fastapi.tiangolo.com/).
 
