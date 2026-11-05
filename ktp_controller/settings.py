@@ -101,6 +101,7 @@ class Settings(BaseSettings):
     default_locale: str = "fi"
     supported_locales: list[str] = ["fi", "en", "sv"]
     wui_tls_port: PositiveInt = 8443  # alt-https
+    allow_cross_site_requests_from_localhost_to_wui: StrictBool = False
 
     @field_validator("supported_locales", mode="before")
     @classmethod

@@ -11,7 +11,7 @@ import starlette.responses
 import starlette.types
 
 # Internal imports
-from ktp_controller import SETTINGS
+from ktp_controller import SETTINGS, is_prod_mode
 
 # Relative imports
 
@@ -115,6 +115,14 @@ class OriginCheckMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
         origin_url = OriginCheckMiddleware.__get_origin_url(request)
         if origin_url is None:
             return False
+
+        if (
+            not is_prod_mode()
+            and SETTINGS.allow_cross_site_requests_from_localhost_to_wui
+        ):
+            # In development and testing setup, it's possible to allow
+            # requests from localhost origin.
+            return True
 
         if origin_url.hostname == SETTINGS.examomatic_host:
             # For requests originating from Exam-O-Matic, port does
