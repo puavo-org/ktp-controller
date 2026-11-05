@@ -119,6 +119,7 @@ class OriginCheckMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
         if (
             not is_prod_mode()
             and SETTINGS.allow_cross_site_requests_from_localhost_to_wui
+            and origin_url.hostname == "localhost"
         ):
             # In development and testing setup, it's possible to allow
             # requests from localhost origin.
