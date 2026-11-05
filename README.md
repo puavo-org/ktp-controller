@@ -104,5 +104,5 @@ git commit uv.lock -m 'Update dependencies'
 
 Simply just run:
 ```
-./ktp-controller
+./dev-run
 ```
