@@ -33,6 +33,11 @@ _UNSAFE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 
 _FORWARDED_PREFIX_RE = re.compile(r"\A/remote/[0-9]+\Z")
 
+# A browser-sent Origin header is always http(s), even for a WebSocket
+# upgrade request whose own URL scheme is ws(s); normalize the latter
+# before comparing the two.
+_WEBSOCKET_SCHEME_TO_HTTP_SCHEME = {"ws": "http", "wss": "https"}
+
 
 def _get_origin_url(
     request: starlette.requests.HTTPConnection,
@@ -74,9 +79,11 @@ def is_origin_accepted(request: starlette.requests.HTTPConnection) -> bool:
         # not matter.
         return origin_url.scheme == "https"
 
+    request_scheme = _WEBSOCKET_SCHEME_TO_HTTP_SCHEME.get(
+        request.url.scheme, request.url.scheme
+    )
     return (
-        origin_url.netloc == request.url.netloc
-        and origin_url.scheme == request.url.scheme
+        origin_url.netloc == request.url.netloc and origin_url.scheme == request_scheme
     )
 
 
