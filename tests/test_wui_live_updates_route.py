@@ -97,6 +97,42 @@ def test_ws_accepts_with_only_landing_permission(wui_client, mocker):
     unregister_mock.assert_awaited_once()
 
 
+def test_ws_rejects_with_mismatched_origin(wui_client, mocker):
+    mocker.patch(
+        "ktp_controller.wui.auth.get_current_session",
+        return_value=ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+        ),
+    )
+
+    with pytest.raises(starlette.testclient.WebSocketDisconnect) as exc_info:
+        with wui_client.websocket_connect(
+            "/ws", headers={"origin": "https://attacker.example"}
+        ):
+            pass
+
+    assert exc_info.value.code == 4403
+
+
+def test_ws_rejects_without_origin_or_referer(wui_client, mocker):
+    mocker.patch(
+        "ktp_controller.wui.auth.get_current_session",
+        return_value=ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+        ),
+    )
+
+    with pytest.raises(starlette.testclient.WebSocketDisconnect) as exc_info:
+        with wui_client.websocket_connect("/ws"):
+            pass
+
+    assert exc_info.value.code == 4403
+
+
 def test_nav_status_requires_login(wui_client):
     response = wui_client.get("/nav_status")
 
