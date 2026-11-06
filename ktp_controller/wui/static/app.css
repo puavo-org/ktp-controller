@@ -69,6 +69,7 @@ header .logo {
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: var(--pico-spacing);
+  margin: 0em;
 }
 .header-grid > h2,
 .header-grid > h3 {
@@ -144,12 +145,13 @@ header .logo {
 #filters {
   grid-column: 2;
   justify-self: center;
+  margin-bottom: 1em;
 }
 #name_birthday_filter {
   max-height: 10px;
   max-width: 44ch;
   min-width: 44ch;
-  margin-bottom: 0;
+  margin-bottom: 0em;
 }
 #toggle-exam-groups-button {
   grid-column: 3;
@@ -162,7 +164,7 @@ header .logo {
   padding: 0.15rem 0.5rem;
   border-radius: 1rem;
   font-weight: 600;
-  margin-right: 0.25rem;
+  margin-right: 0.15rem;
 }
 .pill-waiting {
   background-color: #fff3cd;
@@ -220,10 +222,17 @@ header .logo {
 /* student_list_groups.html.j2 */
 .exam-group {
   width: 100%;
-  padding: var(--pico-spacing);
+  padding: 0.2em;
   background-color: var(--pico-card-sectioning-background-color);
   border-radius: var(--pico-border-radius);
+  margin: 0em;
 }
+
+.exam-group h3 {
+    font-size: 0.8em;
+    margin: 0em;
+}
+
 .exam-group + .exam-group {
   margin-top: 1rem;
 }
@@ -231,17 +240,20 @@ header .logo {
   gap: 0.5rem;
 }
 .exam-student-state-counts {
-  grid-column: 2;
-  justify-self: center;
+  grid-column: 4;
+  margin: 0em;
+  padding: 0em;
 }
 .exam-student-state-counts ul {
   display: flex;
   flex-wrap: wrap;
-  margin: 0;
-  padding: 0;
+  margin: 0em;
+  padding: 0em;
 }
 .exam-student-state-counts li {
   list-style: none;
+  margin: 0em;
+  font-size: 0.8em;
 }
 
 .exam-group.is-unknown h3 {
@@ -255,6 +267,7 @@ header .logo {
 .login-error {
   color: var(--pico-del-color);
 }
+
 header nav ul.locale-nav {
   margin-left: auto;
 }
