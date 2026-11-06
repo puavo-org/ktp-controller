@@ -1,6 +1,7 @@
 # Standard library imports
 import logging
 import os.path
+import urllib.parse
 
 # Third-party imports
 import fastapi
@@ -36,6 +37,41 @@ _DEFAULT_NEXT_PATH = "/invigilator/"
 
 def _default_next(request: fastapi.Request) -> str:
     return str(request.scope.get("root_path", "")) + _DEFAULT_NEXT_PATH
+
+
+_UNSAFE_NEXT_LEADING_CHARS = ("/", "\\")
+
+
+def _is_safe_next_path(value: str) -> bool:
+    """Checks whether `value` is safe to use as a post-login/locale redirect.
+
+    A safe `next` is a plain same-origin path: exactly one leading "/"
+    not followed by another "/" or a "\\" (both of which some browsers
+    normalize into a protocol-relative "//host/..." URL even though
+    urllib.parse doesn't treat backslash as a path separator), and
+    carrying no scheme or network location of its own once parsed. ASCII
+    tab/CR/LF are stripped first, matching the WHATWG URL spec's own
+    input-cleanup step, since browsers do the same before resolving a
+    URL - without this, "/\t/evil.example" would pass a naive check here
+    but still resolve to "//evil.example" client-side.
+    """
+    stripped = value.translate({9: None, 10: None, 13: None})
+    if not stripped.startswith("/") or stripped[1:2] in _UNSAFE_NEXT_LEADING_CHARS:
+        return False
+    split = urllib.parse.urlsplit(stripped)
+    return not split.scheme and not split.netloc
+
+
+def _sanitize_next(request: fastapi.Request, next: str | None) -> str:
+    """Returns `next` if it's safe to redirect to, else the safe default.
+
+    `next` is plain, untrusted user input at every call site in this
+    module regardless of which code built the URL that put it there, so
+    this always revalidates rather than trusting the caller.
+    """
+    if next and _is_safe_next_path(next):
+        return next
+    return _default_next(request)
 
 
 # Slows down brute-forcing of the login form. Keyed by the immediate
