@@ -204,6 +204,11 @@ header .logo {
 .toggle-access-code-button:focus:not(:focus-visible) {
   --pico-box-shadow: none;
 }
+.change-access-code-button {
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
+}
 
 /* student_list_table.html.j2 */
 /* Pico's --pico-spacing/--pico-form-element-spacing-* are fixed root
