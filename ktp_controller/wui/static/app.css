@@ -236,11 +236,39 @@ header .logo {
 .exam-group + .exam-group {
   margin-top: 1rem;
 }
+
+/* Pico's default summary::after chevron floats against inline content;
+   it has nothing inline to float beside here (the only summary child is
+   the block-level .exam-group-header grid), so it drops to its own line.
+   Disable it narrowly for exam groups only and render an inline chevron
+   as an explicit grid cell in .exam-group-header instead. */
+.exam-group > summary::after {
+  display: none;
+}
 .exam-group-header {
   gap: 0.5rem;
+  grid-template-columns: 1fr auto auto;
+}
+.exam-group-header > h5 {
+  grid-column: 1;
+}
+.exam-group-header > .exam-group-chevron {
+  grid-column: 3;
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  background-image: var(--pico-icon-chevron);
+  background-position: center;
+  background-size: 1rem auto;
+  background-repeat: no-repeat;
+  transform: rotate(-90deg);
+  transition: transform var(--pico-transition);
+}
+.exam-group[open] > summary .exam-group-chevron {
+  transform: rotate(0);
 }
 .exam-student-state-counts {
-  grid-column: 4;
+  grid-column: 2;
   margin: 0em;
   padding: 0em;
 }

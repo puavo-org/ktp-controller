@@ -12,6 +12,7 @@
         {% with state_counts = ungrouped_student_state_counts %}
         {% include "partials/exam_student_state_counts.html.j2" %}
         {% endwith %}
+        <span class="exam-group-chevron" aria-hidden="true"></span>
         </div>
         </summary>
         {% include "partials/student_list_table.html.j2" %}
@@ -25,6 +26,7 @@
         {% with state_counts = grouped_student_state_counts[exam_title] %}
         {% include "partials/exam_student_state_counts.html.j2" %}
         {% endwith %}
+        <span class="exam-group-chevron" aria-hidden="true"></span>
         </div>
         </summary>
         {% include "partials/student_list_table.html.j2" %}
