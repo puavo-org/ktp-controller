@@ -14,6 +14,7 @@ import ktp_controller.api.client
 import ktp_controller.wui.auth
 import ktp_controller.wui.i18n
 import ktp_controller.wui.landing.routes
+import ktp_controller.wui.middleware
 import ktp_controller.wui.utils
 
 __all__ = [
@@ -99,11 +100,10 @@ async def _live_updates_ws(websock: fastapi.WebSocket) -> None:
         await websock.close(code=4403)
         return
 
-    # TODO: validate the Origin header against Host (CSWSH defense-in-depth),
-    # reusing OriginCheckMiddleware's origin-parsing logic once extracted
-    # into a shared helper. Skipped for now: consistent with the API's own
-    # ui_websocket/agent_websocket endpoints, and the session cookie is
-    # already SameSite=Lax.
+    if not ktp_controller.wui.middleware.is_origin_accepted(websock):
+        await websock.close(code=4403)
+        return
+
     await websock.accept()
     registry: ktp_controller.wui.utils.BrowserSocketRegistry = (
         websock.app.state.live_update_registry

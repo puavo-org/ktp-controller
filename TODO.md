@@ -7,17 +7,6 @@ When adding new items, always update the following line to define the
 ID of the next TODO item.
 Next ID: TODO34
 
-## TODO33
-
-`ktp_controller/wui/live_updates/routes.py`'s `_live_updates_ws`
-websocket endpoint doesn't validate the `Origin` header against `Host`
-(CSWSH - cross-site WebSocket hijacking - defense-in-depth), per the
-inline TODO at lines 102-106. Skipped so far because it's consistent
-with the API's own `ui_websocket`/`agent_websocket` endpoints and the
-session cookie is already `SameSite=Lax`. Plan is to reuse
-`OriginCheckMiddleware`'s origin-parsing logic (`ktp_controller/wui/middleware.py`)
-once it's extracted into a shared helper.
-
 ## TODO32
 
 `next` (the post-login redirect target) has no open-redirect

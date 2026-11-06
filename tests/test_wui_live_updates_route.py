@@ -63,7 +63,7 @@ def test_ws_registers_and_unregisters(wui_client, mocker):
         new=mocker.AsyncMock(),
     )
 
-    with wui_client.websocket_connect("/ws"):
+    with wui_client.websocket_connect("/ws", headers={"origin": "http://testserver"}):
         pass
 
     register_mock.assert_awaited_once()
@@ -90,7 +90,7 @@ def test_ws_accepts_with_only_landing_permission(wui_client, mocker):
         new=mocker.AsyncMock(),
     )
 
-    with wui_client.websocket_connect("/ws"):
+    with wui_client.websocket_connect("/ws", headers={"origin": "http://testserver"}):
         pass
 
     register_mock.assert_awaited_once()
