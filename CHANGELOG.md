@@ -29,7 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Display "Page refreshed N seconds ago" on every page. It tells
       the last time the browser received any data from the backend.
 
-    - Allow requests originating from Exam-O-Matic via HTTPS
+    - Allow requests originating from Exam-O-Matic via HTTPS.
+    
+    - Maximum inactive session time increased from 30min to 4h.
 
 - CLI: add `shutdown-wait` subcommand to the command line
   interface. It shuts KTP Controller down and waits until all
