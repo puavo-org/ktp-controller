@@ -20,6 +20,7 @@ __all__ = [
     "OriginCheckMiddleware",
     "RootPathFromHeaderMiddleware",
     "SecurityHeadersMiddleware",
+    "is_origin_accepted",
 ]
 
 
@@ -31,6 +32,52 @@ _CallNext = collections.abc.Callable[
 _UNSAFE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 
 _FORWARDED_PREFIX_RE = re.compile(r"\A/remote/[0-9]+\Z")
+
+
+def _get_origin_url(
+    request: starlette.requests.HTTPConnection,
+) -> urllib.parse.SplitResult | None:
+    origin_header = request.headers.get("origin")
+    if origin_header is not None:
+        return urllib.parse.urlsplit(origin_header)
+
+    referer_header = request.headers.get("referer")
+    if referer_header is not None:
+        return urllib.parse.urlsplit(referer_header)
+
+    return None
+
+
+def is_origin_accepted(request: starlette.requests.HTTPConnection) -> bool:
+    """Checks whether `request`'s Origin/Referer matches its Host.
+
+    Shared by `OriginCheckMiddleware` (HTTP requests) and the live-updates
+    WebSocket endpoint (`ktp_controller.wui.live_updates.routes`), since
+    Starlette's `BaseHTTPMiddleware` never runs for "websocket" scopes and
+    so can't cover the latter itself.
+    """
+    origin_url = _get_origin_url(request)
+    if origin_url is None:
+        return False
+
+    if (
+        not is_prod_mode()
+        and SETTINGS.allow_cross_site_requests_from_localhost_to_wui
+        and origin_url.hostname == "localhost"
+    ):
+        # In development and testing setup, it's possible to allow
+        # requests from localhost origin.
+        return True
+
+    if origin_url.hostname == SETTINGS.examomatic_host:
+        # For requests originating from Exam-O-Matic, port does
+        # not matter.
+        return origin_url.scheme == "https"
+
+    return (
+        origin_url.netloc == request.url.netloc
+        and origin_url.scheme == request.url.scheme
+    )
 
 
 class RootPathFromHeaderMiddleware:
@@ -101,50 +148,9 @@ class OriginCheckMiddleware(starlette.middleware.base.BaseHTTPMiddleware):
     async def dispatch(
         self, request: starlette.requests.Request, call_next: _CallNext
     ) -> starlette.responses.Response:
-        if request.method in _UNSAFE_METHODS and not self.__is_origin_accepted(request):
+        if request.method in _UNSAFE_METHODS and not is_origin_accepted(request):
             return starlette.responses.PlainTextResponse(
                 "Forbidden: origin check failed", status_code=403
             )
 
         return await call_next(request)
-
-    @staticmethod
-    def __is_origin_accepted(
-        request: starlette.requests.Request,
-    ) -> bool:
-        origin_url = OriginCheckMiddleware.__get_origin_url(request)
-        if origin_url is None:
-            return False
-
-        if (
-            not is_prod_mode()
-            and SETTINGS.allow_cross_site_requests_from_localhost_to_wui
-            and origin_url.hostname == "localhost"
-        ):
-            # In development and testing setup, it's possible to allow
-            # requests from localhost origin.
-            return True
-
-        if origin_url.hostname == SETTINGS.examomatic_host:
-            # For requests originating from Exam-O-Matic, port does
-            # not matter.
-            return origin_url.scheme == "https"
-
-        return (
-            origin_url.netloc == request.url.netloc
-            and origin_url.scheme == request.url.scheme
-        )
-
-    @staticmethod
-    def __get_origin_url(
-        request: starlette.requests.Request,
-    ) -> urllib.parse.SplitResult | None:
-        origin_header = request.headers.get("origin")
-        if origin_header is not None:
-            return urllib.parse.urlsplit(origin_header)
-
-        referer_header = request.headers.get("referer")
-        if referer_header is not None:
-            return urllib.parse.urlsplit(referer_header)
-
-        return None
