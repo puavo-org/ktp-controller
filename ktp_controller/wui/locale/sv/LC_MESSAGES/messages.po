@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-04 19:54+0200\n"
+"POT-Creation-Date: 2026-11-06 23:00+0200\n"
 "PO-Revision-Date: 2026-09-27 20:42+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/auth_routes.py:81
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/auth_routes.py:117
 msgid "Too many login attempts, please try again later."
 msgstr "För många inloggningsförsök, försök igen senare."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/auth_routes.py:91
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/auth_routes.py:127
 msgid "Incorrect username or password"
 msgstr "Fel användarnamn eller lösenord"
 
@@ -101,12 +101,12 @@ msgstr ""
 "name\"></strong>?"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:31
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:23
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:24
 msgid "Yes"
 msgstr "Ja"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:32
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:24
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:25
 msgid "No"
 msgstr "Nej"
 
@@ -139,25 +139,25 @@ msgstr "Proven"
 msgid "Filter by student name or birthday..."
 msgstr "Filtrera enligt studerandes namn eller födelsedatum..."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:75
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:77
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:76
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:78
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:79
 msgid "Expand all"
 msgstr "Expandera alla"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:76
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:77
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:78
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:79
 msgid "Collapse all"
 msgstr "Fäll ihop alla"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:33
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:34
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:34
 msgid "Student access code"
 msgstr "Studerandes åtkomstkod"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:19
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:20
 msgid ""
 "Really change the student access code? The current code will stop working"
 " for every student using it."
@@ -169,15 +169,24 @@ msgstr ""
 msgid "No server name available"
 msgstr "Ingen server namn tillgänglig"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_access_code_display.html.j2:10
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_access_code_display.html.j2:14
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_access_code_display.html.j2:16
+msgid "Show access code"
+msgstr "Visa åtkomstkod"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_access_code_display.html.j2:17
+msgid "Hide access code"
+msgstr "Dölj åtkomstkod"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_access_code_display.html.j2:19
 msgid "No access code available"
 msgstr "Ingen åtkomstkod tillgänglig"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_access_code_display.html.j2:13
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_access_code_display.html.j2:22
 msgid "Change access code"
 msgstr "Byt åtkomstkod"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_list_groups.html.j2:33
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_list_groups.html.j2:35
 msgid "No exams"
 msgstr "Inga prov"
 
@@ -208,37 +217,37 @@ msgstr "Inga studerande matchar '%(query)s'"
 msgid "No students"
 msgstr "Inga studerande"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:93
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:94
 msgid "Expired"
 msgstr "Utgånget"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:95
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:96
 #, python-format
 msgid "%(num)s day left"
 msgid_plural "%(num)s days left"
 msgstr[0] "%(num)s dag kvar"
 msgstr[1] "%(num)s dagar kvar"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:99
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:100
 #, python-format
 msgid "%(num)s hour left"
 msgid_plural "%(num)s hours left"
 msgstr[0] "%(num)s timme kvar"
 msgstr[1] "%(num)s timmar kvar"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:161
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:170
 msgid "Plenty"
 msgstr "Rikligt"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:162
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:171
 msgid "Moderate"
 msgstr "Måttligt"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:163
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:172
 msgid "Low"
 msgstr "Lite"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:164
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:173
 msgid "Critical"
 msgstr "Kritiskt"
 

@@ -6,9 +6,18 @@
     <p class="access-code-text">
         {{ student_access_code_and_server_name.server_name if student_access_code_and_server_name else _("No server name available") }}
     </p>
-    <p class="access-code-text">
-        {{ student_access_code_and_server_name.student_access_code if student_access_code_and_server_name else _("No access code available") }}
-    </p>
+    {% if student_access_code_and_server_name %}
+    {% set code = student_access_code_and_server_name.student_access_code | string %}
+    <button type="button"
+            class="access-code-text toggle-access-code-button"
+            aria-pressed="false"
+            aria-label="{{ _('Show access code') }}"
+            data-access-code="{{ code }}"
+            data-show-label="{{ _('Show access code') }}"
+            data-hide-label="{{ _('Hide access code') }}">{{ "•" * (code | length) }}</button>
+    {% else %}
+    <p class="access-code-text">{{ _("No access code available") }}</p>
+    {% endif %}
     {% if can_change_access_code %}
     <button type="button" class="change-access-code-button">{{ _("Change access code") }}</button>
     {% endif %}
