@@ -91,7 +91,7 @@ async def _get_login(
         request,
         name="login.html.j2",
         context={
-            "next": next or _default_next(request),
+            "next": _sanitize_next(request, next),
             "error": None,
             "session": session,
         },
@@ -108,7 +108,7 @@ async def _post_login(
 ) -> fastapi.responses.Response:
     _ = i18n.get_gettext(locale)
 
-    next = next or _default_next(request)
+    next = _sanitize_next(request, next)
 
     client_ip = request.client.host if request.client is not None else "unknown"
     if not await _LOGIN_RATE_LIMITER.hit(client_ip):
@@ -176,6 +176,6 @@ async def _post_locale(
         await auth.set_session_locale(session.session_id, locale)
 
     return fastapi.responses.RedirectResponse(
-        url=next or _default_next(request),
+        url=_sanitize_next(request, next),
         status_code=fastapi.status.HTTP_303_SEE_OTHER,
     )
