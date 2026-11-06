@@ -84,14 +84,30 @@ async def _handle_not_authenticated(
     exc: ktp_controller.wui.auth.NotAuthenticatedError,
 ) -> fastapi.Response:
     prefix = request.scope.get("root_path", "")
+    is_htmx_request = request.headers.get("HX-Request") == "true"
+
     # request.url.path is already prefix-correct (nginx forwards the
     # full, un-stripped path - see
     # ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy), so only
     # the newly-built /login target needs the prefix prepended.
-    next_qs = urllib.parse.urlencode({"next": request.url.path})
+    #
+    # For htmx requests, request.url.path is the htmx request's own
+    # target (e.g. the /nav_status background poll), not the page the
+    # browser is actually showing - redirecting back to it after login
+    # produces a broken-looking partial page. htmx sends the browser's
+    # real current-page URL in HX-Current-URL on every triggered request
+    # by default; prefer that when present (same pattern as
+    # ktp_controller.wui.live_updates.routes._get_nav_status).
+    current_url = request.headers.get("HX-Current-URL") if is_htmx_request else None
+    current_path = (
+        urllib.parse.urlparse(current_url).path
+        if current_url is not None
+        else request.url.path
+    )
+    next_qs = urllib.parse.urlencode({"next": current_path})
     login_url = f"{prefix}/login?{next_qs}"
 
-    if request.headers.get("HX-Request") == "true":
+    if is_htmx_request:
         # htmx follows a 303 itself and swaps the resulting login page
         # into whatever small hx-target triggered the request (e.g. the
         # live-update poll), producing a broken partial render. HX-Redirect
