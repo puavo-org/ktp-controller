@@ -102,7 +102,6 @@ async def _post_login(
     response.set_cookie(
         auth.SESSION_COOKIE_NAME,
         session_id,
-        max_age=SETTINGS.session_ttl_sec,
         httponly=True,
         secure=SETTINGS.session_cookie_secure,
         samesite="lax",
