@@ -34,6 +34,24 @@ def test_get_login_renders_form(wui_client):
     assert b"/logout" not in response.content
 
 
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        pytest.param("/invigilator/", True, id="plain_path"),
+        pytest.param("/invigilator/foo", True, id="nested_path"),
+        pytest.param("/a", True, id="minimal_path"),
+        pytest.param("", False, id="empty"),
+        pytest.param("evil.example", False, id="no_leading_slash"),
+        pytest.param("https://evil.example/", False, id="absolute_url"),
+        pytest.param("//evil.example/", False, id="protocol_relative"),
+        pytest.param("/\\evil.example", False, id="leading_backslash"),
+        pytest.param("/\t/evil.example", False, id="tab_smuggled_double_slash"),
+    ],
+)
+def test_is_safe_next_path(value, expected):
+    assert ktp_controller.wui.auth_routes._is_safe_next_path(value) is expected
+
+
 def test_get_login_renders_form_with_forwarded_prefix(wui_client):
     # nginx forwards the full, un-stripped path alongside the header (see
     # ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy).
@@ -44,6 +62,28 @@ def test_get_login_renders_form_with_forwarded_prefix(wui_client):
     assert response.status_code == 200
     assert b'action="/remote/12345/login"' in response.content
     assert b'value="/remote/12345/invigilator/"' in response.content
+
+
+@pytest.mark.parametrize(
+    "unsafe_next",
+    [
+        pytest.param("https://evil.example/", id="absolute_url"),
+        pytest.param("//evil.example/", id="protocol_relative"),
+    ],
+)
+def test_get_login_falls_back_to_default_next_for_unsafe_value(wui_client, unsafe_next):
+    response = wui_client.get("/login", params={"next": unsafe_next})
+
+    assert response.status_code == 200
+    assert b'value="/invigilator/"' in response.content
+    assert unsafe_next.encode() not in response.content
+
+
+def test_get_login_preserves_safe_next_value(wui_client):
+    response = wui_client.get("/login", params={"next": "/invigilator/foo"})
+
+    assert response.status_code == 200
+    assert b'value="/invigilator/foo"' in response.content
 
 
 def test_get_login_shows_logged_in_state_with_valid_session(wui_client, mocker):
@@ -91,6 +131,27 @@ def test_post_login_wrong_credentials_is_rejected(wui_client, mocker):
     assert ktp_controller.wui.auth.SESSION_COOKIE_NAME not in response.cookies
 
 
+def test_post_login_wrong_credentials_does_not_echo_unsafe_next(wui_client, mocker):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=_status_report(),
+    )
+
+    response = wui_client.post(
+        "/login",
+        data={
+            "username": "invigilator1",
+            "password": "wrong",
+            "next": "https://evil.example/",
+        },
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 401
+    assert b'value="/invigilator/"' in response.content
+    assert b"evil.example" not in response.content
+
+
 def test_post_login_correct_credentials_sets_session_cookie(wui_client, mocker):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
@@ -127,6 +188,93 @@ def test_post_login_correct_credentials_honors_forwarded_prefix(wui_client, mock
     response = wui_client.post(
         "/remote/12345/login",
         data={"username": "invigilator1", "password": "s3cret"},
+        headers={**_SAME_ORIGIN_HEADERS, "X-Forwarded-Prefix": "/remote/12345"},
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/remote/12345/invigilator/"
+
+
+@pytest.mark.parametrize(
+    "unsafe_next",
+    [
+        pytest.param("https://evil.example/", id="absolute_url"),
+        pytest.param("//evil.example/", id="protocol_relative"),
+        pytest.param("/\\evil.example", id="leading_backslash"),
+    ],
+)
+def test_post_login_falls_back_to_default_next_for_unsafe_value(
+    wui_client, mocker, unsafe_next
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=_status_report(),
+    )
+    mocker.patch.object(
+        ktp_controller.api.client,
+        "get_or_create_user_permissions",
+        return_value=["wui.invigilator.view"],
+    )
+
+    response = wui_client.post(
+        "/login",
+        data={
+            "username": "invigilator1",
+            "password": "s3cret",
+            "next": unsafe_next,
+        },
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/invigilator/"
+
+
+def test_post_login_preserves_safe_next_value(wui_client, mocker):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=_status_report(),
+    )
+    mocker.patch.object(
+        ktp_controller.api.client,
+        "get_or_create_user_permissions",
+        return_value=["wui.invigilator.view"],
+    )
+
+    response = wui_client.post(
+        "/login",
+        data={
+            "username": "invigilator1",
+            "password": "s3cret",
+            "next": "/invigilator/foo",
+        },
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/invigilator/foo"
+
+
+def test_post_login_falls_back_to_default_next_honoring_forwarded_prefix(
+    wui_client, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=_status_report(),
+    )
+    mocker.patch.object(
+        ktp_controller.api.client,
+        "get_or_create_user_permissions",
+        return_value=["wui.invigilator.view"],
+    )
+
+    response = wui_client.post(
+        "/remote/12345/login",
+        data={
+            "username": "invigilator1",
+            "password": "s3cret",
+            "next": "https://evil.example/",
+        },
         headers={**_SAME_ORIGIN_HEADERS, "X-Forwarded-Prefix": "/remote/12345"},
     )
 
@@ -205,6 +353,37 @@ def test_post_locale_persists_choice_in_session(wui_client, mocker):
 
     response = wui_client.get("/login")
     assert b'<html lang="en">' in response.content
+
+
+@pytest.mark.parametrize(
+    "unsafe_next",
+    [
+        pytest.param("https://evil.example/", id="absolute_url"),
+        pytest.param("//evil.example/", id="protocol_relative"),
+    ],
+)
+def test_post_locale_falls_back_to_default_next_for_unsafe_value(
+    wui_client, unsafe_next
+):
+    response = wui_client.post(
+        "/locale",
+        data={"locale": "en", "next": unsafe_next},
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/invigilator/"
+
+
+def test_post_locale_preserves_safe_next_value(wui_client):
+    response = wui_client.post(
+        "/locale",
+        data={"locale": "en", "next": "/invigilator/"},
+        headers=_SAME_ORIGIN_HEADERS,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/invigilator/"
 
 
 def test_post_locale_rejects_unsupported_locale(wui_client):
