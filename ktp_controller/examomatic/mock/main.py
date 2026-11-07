@@ -324,7 +324,7 @@ def run() -> int:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument("--version", action="version", version=VERSION)
-    parser.add_argument("--port", type=int, default=8001)
+    parser.add_argument("--port", type=int, default=18001)
 
     args = parser.parse_args()
 

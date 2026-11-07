@@ -16,7 +16,7 @@ jobs:
       redis:
         image: redis:latest
         ports:
-          - 16379:6379
+          - 26379:6379
     steps:
     - uses: actions/checkout@v5
     - uses: actions/setup-python@v6
