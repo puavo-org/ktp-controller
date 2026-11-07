@@ -101,7 +101,12 @@ def client(testdb):
 
 
 @pytest.fixture
-def wui_client():
+def wui_client(monkeypatch):
+    # Tests exercising X-Forwarded-Prefix hardcode "/remote/12345";
+    # RootPathFromHeaderMiddleware now requires that id to match
+    # SETTINGS.id, so pin it here rather than relying on whatever id
+    # happens to be configured for the process running the tests.
+    monkeypatch.setattr(SETTINGS, "id", 12345)
     return fastapi.testclient.TestClient(
         ktp_controller.wui.main.APP, follow_redirects=False
     )

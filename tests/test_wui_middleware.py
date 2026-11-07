@@ -80,3 +80,52 @@ def test_safe_methods_bypass_origin_check(origin_check_client):
     )
 
     assert response.status_code == 200
+
+
+def _make_root_path_app() -> fastapi.FastAPI:
+    app = fastapi.FastAPI()
+    app.add_middleware(middleware.RootPathFromHeaderMiddleware)
+
+    @app.get("/thing")
+    async def _get_thing(request: fastapi.Request) -> dict[str, str]:
+        return {"root_path": request.scope["root_path"]}
+
+    return app
+
+
+@pytest.fixture
+def root_path_client(monkeypatch):
+    monkeypatch.setattr(SETTINGS, "id", 12345)
+    return fastapi.testclient.TestClient(_make_root_path_app())
+
+
+def test_missing_forwarded_prefix_header_is_passed_through(root_path_client):
+    response = root_path_client.get("/thing")
+
+    assert response.status_code == 200
+    assert response.json() == {"root_path": ""}
+
+
+def test_matching_forwarded_prefix_sets_root_path(root_path_client):
+    response = root_path_client.get(
+        "/thing", headers={"x-forwarded-prefix": "/remote/12345"}
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"root_path": "/remote/12345"}
+
+
+def test_forwarded_prefix_with_wrong_id_is_rejected(root_path_client):
+    response = root_path_client.get(
+        "/thing", headers={"x-forwarded-prefix": "/remote/99999"}
+    )
+
+    assert response.status_code == 403
+
+
+def test_malformed_forwarded_prefix_is_rejected(root_path_client):
+    response = root_path_client.get(
+        "/thing", headers={"x-forwarded-prefix": "/not-a-valid-prefix"}
+    )
+
+    assert response.status_code == 403
