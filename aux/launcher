@@ -11,7 +11,7 @@ acquire_singleton_lock()
     # Locks this file to ensure only one ktp-controller is running on
     # this host. KTP Controller itself could spawn multiple instances,
     # but it controls Abitti2, which is a singleton service.
-    lock_file=/tmp/ktp-controller.pid
+    lock_file="$1"
 
     exec {lockfd}<> "${lock_file}" || {
         echo "ERROR: failed to open lock file '${lock_file}' for reading and writing" >&2
@@ -43,6 +43,7 @@ THIS_FILENAME=$(basename "$0")
 THIS_CANONICAL_FILEPATH=$(readlink -e "$0")
 HERE=$(dirname "${THIS_CANONICAL_FILEPATH}")
 OS=
+LOCK_FILE=/tmp/ktp-controller.pid
 
 if [ -d /etc/puavo ]; then
     OS='Puavo OS'
@@ -81,10 +82,16 @@ case "${RUN_MODE}" in
         export PATH="$HERE/bin:$PATH"
         export _KTPC_PROD_MODE=1
         ;;
-    'dev'|'unit-test')
+    'dev')
         RUNCONF=$(readlink -e "supervisor/puavo_os-${RUN_MODE}-run.conf")
         WORKDIR="workdirs/${RUN_MODE}/"
         EXEC_CMD="exec uv run"
+        ;;
+    'unit-test')
+        RUNCONF=$(readlink -e "supervisor/puavo_os-${RUN_MODE}-run.conf")
+        WORKDIR="workdirs/${RUN_MODE}/"
+        EXEC_CMD="exec uv run"
+        LOCK_FILE="/tmp/ktp-controller-unit-test.pid"
         ;;
     'integration-test')
         if [ $# -lt 1 ]; then
@@ -148,7 +155,7 @@ case "$COMMAND" in
         ${EXEC_CMD} supervisorctl -c "$RUNCONF" "$@"
         ;;
     run)
-        acquire_singleton_lock || exit 1
+        acquire_singleton_lock "$LOCK_FILE" || exit 1
         ${EXEC_CMD} supervisord -c "$RUNCONF"
         ;;
     *)
