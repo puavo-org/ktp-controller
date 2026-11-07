@@ -31,8 +31,6 @@ _CallNext = collections.abc.Callable[
 
 _UNSAFE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 
-_FORWARDED_PREFIX_RE = re.compile(r"\A/remote/[0-9]+\Z")
-
 # A browser-sent Origin header is always http(s), even for a WebSocket
 # upgrade request whose own URL scheme is ws(s); normalize the latter
 # before comparing the two.
@@ -87,6 +85,20 @@ def is_origin_accepted(request: starlette.requests.HTTPConnection) -> bool:
     )
 
 
+_FORWARDED_PREFIX_RE = re.compile(r"\A/remote/(?P<id>[0-9]+)\Z")
+
+
+def _is_valid_forwarded_prefix(prefix: str) -> bool:
+    match = _FORWARDED_PREFIX_RE.match(prefix)
+    if match is None:
+        return False
+
+    # This is /etc/puavo/id in Puavo OS and it must match id of the
+    # prefix. Otherwise someone is trying to forward a request which
+    # does belong to this KTP Controller.
+    return int(match.group("id")) == SETTINGS.id
+
+
 class RootPathFromHeaderMiddleware:
     """Sets ASGI `root_path` from a nginx-supplied `X-Forwarded-Prefix`.
 
@@ -112,7 +124,17 @@ class RootPathFromHeaderMiddleware:
         if scope["type"] in ("http", "websocket"):
             headers = starlette.datastructures.Headers(scope=scope)
             prefix = headers.get("x-forwarded-prefix")
-            if prefix is not None and _FORWARDED_PREFIX_RE.match(prefix):
+            if prefix is not None:
+                if not _is_valid_forwarded_prefix(prefix):
+                    # Plain ASGI, not BaseHTTPMiddleware: a Response must be
+                    # invoked as an ASGI app to actually send it, returning
+                    # it here would silently discard it.
+                    response = starlette.responses.PlainTextResponse(
+                        "Forbidden: invalid prefix", status_code=403
+                    )
+                    await response(scope, receive, send)
+                    return
+
                 scope = dict(scope)
                 scope["root_path"] = prefix
 
