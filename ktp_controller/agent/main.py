@@ -8,8 +8,6 @@ import enum
 import json
 import logging
 import math
-import os
-import os.path
 import pathlib
 import signal
 import statistics
@@ -31,6 +29,7 @@ import ktp_controller.agent.exam_package
 import ktp_controller.agent.state
 import ktp_controller.agent.stats
 import ktp_controller.agent.tasks.base
+import ktp_controller.agent.tasks.refresh_exams
 import ktp_controller.api.client
 import ktp_controller.examomatic.client
 import ktp_controller.files
@@ -111,7 +110,11 @@ class Agent:
         self.__started_at: datetime.datetime | None = None
         self.__state = state
         self.__nonfinal_answers_download_task: asyncio.Task[None] | None = None
-        self.__refresh_exams_lock = asyncio.Lock()
+        self.__refresh_exams_task = (
+            ktp_controller.agent.tasks.refresh_exams.RefreshExamsTask(
+                interval_sec=approx_refresh_exams_interval_sec
+            )
+        )
         self.__work_on_current_exam_package_lock = asyncio.Lock()
         self.__last_status_report_sent_to_examomatic_at: datetime.datetime | None = None
         self.__last_status_report: dict[str, typing.Any] | None = None
@@ -137,7 +140,6 @@ class Agent:
         self.__approx_answers_download_interval_sec = (
             approx_answers_download_interval_sec
         )
-        self.__approx_refresh_exams_interval_sec = approx_refresh_exams_interval_sec
 
         # Abitti2 reports these
         self.__last_received_exam_list: list[dict[str, typing.Any]] | None = None
@@ -414,8 +416,7 @@ class Agent:
         command_data: ktp_controller.messages.CommandData,
     ) -> ktp_controller.messages.CommandResultData:
         try:
-            async with self.__refresh_exams_lock:
-                await self.__refresh_exams(is_spontaneous=False)
+            await self.__refresh_exams_task.request_refresh(is_spontaneous=False)
         except Exception as exception:
             return ktp_controller.messages.CommandResultData(
                 command_uuid=command_uuid,
@@ -1601,76 +1602,6 @@ class Agent:
             on_exit_coro=self.__clear_abitti2_caches(),
         )
 
-    async def __ensure_exam_file_exists(
-        self, eom_scheduled_exam: dict[str, typing.Any]
-    ) -> None:
-        _LOGGER.info(
-            "ensuring exam file %r (file_uuid=%s) exists",
-            eom_scheduled_exam["file_name"],
-            eom_scheduled_exam["file_uuid"],
-        )
-
-        utcnow = ktp_controller.utils.utcnow_str()
-
-        filepath = ktp_controller.files.get_local_filepath(
-            ktp_controller.files.LocalFilepathType.EXAM_FILE,
-            eom_scheduled_exam["file_uuid"],
-            eom_scheduled_exam["file_sha256"],
-        )
-
-        do_download = False
-        if not os.path.exists(filepath):
-            do_download = True
-        elif os.path.getsize(filepath) != eom_scheduled_exam["file_size"]:
-            _LOGGER.warning(
-                "exam file %r (file_uuid=%s) is already downloaded, "
-                "but Exam-O-Matic claims it has incorrect size, re-downloading it now",
-                eom_scheduled_exam["file_name"],
-                eom_scheduled_exam["file_uuid"],
-            )
-            os.rename(
-                filepath, f"{filepath}.incorrect_size-{utcnow}"
-            )  # Saved for possible investigation.
-            do_download = True
-        elif ktp_controller.utils.sha256(filepath) != eom_scheduled_exam["file_sha256"]:
-            _LOGGER.warning(
-                "exam file %r (file_uuid=%s) is already downloaded, "
-                "but Exam-O-Matic claims it has incorrect SHA256 checksum, re-downloading it now",
-                eom_scheduled_exam["file_name"],
-                eom_scheduled_exam["file_uuid"],
-            )
-            os.rename(
-                filepath, f"{filepath}.incorrect_sha256-{utcnow}"
-            )  # Saved for possible investigation.
-            do_download = True
-
-        if do_download:
-            _LOGGER.info(
-                "starting to download exam file %r (file_uuid=%s) to %r",
-                eom_scheduled_exam["file_name"],
-                eom_scheduled_exam["file_uuid"],
-                filepath,
-            )
-            await ktp_controller.examomatic.client.download_exam_file(
-                eom_scheduled_exam["file_sha256"], filepath
-            )
-            _LOGGER.info(
-                "downloaded exam file %r (file_uuid=%s) successfully to %r",
-                eom_scheduled_exam["file_name"],
-                eom_scheduled_exam["file_uuid"],
-                filepath,
-            )
-        else:
-            _LOGGER.info(
-                "exam file %r (file_uuid=%s) already exists at %r and is up to date",
-                eom_scheduled_exam["file_name"],
-                eom_scheduled_exam["file_uuid"],
-                filepath,
-            )
-            # Update mtime to avoid deleting this cached file
-            # soon. See ktp_controller.files.cleanup_old_exam_files()'
-            os.utime(filepath)
-
     async def __upload_answers_files(self) -> None:
         answers_file_dir_path = pathlib.Path(ktp_controller.files.ANSWERS_FILE_DIR)
 
@@ -1693,41 +1624,6 @@ class Agent:
                 await ktp_controller.abitti2.client.get_current_abitti2_version()
             )
         return self.__cached_abitti2_version
-
-    async def __refresh_exams(self, *, is_spontaneous: bool) -> None:
-        _LOGGER.info(
-            "Starting %sexam refresh...",
-            "spontaneous " if is_spontaneous else "requested ",
-        )
-
-        try:
-            eom_exam_info = await ktp_controller.examomatic.client.get_exam_info()
-        except httpx2.HTTPStatusError as http_error:
-            if http_error.response.status_code == 404:
-                if is_spontaneous:
-                    # It's ok that there are no exam infos, because we
-                    # are doing spontaneous refresh and we had no
-                    # prior knowledge about availability of exam infos.
-                    _LOGGER.info("No exam info available.")
-                else:
-                    _LOGGER.error(
-                        "No exam info available, but we have been told that there should be!"
-                    )
-            else:
-                _LOGGER.exception("Failed to refresh exams")
-            return
-        except Exception:
-            _LOGGER.exception("Failed to refresh exams")
-            return
-
-        _LOGGER.debug("Received exam info from Exam-O-Matic: %s:", eom_exam_info)
-
-        for eom_scheduled_exam in eom_exam_info["schedules"]:
-            await self.__ensure_exam_file_exists(eom_scheduled_exam)
-
-        await ktp_controller.api.client.save_exam_info(eom_exam_info)
-
-        _LOGGER.info("refreshed exams successfully")
 
     async def __file_cleanup_task(self) -> None:
         started = False
@@ -1767,19 +1663,6 @@ class Agent:
                 except Exception:
                     _LOGGER.exception("answers file upload failed")
 
-    async def __periodic_refresh_exams(self) -> None:
-        started = False
-        async with _task("periodic exam refresh"):
-            while not _SHUTDOWN_EVENT.is_set():
-                try:
-                    if started:
-                        await asyncio.sleep(self.__approx_refresh_exams_interval_sec)
-                    started = True
-                    async with self.__refresh_exams_lock:
-                        await self.__refresh_exams(is_spontaneous=True)
-                except Exception:
-                    _LOGGER.exception("Failed to refresh exams")
-
     async def __create_status_reports_task(self) -> None:
         async with _task("create status reports"):
             while not _SHUTDOWN_EVENT.is_set():
@@ -1812,7 +1695,8 @@ class Agent:
                 tg.create_task(self.__maintain_websocket_connection_to_api())
                 tg.create_task(self.__maintain_websocket_connection_to_abitti2())
                 tg.create_task(self.__maintain_websocket_connection_to_examomatic())
-                tg.create_task(self.__periodic_refresh_exams())
+                tg.create_task(self.__refresh_exams_task.run_ticker())
+                tg.create_task(self.__refresh_exams_task.run_consumer())
                 tg.create_task(self.__answers_file_upload_task())
                 tg.create_task(self.__file_cleanup_task())
                 tg.create_task(self.__old_exam_info_cleanup_task())
