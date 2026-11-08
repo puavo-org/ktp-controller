@@ -5,7 +5,7 @@ TODO2 and so on. When an item is done, remove it from this document.
 
 When adding new items, always update the following line to define the
 ID of the next TODO item.
-Next ID: TODO40
+Next ID: TODO41
 
 
 ## TODO35
@@ -370,7 +370,35 @@ boilerplate around an already-existing free function,
   wired with the right name/interval, which likely isn't worth its own
   test given `periodic()` itself is already covered via TODO37/TODO34.
 
-Do this one together with TODO37 and the (not yet filed) "old exam
-info cleanup" task as a single batch of low-risk `periodic()`
-rewires — they're the three tasks TODO34's plan explicitly deferred as
+Do this one together with TODO37 and TODO40 (old exam info cleanup) as
+a single batch of low-risk `periodic()` rewires — they're the three
+tasks TODO34's plan explicitly deferred as
 "trivial, separate follow-up work."
+
+
+## TODO40
+
+Move the "old exam info cleanup" task
+(`Agent.__old_exam_info_cleanup_task` in
+`ktp_controller/agent/main.py`) into `ktp_controller/agent/tasks/`,
+reusing `periodic()` from `tasks/base.py` (TODO34). Same shape as
+TODO39 (file cleanup): pure boilerplate around an already-existing
+free function, `ktp_controller.api.client.delete_old_exam_info(
+older_than_days=14)`, every 3600 seconds.
+
+- **No design questions**: single periodic trigger, no command, no
+  `Agent` state read or written.
+- **Change**: in `Agent.forever()`, replace
+  `tg.create_task(self.__old_exam_info_cleanup_task())` with
+  `tg.create_task(base.periodic("old exam info cleanup", 3600, functools.partial(ktp_controller.api.client.delete_old_exam_info, older_than_days=14), on_error_message="old exam info cleanup failed"))`
+  directly, and delete `__old_exam_info_cleanup_task` from `main.py`.
+  No new module under `tasks/` is needed, same as TODO39.
+- **Tests**: unlike TODO39's `cleanup_files` (already covered by
+  `tests/test_file_cleanup.py`), `delete_old_exam_info` itself has no
+  existing test coverage (client or API route) — that's a pre-existing
+  gap, not something this move needs to fix; adding coverage for it is
+  a separate concern from relocating the periodic wrapper.
+
+Do this one together with TODO37 and TODO39 as a single batch of
+low-risk `periodic()` rewires — they're the three tasks TODO34's plan
+explicitly deferred as "trivial, separate follow-up work."
