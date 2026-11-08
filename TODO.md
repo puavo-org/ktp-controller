@@ -5,7 +5,7 @@ TODO2 and so on. When an item is done, remove it from this document.
 
 When adding new items, always update the following line to define the
 ID of the next TODO item.
-Next ID: TODO37
+Next ID: TODO38
 
 
 ## TODO35
@@ -193,3 +193,54 @@ writing an implementation plan, not papered over:
 As with TODO34/TODO35, write the actual commit-by-commit
 implementation plan once the design questions above — especially the
 coalescing-of-heterogeneous-triggers one — are resolved.
+
+
+## TODO37
+
+Move the "answers file upload" task
+(`Agent.__upload_answers_files`/`__answers_file_upload_task` in
+`ktp_controller/agent/main.py`) into `ktp_controller/agent/tasks/`,
+reusing `periodic()` from `tasks/base.py` (already built for exactly
+this shape of task, see TODO34).
+
+Unlike TODO35/TODO36, this one is simple and shouldn't need any new
+design:
+
+- **No command trigger, no coalescing needed.** It only has one
+  trigger — the periodic loop itself, every 30 seconds
+  (`__answers_file_upload_task`) — so this is a direct fit for the
+  existing `periodic()` helper, not `CoalescingQueue`. No new
+  primitive is needed.
+
+- **Already a free function in disguise.** `__upload_answers_files`
+  doesn't read or write any `Agent` state at all: it lists
+  `ktp_controller.files.ANSWERS_FILE_DIR`, picks the latest `*.meb`
+  file not yet uploaded, and calls
+  `ktp_controller.agent.answers.upload_answers_file()` (already a
+  standalone function in `ktp_controller/agent/answers.py`, taking no
+  `Agent` reference). It can move to a new
+  `ktp_controller/agent/tasks/answers_upload.py` essentially verbatim,
+  as a plain `async def upload_one_pending_answers_file() -> None`
+  function — no inputs-snapshot dataclass or task-owned state needed,
+  unlike TODO35/TODO36.
+
+- **Wiring**: `Agent.forever()` replaces
+  `tg.create_task(self.__answers_file_upload_task())` with something
+  like
+  `tg.create_task(base.periodic("answers file upload", 30, upload_one_pending_answers_file, on_error_message="answers file upload failed"))`
+  directly — there's likely no need for a dedicated task *class* here
+  at all (contrast with `RefreshExamsTask`, which needed one to own
+  its `CoalescingQueue`).
+
+- **Tests**: add `tests/test_agent_tasks_answers_upload.py` mirroring
+  `tests/test_agent_tasks_refresh_exams.py`'s style, exercising the
+  moved function directly (mock
+  `ktp_controller.agent.answers.upload_answers_file`, assert it's
+  called with the latest `.meb` file and that the loop stops after the
+  first successful upload per call).
+
+This is a good one to do right after TODO35/TODO36's harder design
+work is settled, as a low-risk exercise of the same move pattern
+(capability commit → final connecting commit → tests), and to confirm
+`periodic()` itself needs no changes before `__file_cleanup_task`/
+`__old_exam_info_cleanup_task` get the same treatment later.
