@@ -30,6 +30,7 @@ import ktp_controller.agent.answers
 import ktp_controller.agent.exam_package
 import ktp_controller.agent.state
 import ktp_controller.agent.stats
+import ktp_controller.agent.tasks.base
 import ktp_controller.api.client
 import ktp_controller.examomatic.client
 import ktp_controller.files
@@ -44,28 +45,9 @@ from ktp_controller import SETTINGS, VERSION
 
 _LOGGER = logging.getLogger(__name__)
 
-_SHUTDOWN_EVENT = asyncio.Event()
-
-
-@contextlib.asynccontextmanager
-async def _task(
-    name: str, *, on_exit_coro: typing.Awaitable[typing.Any] | None = None
-) -> typing.AsyncIterator[None]:
-    try:
-        _LOGGER.info("Starting task %r...", name)
-        yield
-    except asyncio.CancelledError as err:
-        if _SHUTDOWN_EVENT.is_set():
-            # That's normal, the task was cancelled while the agent is shutting down.
-            raise
-        raise _UnexpectedCancel(f"Unexpected cancellation of task {name!r}!") from err
-    finally:
-        if _SHUTDOWN_EVENT.is_set():
-            _LOGGER.info("Task %r was shut down.", name)
-        else:
-            _LOGGER.warning("Task %r was aborted!", name)
-        if on_exit_coro is not None:
-            await on_exit_coro
+_SHUTDOWN_EVENT = ktp_controller.agent.tasks.base.SHUTDOWN_EVENT
+_task = ktp_controller.agent.tasks.base.task_guard
+_UnexpectedCancel = ktp_controller.agent.tasks.base.UnexpectedCancel
 
 
 class Trigger(enum.StrEnum):
@@ -86,10 +68,6 @@ class Component(enum.StrEnum):
 
     def __str__(self) -> str:
         return self.value
-
-
-class _UnexpectedCancel(Exception):
-    pass
 
 
 class _StateTransition(typing.TypedDict):
