@@ -66,7 +66,15 @@ design, not a copy-paste of `RefreshExamsTask`:
   `__get_exam_stats()`, `__get_stats()`, `__get_abitti2_version()`,
   `__is_auto_control_enabled`, `__started_at`, OS/image info, etc.),
   all populated by code elsewhere in `Agent` that is out of scope for
-  this move (Abitti2 message handling, connection/stats tracking).
+  this move: Abitti2 message handling, and `__maintain_websocket_connection`'s
+  connection-stats bookkeeping (`__connection_stats`/
+  `__prev_connection_durations`, read via `__get_websocket_stats`/
+  `__get_stats`). Both are *input dependencies* for the report, not
+  migration candidates in their own right — neither has an independent
+  trigger or does async work; they're just state that other,
+  already-running tasks update as a side effect. Treat them like any
+  other `Agent`-held cache the report needs: read through the snapshot
+  below, don't go chasing them into their own task modules.
   Rather than giving the new task module direct access to `Agent`
   internals, define a typed snapshot (e.g. a `StatusReportInputs`
   dataclass) that `Agent` assembles fresh each time from its own state
