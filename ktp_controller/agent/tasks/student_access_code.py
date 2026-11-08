@@ -19,7 +19,7 @@ __all__ = [
 _COOLDOWN_SEC = 60
 
 
-async def _change_student_access_code(old_security_code: str | None) -> None:
+async def _change_student_access_code(old_security_code: dict[str, str] | None) -> None:
     if old_security_code:
         _LOGGER.info(
             "Requesting Abitti2 to change student access code to ensure students "
@@ -50,7 +50,7 @@ class StudentAccessCodeTask:
     def __init__(self) -> None:
         self.__queue: base.CoalescingQueue[None, bool] = base.CoalescingQueue()
         self.__last_change_at: datetime.datetime | None = None
-        self.__old_security_code: str | None = None
+        self.__old_security_code: dict[str, str] | None = None
 
     async def request_change(self) -> bool:
         """Producer API.
@@ -64,7 +64,7 @@ class StudentAccessCodeTask:
         self,
         *,
         auto_control_enabled: bool,
-        last_received_security_code: str | None,
+        last_received_security_code: dict[str, str] | None,
     ) -> bool:
         """Snapshot the current code, request a change, then keep
         returning False until Abitti2 reports a code different from the

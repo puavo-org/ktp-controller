@@ -7,7 +7,6 @@ import datetime
 import enum
 import json
 import logging
-import math
 import pathlib
 import signal
 import statistics
@@ -30,6 +29,7 @@ import ktp_controller.agent.state
 import ktp_controller.agent.stats
 import ktp_controller.agent.tasks.base
 import ktp_controller.agent.tasks.refresh_exams
+import ktp_controller.agent.tasks.student_access_code
 import ktp_controller.api.client
 import ktp_controller.examomatic.client
 import ktp_controller.files
@@ -119,8 +119,8 @@ class Agent:
         self.__last_status_report_sent_to_examomatic_at: datetime.datetime | None = None
         self.__last_status_report: dict[str, typing.Any] | None = None
         self.__has_last_status_report_expired: bool = False
-        self.__last_student_access_code_change_request_at: datetime.datetime | None = (
-            None
+        self.__student_access_code_task = (
+            ktp_controller.agent.tasks.student_access_code.StudentAccessCodeTask()
         )
         self.__cached_abitti2_version: str | None = None
         self.__os_release = ktp_controller.os.get_release()
@@ -144,7 +144,6 @@ class Agent:
         # Abitti2 reports these
         self.__last_received_exam_list: list[dict[str, typing.Any]] | None = None
         self.__last_received_security_code: dict[str, str] | None = None
-        self.__old_security_code: dict[str, str] | None = None
         self.__uploaded = False
         self.__last_message_from_abitti2_received_at: datetime.datetime | None = None
         self.__last_received_students: list[dict[str, typing.Any]] | None = None
@@ -234,7 +233,7 @@ class Agent:
     ) -> ktp_controller.messages.CommandResultData:
         try:
             error_message = None
-            if await self.__change_student_access_code():
+            if await self.__student_access_code_task.request_change():
                 command_status = ktp_controller.messages.CommandStatus.OK
             else:
                 command_status = ktp_controller.messages.CommandStatus.OK_NO_CHANGE
@@ -429,68 +428,6 @@ class Agent:
             command_status=ktp_controller.messages.CommandStatus.OK,
         )
 
-    async def __change_student_access_code(self) -> bool:
-        utcnow = ktp_controller.utils.utcnow()
-
-        if self.__last_student_access_code_change_request_at is None:
-            seconds_since_last_change = math.inf
-        else:
-            seconds_since_last_change = (
-                utcnow - self.__last_student_access_code_change_request_at
-            ).total_seconds()
-
-        if seconds_since_last_change < 60:
-            _LOGGER.warning(
-                "NOT requesting Abitti2 to change student access code, "
-                "because it was requested %d seconds ago. It can be requested at most once per minute.",
-                int(seconds_since_last_change),
-            )
-            return False
-
-        if self.__old_security_code:
-            _LOGGER.info(
-                "Requesting Abitti2 to change student access code to ensure students "
-                "cannot access exams with code (%r).",
-                self.__old_security_code,
-            )
-        else:
-            _LOGGER.info("Requesting Abitti2 to change student access code.")
-        await ktp_controller.abitti2.client.change_student_access_code()
-        self.__last_student_access_code_change_request_at = utcnow
-        return True
-
-    async def __change_student_access_code_in_state_transition(self) -> bool:
-        if not self.__is_auto_control_enabled:
-            return True  # We are never going to change it, so we are done.
-
-        if not SETTINGS.abitti2_change_student_access_code_automatically:
-            return True  # We are never going to change it, so we are done.
-
-        if self.__last_received_security_code is None:
-            return False  # No point to change until we know what the current is.
-
-        if self.__old_security_code is None:
-            self.__old_security_code = self.__last_received_security_code
-
-        if self.__old_security_code == self.__last_received_security_code:
-            await self.__change_student_access_code()
-            _LOGGER.info(
-                "Waiting until student access code has changed to ensure students "
-                "cannot access exams with code (%r).",
-                self.__old_security_code,
-            )
-            return False
-
-        _LOGGER.info(
-            "Access code has changed (%r => %r).",
-            self.__old_security_code,
-            self.__last_received_security_code,
-        )
-
-        self.__old_security_code = None
-
-        return True
-
     async def __prepare_current_exam_package(
         self,
         current_exam_package: dict[str, typing.Any],
@@ -531,7 +468,10 @@ class Agent:
             )
         self.__uploaded = True
 
-        if not await self.__change_student_access_code_in_state_transition():
+        if not await self.__student_access_code_task.ensure_code_changed(
+            auto_control_enabled=self.__is_auto_control_enabled,
+            last_received_security_code=self.__last_received_security_code,
+        ):
             return False
 
         _LOGGER.info(
@@ -600,7 +540,10 @@ class Agent:
             current_exam_package["external_id"],
         )
         # Change the student access code first to ensure students cannot enter anymore.
-        return await self.__change_student_access_code_in_state_transition()
+        return await self.__student_access_code_task.ensure_code_changed(
+            auto_control_enabled=self.__is_auto_control_enabled,
+            last_received_security_code=self.__last_received_security_code,
+        )
 
     async def __stop_current_exam_package(
         self,
@@ -1464,7 +1407,7 @@ class Agent:
     async def __clear_abitti2_caches(self) -> None:
         self.__cached_abitti2_version = None
         self.__last_received_security_code = None
-        self.__old_security_code = None
+        self.__student_access_code_task.reset()
         _LOGGER.info("All cached Abitti2 information has been cleared.")
 
     async def __communicate_with_abitti2(
@@ -1697,6 +1640,7 @@ class Agent:
                 tg.create_task(self.__maintain_websocket_connection_to_examomatic())
                 tg.create_task(self.__refresh_exams_task.run_ticker())
                 tg.create_task(self.__refresh_exams_task.run_consumer())
+                tg.create_task(self.__student_access_code_task.run_consumer())
                 tg.create_task(self.__answers_file_upload_task())
                 tg.create_task(self.__file_cleanup_task())
                 tg.create_task(self.__old_exam_info_cleanup_task())
