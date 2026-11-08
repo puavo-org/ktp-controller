@@ -265,8 +265,9 @@ This is a fifth distinct trigger/concurrency shape, different from
 everything moved or planned so far (TODO34 request/response
 coalescing, TODO35 fire-and-forget dirty-signal, TODO36 heterogeneous
 triggers needing per-call results, TODO37 plain periodic) — it has no
-periodic trigger at all, and its existing "at most once per 60s"
-behavior is a *rate limit*, not a coalescing or dirty-flag pattern:
+periodic trigger at all (not yet but might in near future), and its
+existing "at most once per 60s" behavior is a *rate limit*, not a
+coalescing or dirty-flag pattern:
 
 - **Trigger**: only the `CHANGE_STUDENT_ACCESS_CODE` API command
   (`__command_change_student_access_code`), needing a per-call
