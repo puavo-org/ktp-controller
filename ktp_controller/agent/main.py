@@ -31,6 +31,7 @@ import ktp_controller.agent.tasks.base
 import ktp_controller.agent.tasks.file_cleanup
 import ktp_controller.agent.tasks.old_exam_info_cleanup
 import ktp_controller.agent.tasks.refresh_exams
+import ktp_controller.agent.tasks.status_report
 import ktp_controller.agent.tasks.student_access_code
 import ktp_controller.api.client
 import ktp_controller.examomatic.client
@@ -129,9 +130,10 @@ class Agent:
             )
         )
         self.__work_on_current_exam_package_lock = asyncio.Lock()
-        self.__last_status_report_sent_to_examomatic_at: datetime.datetime | None = None
-        self.__last_status_report: dict[str, typing.Any] | None = None
-        self.__has_last_status_report_expired: bool = False
+        self.__status_report_task = ktp_controller.agent.tasks.status_report.StatusReportTask(
+            min_examomatic_interval_sec=approx_examomatic_min_status_report_interval_sec,
+            build_inputs=self.__build_status_report_inputs,
+        )
         self.__student_access_code_task = (
             ktp_controller.agent.tasks.student_access_code.StudentAccessCodeTask()
         )
@@ -139,16 +141,12 @@ class Agent:
         self.__os_release = ktp_controller.os.get_release()
         self.__puavo_os_image_name = ktp_controller.os.get_puavo_os_image_name()
         self.__puavo_os_image_release = ktp_controller.os.get_puavo_os_image_release()
-        self.__status_report_should_be_created = asyncio.Event()
 
         self.__approx_api_ping_interval_sec = approx_api_ping_interval_sec
         self.__approx_api_status_report_interval_sec = (
             approx_api_status_report_interval_sec
         )
         self.__approx_examomatic_ping_interval_sec = approx_examomatic_ping_interval_sec
-        self.__approx_examomatic_min_status_report_interval_sec = (
-            approx_examomatic_min_status_report_interval_sec
-        )
         self.__approx_reconnect_timeout_sec = approx_reconnect_timeout_sec
         self.__approx_answers_download_interval_sec = (
             approx_answers_download_interval_sec
@@ -231,7 +229,7 @@ class Agent:
                 "Auto control is now %s.", "enabled" if enabled else "disabled"
             )
             command_status = ktp_controller.messages.CommandStatus.OK
-            self.__status_report_should_be_created.set()
+            self.__status_report_task.mark_dirty()
         else:
             command_status = ktp_controller.messages.CommandStatus.OK_NO_CHANGE
 
@@ -347,7 +345,7 @@ class Agent:
         command_uuid: pydantic.UUID4,
         command_data: ktp_controller.messages.CommandData,
     ) -> ktp_controller.messages.CommandResultData:
-        self.__status_report_should_be_created.set()
+        self.__status_report_task.mark_dirty()
         return ktp_controller.messages.CommandResultData(
             command_uuid=command_uuid,
             command_status=ktp_controller.messages.CommandStatus.OK,
@@ -572,15 +570,16 @@ class Agent:
         self,
         current_exam_package: dict[str, typing.Any],
     ) -> bool:
-        if self.__last_status_report is None:
+        last_status_report = self.__status_report_task.get_last_report()
+        if last_status_report is None:
             return False
 
-        if self.__has_last_status_report_expired:
+        if self.__status_report_task.has_last_report_expired():
             return False
 
         exceptions: list[Exception] = []
 
-        for student in self.__last_status_report["abitti2"]["students"]:
+        for student in last_status_report["abitti2"]["students"]:
             if student["has_finished"]:
                 continue
             try:
@@ -608,16 +607,16 @@ class Agent:
 
         if exceptions:
             # Ensures next time we get to end student sessions, we are reading fresh data.
-            self.__has_last_status_report_expired = True
+            self.__status_report_task.mark_expired()
 
             raise ExceptionGroup(
                 "failed to end some of the student sessions", exceptions
             )
 
         is_stopped = (
-            ktp_controller.abitti2.utils.no_active_students(self.__last_status_report)
+            ktp_controller.abitti2.utils.no_active_students(last_status_report)
             and current_exam_package["state"] == "stopping"
-            and self.__last_status_report["created_at"]
+            and last_status_report["created_at"]
             > datetime.datetime.fromisoformat(current_exam_package["state_changed_at"])
         )
 
@@ -659,9 +658,10 @@ class Agent:
         is_final: ktp_controller.examomatic.client.IsFinal,
     ) -> None:
         is_final = ktp_controller.examomatic.client.IsFinal(is_final)
+        last_status_report = self.__status_report_task.get_last_report()
         if (
-            self.__last_status_report is None
-            or self.__last_status_report["abitti2"]["answer_count"] is None
+            last_status_report is None
+            or last_status_report["abitti2"]["answer_count"] is None
         ):
             _LOGGER.warning(
                 "I don't know yet if there are answers to download, "
@@ -669,7 +669,7 @@ class Agent:
                 "because Abitti2 can block indefinitely if there are no answers."
             )
             return
-        if self.__last_status_report["abitti2"]["answer_count"] > 0:
+        if last_status_report["abitti2"]["answer_count"] > 0:
             await ktp_controller.agent.answers.download_answers_file(
                 exam_package_external_id=current_exam_package["external_id"],
                 is_final=is_final,
@@ -708,7 +708,7 @@ class Agent:
         async with self.__work_on_current_exam_package_lock:
             changed = await self.__work_on_current_exam_package_locked(trigger=trigger)
             if changed:
-                self.__status_report_should_be_created.set()
+                self.__status_report_task.mark_dirty()
             return changed
 
     async def __work_on_current_exam_package_locked(self, *, trigger: Trigger) -> bool:
@@ -760,7 +760,8 @@ class Agent:
                 current_exam_package,
             )
 
-        if self.__last_status_report is None:
+        last_status_report = self.__status_report_task.get_last_report()
+        if last_status_report is None:
             _LOGGER.warning(
                 "Status of the whole system is still partially unknown, not processing"
                 " exam packages until a complete view of the current status is formed."
@@ -808,7 +809,7 @@ class Agent:
                     )
                     and (
                         ktp_controller.abitti2.utils.no_active_students(
-                            self.__last_status_report
+                            last_status_report
                         )
                         or len(locked_exam_packages) > 1
                     )
@@ -1079,11 +1080,11 @@ class Agent:
         changed |= self.__last_received_security_code != security_code
         self.__last_received_security_code = security_code
 
-        if self.__last_status_report is None:
+        if self.__status_report_task.get_last_report() is None:
             return
 
         if changed:
-            self.__status_report_should_be_created.set()
+            self.__status_report_task.mark_dirty()
 
     def __adopt_api_reported_security_code(self) -> None:
         """Adopt the security code StudentAccessCodeTask learned
@@ -1107,8 +1108,8 @@ class Agent:
         )
         self.__last_received_security_code = api_reported_security_code
 
-        if self.__last_status_report is not None:
-            self.__status_report_should_be_created.set()
+        if self.__status_report_task.get_last_report() is not None:
+            self.__status_report_task.mark_dirty()
 
     def __validate_abitti2_stats_message(self, message: dict[str, typing.Any]) -> bool:
         try:
@@ -1160,7 +1161,7 @@ class Agent:
         self.__last_received_answer_count = message["data"]["answerPaperCount"]
 
         if changed:
-            self.__status_report_should_be_created.set()
+            self.__status_report_task.mark_dirty()
 
     def __has_exam_stats(self) -> bool:
         # Stat calculation requires the information below. If any of
@@ -1271,21 +1272,9 @@ class Agent:
 
         return stats
 
-    def __get_seconds_until_time_to_send_next_status_report_to_examomatic(
-        self, *, utcnow: datetime.datetime | None = None
-    ) -> float:
-        if utcnow is None:
-            utcnow = ktp_controller.utils.utcnow()
-
-        if self.__last_status_report_sent_to_examomatic_at is None:
-            return 0
-
-        return (
-            self.__approx_examomatic_min_status_report_interval_sec
-            - (utcnow - self.__last_status_report_sent_to_examomatic_at).total_seconds()
-        )
-
-    async def __create_status_report(self) -> None:
+    async def __build_status_report_inputs(
+        self,
+    ) -> ktp_controller.agent.tasks.status_report.StatusReportInputs:
         try:
             supervisor_passphrase = (
                 ktp_controller.abitti2.naksu2.read_supervisor_passphrase()
@@ -1350,60 +1339,32 @@ class Agent:
 
         cached_files = ktp_controller.files.get_cached_files()
 
-        status_report: dict[str, typing.Any] = {
-            "created_at": utcnow,
-            "abitti2": {
-                "stats": {
-                    "exams": exam_stats,
-                },
-                "answer_count": self.__last_received_answer_count,
-                "domain": domain,
-                "student_access_code": ktp_controller.abitti2.utils.security_code_to_student_access_code(
-                    self.__last_received_security_code
-                ),
-                "supervisor_username": ktp_controller.abitti2.client.ABITTI2_SUPERVISOR_USERNAME,
-                "supervisor_passphrase": supervisor_passphrase,
-                "version": abitti2_version,
-                "last_message_received_at": self.__last_message_from_abitti2_received_at,
-                "cert": cert,
-                "exams": self.__last_received_exam_list,
-                "students": self.__last_received_students,
-            },
-            "ktp_controller": {
-                "settings": SETTINGS.model_dump(),
-                "started_at": self.__started_at,
-                "is_auto_control_enabled": self.__is_auto_control_enabled,
-                "cached_files": cached_files,
-                "current_exam_package": current_exam_package,
-                "next_exam_packages": next_exam_packages,
-                "stats": ktp_controller_stats,
-            },
-            "os": {
-                "stats": ktp_controller.os.get_stats(),
-                "release": self.__os_release,
-                "puavo_os_image_name": self.__puavo_os_image_name,
-                "puavo_os_image_release": self.__puavo_os_image_release,
-            },
-        }
-        try:
-            if (
-                self.__get_seconds_until_time_to_send_next_status_report_to_examomatic(
-                    utcnow=utcnow
-                )
-                <= 0
-            ):
-                await ktp_controller.examomatic.client.send_status_report(status_report)
-                status_report["reported_at"] = utcnow
-                self.__last_status_report_sent_to_examomatic_at = utcnow
-                _LOGGER.debug("sent status report to Exam-O-Matic")
-        except Exception:
-            _LOGGER.exception("failed to send status report to Exam-O-Matic")
-        status_report.setdefault("reported_at", None)
-
-        await ktp_controller.api.client.save_status_report(status_report)
-        self.__last_status_report = status_report
-        self.__has_last_status_report_expired = False
-        _LOGGER.debug("sent status report to KTP Controller API")
+        return ktp_controller.agent.tasks.status_report.StatusReportInputs(
+            utcnow=utcnow,
+            supervisor_passphrase=supervisor_passphrase,
+            domain=domain,
+            abitti2_version=abitti2_version,
+            cert=cert,
+            current_exam_package=current_exam_package,
+            next_exam_packages=next_exam_packages,
+            exam_stats=exam_stats,
+            ktp_controller_stats=ktp_controller_stats,
+            cached_files=cached_files,
+            answer_count=self.__last_received_answer_count,
+            student_access_code=ktp_controller.abitti2.utils.security_code_to_student_access_code(
+                self.__last_received_security_code
+            ),
+            last_message_from_abitti2_received_at=self.__last_message_from_abitti2_received_at,
+            exams=self.__last_received_exam_list,
+            students=self.__last_received_students,
+            settings=SETTINGS.model_dump(),
+            started_at=self.__started_at,
+            is_auto_control_enabled=self.__is_auto_control_enabled,
+            os_stats=ktp_controller.os.get_stats(),
+            os_release=self.__os_release,
+            puavo_os_image_name=self.__puavo_os_image_name,
+            puavo_os_image_release=self.__puavo_os_image_release,
+        )
 
     async def __handle_abitti2_exams_message(
         self,
@@ -1432,7 +1393,7 @@ class Agent:
         self.__last_received_exam_list = exam_list
 
         if changed:
-            self.__status_report_should_be_created.set()
+            self.__status_report_task.mark_dirty()
 
     def __decode_abitti2_message(
         self, data: str | bytes
@@ -1600,19 +1561,6 @@ class Agent:
             )
         return self.__cached_abitti2_version
 
-    async def __create_status_reports_task(self) -> None:
-        async with _task("create status reports"):
-            while not _SHUTDOWN_EVENT.is_set():
-                try:
-                    await asyncio.wait_for(
-                        self.__status_report_should_be_created.wait(),
-                        timeout=self.__get_seconds_until_time_to_send_next_status_report_to_examomatic(),
-                    )
-                except TimeoutError:
-                    pass
-                self.__status_report_should_be_created.clear()
-                await self.__create_status_report()
-
     async def forever(self) -> None:
         _LOGGER.info("Started.")
         loop = asyncio.get_running_loop()
@@ -1638,7 +1586,7 @@ class Agent:
                 tg.create_task(self.__answers_upload_task.run_ticker())
                 tg.create_task(self.__file_cleanup_task.run_ticker())
                 tg.create_task(self.__old_exam_info_cleanup_task.run_ticker())
-                tg.create_task(self.__create_status_reports_task())
+                tg.create_task(self.__status_report_task.run_consumer())
 
                 # Keep the main task alive while workers run
                 await asyncio.Event().wait()
