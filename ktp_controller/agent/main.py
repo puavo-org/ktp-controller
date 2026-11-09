@@ -5,7 +5,6 @@ import collections
 import contextlib
 import datetime
 import enum
-import functools
 import json
 import logging
 import signal
@@ -29,6 +28,8 @@ import ktp_controller.agent.state
 import ktp_controller.agent.stats
 import ktp_controller.agent.tasks.answers_upload
 import ktp_controller.agent.tasks.base
+import ktp_controller.agent.tasks.file_cleanup
+import ktp_controller.agent.tasks.old_exam_info_cleanup
 import ktp_controller.agent.tasks.refresh_exams
 import ktp_controller.agent.tasks.student_access_code
 import ktp_controller.api.client
@@ -114,6 +115,17 @@ class Agent:
         self.__refresh_exams_task = (
             ktp_controller.agent.tasks.refresh_exams.RefreshExamsTask(
                 interval_sec=approx_refresh_exams_interval_sec
+            )
+        )
+        self.__answers_upload_task = (
+            ktp_controller.agent.tasks.answers_upload.AnswersUploadTask(interval_sec=30)
+        )
+        self.__file_cleanup_task = (
+            ktp_controller.agent.tasks.file_cleanup.FileCleanupTask(interval_sec=300)
+        )
+        self.__old_exam_info_cleanup_task = (
+            ktp_controller.agent.tasks.old_exam_info_cleanup.OldExamInfoCleanupTask(
+                interval_sec=3600, older_than_days=14
             )
         )
         self.__work_on_current_exam_package_lock = asyncio.Lock()
@@ -1623,35 +1635,9 @@ class Agent:
                 tg.create_task(self.__refresh_exams_task.run_ticker())
                 tg.create_task(self.__refresh_exams_task.run_consumer())
                 tg.create_task(self.__student_access_code_task.run_consumer())
-                tg.create_task(
-                    ktp_controller.agent.tasks.base.periodic(
-                        "answers file upload",
-                        30,
-                        ktp_controller.agent.tasks.answers_upload.upload_one_pending_answers_file,
-                        on_error_message="answers file upload failed",
-                    )
-                )
-                tg.create_task(
-                    ktp_controller.agent.tasks.base.periodic(
-                        "file cleanup",
-                        300,
-                        functools.partial(
-                            ktp_controller.files.cleanup_files, logger=_LOGGER
-                        ),
-                        on_error_message="file cleanup failed",
-                    )
-                )
-                tg.create_task(
-                    ktp_controller.agent.tasks.base.periodic(
-                        "old exam info cleanup",
-                        3600,
-                        functools.partial(
-                            ktp_controller.api.client.delete_old_exam_info,
-                            older_than_days=14,
-                        ),
-                        on_error_message="old exam info cleanup failed",
-                    )
-                )
+                tg.create_task(self.__answers_upload_task.run_ticker())
+                tg.create_task(self.__file_cleanup_task.run_ticker())
+                tg.create_task(self.__old_exam_info_cleanup_task.run_ticker())
                 tg.create_task(self.__create_status_reports_task())
 
                 # Keep the main task alive while workers run
