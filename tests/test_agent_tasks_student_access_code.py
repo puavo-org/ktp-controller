@@ -89,7 +89,7 @@ async def test_concurrent_requests_coalesce_into_one_batch(mocker):
 @pytest.mark.anyio
 async def test_batch_within_cooldown_resolves_false_without_calling_abitti2(mocker):
     change_mock = mocker.patch(_CHANGE, return_value=None)
-    mocker.patch(_UTCNOW, side_effect=[_T0, _T0 + datetime.timedelta(seconds=30)])
+    mocker.patch(_UTCNOW, side_effect=[_T0, _T0 + datetime.timedelta(seconds=10)])
 
     task = student_access_code.StudentAccessCodeTask()
     async with _running(task):
@@ -102,7 +102,7 @@ async def test_batch_within_cooldown_resolves_false_without_calling_abitti2(mock
 @pytest.mark.anyio
 async def test_batch_after_cooldown_calls_abitti2_again(mocker):
     change_mock = mocker.patch(_CHANGE, return_value=None)
-    mocker.patch(_UTCNOW, side_effect=[_T0, _T0 + datetime.timedelta(seconds=61)])
+    mocker.patch(_UTCNOW, side_effect=[_T0, _T0 + datetime.timedelta(seconds=21)])
 
     task = student_access_code.StudentAccessCodeTask()
     async with _running(task):

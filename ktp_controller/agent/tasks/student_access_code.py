@@ -16,7 +16,7 @@ __all__ = [
 ]
 
 
-_COOLDOWN_SEC = 60
+_COOLDOWN_SEC = 20
 
 
 async def _change_student_access_code(
@@ -168,8 +168,9 @@ class StudentAccessCodeTask:
                     _LOGGER.warning(
                         "NOT requesting Abitti2 to change student access code, "
                         "because it was requested %d seconds ago. It can be "
-                        "requested at most once per minute.",
+                        "requested at most once per %d seconds.",
                         int(seconds_since_last_change),
+                        _COOLDOWN_SEC,
                     )
                     base.resolve_all(futures, False)
                     continue
