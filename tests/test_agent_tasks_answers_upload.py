@@ -25,7 +25,7 @@ async def test_uploads_latest_pending_answers_file_and_stops(mocker, testdir):
         return_value=True,
     )
 
-    await answers_upload.upload_one_pending_answers_file()
+    await answers_upload._upload_one_pending_answers_file()
 
     upload_mock.assert_awaited_once_with(newer_path)
 
@@ -48,7 +48,7 @@ async def test_tries_next_file_when_upload_is_skipped(mocker, testdir):
         side_effect=[False, True],
     )
 
-    await answers_upload.upload_one_pending_answers_file()
+    await answers_upload._upload_one_pending_answers_file()
 
     assert upload_mock.await_args_list == [
         mocker.call(newer_path),
