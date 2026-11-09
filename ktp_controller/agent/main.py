@@ -5,6 +5,7 @@ import collections
 import contextlib
 import datetime
 import enum
+import functools
 import json
 import logging
 import signal
@@ -1587,18 +1588,6 @@ class Agent:
             )
         return self.__cached_abitti2_version
 
-    async def __file_cleanup_task(self) -> None:
-        started = False
-        async with _task("file cleanup"):
-            while not _SHUTDOWN_EVENT.is_set():
-                try:
-                    if started:
-                        await asyncio.sleep(300)
-                    started = True
-                    await ktp_controller.files.cleanup_files(logger=_LOGGER)
-                except Exception:
-                    _LOGGER.exception("file cleanup failed")
-
     async def __old_exam_info_cleanup_task(self) -> None:
         started = False
         async with _task("old exam info cleanup"):
@@ -1656,7 +1645,16 @@ class Agent:
                         on_error_message="answers file upload failed",
                     )
                 )
-                tg.create_task(self.__file_cleanup_task())
+                tg.create_task(
+                    ktp_controller.agent.tasks.base.periodic(
+                        "file cleanup",
+                        300,
+                        functools.partial(
+                            ktp_controller.files.cleanup_files, logger=_LOGGER
+                        ),
+                        on_error_message="file cleanup failed",
+                    )
+                )
                 tg.create_task(self.__old_exam_info_cleanup_task())
                 tg.create_task(self.__create_status_reports_task())
 
