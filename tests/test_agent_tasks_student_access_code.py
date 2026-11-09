@@ -167,6 +167,39 @@ async def test_ensure_code_changed_detects_change_immediately_via_api_response(
 
 
 @pytest.mark.anyio
+async def test_ensure_code_changed_does_not_reuse_stale_api_reported_code(mocker):
+    # Regression test: Abitti2 can be reset back to a default code
+    # between exam packages (e.g. via ktp_controller.abitti2.client.reset())
+    # without the task being told. If that reset code is then observed
+    # again via websocket while still within the request cooldown, the
+    # code Abitti2 reported immediately for a *previous*, now-irrelevant
+    # change must not be mistaken for a fresh change away from it.
+    change_mock = mocker.patch(_CHANGE, return_value=_NEW_CODE)
+    mocker.patch(_UTCNOW, return_value=_T0)
+
+    task = student_access_code.StudentAccessCodeTask()
+    async with _running(task):
+        assert (
+            await task.ensure_code_changed(
+                auto_control_enabled=True, last_received_security_code=_OLD_CODE
+            )
+            is True
+        )
+
+        # Abitti2 is reset externally back to _OLD_CODE and that is
+        # observed via websocket again, still within the cooldown
+        # window from the change above.
+        assert (
+            await task.ensure_code_changed(
+                auto_control_enabled=True, last_received_security_code=_OLD_CODE
+            )
+            is False
+        )
+
+    assert change_mock.await_count == 1
+
+
+@pytest.mark.anyio
 async def test_ensure_code_changed_short_circuits_when_auto_control_disabled():
     task = student_access_code.StudentAccessCodeTask()
     assert (
