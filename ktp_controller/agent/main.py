@@ -1588,20 +1588,6 @@ class Agent:
             )
         return self.__cached_abitti2_version
 
-    async def __old_exam_info_cleanup_task(self) -> None:
-        started = False
-        async with _task("old exam info cleanup"):
-            while not _SHUTDOWN_EVENT.is_set():
-                try:
-                    if started:
-                        await asyncio.sleep(3600)
-                    started = True
-                    await ktp_controller.api.client.delete_old_exam_info(
-                        older_than_days=14
-                    )
-                except Exception:
-                    _LOGGER.exception("old exam info cleanup failed")
-
     async def __create_status_reports_task(self) -> None:
         async with _task("create status reports"):
             while not _SHUTDOWN_EVENT.is_set():
@@ -1655,7 +1641,17 @@ class Agent:
                         on_error_message="file cleanup failed",
                     )
                 )
-                tg.create_task(self.__old_exam_info_cleanup_task())
+                tg.create_task(
+                    ktp_controller.agent.tasks.base.periodic(
+                        "old exam info cleanup",
+                        3600,
+                        functools.partial(
+                            ktp_controller.api.client.delete_old_exam_info,
+                            older_than_days=14,
+                        ),
+                        on_error_message="old exam info cleanup failed",
+                    )
+                )
                 tg.create_task(self.__create_status_reports_task())
 
                 # Keep the main task alive while workers run
