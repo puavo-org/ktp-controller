@@ -15,6 +15,7 @@ __all__ = [
     "CoalescingQueue",
     "resolve_all",
     "reject_all",
+    "DirtySignal",
 ]
 
 
@@ -106,6 +107,33 @@ class CoalescingQueue(typing.Generic[_P, _R]):
         if self.__pending is batch:
             self.__pending = None
         return batch
+
+
+class DirtySignal:
+    """Coalescing "something changed, redo the work" signal.
+
+    mark_dirty() is fire-and-forget: it never blocks and callers never
+    learn the outcome of the redo it requests. wait_dirty_or_timeout()
+    returns as soon as mark_dirty() has been called since the last
+    return (or the timeout elapses, whichever comes first), and always
+    clears the dirty state on the way out, so a burst of concurrent
+    mark_dirty() calls only guarantees one more run of whatever the
+    caller does after waiting, not one run per call.
+    """
+
+    def __init__(self) -> None:
+        self.__event = asyncio.Event()
+
+    def mark_dirty(self) -> None:
+        self.__event.set()
+
+    async def wait_dirty_or_timeout(self, timeout: float) -> None:
+        try:
+            await asyncio.wait_for(self.__event.wait(), timeout=timeout)
+        except TimeoutError:
+            pass
+        finally:
+            self.__event.clear()
 
 
 def resolve_all(futures: typing.Iterable[asyncio.Future[_R]], result: _R) -> None:
