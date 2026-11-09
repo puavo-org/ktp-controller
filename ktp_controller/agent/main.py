@@ -233,7 +233,9 @@ class Agent:
     ) -> ktp_controller.messages.CommandResultData:
         try:
             error_message = None
-            if await self.__student_access_code_task.request_change():
+            dispatched = await self.__student_access_code_task.request_change()
+            self.__adopt_api_reported_security_code()
+            if dispatched:
                 command_status = ktp_controller.messages.CommandStatus.OK
             else:
                 command_status = ktp_controller.messages.CommandStatus.OK_NO_CHANGE
@@ -468,10 +470,14 @@ class Agent:
             )
         self.__uploaded = True
 
-        if not await self.__student_access_code_task.ensure_code_changed(
-            auto_control_enabled=self.__is_auto_control_enabled,
-            last_received_security_code=self.__last_received_security_code,
-        ):
+        ensure_code_changed_result = (
+            await self.__student_access_code_task.ensure_code_changed(
+                auto_control_enabled=self.__is_auto_control_enabled,
+                last_received_security_code=self.__last_received_security_code,
+            )
+        )
+        self.__adopt_api_reported_security_code()
+        if not ensure_code_changed_result:
             return False
 
         _LOGGER.info(
@@ -540,10 +546,14 @@ class Agent:
             current_exam_package["external_id"],
         )
         # Change the student access code first to ensure students cannot enter anymore.
-        return await self.__student_access_code_task.ensure_code_changed(
-            auto_control_enabled=self.__is_auto_control_enabled,
-            last_received_security_code=self.__last_received_security_code,
+        ensure_code_changed_result = (
+            await self.__student_access_code_task.ensure_code_changed(
+                auto_control_enabled=self.__is_auto_control_enabled,
+                last_received_security_code=self.__last_received_security_code,
+            )
         )
+        self.__adopt_api_reported_security_code()
+        return ensure_code_changed_result
 
     async def __stop_current_exam_package(
         self,
@@ -1060,6 +1070,31 @@ class Agent:
             return
 
         if changed:
+            self.__status_report_should_be_created.set()
+
+    def __adopt_api_reported_security_code(self) -> None:
+        """Adopt the security code StudentAccessCodeTask learned
+        directly from a change-request API response, if it's newer
+        than what we already know, instead of waiting for Abitti2 to
+        also report it via websocket."""
+        api_reported_security_code = (
+            self.__student_access_code_task.api_reported_security_code()
+        )
+        if (
+            api_reported_security_code is None
+            or api_reported_security_code == self.__last_received_security_code
+        ):
+            return
+
+        _LOGGER.info(
+            "Abitti2 reported the new student access code directly via the "
+            "change-request API response (%r => %r).",
+            self.__last_received_security_code,
+            api_reported_security_code,
+        )
+        self.__last_received_security_code = api_reported_security_code
+
+        if self.__last_status_report is not None:
             self.__status_report_should_be_created.set()
 
     def __validate_abitti2_stats_message(self, message: dict[str, typing.Any]) -> bool:
