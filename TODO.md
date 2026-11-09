@@ -203,41 +203,6 @@ implementation plan once the design questions above — especially the
 coalescing-of-heterogeneous-triggers one — are resolved.
 
 
-## TODO39
-
-Move the "file cleanup" task (`Agent.__file_cleanup_task` in
-`ktp_controller/agent/main.py`) into `ktp_controller/agent/tasks/`,
-reusing `periodic()` from `tasks/base.py` (TODO34), same as TODO37.
-
-Simpler than TODO37, not just as simple: `__file_cleanup_task` is pure
-boilerplate around an already-existing free function,
-`ktp_controller.files.cleanup_files(logger=...)` (see
-`ktp_controller/files.py`), every 300 seconds. There's no
-`Agent.__upload_answers_files`-style wrapper method to move at all —
-`Agent` contributes nothing here except the loop shape itself.
-
-- **No design questions**: single periodic trigger, no command, no
-  `Agent` state read or written, nothing to coalesce or rate-limit.
-- **Change**: in `Agent.forever()`, replace
-  `tg.create_task(self.__file_cleanup_task())` with
-  `tg.create_task(base.periodic("file cleanup", 300, functools.partial(ktp_controller.files.cleanup_files, logger=_LOGGER), on_error_message="file cleanup failed"))`
-  directly, and delete `__file_cleanup_task` from `main.py`. No new
-  module under `tasks/` is even needed — this can be done entirely in
-  `main.py`'s `forever()`, since `cleanup_files` already lives in
-  `ktp_controller/files.py`.
-- **Tests**: `ktp_controller.files.cleanup_files` and its underlying
-  `cleanup_*` functions already have coverage in
-  `tests/test_file_cleanup.py`; no new test file should be needed for
-  this move, only (if anything) a one-line check that `periodic()` is
-  wired with the right name/interval, which likely isn't worth its own
-  test given `periodic()` itself is already covered via TODO37/TODO34.
-
-Do this one together with TODO37 and TODO40 (old exam info cleanup) as
-a single batch of low-risk `periodic()` rewires — they're the three
-tasks TODO34's plan explicitly deferred as
-"trivial, separate follow-up work."
-
-
 ## TODO40
 
 Move the "old exam info cleanup" task
