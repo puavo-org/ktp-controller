@@ -12,6 +12,7 @@ import httpx2
 import ktp_controller.abitti2.naksu2
 
 # Internal imports
+import ktp_controller.abitti2.utils
 import ktp_controller.files
 import ktp_controller.httpx2
 import ktp_controller.utils
@@ -105,9 +106,21 @@ async def get_current_abitti2_version() -> str:
     return version_match.group(1)
 
 
-async def change_student_access_code() -> dict[str, typing.Any]:
+def __extract_security_code_from_response(
+    response: dict[str, typing.Any],
+) -> dict[str, str] | None:
+    try:
+        security_code = response["securityCode"]
+        ktp_controller.abitti2.utils.validate_security_code(security_code)
+    except (KeyError, ValueError):
+        return None
+
+    return typing.cast(dict[str, str], security_code)
+
+
+async def change_student_access_code() -> dict[str, str] | None:
     response = await _post("/api/single-security-code")
-    return typing.cast(dict[str, typing.Any], response.json())
+    return __extract_security_code_from_response(response.json())
 
 
 async def decrypt_exams(
