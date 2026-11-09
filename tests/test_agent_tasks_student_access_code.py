@@ -39,7 +39,7 @@ async def _running(task: student_access_code.StudentAccessCodeTask):
 
 @pytest.mark.anyio
 async def test_request_change_calls_abitti2_and_resolves_true(mocker):
-    change_mock = mocker.patch(_CHANGE)
+    change_mock = mocker.patch(_CHANGE, return_value=None)
     mocker.patch(_UTCNOW, return_value=_T0)
 
     task = student_access_code.StudentAccessCodeTask()
@@ -88,7 +88,7 @@ async def test_concurrent_requests_coalesce_into_one_batch(mocker):
 
 @pytest.mark.anyio
 async def test_batch_within_cooldown_resolves_false_without_calling_abitti2(mocker):
-    change_mock = mocker.patch(_CHANGE)
+    change_mock = mocker.patch(_CHANGE, return_value=None)
     mocker.patch(_UTCNOW, side_effect=[_T0, _T0 + datetime.timedelta(seconds=30)])
 
     task = student_access_code.StudentAccessCodeTask()
@@ -101,7 +101,7 @@ async def test_batch_within_cooldown_resolves_false_without_calling_abitti2(mock
 
 @pytest.mark.anyio
 async def test_batch_after_cooldown_calls_abitti2_again(mocker):
-    change_mock = mocker.patch(_CHANGE)
+    change_mock = mocker.patch(_CHANGE, return_value=None)
     mocker.patch(_UTCNOW, side_effect=[_T0, _T0 + datetime.timedelta(seconds=61)])
 
     task = student_access_code.StudentAccessCodeTask()
@@ -117,7 +117,11 @@ async def test_batch_after_cooldown_calls_abitti2_again(mocker):
 
 @pytest.mark.anyio
 async def test_ensure_code_changed_waits_until_code_differs(mocker):
-    mocker.patch(_CHANGE)
+    # Abitti2 does not report the new code in the API response here
+    # (return_value=None), so this exercises the websocket-fallback
+    # path: last_received_security_code must change before this
+    # resolves True.
+    mocker.patch(_CHANGE, return_value=None)
     mocker.patch(_UTCNOW, return_value=_T0)
 
     task = student_access_code.StudentAccessCodeTask()
@@ -137,6 +141,26 @@ async def test_ensure_code_changed_waits_until_code_differs(mocker):
         assert (
             await task.ensure_code_changed(
                 auto_control_enabled=True, last_received_security_code=_NEW_CODE
+            )
+            is True
+        )
+
+
+@pytest.mark.anyio
+async def test_ensure_code_changed_detects_change_immediately_via_api_response(
+    mocker,
+):
+    # Abitti2 reports the new code directly in the API response here,
+    # so a single call must resolve True without needing a subsequent
+    # websocket-driven last_received_security_code update.
+    mocker.patch(_CHANGE, return_value=_NEW_CODE)
+    mocker.patch(_UTCNOW, return_value=_T0)
+
+    task = student_access_code.StudentAccessCodeTask()
+    async with _running(task):
+        assert (
+            await task.ensure_code_changed(
+                auto_control_enabled=True, last_received_security_code=_OLD_CODE
             )
             is True
         )
@@ -187,7 +211,7 @@ async def test_ensure_code_changed_returns_false_until_security_code_is_known():
 
 @pytest.mark.anyio
 async def test_reset_clears_old_security_code_but_not_cooldown(mocker):
-    change_mock = mocker.patch(_CHANGE)
+    change_mock = mocker.patch(_CHANGE, return_value=None)
     mocker.patch(_UTCNOW, return_value=_T0)
 
     task = student_access_code.StudentAccessCodeTask()
@@ -213,5 +237,31 @@ async def test_reset_clears_old_security_code_but_not_cooldown(mocker):
         # ...but the cooldown clock was not reset: a change request made
         # right afterwards (same mocked instant) still gets skipped.
         assert await task.request_change() is False
+
+    change_mock.assert_awaited_once()
+
+
+@pytest.mark.anyio
+async def test_reset_clears_api_reported_security_code(mocker):
+    change_mock = mocker.patch(_CHANGE, return_value=_NEW_CODE)
+    mocker.patch(_UTCNOW, return_value=_T0)
+
+    task = student_access_code.StudentAccessCodeTask()
+    async with _running(task):
+        assert await task.request_change() is True
+        assert task.api_reported_security_code() == _NEW_CODE
+
+        task.reset()
+
+        assert task.api_reported_security_code() is None
+
+        # The previously-learned new code must not short-circuit this
+        # call; it has to go through the normal wait again.
+        assert (
+            await task.ensure_code_changed(
+                auto_control_enabled=True, last_received_security_code=_OLD_CODE
+            )
+            is False
+        )
 
     change_mock.assert_awaited_once()

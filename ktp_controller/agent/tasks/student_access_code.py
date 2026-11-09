@@ -19,7 +19,9 @@ __all__ = [
 _COOLDOWN_SEC = 60
 
 
-async def _change_student_access_code(old_security_code: dict[str, str] | None) -> None:
+async def _change_student_access_code(
+    old_security_code: dict[str, str] | None,
+) -> dict[str, str] | None:
     if old_security_code:
         _LOGGER.info(
             "Requesting Abitti2 to change student access code to ensure students "
@@ -28,7 +30,21 @@ async def _change_student_access_code(old_security_code: dict[str, str] | None) 
         )
     else:
         _LOGGER.info("Requesting Abitti2 to change student access code.")
-    await ktp_controller.abitti2.client.change_student_access_code()
+
+    new_security_code = await ktp_controller.abitti2.client.change_student_access_code()
+
+    if new_security_code is not None:
+        _LOGGER.info(
+            "Abitti2 reported the new student access code immediately: %r.",
+            new_security_code,
+        )
+    else:
+        _LOGGER.info(
+            "Abitti2 did not report the new student access code immediately; "
+            "will wait for it via websocket."
+        )
+
+    return new_security_code
 
 
 class StudentAccessCodeTask:
@@ -44,6 +60,12 @@ class StudentAccessCodeTask:
     previously *executed* batch is resolved with False without calling
     Abitti2 at all, to avoid hammering it with change requests.
 
+    ensure_code_changed() detects the code change primarily from the
+    new code Abitti2 sometimes reports directly in the change-request
+    API response; when Abitti2 defers that (doesn't include it in the
+    response), it falls back to waiting until the caller observes the
+    new code via websocket instead.
+
     run_consumer() must be scheduled as its own asyncio task.
     """
 
@@ -51,6 +73,7 @@ class StudentAccessCodeTask:
         self.__queue: base.CoalescingQueue[None, bool] = base.CoalescingQueue()
         self.__last_change_at: datetime.datetime | None = None
         self.__old_security_code: dict[str, str] | None = None
+        self.__api_reported_security_code: dict[str, str] | None = None
 
     async def request_change(self) -> bool:
         """Producer API.
@@ -60,6 +83,12 @@ class StudentAccessCodeTask:
         """
         return await self.__queue.request(None)
 
+    def api_reported_security_code(self) -> dict[str, str] | None:
+        """The newest security code Abitti2 has reported directly via a
+        change-request API response, if any. More current than whatever
+        the caller knows via websocket when present."""
+        return self.__api_reported_security_code
+
     async def ensure_code_changed(
         self,
         *,
@@ -67,33 +96,49 @@ class StudentAccessCodeTask:
         last_received_security_code: dict[str, str] | None,
     ) -> bool:
         """Snapshot the current code, request a change, then keep
-        returning False until Abitti2 reports a code different from the
-        snapshot."""
+        returning False until a code different from the snapshot is
+        known — primarily from Abitti2's change-request API response,
+        falling back to last_received_security_code (presumably fed
+        from websocket messages) when the API response didn't include
+        it."""
         if not auto_control_enabled:
             return True  # We are never going to change it, so we are done.
 
         if not SETTINGS.abitti2_change_student_access_code_automatically:
             return True  # We are never going to change it, so we are done.
 
-        if last_received_security_code is None:
+        known_security_code = (
+            self.__api_reported_security_code or last_received_security_code
+        )
+
+        if known_security_code is None:
             return False  # No point to change until we know what the current is.
 
         if self.__old_security_code is None:
-            self.__old_security_code = last_received_security_code
+            self.__old_security_code = known_security_code
 
-        if self.__old_security_code == last_received_security_code:
+        if self.__old_security_code == known_security_code:
             await self.request_change()
-            _LOGGER.info(
-                "Waiting until student access code has changed to ensure students "
-                "cannot access exams with code (%r).",
-                self.__old_security_code,
+
+            # The request we just awaited may have reported the new
+            # code immediately, in which case there is no need to wait
+            # for a subsequent call to observe it via websocket.
+            known_security_code = (
+                self.__api_reported_security_code or last_received_security_code
             )
-            return False
+
+            if self.__old_security_code == known_security_code:
+                _LOGGER.info(
+                    "Waiting until student access code has changed to ensure "
+                    "students cannot access exams with code (%r).",
+                    self.__old_security_code,
+                )
+                return False
 
         _LOGGER.info(
             "Access code has changed (%r => %r).",
             self.__old_security_code,
-            last_received_security_code,
+            known_security_code,
         )
 
         self.__old_security_code = None
@@ -128,12 +173,17 @@ class StudentAccessCodeTask:
                     continue
 
                 try:
-                    await _change_student_access_code(self.__old_security_code)
+                    new_security_code = await _change_student_access_code(
+                        self.__old_security_code
+                    )
                 except Exception as exc:
                     base.reject_all(futures, exc)
                 else:
                     self.__last_change_at = utcnow
+                    if new_security_code is not None:
+                        self.__api_reported_security_code = new_security_code
                     base.resolve_all(futures, True)
 
     def reset(self) -> None:
         self.__old_security_code = None
+        self.__api_reported_security_code = None
