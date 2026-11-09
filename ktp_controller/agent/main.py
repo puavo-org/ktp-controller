@@ -7,7 +7,6 @@ import datetime
 import enum
 import json
 import logging
-import pathlib
 import signal
 import statistics
 import sys
@@ -27,6 +26,7 @@ import ktp_controller.agent.answers
 import ktp_controller.agent.exam_package
 import ktp_controller.agent.state
 import ktp_controller.agent.stats
+import ktp_controller.agent.tasks.answers_upload
 import ktp_controller.agent.tasks.base
 import ktp_controller.agent.tasks.refresh_exams
 import ktp_controller.agent.tasks.student_access_code
@@ -1580,22 +1580,6 @@ class Agent:
             on_exit_coro=self.__clear_abitti2_caches(),
         )
 
-    async def __upload_answers_files(self) -> None:
-        answers_file_dir_path = pathlib.Path(ktp_controller.files.ANSWERS_FILE_DIR)
-
-        # Latest answers file first, hence reverse=True. Filenames
-        # contain naturally sorting ISO timestamps.
-        for answers_file_path in sorted(
-            answers_file_dir_path.glob("*/*.meb"), key=(lambda p: p.name), reverse=True
-        ):
-            uploaded = await ktp_controller.agent.answers.upload_answers_file(
-                answers_file_path
-            )
-            if uploaded:
-                # One at a time, this function will be called soon
-                # again.
-                break
-
     async def __get_abitti2_version(self) -> str:
         if self.__cached_abitti2_version is None:
             self.__cached_abitti2_version = (
@@ -1628,18 +1612,6 @@ class Agent:
                     )
                 except Exception:
                     _LOGGER.exception("old exam info cleanup failed")
-
-    async def __answers_file_upload_task(self) -> None:
-        started = False
-        async with _task("answers file upload"):
-            while not _SHUTDOWN_EVENT.is_set():
-                try:
-                    if started:
-                        await asyncio.sleep(30)
-                    started = True
-                    await self.__upload_answers_files()
-                except Exception:
-                    _LOGGER.exception("answers file upload failed")
 
     async def __create_status_reports_task(self) -> None:
         async with _task("create status reports"):
@@ -1676,7 +1648,14 @@ class Agent:
                 tg.create_task(self.__refresh_exams_task.run_ticker())
                 tg.create_task(self.__refresh_exams_task.run_consumer())
                 tg.create_task(self.__student_access_code_task.run_consumer())
-                tg.create_task(self.__answers_file_upload_task())
+                tg.create_task(
+                    ktp_controller.agent.tasks.base.periodic(
+                        "answers file upload",
+                        30,
+                        ktp_controller.agent.tasks.answers_upload.upload_one_pending_answers_file,
+                        on_error_message="answers file upload failed",
+                    )
+                )
                 tg.create_task(self.__file_cleanup_task())
                 tg.create_task(self.__old_exam_info_cleanup_task())
                 tg.create_task(self.__create_status_reports_task())
