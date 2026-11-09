@@ -3,14 +3,15 @@ import pathlib
 
 # Internal imports
 import ktp_controller.agent.answers
+import ktp_controller.agent.tasks.base as base
 import ktp_controller.files
 
 __all__ = [
-    "upload_one_pending_answers_file",
+    "AnswersUploadTask",
 ]
 
 
-async def upload_one_pending_answers_file() -> None:
+async def _upload_one_pending_answers_file() -> None:
     answers_file_dir_path = pathlib.Path(ktp_controller.files.ANSWERS_FILE_DIR)
 
     # Latest answers file first, hence reverse=True. Filenames
@@ -25,3 +26,16 @@ async def upload_one_pending_answers_file() -> None:
             # One at a time, this function will be called soon
             # again.
             break
+
+
+class AnswersUploadTask:
+    def __init__(self, *, interval_sec: int) -> None:
+        self.__interval_sec = interval_sec
+
+    async def run_ticker(self) -> None:
+        await base.periodic(
+            "answers file upload",
+            self.__interval_sec,
+            _upload_one_pending_answers_file,
+            on_error_message="answers file upload failed",
+        )
