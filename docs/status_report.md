@@ -104,7 +104,7 @@ All fields are always present.
 
 | Field                     | Type                                                | Description                                                                                   | Example                          | Notes             |
 | ------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------- | ----------------- |
-| `version`                 | `string`                                            |                                                                                               |                                  | const: `0.9.0rc4` |
+| `version`                 | `string`                                            |                                                                                               |                                  | const: `0.9.0rc6` |
 | `started_at`              | `datetime`                                          | When the program has started.                                                                 | `"2026-05-03T16:28:51.975+0000"` |                   |
 | `is_auto_control_enabled` | `boolean`                                           |                                                                                               | `true`                           |                   |
 | `cached_files`            | [CachedFiles](#cachedfiles)                         |                                                                                               |                                  |                   |

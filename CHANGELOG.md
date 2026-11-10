@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.9.0rc4] - 2026-11-05
+## [0.9.0rc6] - 2026-11-10
 
 ### Added
 
@@ -33,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     
     - Maximum inactive session time increased from 30min to 4h.
 
+    - Invigilator view: the student access code now renders masked by
+      default, with a toggle button to reveal/hide it. The choice is
+      preserved across the view's periodic live updates.
+
 - CLI: add `shutdown-wait` subcommand to the command line
   interface. It shuts KTP Controller down and waits until all
   processes have terminated.
@@ -48,6 +52,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Agent: shorten the student access code automatic-change cooldown
+  from 60s to 20s.
+
 - Updated all dependencies.
 
 ### Removed
@@ -60,6 +67,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   already past their schedule, instead of leaving them stuck as the
   current package forever.
 
+- Web UI:
+
+    - Htmx-triggered logins (e.g. from the background status poll) now
+      redirect back to the page the browser was actually showing,
+      instead of to the polling endpoint itself.
+
+    - Security: validate the `next` redirect parameter on the Web UI
+      login page, closing an open-redirect vulnerability.
+
+    - Security: validate the `Origin` header (against `Host`) on the
+      Web UI's live-updates WebSocket, as defense-in-depth against
+      cross-site WebSocket hijacking.
+
+    - Security: validate that a reverse-proxy-supplied
+      `X-Forwarded-Prefix` actually belongs to this KTP Controller
+      instance (matching its own id), instead of accepting any
+      `/remote/<id>` prefix.
+
+- Agent: fix student access code change detection getting confused
+  when Abitti2's security code is reset back to its default between
+  exam packages (e.g. on exam package archival): a stale,
+  no-longer-current code reported by a previous change request could
+  be mistaken for a real change and overwrite Agent's correct, freshly
+  received code.
 
 ## [0.8.1] - 2026-10-27
 
