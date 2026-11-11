@@ -17,11 +17,14 @@ def _reset_login_rate_limit():
     asyncio.run(ktp_controller.wui.auth_routes._LOGIN_RATE_LIMITER.reset("testclient"))
 
 
-def _status_report(username="invigilator1", passphrase="s3cret"):
+def _status_report(
+    username="invigilator1", passphrase="s3cret", domain="test-server.koe.abitti.net"
+):
     return {
         "abitti2": {
             "supervisor_username": username,
             "supervisor_passphrase": passphrase,
+            "domain": domain,
         }
     }
 

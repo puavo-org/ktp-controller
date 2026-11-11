@@ -1,6 +1,7 @@
 # Standard library imports
 import logging
 import os.path
+import typing
 import urllib.parse
 
 # Third-party imports
@@ -9,6 +10,8 @@ import fastapi.responses
 import fastapi.templating
 
 # Internal imports
+import ktp_controller.api.client
+import ktp_controller.os
 import ktp_controller.redis
 from ktp_controller import SETTINGS
 
@@ -31,6 +34,30 @@ _templates = fastapi.templating.Jinja2Templates(
 )
 _templates.env.add_extension("jinja2.ext.i18n")
 _templates.env.install_null_translations(newstyle=True)  # type: ignore[attr-defined]
+
+
+async def _get_abitti2_domain() -> str | None:
+    # Best-effort: shown on the login page, but its absence shouldn't
+    # prevent logging in.
+    try:
+        report = await ktp_controller.api.client.get_last_status_report()
+    except Exception:
+        _LOGGER.exception("Failed to fetch last status report for login page")
+        return None
+    if report is None:
+        return None
+    return typing.cast("str | None", report["abitti2"]["domain"])
+
+
+def _get_puavo_fqdn() -> str | None:
+    # Best-effort: shown on the login page, but its absence shouldn't
+    # prevent logging in.
+    try:
+        return ktp_controller.os.get_puavo_fqdn()
+    except Exception:
+        _LOGGER.exception("Failed to determine Puavo fqdn for login page")
+        return None
+
 
 _DEFAULT_NEXT_PATH = "/invigilator/"
 
@@ -94,6 +121,8 @@ async def _get_login(
             "next": _sanitize_next(request, next),
             "error": None,
             "session": session,
+            "abitti2_domain": await _get_abitti2_domain(),
+            "puavo_fqdn": _get_puavo_fqdn(),
         },
     )
 
@@ -126,6 +155,8 @@ async def _post_login(
                 "next": next,
                 "error": _("Incorrect username or password"),
                 "session": None,
+                "abitti2_domain": await _get_abitti2_domain(),
+                "puavo_fqdn": _get_puavo_fqdn(),
             },
             status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
         )
