@@ -82,6 +82,7 @@ _DISK_SPACE_STAGE_SEVERITY: dict[
 
 
 class HostInfo(ktp_controller.pydantic.BaseModel):
+    hostname: pydantic.StrictStr | None = None
     puavo_os_image_release: pydantic.StrictStr | None
     puavo_os_image_name: pydantic.StrictStr | None
     free_disk_space_stage: DiskSpaceStage | None = None
