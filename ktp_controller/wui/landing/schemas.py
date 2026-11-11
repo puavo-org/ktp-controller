@@ -14,6 +14,7 @@ __all__ = [
     "DiskSpaceStage",
     "calculate_disk_space_stage",
     "HostInfo",
+    "PuavoInfo",
 ]
 
 _MIB = 1024**2
@@ -94,3 +95,13 @@ class HostInfo(ktp_controller.pydantic.BaseModel):
         if self.free_disk_space_stage is None:
             return ktp_controller.wui.schemas.Severity.ERROR
         return _DISK_SPACE_STAGE_SEVERITY[self.free_disk_space_stage]
+
+
+class PuavoInfo(ktp_controller.pydantic.BaseModel):
+    id: pydantic.PositiveInt
+    hostname: pydantic.StrictStr
+    domain: pydantic.StrictStr
+
+    @property
+    def severity(self) -> ktp_controller.wui.schemas.Severity | None:
+        return None
