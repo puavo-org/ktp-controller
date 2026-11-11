@@ -313,6 +313,10 @@ header .logo {
 .login-error {
   color: var(--pico-del-color);
 }
+.login-exam-server-domains {
+  font-family: var(--pico-font-family-monospace);
+  font-size: 0.8em;
+}
 
 header nav ul.locale-nav {
   margin-left: auto;

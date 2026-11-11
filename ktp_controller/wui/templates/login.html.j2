@@ -30,6 +30,12 @@
 <main class="container login-container">
 
     <h1>{{ _("Exam server") }}</h1>
+    {% if abitti2_domain or puavo_fqdn %}
+    <div class="login-exam-server-domains">
+        {% if abitti2_domain %}<div>{{ abitti2_domain }}</div>{% endif %}
+        {% if puavo_fqdn %}<div>{{ puavo_fqdn }}</div>{% endif %}
+    </div>
+    {% endif %}
     <h2>{{ _("Management panel") }}</h2>
     {% if session %}
 
