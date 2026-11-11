@@ -55,6 +55,14 @@ header .logo {
   text-align: right;
   font-size: 0.5rem;
 }
+.footer-domains {
+  display: block;
+  text-align: left;
+  font-size: 0.5rem;
+}
+.footer-domain {
+    margin-right: 1em;
+}
 
 /* Shared component patterns, reused by more than one template below.
    Standardization rule: an #id selector is used only when that id
@@ -313,11 +321,6 @@ header .logo {
 .login-error {
   color: var(--pico-del-color);
 }
-.login-exam-server-domains {
-  font-family: var(--pico-font-family-monospace);
-  font-size: 0.8em;
-}
-
 header nav ul.locale-nav {
   margin-left: auto;
 }
