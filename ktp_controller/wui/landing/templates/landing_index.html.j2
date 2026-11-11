@@ -110,6 +110,10 @@
         </article>
         {% endif %}
 
+    </div>
+
+    <div class="grid">
+
         {% if "host_info" in visible_card_keys %}
         <article>
             {{ severity_macros.card_header(_("Host system"), host_info.severity if host_info else None) }}
