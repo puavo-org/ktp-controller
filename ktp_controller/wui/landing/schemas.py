@@ -98,9 +98,9 @@ class HostInfo(ktp_controller.pydantic.BaseModel):
 
 
 class PuavoInfo(ktp_controller.pydantic.BaseModel):
-    id: pydantic.PositiveInt | None = None
-    hostname: pydantic.StrictStr | None = None
-    domain: pydantic.StrictStr | None = None
+    id: pydantic.PositiveInt
+    hostname: pydantic.StrictStr
+    domain: pydantic.StrictStr
 
     @property
     def severity(self) -> ktp_controller.wui.schemas.Severity | None:
