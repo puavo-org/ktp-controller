@@ -145,8 +145,6 @@ def make_status_report():
         *,
         ktp_controller_version="0.8.0rc10",
         hostname="ktp-controller-test",
-        puavo_domain="dnsdomain.example",
-        puavo_id=12345,
         abitti2_version="1.27.0",
         abitti2_domain="what-not.koe.abitti.net",
         abitti2_cert_expires_at="2099-01-01T00:00:00.000+0000",
@@ -176,11 +174,7 @@ def make_status_report():
                 "version": ktp_controller_version,
                 "started_at": "2026-05-03T16:28:51.975+0000",
                 "is_auto_control_enabled": True,
-                "settings": {
-                    "hostname": hostname,
-                    "domain": puavo_domain,
-                    "id": puavo_id,
-                },
+                "settings": {"hostname": hostname},
             },
             "abitti2": abitti2,
             "os": {
