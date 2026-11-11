@@ -99,6 +99,46 @@ def test_landing_view_allowed_with_permission(
     assert 'data-template-other="Page refreshed {n} seconds ago"' in response.text
 
 
+def test_landing_view_shows_footer_domains(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(
+            abitti2_domain="johdanto-rivitys.koe.abitti.net"
+        ),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    mocker.patch(
+        "ktp_controller.os.get_puavo_fqdn",
+        return_value="dev-run-host1.dev-run.invalid",
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    assert '<div class="footer-domains">' in response.text
+    assert (
+        '<span class="footer-domain">johdanto-rivitys.koe.abitti.net</span>'
+        in response.text
+    )
+    assert (
+        '<span class="footer-domain">dev-run-host1.dev-run.invalid</span>'
+        in response.text
+    )
+
+
 def test_landing_view_shows_placeholder_without_status_report(
     wui_client, override_session, mocker
 ):

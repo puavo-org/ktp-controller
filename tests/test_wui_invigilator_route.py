@@ -97,6 +97,43 @@ def test_invigilator_view_hides_nav_warning_by_default(
     assert 'data-template-other="Page refreshed {n} seconds ago"' in response.text
 
 
+def test_invigilator_view_shows_footer_domains(
+    wui_client, override_session, mocker, make_status_report
+):
+    _mock_abitti2_state(mocker, is_empty=True)
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(
+            abitti2_domain="johdanto-rivitys.koe.abitti.net"
+        ),
+    )
+    mocker.patch(
+        "ktp_controller.os.get_puavo_fqdn",
+        return_value="dev-run-host1.dev-run.invalid",
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert '<div class="footer-domains">' in response.text
+    assert (
+        '<span class="footer-domain">johdanto-rivitys.koe.abitti.net</span>'
+        in response.text
+    )
+    assert (
+        '<span class="footer-domain">dev-run-host1.dev-run.invalid</span>'
+        in response.text
+    )
+
+
 def test_invigilator_view_shows_nav_warning_for_soon_expiring_cert(
     wui_client, override_session, mocker, make_status_report
 ):
