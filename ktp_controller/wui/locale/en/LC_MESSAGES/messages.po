@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-06 23:00+0200\n"
+"POT-Creation-Date: 2026-11-11 21:30+0200\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -43,6 +43,7 @@ msgid "Finished"
 msgstr "Finished"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:186
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:90
 msgid "Name"
 msgstr "Name"
 
@@ -326,10 +327,6 @@ msgstr "Not available yet."
 msgid "Abitti2"
 msgstr "Abitti2"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:90
-msgid "Server name"
-msgstr "Server name"
-
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:94
 msgid "Certificate expires"
 msgstr ""
@@ -448,4 +445,7 @@ msgstr "Log in"
 
 #~ msgid "Release"
 #~ msgstr ""
+
+#~ msgid "Server name"
+#~ msgstr "Server name"
 

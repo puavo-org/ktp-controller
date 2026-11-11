@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-06 23:00+0200\n"
+"POT-Creation-Date: 2026-11-11 21:30+0200\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -43,6 +43,7 @@ msgid "Finished"
 msgstr "Päättänyt"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:186
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:90
 msgid "Name"
 msgstr "Nimi"
 
@@ -328,10 +329,6 @@ msgstr "Ei vielä saatavilla."
 msgid "Abitti2"
 msgstr "Abitti2"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:90
-msgid "Server name"
-msgstr "Palvelimen nimi"
-
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:94
 msgid "Certificate expires"
 msgstr "Varmenne vanhenee"
@@ -450,4 +447,7 @@ msgstr "Kirjaudu sisään"
 
 #~ msgid "Release"
 #~ msgstr "Julkaisu"
+
+#~ msgid "Server name"
+#~ msgstr "Palvelimen nimi"
 
