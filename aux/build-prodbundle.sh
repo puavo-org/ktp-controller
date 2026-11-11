@@ -28,8 +28,8 @@ dir="dist/ktp_controller-prodbundle-${version}"
 rm -rf "$dir"
 mkdir -p "$dir"
 
-"${HERE}/build-for-pyversion.sh" 3.11 "$dir/ktp-controller"
-"${HERE}/build-for-pyversion.sh" 3.13 "$dir/ktp-controller"
+"${HERE}/build-for-pyversion.sh" 3.11.1 "$dir/ktp-controller"
+"${HERE}/build-for-pyversion.sh" 3.13.5 "$dir/ktp-controller"
 
 echo "🚀 Installing launchers..." >&2
 cp -v supervisor/*-prod-run.conf "$dir/ktp-controller/"
