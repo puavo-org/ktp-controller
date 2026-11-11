@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-11 22:49+0200\n"
+"POT-Creation-Date: 2026-11-11 21:47+0200\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/auth_routes.py:146
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/auth_routes.py:117
 msgid "Too many login attempts, please try again later."
 msgstr "Liian monta kirjautumisyritystä, yritä myöhemmin uudelleen."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/auth_routes.py:156
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/auth_routes.py:127
 msgid "Incorrect username or password"
 msgstr "Väärä käyttäjätunnus tai salasana"
 
@@ -45,7 +45,6 @@ msgstr "Päättänyt"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:186
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:90
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:125
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:154
 msgid "Name"
 msgstr "Nimi"
 
@@ -220,37 +219,37 @@ msgstr "Ei hakua '%(query)s' vastaavia kokelaita"
 msgid "No students"
 msgstr "Ei kokelaita"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:95
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:94
 msgid "Expired"
 msgstr "Vanhentunut"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:97
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:96
 #, python-format
 msgid "%(num)s day left"
 msgid_plural "%(num)s days left"
 msgstr[0] "%(num)s päivä jäljellä"
 msgstr[1] "%(num)s päivää jäljellä"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:101
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:100
 #, python-format
 msgid "%(num)s hour left"
 msgid_plural "%(num)s hours left"
 msgstr[0] "%(num)s tunti jäljellä"
 msgstr[1] "%(num)s tuntia jäljellä"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:185
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:171
 msgid "Plenty"
 msgstr "Runsaasti"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:186
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:172
 msgid "Moderate"
 msgstr "Kohtalaisesti"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:187
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:173
 msgid "Low"
 msgstr "Vähän"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:188
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:174
 msgid "Critical"
 msgstr "Loppunut"
 
@@ -324,7 +323,6 @@ msgstr "Automaattiohjaus"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:75
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:108
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:139
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:163
 msgid "Not available yet."
 msgstr "Ei vielä saatavilla."
 
@@ -344,18 +342,6 @@ msgstr "Isäntäjärjestelmä"
 msgid "Free disk space"
 msgstr "Vapaa levytila"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:146
-msgid "Puavo"
-msgstr "Puavo"
-
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:150
-msgid "Id"
-msgstr "Tunniste"
-
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:158
-msgid "Organisation"
-msgstr "Organisaatio"
-
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:21
 msgid "Connection lost at"
 msgstr "Yhteys katkesi"
@@ -370,7 +356,7 @@ msgid "Language"
 msgstr "Kieli"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:47
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:45
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:39
 msgid "Log out"
 msgstr "Kirjaudu ulos"
 
@@ -385,24 +371,24 @@ msgid "Page refreshed {n} seconds ago"
 msgstr "Sivu päivitetty {n} sekuntia sitten"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:9
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:39
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:33
 msgid "Management panel"
 msgstr "Hallintapaneeli"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:42
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:36
 #, python-format
 msgid "Logged in as <strong>%(username)s</strong>."
 msgstr "Kirjautuneena käyttäjänä <strong>%(username)s</strong>."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:56
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:50
 msgid "Username"
 msgstr "Käyttäjätunnus"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:58
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:52
 msgid "Password"
 msgstr "Salasana"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:60
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:54
 msgid "Log in"
 msgstr "Kirjaudu sisään"
 

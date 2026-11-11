@@ -141,30 +141,6 @@
         </article>
         {% endif %}
 
-        {% if "puavo_info" in visible_card_keys %}
-        <article>
-            {{ severity_macros.card_header(_("Puavo"), puavo_info.severity if puavo_info else None) }}
-            {% if puavo_info %}
-            <table class="landing-card-table">
-                <tr>
-                    <td>{{ _("Id") }}</td>
-                    <td>{{ puavo_info.id or "???" }}</td>
-                </tr>
-                <tr>
-                    <td>{{ _("Name") }}</td>
-                    <td>{{ puavo_info.hostname or "???" }}</td>
-                </tr>
-                <tr>
-                    <td>{{ _("Organisation") }}</td>
-                    <td>{{ puavo_info.domain or "???" }}</td>
-                </tr>
-            </table>
-            {% else %}
-            <p>{{ _("Not available yet.") }}</p>
-            {% endif %}
-        </article>
-        {% endif %}
-
     </div>
 
 {% endblock %}
