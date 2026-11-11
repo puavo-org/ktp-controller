@@ -163,19 +163,6 @@ def _get_host_info(
     )
 
 
-def _get_puavo_info(
-    report: dict[str, typing.Any] | None,
-) -> schemas.PuavoInfo | None:
-    if report is None:
-        return None
-    settings = report["ktp_controller"]["settings"]
-    return schemas.PuavoInfo(
-        id=settings["id"],
-        hostname=settings["hostname"],
-        domain=settings["domain"],
-    )
-
-
 def _get_disk_space_stage_labels(
     _: typing.Callable[[str], str],
 ) -> dict[schemas.DiskSpaceStage, str]:
