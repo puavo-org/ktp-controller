@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-11 21:47+0200\n"
+"POT-Creation-Date: 2026-11-11 22:49+0200\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/auth_routes.py:117
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/auth_routes.py:146
 msgid "Too many login attempts, please try again later."
 msgstr "Too many login attempts, please try again later."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/auth_routes.py:127
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/auth_routes.py:156
 msgid "Incorrect username or password"
 msgstr "Incorrect username or password"
 
@@ -45,6 +45,7 @@ msgstr "Finished"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:186
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:90
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:125
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:154
 msgid "Name"
 msgstr "Name"
 
@@ -217,37 +218,37 @@ msgstr "No students matching '%(query)s'"
 msgid "No students"
 msgstr "No students"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:94
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:95
 msgid "Expired"
 msgstr ""
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:96
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:97
 #, python-format
 msgid "%(num)s day left"
 msgid_plural "%(num)s days left"
 msgstr[0] ""
 msgstr[1] ""
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:100
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:101
 #, python-format
 msgid "%(num)s hour left"
 msgid_plural "%(num)s hours left"
 msgstr[0] ""
 msgstr[1] ""
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:171
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:185
 msgid "Plenty"
 msgstr ""
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:172
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:186
 msgid "Moderate"
 msgstr ""
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:173
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:187
 msgid "Low"
 msgstr ""
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:174
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:188
 msgid "Critical"
 msgstr ""
 
@@ -321,6 +322,7 @@ msgstr ""
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:75
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:108
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:139
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:163
 msgid "Not available yet."
 msgstr "Not available yet."
 
@@ -340,6 +342,18 @@ msgstr ""
 msgid "Free disk space"
 msgstr ""
 
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:146
+msgid "Puavo"
+msgstr ""
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:150
+msgid "Id"
+msgstr ""
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:158
+msgid "Organisation"
+msgstr ""
+
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:21
 msgid "Connection lost at"
 msgstr "Connection lost at"
@@ -354,7 +368,7 @@ msgid "Language"
 msgstr "Language"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:47
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:39
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:45
 msgid "Log out"
 msgstr "Log out"
 
@@ -369,24 +383,24 @@ msgid "Page refreshed {n} seconds ago"
 msgstr "Page refreshed {n} seconds ago"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:9
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:33
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:39
 msgid "Management panel"
 msgstr "Management panel"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:36
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:42
 #, python-format
 msgid "Logged in as <strong>%(username)s</strong>."
 msgstr "Logged in as <strong>%(username)s</strong>."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:50
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:56
 msgid "Username"
 msgstr "Username"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:52
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:58
 msgid "Password"
 msgstr "Password"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:54
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:60
 msgid "Log in"
 msgstr "Log in"
 
