@@ -50,11 +50,15 @@ def test_get_login_shows_abitti2_domain_and_puavo_fqdn(wui_client, mocker):
     response = wui_client.get("/login")
 
     assert response.status_code == 200
+    assert '<div class="footer-domains">' in response.text
     assert (
-        '<div class="login-exam-server-domains">\n'
-        "        <div>johdanto-rivitys.koe.abitti.net</div>\n"
-        "        <div>dev-run-host1.dev-run.invalid</div>"
-    ) in response.text
+        '<span class="footer-domain">johdanto-rivitys.koe.abitti.net</span>'
+        in response.text
+    )
+    assert (
+        '<span class="footer-domain">dev-run-host1.dev-run.invalid</span>'
+        in response.text
+    )
 
 
 def test_get_login_omits_exam_server_domains_when_unavailable(wui_client, mocker):
@@ -67,7 +71,7 @@ def test_get_login_omits_exam_server_domains_when_unavailable(wui_client, mocker
     response = wui_client.get("/login")
 
     assert response.status_code == 200
-    assert b"login-exam-server-domains" not in response.content
+    assert b"footer-domains" not in response.content
 
 
 def test_get_login_tolerates_status_report_fetch_failure(wui_client, mocker):
