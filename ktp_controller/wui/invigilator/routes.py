@@ -237,6 +237,8 @@ async def _get_invigilator(
             report, session.locale
         ),
         "current_path": request.url.path,
+        "abitti2_domain": ktp_controller.wui.landing.routes.get_abitti2_domain(report),
+        "puavo_fqdn": ktp_controller.wui.landing.routes.get_puavo_fqdn(),
     }
 
     # If the request comes from htmx, return only the table partial
@@ -285,6 +287,8 @@ async def _get_student_access_code(
             report, session.locale
         ),
         "current_path": request.url.path,
+        "abitti2_domain": ktp_controller.wui.landing.routes.get_abitti2_domain(report),
+        "puavo_fqdn": ktp_controller.wui.landing.routes.get_puavo_fqdn(),
     }
 
     # If the request comes from htmx, return only the code display partial

@@ -242,6 +242,8 @@ async def _get_landing(
         "student_state_counts": student_state_counts,
         "state_labels": state_labels,
         "disk_space_stage_labels": disk_space_stage_labels,
+        "abitti2_domain": get_abitti2_domain(report),
+        "puavo_fqdn": get_puavo_fqdn(),
     }
 
     # If the request comes from htmx, return only the pills partial
