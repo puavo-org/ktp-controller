@@ -360,6 +360,91 @@ def test_landing_view_shows_question_marks_without_host_release(
     assert "???" in response.text
 
 
+def test_landing_view_shows_puavo_info_card(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(
+            hostname="puavo-host", puavo_domain="example.puavo.fi", puavo_id=42
+        ),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    puavo_header = _header_tag(response.text, "Puavo")
+    assert "value-warning" not in puavo_header
+    assert "value-error" not in puavo_header
+    assert ">42<" in response.text
+    assert "puavo-host" in response.text
+    assert "example.puavo.fi" in response.text
+
+
+def test_landing_view_shows_question_marks_without_puavo_domain(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(puavo_domain=None),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    assert "???" in response.text
+
+
+def test_landing_view_shows_question_marks_without_puavo_id(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(puavo_id=None),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    assert "???" in response.text
+
+
 def test_landing_view_shows_question_marks_without_hostname(
     wui_client, override_session, mocker, make_status_report
 ):
