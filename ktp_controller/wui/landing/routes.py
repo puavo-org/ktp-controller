@@ -156,6 +156,7 @@ def _get_host_info(
     else:
         most_critical_disk_space_stage = None
     return schemas.HostInfo(
+        hostname=report["ktp_controller"]["settings"]["hostname"],
         puavo_os_image_release=report["os"]["puavo_os_image_release"],
         puavo_os_image_name=report["os"]["puavo_os_image_name"],
         free_disk_space_stage=most_critical_disk_space_stage,
