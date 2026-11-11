@@ -37,6 +37,56 @@ def test_get_login_renders_form(wui_client):
     assert b"/logout" not in response.content
 
 
+def test_get_login_shows_abitti2_domain_and_puavo_fqdn(wui_client, mocker):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=_status_report(domain="johdanto-rivitys.koe.abitti.net"),
+    )
+    mocker.patch(
+        "ktp_controller.os.get_puavo_fqdn",
+        return_value="dev-run-host1.dev-run.invalid",
+    )
+
+    response = wui_client.get("/login")
+
+    assert response.status_code == 200
+    assert (
+        '<div class="login-exam-server-domains">\n'
+        "        <div>johdanto-rivitys.koe.abitti.net</div>\n"
+        "        <div>dev-run-host1.dev-run.invalid</div>"
+    ) in response.text
+
+
+def test_get_login_omits_exam_server_domains_when_unavailable(wui_client, mocker):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=None,
+    )
+    mocker.patch("ktp_controller.os.get_puavo_fqdn", return_value=None)
+
+    response = wui_client.get("/login")
+
+    assert response.status_code == 200
+    assert b"login-exam-server-domains" not in response.content
+
+
+def test_get_login_tolerates_status_report_fetch_failure(wui_client, mocker):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        side_effect=RuntimeError("boom"),
+    )
+    mocker.patch(
+        "ktp_controller.os.get_puavo_fqdn",
+        return_value="dev-run-host1.dev-run.invalid",
+    )
+
+    response = wui_client.get("/login")
+
+    assert response.status_code == 200
+    assert b"<form" in response.content
+    assert b"dev-run-host1.dev-run.invalid" in response.content
+
+
 @pytest.mark.parametrize(
     ("value", "expected"),
     [
