@@ -12,6 +12,7 @@ import fastapi.templating
 
 # Internal imports
 import ktp_controller.api.client
+import ktp_controller.os
 import ktp_controller.utils
 import ktp_controller.wui.auth
 import ktp_controller.wui.i18n
@@ -24,7 +25,9 @@ from . import schemas
 
 __all__ = [
     "router",
+    "get_abitti2_domain",
     "get_nav_severity",
+    "get_puavo_fqdn",
 ]
 
 _LOGGER = logging.getLogger(__name__)
@@ -124,6 +127,22 @@ def _get_abitti2_info(
                 remaining, locale
             )
     return abitti2_info
+
+
+def get_abitti2_domain(report: dict[str, typing.Any] | None) -> str | None:
+    if report is None:
+        return None
+    return typing.cast("str | None", report["abitti2"]["domain"])
+
+
+def get_puavo_fqdn() -> str | None:
+    # Best-effort: shown in the page footer, but its absence shouldn't
+    # prevent the page from rendering.
+    try:
+        return ktp_controller.os.get_puavo_fqdn()
+    except Exception:
+        _LOGGER.exception("Failed to determine Puavo fqdn for page footer")
+        return None
 
 
 def _get_relevant_disk_usages(
