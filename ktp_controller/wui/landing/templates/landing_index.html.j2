@@ -122,6 +122,10 @@
                     </td>
                 </tr>
                 <tr>
+                    <td>{{ _("Name") }}</td>
+                    <td>{{ host_info.hostname or "???" }}</td>
+                </tr>
+                <tr>
                     <td>{{ _("Free disk space") }}</td>
                     <td{% if host_info.severity %} class="value-{{ host_info.severity }}"{% endif %}>
                         <span class="value-with-icon">

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-11 21:30+0200\n"
+"POT-Creation-Date: 2026-11-11 21:47+0200\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -44,6 +44,7 @@ msgstr "Finished"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:186
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:90
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:125
 msgid "Name"
 msgstr "Name"
 
@@ -234,19 +235,19 @@ msgid_plural "%(num)s hours left"
 msgstr[0] ""
 msgstr[1] ""
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:170
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:171
 msgid "Plenty"
 msgstr ""
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:171
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:172
 msgid "Moderate"
 msgstr ""
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:172
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:173
 msgid "Low"
 msgstr ""
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:173
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:174
 msgid "Critical"
 msgstr ""
 
@@ -319,7 +320,7 @@ msgstr ""
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:75
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:108
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:135
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:139
 msgid "Not available yet."
 msgstr "Not available yet."
 
@@ -335,7 +336,7 @@ msgstr ""
 msgid "Host system"
 msgstr ""
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:125
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:129
 msgid "Free disk space"
 msgstr ""
 

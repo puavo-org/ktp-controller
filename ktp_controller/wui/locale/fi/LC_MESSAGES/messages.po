@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-11 21:30+0200\n"
+"POT-Creation-Date: 2026-11-11 21:47+0200\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -44,6 +44,7 @@ msgstr "Päättänyt"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:186
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:90
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:125
 msgid "Name"
 msgstr "Nimi"
 
@@ -236,19 +237,19 @@ msgid_plural "%(num)s hours left"
 msgstr[0] "%(num)s tunti jäljellä"
 msgstr[1] "%(num)s tuntia jäljellä"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:170
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:171
 msgid "Plenty"
 msgstr "Runsaasti"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:171
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:172
 msgid "Moderate"
 msgstr "Kohtalaisesti"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:172
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:173
 msgid "Low"
 msgstr "Vähän"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:173
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/routes.py:174
 msgid "Critical"
 msgstr "Loppunut"
 
@@ -321,7 +322,7 @@ msgstr "Automaattiohjaus"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:75
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:108
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:135
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:139
 msgid "Not available yet."
 msgstr "Ei vielä saatavilla."
 
@@ -337,7 +338,7 @@ msgstr "Varmenne vanhenee"
 msgid "Host system"
 msgstr "Isäntäjärjestelmä"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:125
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:129
 msgid "Free disk space"
 msgstr "Vapaa levytila"
 
