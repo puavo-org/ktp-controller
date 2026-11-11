@@ -1,7 +1,6 @@
 # Standard library imports
 import logging
 import os.path
-import typing
 import urllib.parse
 
 # Third-party imports
@@ -11,8 +10,8 @@ import fastapi.templating
 
 # Internal imports
 import ktp_controller.api.client
-import ktp_controller.os
 import ktp_controller.redis
+import ktp_controller.wui.landing.routes
 from ktp_controller import SETTINGS
 
 # Relative imports
@@ -44,19 +43,7 @@ async def _get_abitti2_domain() -> str | None:
     except Exception:
         _LOGGER.exception("Failed to fetch last status report for login page")
         return None
-    if report is None:
-        return None
-    return typing.cast("str | None", report["abitti2"]["domain"])
-
-
-def _get_puavo_fqdn() -> str | None:
-    # Best-effort: shown on the login page, but its absence shouldn't
-    # prevent logging in.
-    try:
-        return ktp_controller.os.get_puavo_fqdn()
-    except Exception:
-        _LOGGER.exception("Failed to determine Puavo fqdn for login page")
-        return None
+    return ktp_controller.wui.landing.routes.get_abitti2_domain(report)
 
 
 _DEFAULT_NEXT_PATH = "/invigilator/"
@@ -122,7 +109,7 @@ async def _get_login(
             "error": None,
             "session": session,
             "abitti2_domain": await _get_abitti2_domain(),
-            "puavo_fqdn": _get_puavo_fqdn(),
+            "puavo_fqdn": ktp_controller.wui.landing.routes.get_puavo_fqdn(),
         },
     )
 
@@ -156,7 +143,7 @@ async def _post_login(
                 "error": _("Incorrect username or password"),
                 "session": None,
                 "abitti2_domain": await _get_abitti2_domain(),
-                "puavo_fqdn": _get_puavo_fqdn(),
+                "puavo_fqdn": ktp_controller.wui.landing.routes.get_puavo_fqdn(),
             },
             status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
         )
