@@ -323,6 +323,13 @@ header nav ul.locale-nav {
 }
 
 /* landing_index.html.j2 */
+/* Overrides Pico's auto-fit minmax(0%, 1fr), which never wraps above
+   768px -- cards would just get squeezed thinner instead of reflowing.
+   A real minimum width lets the grid fluidly reflow between 1 and 4
+   columns as available width changes, with no fixed breakpoint. */
+.landing-cards {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
 .landing-card-table {
   width: 100%;
   font-size: 0.8em;
