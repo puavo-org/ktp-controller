@@ -327,7 +327,7 @@ header nav ul.locale-nav {
    A real minimum width lets the grid fluidly reflow between 1 and 4
    columns as available width changes, with no fixed breakpoint. */
 .landing-cards {
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
 }
 .landing-card-table {
   width: 100%;
