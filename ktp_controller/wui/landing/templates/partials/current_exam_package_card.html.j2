@@ -1,0 +1,92 @@
+{% import "partials/_severity.html.j2" as severity_macros %}
+<article id="current-exam-package-card"
+         hx-get="{{ prefix }}/current_exam_package"
+         hx-trigger="live-update from:body throttle:2s"
+         hx-target="this"
+         hx-swap="outerHTML">
+    <header id="current-exam-package-header">
+        <span class="value-with-icon">
+            {{ _("Current exam package") }}
+            {{ severity_macros.icon(id="current-exam-package-header-icon", hidden=True) }}
+        </span>
+    </header>
+    {% if current_exam_package_info %}
+    <table class="landing-card-table">
+        <tr>
+            <td>{{ _("State") }}</td>
+            <td id="exam-package-state-cell">
+                <span class="value-with-icon">
+                    <span id="exam-package-state"
+                          data-state-label="{{ exam_package_state_labels[current_exam_package_info.state] if current_exam_package_info.state else '???' }}"
+                          data-overtime-suffix="{{ _(' (overtime)') }}">{{ exam_package_state_labels[current_exam_package_info.state] if current_exam_package_info.state else "???" }}</span>
+                    {{ severity_macros.icon(id="exam-package-state-icon", hidden=True) }}
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <td>{{ _("Scheduled start time") }}</td>
+            <td id="exam-package-scheduled-start-cell">
+                {% if current_exam_package_info.started_at %}
+                <span>{{ current_exam_package_info.scheduled_start_time|localize_datetime(locale) }}</span>
+                {% else %}
+                <span class="value-with-icon">
+                    <span id="exam-package-scheduled-start"
+                          data-scheduled-start="{{ current_exam_package_info.scheduled_start_time.isoformat() }}"
+                          data-in-minutes-one="{{ _('in {n} minute') }}"
+                          data-in-minutes-other="{{ _('in {n} minutes') }}"
+                          data-in-hours-one="{{ _('in {n} hour') }}"
+                          data-in-hours-other="{{ _('in {n} hours') }}"
+                          data-in-days-one="{{ _('in {n} day') }}"
+                          data-in-days-other="{{ _('in {n} days') }}"
+                          data-late-minutes-one="{{ _('{n} minute late') }}"
+                          data-late-minutes-other="{{ _('{n} minutes late') }}"
+                          data-late-hours-one="{{ _('{n} hour late') }}"
+                          data-late-hours-other="{{ _('{n} hours late') }}"
+                          data-late-days-one="{{ _('{n} day late') }}"
+                          data-late-days-other="{{ _('{n} days late') }}"></span>
+                    {{ severity_macros.icon(id="exam-package-scheduled-start-icon", hidden=True) }}
+                </span>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>{{ _("Started at") }}</td>
+            <td>
+                <span id="exam-package-started-at"
+                      {% if current_exam_package_info.started_at %}data-tooltip="{{ current_exam_package_info.started_at|localize_datetime(locale) }}" data-started-at="{{ current_exam_package_info.started_at.isoformat() }}"{% endif %}
+                      data-minutes-one="{{ _('{n} minute ago') }}"
+                      data-minutes-other="{{ _('{n} minutes ago') }}"
+                      data-hours-one="{{ _('{n} hour ago') }}"
+                      data-hours-other="{{ _('{n} hours ago') }}"
+                      data-days-one="{{ _('{n} day ago') }}"
+                      data-days-other="{{ _('{n} days ago') }}">{{ "" if current_exam_package_info.started_at else "-" }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td>{{ _("Scheduled end time") }}</td>
+            <td id="exam-package-scheduled-end-cell">
+                <span class="value-with-icon">
+                    <span id="exam-package-scheduled-end"
+                          data-state="{{ current_exam_package_info.state or '' }}"
+                          data-scheduled-end="{{ current_exam_package_info.scheduled_end_time.isoformat() }}"
+                          data-in-minutes-one="{{ _('in {n} minute') }}"
+                          data-in-minutes-other="{{ _('in {n} minutes') }}"
+                          data-in-hours-one="{{ _('in {n} hour') }}"
+                          data-in-hours-other="{{ _('in {n} hours') }}"
+                          data-in-days-one="{{ _('in {n} day') }}"
+                          data-in-days-other="{{ _('in {n} days') }}"
+                          data-minutes-one="{{ _('{n} minute ago') }}"
+                          data-minutes-other="{{ _('{n} minutes ago') }}"
+                          data-hours-one="{{ _('{n} hour ago') }}"
+                          data-hours-other="{{ _('{n} hours ago') }}"
+                          data-days-one="{{ _('{n} day ago') }}"
+                          data-days-other="{{ _('{n} days ago') }}"></span>
+                    {{ severity_macros.icon(id="exam-package-scheduled-end-icon", hidden=True) }}
+                </span>
+            </td>
+        </tr>
+    </table>
+    {% else %}
+    <p>{{ _("Not available yet.") }}</p>
+    {% endif %}
+</article>

@@ -12,6 +12,7 @@ import fastapi.templating
 
 # Internal imports
 import ktp_controller.api.client
+import ktp_controller.api.exam.schemas
 import ktp_controller.os
 import ktp_controller.utils
 import ktp_controller.wui.auth
@@ -207,6 +208,36 @@ def _get_disk_space_stage_labels(
     }
 
 
+def _get_exam_package_state_labels(
+    _: typing.Callable[[str], str],
+) -> dict[ktp_controller.api.exam.schemas.ScheduledExamPackageState, str]:
+    State = ktp_controller.api.exam.schemas.ScheduledExamPackageState
+    return {
+        State.READY: _("Ready"),
+        State.RUNNING: _("Running"),
+        State.STOPPING: _("Stopping"),
+        State.STOPPED: _("Stopped"),
+        State.ARCHIVED: _("Archived"),
+    }
+
+
+def _get_exam_package_info(
+    report: dict[str, typing.Any] | None,
+) -> schemas.ExamPackageInfo | None:
+    if report is None:
+        return None
+    exam_package = report["ktp_controller"].get("current_exam_package")
+    if exam_package is None:
+        return None
+    return schemas.ExamPackageInfo(
+        state=exam_package["state"],
+        scheduled_start_time=exam_package["scheduled_start_time"],
+        scheduled_end_time=exam_package["scheduled_end_time"],
+        started_at=exam_package["started_at"],
+        now=ktp_controller.utils.utcnow(),
+    )
+
+
 def get_nav_severity(
     report: dict[str, typing.Any] | None, locale: str
 ) -> ktp_controller.wui.schemas.Severity | None:
@@ -268,4 +299,27 @@ async def _get_landing(
     # Otherwise return the full page
     return _templates.TemplateResponse(
         request, name="landing_index.html.j2", context=context
+    )
+
+
+@router.get("/current_exam_package", response_class=fastapi.responses.HTMLResponse)
+@ktp_controller.wui.auth.require_permission("wui.landing.view")
+async def _get_exam_package_card(
+    request: fastapi.Request,
+    session: ktp_controller.wui.auth.Session = fastapi.Depends(
+        ktp_controller.wui.auth.get_current_session
+    ),
+) -> fastapi.responses.HTMLResponse:
+    report = await ktp_controller.api.client.get_last_status_report()
+
+    request.state.locale = session.locale
+    _ = ktp_controller.wui.i18n.get_gettext(session.locale)
+
+    context = {
+        "current_exam_package_info": _get_exam_package_info(report),
+        "exam_package_state_labels": _get_exam_package_state_labels(_),
+        "locale": session.locale,
+    }
+    return _templates.TemplateResponse(
+        request, name="partials/current_exam_package_card.html.j2", context=context
     )
