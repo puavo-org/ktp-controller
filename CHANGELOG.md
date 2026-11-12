@@ -36,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Invigilator view: the student access code now renders masked by
       default, with a toggle button to reveal/hide it. The choice is
       preserved across the view's periodic live updates.
+      
+    - Display current exam package information on the landing page.
 
 - CLI: add `shutdown-wait` subcommand to the command line
   interface. It shuts KTP Controller down and waits until all
