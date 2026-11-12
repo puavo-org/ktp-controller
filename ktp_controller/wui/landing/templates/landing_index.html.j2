@@ -9,6 +9,7 @@
     <script src="{{ prefix }}/static/controller_started_at.js"></script>
     <script src="{{ prefix }}/static/abitti2_cert_expires_at.js"></script>
     <script src="{{ prefix }}/static/host_uptime.js"></script>
+    <script src="{{ prefix }}/static/current_exam_package.js"></script>
 {% endblock %}
 
 {% block nav_live_status %}
@@ -156,6 +157,10 @@
             <p>{{ _("Not available yet.") }}</p>
             {% endif %}
         </article>
+        {% endif %}
+
+        {% if "current_exam_package_info" in visible_card_keys %}
+        {% include "partials/current_exam_package_card.html.j2" %}
         {% endif %}
 
     </div>

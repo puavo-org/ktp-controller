@@ -66,6 +66,7 @@ _CARDS = (
     _Card(key="controller_info", required_permission=None),
     _Card(key="abitti2_info", required_permission=None),
     _Card(key="host_info", required_permission=None),
+    _Card(key="current_exam_package_info", required_permission=None),
 )
 
 
@@ -247,6 +248,7 @@ def get_nav_severity(
             _get_controller_info(report),
             _get_abitti2_info(report, locale),
             _get_host_info(report),
+            _get_exam_package_info(report),
         )
         if info is not None
     )
@@ -278,6 +280,8 @@ async def _get_landing(
         "controller_info": _get_controller_info(report),
         "abitti2_info": _get_abitti2_info(report, session.locale),
         "host_info": _get_host_info(report),
+        "current_exam_package_info": _get_exam_package_info(report),
+        "exam_package_state_labels": _get_exam_package_state_labels(_),
         "nav_severity": get_nav_severity(report, session.locale),
         "current_path": request.url.path,
         # Hardcoded until a "wui.actions.toggle-auto-control" permission
