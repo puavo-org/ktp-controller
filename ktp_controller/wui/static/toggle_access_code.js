@@ -7,17 +7,24 @@
 
   function applyState() {
     const hidden = accessCodeHidden();
+
+    const codeText = document.querySelector(".access-code-text[data-access-code]");
+    if (codeText !== null) {
+      const code = codeText.dataset.accessCode;
+      codeText.textContent = hidden ? "•".repeat(code.length) : code;
+    }
+
     const button = document.querySelector(".toggle-access-code-button");
     if (button === null) {
       return;
     }
-    const code = button.dataset.accessCode;
-    button.textContent = hidden ? "•".repeat(code.length) : code;
     button.setAttribute("aria-pressed", String(!hidden));
     button.setAttribute(
       "aria-label",
       hidden ? button.dataset.showLabel : button.dataset.hideLabel
     );
+    button.querySelector(".icon-eye-open").toggleAttribute("hidden", !hidden);
+    button.querySelector(".icon-eye-closed").toggleAttribute("hidden", hidden);
   }
 
   document.addEventListener("click", (event) => {

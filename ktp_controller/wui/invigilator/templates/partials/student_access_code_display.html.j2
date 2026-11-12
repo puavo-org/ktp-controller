@@ -8,13 +8,24 @@
     </p>
     {% if student_access_code_and_server_name %}
     {% set code = student_access_code_and_server_name.student_access_code | string %}
-    <button type="button"
-            class="access-code-text toggle-access-code-button"
-            aria-pressed="false"
-            aria-label="{{ _('Show access code') }}"
-            data-access-code="{{ code }}"
-            data-show-label="{{ _('Show access code') }}"
-            data-hide-label="{{ _('Hide access code') }}">{{ "•" * (code | length) }}</button>
+    <div class="access-code-row">
+        <span class="access-code-text" data-access-code="{{ code }}">{{ "•" * (code | length) }}</span>
+        <button type="button"
+                class="toggle-access-code-button icon-toggle-button"
+                aria-pressed="false"
+                aria-label="{{ _('Show access code') }}"
+                data-show-label="{{ _('Show access code') }}"
+                data-hide-label="{{ _('Hide access code') }}">
+            <svg class="icon-eye-open" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" fill="none" stroke="currentColor" stroke-width="2"/>
+                <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <svg class="icon-eye-closed" viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden>
+                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" fill="none" stroke="currentColor" stroke-width="2"/>
+                <line x1="2" y1="2" x2="22" y2="22" stroke="currentColor" stroke-width="2"/>
+            </svg>
+        </button>
+    </div>
     {% else %}
     <p class="access-code-text">{{ _("No access code available") }}</p>
     {% endif %}
