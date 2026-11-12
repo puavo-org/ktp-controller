@@ -6,6 +6,7 @@ import enum
 import pydantic
 
 # Internal imports
+import ktp_controller.api.exam.schemas
 import ktp_controller.pydantic
 import ktp_controller.wui.schemas
 
@@ -15,6 +16,7 @@ __all__ = [
     "DiskSpaceStage",
     "calculate_disk_space_stage",
     "HostInfo",
+    "ExamPackageInfo",
 ]
 
 _MIB = 1024**2
@@ -118,4 +120,35 @@ class HostInfo(ktp_controller.pydantic.BaseModel):
     def severity(self) -> ktp_controller.wui.schemas.Severity | None:
         return ktp_controller.wui.schemas.highest_severity(
             [self._disk_space_severity, self._uptime_severity]
+        )
+
+
+class ExamPackageInfo(ktp_controller.pydantic.BaseModel):
+    state: ktp_controller.api.exam.schemas.ScheduledExamPackageState | None
+    scheduled_start_time: ktp_controller.pydantic.DateTime
+    scheduled_end_time: ktp_controller.pydantic.DateTime
+    started_at: ktp_controller.pydantic.DateTime | None = None
+    # The wall-clock time the above fields' lateness/overtime is judged
+    # against, kept alongside them so severity reflects the exact
+    # moment the report was fetched instead of a second, slightly
+    # later, wall-clock read.
+    now: ktp_controller.pydantic.DateTime
+
+    @property
+    def start_severity(self) -> ktp_controller.wui.schemas.Severity | None:
+        if self.started_at is None and self.now > self.scheduled_start_time:
+            return ktp_controller.wui.schemas.Severity.ERROR
+        return None
+
+    @property
+    def end_severity(self) -> ktp_controller.wui.schemas.Severity | None:
+        running = ktp_controller.api.exam.schemas.ScheduledExamPackageState.RUNNING
+        if self.state == running and self.now > self.scheduled_end_time:
+            return ktp_controller.wui.schemas.Severity.WARNING
+        return None
+
+    @property
+    def severity(self) -> ktp_controller.wui.schemas.Severity | None:
+        return ktp_controller.wui.schemas.highest_severity(
+            [self.start_severity, self.end_severity]
         )
