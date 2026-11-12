@@ -8,6 +8,7 @@
     <script src="{{ prefix }}/static/page_refreshed_status.js"></script>
     <script src="{{ prefix }}/static/controller_started_at.js"></script>
     <script src="{{ prefix }}/static/abitti2_cert_expires_at.js"></script>
+    <script src="{{ prefix }}/static/host_uptime.js"></script>
 {% endblock %}
 
 {% block nav_live_status %}
@@ -124,6 +125,22 @@
                 <tr>
                     <td>{{ _("Name") }}</td>
                     <td>{{ host_info.hostname or "???" }}</td>
+                </tr>
+                <tr>
+                    <td>{{ _("Started at") }}</td>
+                    <td id="host-uptime-cell">
+                        <span class="value-with-icon">
+                            <span id="host-uptime"
+                                  {% if host_info.started_at %}data-tooltip="{{ host_info.started_at|localize_datetime(locale) }}" data-started-at="{{ host_info.started_at.isoformat() }}"{% endif %}
+                                  data-minutes-one="{{ _('{n} minute ago') }}"
+                                  data-minutes-other="{{ _('{n} minutes ago') }}"
+                                  data-hours-one="{{ _('{n} hour ago') }}"
+                                  data-hours-other="{{ _('{n} hours ago') }}"
+                                  data-days-one="{{ _('{n} day ago') }}"
+                                  data-days-other="{{ _('{n} days ago') }}">{{ "" if host_info.started_at else "???" }}</span>
+                            {{ severity_macros.icon(id="host-uptime-icon", hidden=True) }}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td>{{ _("Free disk space") }}</td>
