@@ -1,4 +1,5 @@
 # Standard library imports
+import datetime
 import enum
 
 # Third-party imports
@@ -80,17 +81,41 @@ _DISK_SPACE_STAGE_SEVERITY: dict[
     DiskSpaceStage.CRITICAL: ktp_controller.wui.schemas.Severity.ERROR,
 }
 
+# Below this, the host just (re)booted. Above this, it's overdue for a
+# reboot/update.
+_UPTIME_JUST_BOOTED_THRESHOLD = datetime.timedelta(minutes=1)
+_UPTIME_STALE_THRESHOLD = datetime.timedelta(days=60)
+
 
 class HostInfo(ktp_controller.pydantic.BaseModel):
     hostname: pydantic.StrictStr | None = None
     puavo_os_image_release: pydantic.StrictStr | None
     puavo_os_image_name: pydantic.StrictStr | None
     free_disk_space_stage: DiskSpaceStage | None = None
+    started_at: ktp_controller.pydantic.DateTime | None = None
+    # The uptime the above started_at was computed from, kept
+    # alongside it so severity can be judged against the exact
+    # reported value instead of re-deriving it from started_at via a
+    # second, slightly later, wall-clock read.
+    uptime: pydantic.NonNegativeFloat | None = None
 
     @property
-    def severity(self) -> ktp_controller.wui.schemas.Severity | None:
-        # Once a second issue-producing field is added here, switch
-        # this to ktp_controller.wui.schemas.highest_severity([...]).
+    def _disk_space_severity(self) -> ktp_controller.wui.schemas.Severity | None:
         if self.free_disk_space_stage is None:
             return ktp_controller.wui.schemas.Severity.ERROR
         return _DISK_SPACE_STAGE_SEVERITY[self.free_disk_space_stage]
+
+    @property
+    def _uptime_severity(self) -> ktp_controller.wui.schemas.Severity | None:
+        if self.uptime is None:
+            return None
+        uptime = datetime.timedelta(seconds=self.uptime)
+        if uptime < _UPTIME_JUST_BOOTED_THRESHOLD or uptime > _UPTIME_STALE_THRESHOLD:
+            return ktp_controller.wui.schemas.Severity.WARNING
+        return None
+
+    @property
+    def severity(self) -> ktp_controller.wui.schemas.Severity | None:
+        return ktp_controller.wui.schemas.highest_severity(
+            [self._disk_space_severity, self._uptime_severity]
+        )
