@@ -159,6 +159,7 @@ def make_status_report():
                 "free": 20 * 1024**3,
             },
         ),
+        uptime: float | None = 3600.0,
     ):
         abitti2 = {
             "version": abitti2_version,
@@ -184,6 +185,7 @@ def make_status_report():
                     "disk_usage": (
                         list(disk_usage) if disk_usage is not None else None
                     ),
+                    "uptime": uptime,
                 },
             },
         }

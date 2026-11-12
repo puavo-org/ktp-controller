@@ -97,6 +97,17 @@ def test_landing_view_allowed_with_permission(
     assert 'id="page-refreshed-status"' in response.text
     assert 'data-template-one="Page refreshed {n} second ago"' in response.text
     assert 'data-template-other="Page refreshed {n} seconds ago"' in response.text
+    assert 'id="host-uptime-cell"' in response.text
+    assert 'id="host-uptime-icon" class="severity-icon" hidden' in response.text
+    assert 'id="host-uptime"' in response.text
+    assert 'data-started-at="' in response.text
+    assert 'data-minutes-one="{n} minute ago"' in response.text
+    assert 'data-minutes-other="{n} minutes ago"' in response.text
+    assert 'data-hours-one="{n} hour ago"' in response.text
+    assert 'data-hours-other="{n} hours ago"' in response.text
+    assert 'data-days-one="{n} day ago"' in response.text
+    assert 'data-days-other="{n} days ago"' in response.text
+    assert "static/host_uptime.js" in response.text
 
 
 def test_landing_view_shows_footer_domains(
@@ -475,6 +486,78 @@ def test_landing_view_shows_free_disk_space_stage(
         assert "value-error" not in host_header
     else:
         assert f'class="value-{expected_severity}"' in host_header
+
+
+@pytest.mark.parametrize(
+    ("uptime", "expect_warning"),
+    [
+        pytest.param(30.0, True, id="just_booted"),
+        pytest.param(59.0, True, id="just_below_one_minute"),
+        pytest.param(60.0, False, id="at_one_minute_threshold"),
+        pytest.param(3600.0, False, id="normal_uptime"),
+        pytest.param(60 * 86400.0, False, id="at_sixty_days_threshold"),
+        pytest.param(60 * 86400.0 + 1, True, id="just_above_sixty_days"),
+    ],
+)
+def test_landing_view_shows_warning_for_host_uptime(
+    wui_client, override_session, mocker, make_status_report, uptime, expect_warning
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(uptime=uptime),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    host_header = _header_tag(response.text, "Host system")
+    if expect_warning:
+        assert 'class="value-warning"' in host_header
+        assert "severity-icon" in host_header
+    else:
+        assert "value-warning" not in host_header
+        assert "value-error" not in host_header
+
+
+def test_landing_view_shows_question_marks_without_host_uptime(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(uptime=None),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    assert "???" in response.text
+    host_header = _header_tag(response.text, "Host system")
+    assert "value-warning" not in host_header
+    assert "value-error" not in host_header
 
 
 @pytest.mark.parametrize(
