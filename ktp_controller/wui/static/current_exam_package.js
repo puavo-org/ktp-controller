@@ -174,7 +174,7 @@
   // A live-update swap replaces the whole card, including all the
   // elements above - refresh immediately instead of waiting up to
   // TICK_MS for the next tick.
-  document.body.addEventListener("htmx:afterSwap", update);
+  document.addEventListener("htmx:afterSwap", update);
   setTimeout(() => {
     update();
     setInterval(update, TICK_MS);
