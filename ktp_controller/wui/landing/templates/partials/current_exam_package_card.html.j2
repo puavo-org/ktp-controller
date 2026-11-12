@@ -1,36 +1,42 @@
 {% import "partials/_severity.html.j2" as severity_macros %}
+{% set severity = current_exam_package_info.severity if current_exam_package_info else None %}
 <article id="current-exam-package-card"
          hx-get="{{ prefix }}/current_exam_package"
          hx-trigger="live-update from:body throttle:2s"
          hx-target="this"
          hx-swap="outerHTML">
-    <header id="current-exam-package-header">
+    <header id="current-exam-package-header"{% if severity %} class="value-{{ severity }}"{% endif %}>
         <span class="value-with-icon">
             {{ _("Current exam package") }}
-            {{ severity_macros.icon(id="current-exam-package-header-icon", hidden=True) }}
+            {{ severity_macros.icon(id="current-exam-package-header-icon", hidden=not severity) }}
         </span>
     </header>
     {% if current_exam_package_info %}
+    {% set end_severity = current_exam_package_info.end_severity %}
+    {% set start_severity = current_exam_package_info.start_severity %}
+    {% set state_label = exam_package_state_labels[current_exam_package_info.state] if current_exam_package_info.state else "???" %}
+    {% set state_text = (state_label ~ _(' (overtime)')) if end_severity else state_label %}
     <table class="landing-card-table">
         <tr>
             <td>{{ _("State") }}</td>
-            <td id="exam-package-state-cell">
+            <td id="exam-package-state-cell"{% if end_severity %} class="value-{{ end_severity }}"{% endif %}>
                 <span class="value-with-icon">
                     <span id="exam-package-state"
-                          data-state-label="{{ exam_package_state_labels[current_exam_package_info.state] if current_exam_package_info.state else '???' }}"
-                          data-overtime-suffix="{{ _(' (overtime)') }}">{{ exam_package_state_labels[current_exam_package_info.state] if current_exam_package_info.state else "???" }}</span>
-                    {{ severity_macros.icon(id="exam-package-state-icon", hidden=True) }}
+                          data-state-label="{{ state_label }}"
+                          data-overtime-suffix="{{ _(' (overtime)') }}">{{ state_text }}</span>
+                    {{ severity_macros.icon(id="exam-package-state-icon", hidden=not end_severity) }}
                 </span>
             </td>
         </tr>
         <tr>
             <td>{{ _("Scheduled start time") }}</td>
-            <td id="exam-package-scheduled-start-cell">
+            <td id="exam-package-scheduled-start-cell"{% if start_severity %} class="value-{{ start_severity }}"{% endif %}>
                 {% if current_exam_package_info.started_at %}
                 <span>{{ current_exam_package_info.scheduled_start_time|localize_datetime(locale) }}</span>
                 {% else %}
                 <span class="value-with-icon">
                     <span id="exam-package-scheduled-start"
+                          data-tooltip="{{ current_exam_package_info.scheduled_start_time|localize_datetime(locale) }}"
                           data-scheduled-start="{{ current_exam_package_info.scheduled_start_time.isoformat() }}"
                           data-in-minutes-one="{{ _('in {n} minute') }}"
                           data-in-minutes-other="{{ _('in {n} minutes') }}"
@@ -44,7 +50,7 @@
                           data-late-hours-other="{{ _('{n} hours late') }}"
                           data-late-days-one="{{ _('{n} day late') }}"
                           data-late-days-other="{{ _('{n} days late') }}"></span>
-                    {{ severity_macros.icon(id="exam-package-scheduled-start-icon", hidden=True) }}
+                    {{ severity_macros.icon(id="exam-package-scheduled-start-icon", hidden=not start_severity) }}
                 </span>
                 {% endif %}
             </td>
@@ -64,10 +70,11 @@
         </tr>
         <tr>
             <td>{{ _("Scheduled end time") }}</td>
-            <td id="exam-package-scheduled-end-cell">
+            <td id="exam-package-scheduled-end-cell"{% if end_severity %} class="value-{{ end_severity }}"{% endif %}>
                 <span class="value-with-icon">
                     <span id="exam-package-scheduled-end"
                           data-state="{{ current_exam_package_info.state or '' }}"
+                          data-tooltip="{{ current_exam_package_info.scheduled_end_time|localize_datetime(locale) }}"
                           data-scheduled-end="{{ current_exam_package_info.scheduled_end_time.isoformat() }}"
                           data-in-minutes-one="{{ _('in {n} minute') }}"
                           data-in-minutes-other="{{ _('in {n} minutes') }}"
@@ -81,7 +88,7 @@
                           data-hours-other="{{ _('{n} hours ago') }}"
                           data-days-one="{{ _('{n} day ago') }}"
                           data-days-other="{{ _('{n} days ago') }}"></span>
-                    {{ severity_macros.icon(id="exam-package-scheduled-end-icon", hidden=True) }}
+                    {{ severity_macros.icon(id="exam-package-scheduled-end-icon", hidden=not end_severity) }}
                 </span>
             </td>
         </tr>

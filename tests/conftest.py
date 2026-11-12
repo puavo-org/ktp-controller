@@ -160,6 +160,7 @@ def make_status_report():
             },
         ),
         uptime: float | None = 3600.0,
+        current_exam_package: dict | None = None,
     ):
         abitti2 = {
             "version": abitti2_version,
@@ -176,6 +177,7 @@ def make_status_report():
                 "started_at": "2026-05-03T16:28:51.975+0000",
                 "is_auto_control_enabled": True,
                 "settings": {"hostname": hostname},
+                "current_exam_package": current_exam_package,
             },
             "abitti2": abitti2,
             "os": {

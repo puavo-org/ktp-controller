@@ -15,3 +15,13 @@ def _nav_item_tag(html, link_text):
         if link_text in match.group(0):
             return match.group(0)
     raise AssertionError(f"nav item for {link_text!r} not found in response")
+
+
+def _tag_by_id(html, tag, element_id):
+    pattern = (
+        rf'<{tag}[^>]*\bid="{re.escape(element_id)}"[^>]*>(?:(?!</{tag}>).)*?</{tag}>'
+    )
+    match = re.search(pattern, html, re.DOTALL)
+    if match is None:
+        raise AssertionError(f"<{tag} id={element_id!r}> not found in response")
+    return match.group(0)

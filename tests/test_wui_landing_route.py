@@ -6,7 +6,7 @@ import ktp_controller.utils
 import ktp_controller.wui.auth
 import ktp_controller.wui.main
 from ktp_controller import WORKDIR
-from tests.html_helpers import _header_tag, _nav_item_tag
+from tests.html_helpers import _header_tag, _nav_item_tag, _tag_by_id
 
 
 def test_landing_view_requires_login(wui_client):
@@ -685,6 +685,286 @@ def test_landing_view_student_state_counts_present_in_htmx_partial(
     assert 'id="student-state-counts"' in response.text
     assert "hx-swap-oob" not in response.text
     assert '<span class="pill pill-in_exam">In exam 1</span>' in response.text
+
+
+_UNSET = object()
+
+
+def _exam_package(
+    *,
+    state="running",
+    scheduled_start_time=_UNSET,
+    started_at=_UNSET,
+    scheduled_end_time=_UNSET,
+):
+    now = ktp_controller.utils.utcnow()
+    if scheduled_start_time is _UNSET:
+        scheduled_start_time = (now - datetime.timedelta(minutes=10)).isoformat()
+    if started_at is _UNSET:
+        started_at = (now - datetime.timedelta(minutes=9, seconds=55)).isoformat()
+    if scheduled_end_time is _UNSET:
+        scheduled_end_time = (now + datetime.timedelta(minutes=50)).isoformat()
+    return {
+        "state": state,
+        "scheduled_start_time": scheduled_start_time,
+        "started_at": started_at,
+        "scheduled_end_time": scheduled_end_time,
+    }
+
+
+def test_landing_view_shows_placeholder_without_current_exam_package(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    card = _tag_by_id(response.text, "article", "current-exam-package-card")
+    assert "Not available yet." in card
+    assert 'id="exam-package-state-cell"' not in card
+
+
+def test_landing_view_shows_current_exam_package_fields(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(current_exam_package=_exam_package()),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    card = _tag_by_id(response.text, "article", "current-exam-package-card")
+    assert ">Running<" in card
+    assert 'id="exam-package-started-at"' in card
+    assert 'data-started-at="' in card
+    assert "static/current_exam_package.js" in response.text
+    assert "value-warning" not in card
+    assert "value-error" not in card
+
+
+def test_landing_view_shows_error_for_late_exam_package_start(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(
+            current_exam_package=_exam_package(
+                state="ready",
+                scheduled_start_time=(
+                    ktp_controller.utils.utcnow() - datetime.timedelta(minutes=10)
+                ).isoformat(),
+                started_at=None,
+            )
+        ),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    header = _header_tag(response.text, "Current exam package")
+    assert 'class="value-error"' in header
+    start_cell = _tag_by_id(response.text, "td", "exam-package-scheduled-start-cell")
+    assert 'class="value-error"' in start_cell
+    assert "severity-icon" in start_cell
+    state_cell = _tag_by_id(response.text, "td", "exam-package-state-cell")
+    assert "value-warning" not in state_cell
+    assert "value-error" not in state_cell
+
+
+def test_landing_view_shows_warning_for_exam_package_overtime(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(
+            current_exam_package=_exam_package(
+                state="running",
+                scheduled_end_time=(
+                    ktp_controller.utils.utcnow() - datetime.timedelta(minutes=5)
+                ).isoformat(),
+            )
+        ),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    header = _header_tag(response.text, "Current exam package")
+    assert 'class="value-warning"' in header
+    state_cell = _tag_by_id(response.text, "td", "exam-package-state-cell")
+    assert 'class="value-warning"' in state_cell
+    assert "Running (overtime)" in state_cell
+    end_cell = _tag_by_id(response.text, "td", "exam-package-scheduled-end-cell")
+    assert 'class="value-warning"' in end_cell
+
+
+def test_landing_view_no_warning_for_exam_package_past_end_when_not_running(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(
+            current_exam_package=_exam_package(
+                state="stopped",
+                scheduled_end_time=(
+                    ktp_controller.utils.utcnow() - datetime.timedelta(minutes=5)
+                ).isoformat(),
+            )
+        ),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    card = _tag_by_id(response.text, "article", "current-exam-package-card")
+    assert "value-warning" not in card
+    assert "value-error" not in card
+    assert ">Stopped<" in card
+    assert "Stopped (overtime)" not in card
+
+
+def test_landing_view_current_exam_package_card_self_refreshes(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    card = _tag_by_id(response.text, "article", "current-exam-package-card")
+    assert 'hx-get="/current_exam_package"' in card
+    assert 'hx-trigger="live-update from:body throttle:2s"' in card
+    assert 'hx-target="this"' in card
+    assert 'hx-swap="outerHTML"' in card
+
+
+def test_current_exam_package_route_requires_login(wui_client):
+    response = wui_client.get("/current_exam_package")
+
+    assert response.status_code == 303
+    assert response.headers["location"].startswith("/login")
+
+
+def test_current_exam_package_route_forbidden_without_permission(
+    wui_client, override_session
+):
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset(),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/current_exam_package")
+
+    assert response.status_code == 403
+
+
+def test_current_exam_package_route_returns_partial(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(current_exam_package=_exam_package()),
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/current_exam_package")
+
+    assert response.status_code == 200
+    assert "<html" not in response.text
+    assert 'id="current-exam-package-card"' in response.text
+    assert ">Running<" in response.text
 
 
 def test_landing_view_honors_forwarded_prefix(
