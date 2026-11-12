@@ -158,6 +158,11 @@ def _get_relevant_disk_usages(
     ]
 
 
+def _get_host_uptime(report: dict[str, typing.Any]) -> float | None:
+    uptime = report["os"].get("stats", {}).get("uptime")
+    return typing.cast("float | None", uptime)
+
+
 def _get_host_info(
     report: dict[str, typing.Any] | None,
 ) -> schemas.HostInfo | None:
@@ -174,11 +179,19 @@ def _get_host_info(
         )[-1]
     else:
         most_critical_disk_space_stage = None
+    uptime = _get_host_uptime(report)
+    started_at = (
+        ktp_controller.utils.utcnow() - datetime.timedelta(seconds=uptime)
+        if uptime is not None
+        else None
+    )
     return schemas.HostInfo(
         hostname=report["ktp_controller"]["settings"]["hostname"],
         puavo_os_image_release=report["os"]["puavo_os_image_release"],
         puavo_os_image_name=report["os"]["puavo_os_image_name"],
         free_disk_space_stage=most_critical_disk_space_stage,
+        started_at=started_at,
+        uptime=uptime,
     )
 
 
