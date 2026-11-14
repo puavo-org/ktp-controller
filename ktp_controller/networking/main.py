@@ -5,22 +5,23 @@
 #   puavo.ers.abitti2server.network
 #   puavo.ers.abitti2server.number
 #
-# Please see puavo-ers.json for more info about these conf options.
+# Please see /usr/share/puavo-conf/definitions/puavo-ers.json for more
+# info about these conf options.
 #
 # Assuming aforementioned Puavo configuration is set, this script can
 # be used like so:
 #
 # To setup the network interface and start dnsmasq server, run:
-#   puavo-ers-abitti2server-networking start
+#   ktp-controller-networking start
 #
 # To stop the dnsmasq, run:
-#   puavo-ers-abitti2server-networking stop
+#   ktp-controller-networking stop
 #
 # To set a A-record for the current host, run:
-#   puavo-ers-abitti2server-networking set_domain mydomain.example.invalid
+#   ktp-controller-networking set_domain mydomain.example.invalid
 #
 # To delete the A-record, run:
-#   puavo-ers-abitti2server-networking del_domain
+#   ktp-controller-networking del_domain
 #
 
 # Standard library imports
