@@ -102,16 +102,16 @@ Enum — one of: `disconnected`, `idle`, `waiting-for-auth`, `undefined-exam`, `
 
 All fields are always present.
 
-| Field                     | Type                                                | Description                                                                                   | Example                          | Notes             |
-| ------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------- | ----------------- |
-| `version`                 | `string`                                            |                                                                                               |                                  | const: `0.9.0rc8` |
-| `started_at`              | `datetime`                                          | When the program has started.                                                                 | `"2026-05-03T16:28:51.975+0000"` |                   |
-| `is_auto_control_enabled` | `boolean`                                           |                                                                                               | `true`                           |                   |
-| `cached_files`            | [CachedFiles](#cachedfiles)                         |                                                                                               |                                  |                   |
-| `current_exam_package`    | [ExamPackage](#exampackage) or `null`               |                                                                                               |                                  |                   |
-| `next_exam_packages`      | (`array` of [ExamPackage](#exampackage)) or `null`  |                                                                                               |                                  |                   |
-| `settings`                | [Settings](#settings)                               | Effective runtime configuation of KTP Controller                                              |                                  |                   |
-| `stats`                   | [KTPControllerStats](#ktpcontrollerstats) or `null` | All stats are reset when the program starts. If null, there was an error gathering the stats. |                                  |                   |
+| Field                     | Type                                                | Description                                                                                   | Example                          | Notes          |
+| ------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------- | -------------- |
+| `version`                 | `string`                                            |                                                                                               |                                  | const: `0.9.0` |
+| `started_at`              | `datetime`                                          | When the program has started.                                                                 | `"2026-05-03T16:28:51.975+0000"` |                |
+| `is_auto_control_enabled` | `boolean`                                           |                                                                                               | `true`                           |                |
+| `cached_files`            | [CachedFiles](#cachedfiles)                         |                                                                                               |                                  |                |
+| `current_exam_package`    | [ExamPackage](#exampackage) or `null`               |                                                                                               |                                  |                |
+| `next_exam_packages`      | (`array` of [ExamPackage](#exampackage)) or `null`  |                                                                                               |                                  |                |
+| `settings`                | [Settings](#settings)                               | Effective runtime configuation of KTP Controller                                              |                                  |                |
+| `stats`                   | [KTPControllerStats](#ktpcontrollerstats) or `null` | All stats are reset when the program starts. If null, there was an error gathering the stats. |                                  |                |
 
 #### CachedFiles
 
