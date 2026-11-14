@@ -582,7 +582,7 @@ wheels = [
 
 [[package]]
 name = "ktp-controller"
-version = "0.9.0"
+version = "0.10.0rc1"
 source = { editable = "." }
 dependencies = [
     { name = "alembic" },
