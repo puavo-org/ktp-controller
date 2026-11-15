@@ -7,16 +7,6 @@ When adding new items, always update the following line to define the
 ID of the next TODO item.
 Next ID: TODO47
 
-## TODO45
-
-ktp_controller/networking/main.py: dnsmasq is now run with no config
-file, all options are given as command line args. Change it to use
-configuration file instead. The configuration file must be generated
-to /var/lib, using same naming pattern as the other files. main.py
-must ensure the file is deleted when process exits.
-
-Other than that, the existing functionality must be unchanged.
-
 ## TODO46
 
 Add new setting (`ktp_controller.settings.Settings`):
