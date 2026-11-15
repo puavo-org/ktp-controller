@@ -6,6 +6,7 @@ import subprocess
 import typing
 
 # Third-party imports
+import validators
 from pydantic import NonNegativeInt, PositiveInt, StrictBool, field_validator
 from pydantic.fields import FieldInfo
 from pydantic_settings import (
@@ -102,6 +103,27 @@ class Settings(BaseSettings):
     supported_locales: list[str] = ["fi", "en", "sv"]
     wui_tls_port: PositiveInt = 8443  # alt-https
     allow_cross_site_requests_from_localhost_to_wui: StrictBool = False
+    networking_allowed_wan_domains: list[str] = [
+        "dns.msftncsi.com",
+        "www.msftncsi.com",
+        "www.msftconnecttest.com",
+        "ipv6.msftconnecttest.com",
+        "endpoint.security.microsoft.com",
+        "smartscreen-prod.microsoft.com",
+        "smartscreen.microsoft.com",
+        "wdcp.microsoft.com",
+        "wdcpalt.microsoft.com",
+        "wd.microsoft.com",
+        "ctldl.windowsupdate.com",
+        "crl.microsoft.com",
+        "chromeos-staging.abitti.fi",
+        "chromeos.abitti.fi",
+        "register.appattest.apple.com",
+        "m.google.com",
+        "chromeos-ca.gstatic.com",
+        "clients3.google.com",
+        "www.googleapis.com",
+    ]
 
     @field_validator("supported_locales", mode="before")
     @classmethod
@@ -158,6 +180,17 @@ class Settings(BaseSettings):
             if v.lower().strip() in ["no", "n", "false", "0"]:
                 return False
             raise ValueError("invalid session_cookie_secure value", v)
+        return v
+
+    @field_validator("networking_allowed_wan_domains", mode="before")
+    @classmethod
+    def _validate_networking_allowed_wan_domains(cls, v: typing.Any) -> typing.Any:
+        if isinstance(v, str):
+            v = [x.strip() for x in v.split(",") if x.strip()]
+        for domain in v:
+            domain_validation_result = validators.domain(domain)
+            if not domain_validation_result:
+                raise ValueError("invalid domain name", domain)
         return v
 
     @classmethod
