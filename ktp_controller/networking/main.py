@@ -32,114 +32,18 @@ import os
 import os.path
 import signal
 import subprocess
-import time
 import typing
 
 # Internal imports
 import ktp_controller.net
+import ktp_controller.networking.dnsmasq as dnsmasq
 import ktp_controller.nginx
 import ktp_controller.puavo.conf
 from ktp_controller import VERSION
 
 _THIS_NAME = "ktp-controller-networking"
 _LOGGER = logging.getLogger(_THIS_NAME)
-_DNSMASQ_PID_FILE = f"/run/{_THIS_NAME}-dnsmasq.pid"
-_DNSMASQ_LEASES_FILE = f"/var/lib/{_THIS_NAME}-dnsmasq.leases"
-_DNSMASQ_HOSTS_FILE = f"/var/lib/{_THIS_NAME}-dnsmasq.hosts"
-_DNSMASQ_CONF_FILE = f"/var/lib/{_THIS_NAME}-dnsmasq.conf"
-_LOCAL_DOMAIN = "koe.abitti.net"
 _NM_CONF_FILE = "/etc/NetworkManager/dnsmasq.d/puavo-ers.conf"
-
-
-_KOE_ABITTI_NET_DNS_SERVERS = [
-    "9.9.9.9",
-    "1.1.1.1",
-    "8.8.8.8",
-]
-
-
-def _start_dhcp_dns_server(net: ktp_controller.net.Net) -> int:
-    conf_lines = [
-        "port=53",
-        f"listen-address={net.host_address}",
-        f"domain={_LOCAL_DOMAIN},{net.network}",
-        "domain-needed",
-        "bogus-priv",
-        "no-hosts",
-        "bind-interfaces",
-        "except-interface=lo",
-        f"dhcp-leasefile={_DNSMASQ_LEASES_FILE}",
-        f"dhcp-range={net.dhcp_hosts[0]},{net.dhcp_hosts[-1]},1h",
-        f"dhcp-option=option:dns-server,{net.host_address}",
-        "dhcp-option=option:domain-name",
-        "log-queries",
-        "log-dhcp",
-        "log-debug",
-        f"pid-file={_DNSMASQ_PID_FILE}",
-        f"addn-hosts={_DNSMASQ_HOSTS_FILE}",
-    ]
-
-    conf_lines.extend(
-        f"server=/koe.abitti.net/{koe_abitti_net_dns_server}"
-        for koe_abitti_net_dns_server in _KOE_ABITTI_NET_DNS_SERVERS
-    )
-    if len(_KOE_ABITTI_NET_DNS_SERVERS) > 0:
-        conf_lines.append("all-servers")
-
-    try:
-        user = os.environ["SUDO_USER"]
-    except KeyError:
-        # Let dnsmasq switch uid to it's default, normally nobody
-        pass
-    else:
-        # Ensure no tricks are being played, that the user actually exists.
-        user = subprocess.check_output(["id", "-un", user], timeout=2).decode().strip()
-        conf_lines.append(f"user={user}")
-
-    with open(_DNSMASQ_CONF_FILE, "w", encoding="utf-8") as dnsmasq_conf_file:
-        for conf_line in conf_lines:
-            print(conf_line, file=dnsmasq_conf_file)
-
-    args = ["dnsmasq", f"--conf-file={_DNSMASQ_CONF_FILE}"]
-    _LOGGER.info(
-        "Spawning dnsmasq with conf file %s: %s", _DNSMASQ_CONF_FILE, conf_lines
-    )
-    subprocess.check_call(args)
-
-    return 0
-
-
-def _kill_dnsmasq(sig: int) -> bool:
-    with open(_DNSMASQ_PID_FILE, encoding="ascii") as dnsmasq_pid_file:
-        dnsmasq_pid = int(dnsmasq_pid_file.read().strip())
-
-    try:
-        os.kill(dnsmasq_pid, sig)
-    except ProcessLookupError:
-        os.unlink(_DNSMASQ_PID_FILE)
-        return True
-
-    return False
-
-
-def _stop_dhcp_dns_server() -> int:
-    # First gently.
-    if _kill_dnsmasq(15):
-        return 0
-
-    # Give it some time to die.
-    for _ in range(4):
-        time.sleep(0.5)
-        if _kill_dnsmasq(0):
-            return 0
-
-    # Then with force.
-    if _kill_dnsmasq(9):
-        _LOGGER.error("failed to kill dnsmasq gracefully!")
-        return 1
-
-    _LOGGER.critical("failed to kill dnsmasq!")
-    return 1
 
 
 def _reload_networkmanager() -> None:
@@ -157,14 +61,14 @@ def _configure_networkmanager() -> None:
     """Best-effort inclusion of the domain record in the local DNS controlled by NetworkManager"""
     try:
         with open(f"{_NM_CONF_FILE}.tmp", "w", encoding="utf-8") as nm_conf_file:
-            print(f"address=/{_LOCAL_DOMAIN}/::", file=nm_conf_file)
-            print(f"addn-hosts={_DNSMASQ_HOSTS_FILE}", file=nm_conf_file)
-            for koe_abitti_net_dns_server in _KOE_ABITTI_NET_DNS_SERVERS:
+            print(f"address=/{dnsmasq._LOCAL_DOMAIN}/::", file=nm_conf_file)
+            print(f"addn-hosts={dnsmasq._DNSMASQ_HOSTS_FILE}", file=nm_conf_file)
+            for koe_abitti_net_dns_server in dnsmasq._KOE_ABITTI_NET_DNS_SERVERS:
                 print(
                     f"server=/koe.abitti.net/{koe_abitti_net_dns_server}",
                     file=nm_conf_file,
                 )
-            if len(_KOE_ABITTI_NET_DNS_SERVERS) > 0:
+            if len(dnsmasq._KOE_ABITTI_NET_DNS_SERVERS) > 0:
                 print("all-servers", file=nm_conf_file)
     except FileNotFoundError:
         # This means that /etc/NetworkManager/dnsmasq.d does not
@@ -197,7 +101,7 @@ def _command_start(
     net = ktp_controller.net.Net(interface, network, number)
     net.up()
 
-    with open(_DNSMASQ_HOSTS_FILE, "w", encoding="utf-8"):
+    with open(dnsmasq._DNSMASQ_HOSTS_FILE, "w", encoding="utf-8"):
         pass  # truncate before start
 
     try:
@@ -205,7 +109,7 @@ def _command_start(
     finally:
         # The DHCP/DNS server must be (re)started regardless of whether
         # configuring NetworkManager succeeded.
-        return _start_dhcp_dns_server(net)  # noqa: B012
+        return dnsmasq._start_dhcp_dns_server(net)  # noqa: B012
 
 
 def _command_stop(
@@ -218,7 +122,7 @@ def _command_stop(
         # The DHCP/DNS server must be stopped and the interface brought
         # down regardless of whether unconfiguring NetworkManager failed.
         try:
-            return _stop_dhcp_dns_server()  # noqa: B012
+            return dnsmasq._stop_dhcp_dns_server()  # noqa: B012
         finally:
             net.down()
 
@@ -236,7 +140,7 @@ def _command_set_domain(
     ipv4_addr = ipaddress.IPv4Address(
         ktp_controller.net.interface_addresses(interface)["AF_INET"][0]["addr"]
     )
-    with open(_DNSMASQ_HOSTS_FILE, "w", encoding="utf-8") as dnsmasq_hosts_file:
+    with open(dnsmasq._DNSMASQ_HOSTS_FILE, "w", encoding="utf-8") as dnsmasq_hosts_file:
         dnsmasq_hosts_file.write(f"{ipv4_addr} {args.FQDN}\n")
 
     try:
@@ -253,13 +157,13 @@ def _command_set_domain(
         finally:
             # dnsmasq must always be signalled to reload regardless of whether
             # reloading NetworkManager failed.
-            return int(_kill_dnsmasq(signal.SIGHUP))  # noqa: B012
+            return int(dnsmasq._kill_dnsmasq(signal.SIGHUP))  # noqa: B012
 
 
 def _command_del_domain(
     interface: str, network: str, number: int, args: argparse.Namespace
 ) -> int:
-    with open(_DNSMASQ_HOSTS_FILE, "w", encoding="utf-8"):
+    with open(dnsmasq._DNSMASQ_HOSTS_FILE, "w", encoding="utf-8"):
         pass  # just truncate
 
     try:
@@ -270,7 +174,7 @@ def _command_del_domain(
         finally:
             # dnsmasq must always be signalled to reload regardless of whether
             # reloading NetworkManager failed.
-            return int(_kill_dnsmasq(signal.SIGHUP))  # noqa: B012
+            return int(dnsmasq._kill_dnsmasq(signal.SIGHUP))  # noqa: B012
 
 
 def _main() -> int:
