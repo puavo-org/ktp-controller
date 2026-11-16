@@ -18,6 +18,19 @@ def destroy_ipset(name: str) -> None:
     subprocess.check_call([_IPSET_BIN, "destroy", name])
 
 
+def ipset_exists(name: str) -> bool:
+    completed_process = subprocess.run(
+        [_IPSET_BIN, "list", name, "-name"],
+        capture_output=True,
+    )
+    return completed_process.returncode == 0
+
+
+def flush_ipset(name: str) -> None:
+    _LOGGER.info("Flushing ipset %s", name)
+    subprocess.check_call([_IPSET_BIN, "flush", name])
+
+
 def list_ipset_entries(name: str) -> list[tuple[str, int | None]]:
     output = subprocess.check_output([_IPSET_BIN, "list", name], timeout=5).decode()
 
