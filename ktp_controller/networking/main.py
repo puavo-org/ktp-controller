@@ -148,21 +148,28 @@ def _command_set_domain(
     ipv4_addr = _resolve_fqdn_ipv4_address(interface)
     _write_dnsmasq_hosts_entry(ipv4_addr, args.FQDN)
 
-    try:
-        nm._reload_networkmanager()
-    finally:
-        try:
-            if args.nginx_port and args.nginx_crt_filepath and args.nginx_key_filepath:
-                ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy(
-                    args.FQDN,
-                    args.nginx_port,
-                    args.nginx_crt_filepath,
-                    args.nginx_key_filepath,
-                )
-        finally:
-            # dnsmasq must always be signalled to reload regardless of whether
-            # reloading NetworkManager failed.
-            return int(dnsmasq._kill_dnsmasq(signal.SIGHUP))  # noqa: B012
+    def _maybe_enable_nginx_wui_tls_reverse_proxy() -> None:
+        if args.nginx_port and args.nginx_crt_filepath and args.nginx_key_filepath:
+            ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy(
+                args.FQDN,
+                args.nginx_port,
+                args.nginx_crt_filepath,
+                args.nginx_key_filepath,
+            )
+
+    # dnsmasq must always be signalled to reload regardless of whether
+    # reloading NetworkManager failed.
+    return typing.cast(
+        int,
+        _run_regardless(
+            [
+                nm._reload_networkmanager,
+                _maybe_enable_nginx_wui_tls_reverse_proxy,
+                lambda: int(dnsmasq._kill_dnsmasq(signal.SIGHUP)),
+            ],
+            result_index=2,
+        ),
+    )
 
 
 def _command_del_domain(
