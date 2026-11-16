@@ -4,6 +4,7 @@ import os.path
 
 import pytest
 
+import ktp_controller
 import ktp_controller.net
 import ktp_controller.networking.dnsmasq
 import ktp_controller.networking.main
@@ -145,7 +146,11 @@ class TestCommandStart:
         assert result == 0
         net.up.assert_called_once_with()
         configure_mock.assert_called_once_with()
-        start_mock.assert_called_once_with(net)
+        start_mock.assert_called_once_with(
+            net,
+            allowed_wan_domains=ktp_controller.SETTINGS.networking_allowed_wan_domains,
+            ipset_name="allow_eth0_to_wan",
+        )
 
     def test_dhcp_dns_server_still_started_when_configuring_nm_fails(self, mocker):
         net = mocker.Mock()
@@ -166,7 +171,11 @@ class TestCommandStart:
         )
 
         assert result == 0
-        start_mock.assert_called_once_with(net)
+        start_mock.assert_called_once_with(
+            net,
+            allowed_wan_domains=ktp_controller.SETTINGS.networking_allowed_wan_domains,
+            ipset_name="allow_eth0_to_wan",
+        )
 
     def test_creates_ipset_before_bringing_net_up(self, mocker):
         calls = []
