@@ -86,12 +86,18 @@ def _command_start(
     with open(dnsmasq._DNSMASQ_HOSTS_FILE, "w", encoding="utf-8"):
         pass  # truncate before start
 
-    try:
-        nm._configure_nm_dnsmasq_plugin()
-    finally:
-        # The DHCP/DNS server must be (re)started regardless of whether
-        # configuring NetworkManager succeeded.
-        return dnsmasq._start_dhcp_dns_server(net)  # noqa: B012
+    # The DHCP/DNS server must be (re)started regardless of whether
+    # configuring NetworkManager succeeded.
+    return typing.cast(
+        int,
+        _run_regardless(
+            [
+                nm._configure_nm_dnsmasq_plugin,
+                lambda: dnsmasq._start_dhcp_dns_server(net),
+            ],
+            result_index=1,
+        ),
+    )
 
 
 def _command_stop(
