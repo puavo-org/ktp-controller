@@ -20,10 +20,10 @@ Names currently accessed this way (drop the leading underscore, keep
 the rest of the name, update all call sites):
 
 - `dnsmasq.py`: `_start_dhcp_dns_server`, `_stop_dhcp_dns_server`,
-  `_kill_dnsmasq`, `_DNSMASQ_HOSTS_FILE`, `_LOCAL_DOMAIN`,
-  `_KOE_ABITTI_NET_DNS_SERVERS` (all read from `main.py` and/or
-  `nm.py`).
-- `nm.py`: `_configure_networkmanager`, `_unconfigure_networkmanager`,
+  `_kill_dnsmasq`, `_render_koe_abitti_net_dns_lines`,
+  `_DNSMASQ_HOSTS_FILE`, `_LOCAL_DOMAIN`, `_KOE_ABITTI_NET_DNS_SERVERS`
+  (all read from `main.py` and/or `nm.py`).
+- `nm.py`: `_configure_nm_dnsmasq_plugin`, `_unconfigure_nm_dnsmasq_plugin`,
   `_reload_networkmanager` (all called from `main.py`).
 
 Names that stay private (no external access, keep the underscore):
