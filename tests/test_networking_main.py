@@ -197,7 +197,7 @@ class TestCommandStart:
             "eth0", "10.0.0.0/24", 0, _domain_args()
         )
 
-        create_mock.assert_called_once_with("allow_eth0_to_wan", 30)
+        create_mock.assert_called_once_with("allow_eth0_to_wan", 7200)
         assert calls == ["ipset.create", "net.up"]
 
     def test_flushes_existing_ipset_and_logs_warning(self, mocker, caplog):
