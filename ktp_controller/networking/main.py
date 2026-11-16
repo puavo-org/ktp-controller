@@ -178,15 +178,19 @@ def _command_del_domain(
     with open(dnsmasq._DNSMASQ_HOSTS_FILE, "w", encoding="utf-8"):
         pass  # just truncate
 
-    try:
-        nm._reload_networkmanager()
-    finally:
-        try:
-            ktp_controller.nginx.disable_nginx_wui_tls_reverse_proxy()
-        finally:
-            # dnsmasq must always be signalled to reload regardless of whether
-            # reloading NetworkManager failed.
-            return int(dnsmasq._kill_dnsmasq(signal.SIGHUP))  # noqa: B012
+    # dnsmasq must always be signalled to reload regardless of whether
+    # reloading NetworkManager failed.
+    return typing.cast(
+        int,
+        _run_regardless(
+            [
+                nm._reload_networkmanager,
+                ktp_controller.nginx.disable_nginx_wui_tls_reverse_proxy,
+                lambda: int(dnsmasq._kill_dnsmasq(signal.SIGHUP)),
+            ],
+            result_index=2,
+        ),
+    )
 
 
 def _main() -> int:
