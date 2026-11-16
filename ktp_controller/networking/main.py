@@ -107,6 +107,8 @@ def _run_regardless(
 def _command_start(
     interface: str, network: str, number: int, args: argparse.Namespace
 ) -> int:
+    _create_allow_to_wan_ipset(interface)
+
     net = ktp_controller.net.Net(interface, network, number)
     net.up()
 
@@ -140,6 +142,7 @@ def _command_stop(
                 nm.unconfigure_nm_dnsmasq_plugin,
                 dnsmasq.stop_dhcp_dns_server,
                 net.down,
+                lambda: _destroy_allow_to_wan_ipset(interface),
             ],
             result_index=1,
         ),

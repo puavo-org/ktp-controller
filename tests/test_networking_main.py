@@ -127,6 +127,8 @@ class TestCommandStart:
     def test_happy_path_configures_nm_then_starts_dhcp_dns_server(self, mocker):
         net = mocker.Mock()
         mocker.patch("ktp_controller.net.Net", return_value=net)
+        mocker.patch("ktp_controller.networking.ipset.ipset_exists", return_value=False)
+        mocker.patch("ktp_controller.networking.ipset.create_ipset")
         configure_mock = mocker.patch(
             "ktp_controller.networking.nm.configure_nm_dnsmasq_plugin"
         )
@@ -147,6 +149,8 @@ class TestCommandStart:
     def test_dhcp_dns_server_still_started_when_configuring_nm_fails(self, mocker):
         net = mocker.Mock()
         mocker.patch("ktp_controller.net.Net", return_value=net)
+        mocker.patch("ktp_controller.networking.ipset.ipset_exists", return_value=False)
+        mocker.patch("ktp_controller.networking.ipset.create_ipset")
         mocker.patch(
             "ktp_controller.networking.nm.configure_nm_dnsmasq_plugin",
             side_effect=OSError("boom"),
@@ -170,6 +174,7 @@ class TestCommandStop:
     ):
         net = mocker.Mock()
         mocker.patch("ktp_controller.net.Net", return_value=net)
+        mocker.patch("ktp_controller.networking.ipset.ipset_exists", return_value=False)
         unconfigure_mock = mocker.patch(
             "ktp_controller.networking.nm.unconfigure_nm_dnsmasq_plugin"
         )
@@ -190,6 +195,7 @@ class TestCommandStop:
         net = mocker.Mock()
         net.down.side_effect = OSError("boom")
         mocker.patch("ktp_controller.net.Net", return_value=net)
+        mocker.patch("ktp_controller.networking.ipset.ipset_exists", return_value=False)
         mocker.patch("ktp_controller.networking.nm.unconfigure_nm_dnsmasq_plugin")
         mocker.patch(
             "ktp_controller.networking.dnsmasq.stop_dhcp_dns_server", return_value=0
