@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os.path
 
 import pytest
@@ -167,6 +168,88 @@ class TestCommandStart:
         assert result == 0
         start_mock.assert_called_once_with(net)
 
+    def test_creates_ipset_before_bringing_net_up(self, mocker):
+        calls = []
+        net = mocker.Mock()
+        net.up.side_effect = lambda: calls.append("net.up")
+        mocker.patch("ktp_controller.net.Net", return_value=net)
+        mocker.patch("ktp_controller.networking.ipset.ipset_exists", return_value=False)
+        create_mock = mocker.patch(
+            "ktp_controller.networking.ipset.create_ipset",
+            side_effect=lambda *args, **kwargs: calls.append("ipset.create"),
+        )
+        mocker.patch("ktp_controller.networking.nm.configure_nm_dnsmasq_plugin")
+        mocker.patch(
+            "ktp_controller.networking.dnsmasq.start_dhcp_dns_server", return_value=0
+        )
+        mocker.patch("ktp_controller.networking.dnsmasq.HOSTS_FILE", os.devnull)
+
+        ktp_controller.networking.main._command_start(
+            "eth0", "10.0.0.0/24", 0, _domain_args()
+        )
+
+        create_mock.assert_called_once_with("allow_eth0_to_wan", 30)
+        assert calls == ["ipset.create", "net.up"]
+
+    def test_flushes_existing_ipset_and_logs_warning(self, mocker, caplog):
+        net = mocker.Mock()
+        mocker.patch("ktp_controller.net.Net", return_value=net)
+        mocker.patch("ktp_controller.networking.ipset.ipset_exists", return_value=True)
+        flush_mock = mocker.patch("ktp_controller.networking.ipset.flush_ipset")
+        create_mock = mocker.patch("ktp_controller.networking.ipset.create_ipset")
+        mocker.patch("ktp_controller.networking.nm.configure_nm_dnsmasq_plugin")
+        mocker.patch(
+            "ktp_controller.networking.dnsmasq.start_dhcp_dns_server", return_value=0
+        )
+        mocker.patch("ktp_controller.networking.dnsmasq.HOSTS_FILE", os.devnull)
+
+        with caplog.at_level(logging.WARNING):
+            ktp_controller.networking.main._command_start(
+                "eth0", "10.0.0.0/24", 0, _domain_args()
+            )
+
+        flush_mock.assert_called_once_with("allow_eth0_to_wan")
+        create_mock.assert_not_called()
+        assert any(
+            record.levelname == "WARNING" and "allow_eth0_to_wan" in record.getMessage()
+            for record in caplog.records
+        )
+
+    def test_skips_ipset_handling_when_interface_not_configured(self, mocker):
+        net = mocker.Mock()
+        mocker.patch("ktp_controller.net.Net", return_value=net)
+        exists_mock = mocker.patch("ktp_controller.networking.ipset.ipset_exists")
+        create_mock = mocker.patch("ktp_controller.networking.ipset.create_ipset")
+        flush_mock = mocker.patch("ktp_controller.networking.ipset.flush_ipset")
+        mocker.patch("ktp_controller.networking.nm.configure_nm_dnsmasq_plugin")
+        mocker.patch(
+            "ktp_controller.networking.dnsmasq.start_dhcp_dns_server", return_value=0
+        )
+        mocker.patch("ktp_controller.networking.dnsmasq.HOSTS_FILE", os.devnull)
+
+        ktp_controller.networking.main._command_start(
+            "", "10.0.0.0/24", 0, _domain_args()
+        )
+
+        exists_mock.assert_not_called()
+        create_mock.assert_not_called()
+        flush_mock.assert_not_called()
+
+    def test_ipset_creation_failure_aborts_start_before_net_up(self, mocker):
+        net = mocker.Mock()
+        mocker.patch("ktp_controller.net.Net", return_value=net)
+        mocker.patch("ktp_controller.networking.ipset.ipset_exists", return_value=False)
+        mocker.patch(
+            "ktp_controller.networking.ipset.create_ipset", side_effect=OSError("boom")
+        )
+
+        with pytest.raises(OSError, match="boom"):
+            ktp_controller.networking.main._command_start(
+                "eth0", "10.0.0.0/24", 0, _domain_args()
+            )
+
+        net.up.assert_not_called()
+
 
 class TestCommandStop:
     def test_happy_path_unconfigures_nm_stops_dhcp_dns_server_and_brings_net_down(
@@ -196,6 +279,99 @@ class TestCommandStop:
         net.down.side_effect = OSError("boom")
         mocker.patch("ktp_controller.net.Net", return_value=net)
         mocker.patch("ktp_controller.networking.ipset.ipset_exists", return_value=False)
+        mocker.patch("ktp_controller.networking.nm.unconfigure_nm_dnsmasq_plugin")
+        mocker.patch(
+            "ktp_controller.networking.dnsmasq.stop_dhcp_dns_server", return_value=0
+        )
+
+        with pytest.raises(OSError, match="boom"):
+            ktp_controller.networking.main._command_stop(
+                "eth0", "10.0.0.0/24", 0, _domain_args()
+            )
+
+    def test_destroys_ipset_after_net_down(self, mocker):
+        calls = []
+        net = mocker.Mock()
+        net.down.side_effect = lambda: calls.append("net.down")
+        mocker.patch("ktp_controller.net.Net", return_value=net)
+        mocker.patch("ktp_controller.networking.ipset.ipset_exists", return_value=True)
+        destroy_mock = mocker.patch(
+            "ktp_controller.networking.ipset.destroy_ipset",
+            side_effect=lambda *args, **kwargs: calls.append("ipset.destroy"),
+        )
+        mocker.patch("ktp_controller.networking.nm.unconfigure_nm_dnsmasq_plugin")
+        mocker.patch(
+            "ktp_controller.networking.dnsmasq.stop_dhcp_dns_server", return_value=0
+        )
+
+        ktp_controller.networking.main._command_stop(
+            "eth0", "10.0.0.0/24", 0, _domain_args()
+        )
+
+        destroy_mock.assert_called_once_with("allow_eth0_to_wan")
+        assert calls == ["net.down", "ipset.destroy"]
+
+    def test_skips_destroy_and_does_not_warn_when_ipset_missing(self, mocker, caplog):
+        net = mocker.Mock()
+        mocker.patch("ktp_controller.net.Net", return_value=net)
+        mocker.patch("ktp_controller.networking.ipset.ipset_exists", return_value=False)
+        destroy_mock = mocker.patch("ktp_controller.networking.ipset.destroy_ipset")
+        mocker.patch("ktp_controller.networking.nm.unconfigure_nm_dnsmasq_plugin")
+        mocker.patch(
+            "ktp_controller.networking.dnsmasq.stop_dhcp_dns_server", return_value=0
+        )
+
+        with caplog.at_level(logging.WARNING):
+            ktp_controller.networking.main._command_stop(
+                "eth0", "10.0.0.0/24", 0, _domain_args()
+            )
+
+        destroy_mock.assert_not_called()
+        assert caplog.records == []
+
+    def test_skips_ipset_handling_when_interface_not_configured(self, mocker):
+        net = mocker.Mock()
+        mocker.patch("ktp_controller.net.Net", return_value=net)
+        exists_mock = mocker.patch("ktp_controller.networking.ipset.ipset_exists")
+        destroy_mock = mocker.patch("ktp_controller.networking.ipset.destroy_ipset")
+        mocker.patch("ktp_controller.networking.nm.unconfigure_nm_dnsmasq_plugin")
+        mocker.patch(
+            "ktp_controller.networking.dnsmasq.stop_dhcp_dns_server", return_value=0
+        )
+
+        ktp_controller.networking.main._command_stop(
+            "", "10.0.0.0/24", 0, _domain_args()
+        )
+
+        exists_mock.assert_not_called()
+        destroy_mock.assert_not_called()
+
+    def test_ipset_destroy_still_runs_when_net_down_fails(self, mocker):
+        net = mocker.Mock()
+        net.down.side_effect = OSError("boom")
+        mocker.patch("ktp_controller.net.Net", return_value=net)
+        mocker.patch("ktp_controller.networking.ipset.ipset_exists", return_value=True)
+        destroy_mock = mocker.patch("ktp_controller.networking.ipset.destroy_ipset")
+        mocker.patch("ktp_controller.networking.nm.unconfigure_nm_dnsmasq_plugin")
+        mocker.patch(
+            "ktp_controller.networking.dnsmasq.stop_dhcp_dns_server", return_value=0
+        )
+
+        with pytest.raises(OSError, match="boom"):
+            ktp_controller.networking.main._command_stop(
+                "eth0", "10.0.0.0/24", 0, _domain_args()
+            )
+
+        destroy_mock.assert_called_once_with("allow_eth0_to_wan")
+
+    def test_ipset_destroy_failure_overrides_already_computed_result(self, mocker):
+        net = mocker.Mock()
+        mocker.patch("ktp_controller.net.Net", return_value=net)
+        mocker.patch("ktp_controller.networking.ipset.ipset_exists", return_value=True)
+        mocker.patch(
+            "ktp_controller.networking.ipset.destroy_ipset",
+            side_effect=OSError("boom"),
+        )
         mocker.patch("ktp_controller.networking.nm.unconfigure_nm_dnsmasq_plugin")
         mocker.patch(
             "ktp_controller.networking.dnsmasq.stop_dhcp_dns_server", return_value=0
