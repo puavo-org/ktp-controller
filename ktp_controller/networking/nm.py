@@ -21,7 +21,7 @@ def _reload_networkmanager() -> None:
         )
 
 
-def _configure_networkmanager() -> None:
+def _configure_nm_dnsmasq_plugin() -> None:
     """Best-effort inclusion of the domain record in the local DNS controlled by NetworkManager"""
     try:
         with open(f"{_NM_CONF_FILE}.tmp", "w", encoding="utf-8") as nm_conf_file:
@@ -45,7 +45,7 @@ def _configure_networkmanager() -> None:
     _reload_networkmanager()
 
 
-def _unconfigure_networkmanager() -> None:
+def _unconfigure_nm_dnsmasq_plugin() -> None:
     try:
         os.unlink(_NM_CONF_FILE)
     except FileNotFoundError:

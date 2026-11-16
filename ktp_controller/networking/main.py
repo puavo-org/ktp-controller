@@ -54,7 +54,7 @@ def _command_start(
         pass  # truncate before start
 
     try:
-        nm._configure_networkmanager()
+        nm._configure_nm_dnsmasq_plugin()
     finally:
         # The DHCP/DNS server must be (re)started regardless of whether
         # configuring NetworkManager succeeded.
@@ -66,7 +66,7 @@ def _command_stop(
 ) -> int:
     net = ktp_controller.net.Net(interface, network, number)
     try:
-        nm._unconfigure_networkmanager()
+        nm._unconfigure_nm_dnsmasq_plugin()
     finally:
         # The DHCP/DNS server must be stopped and the interface brought
         # down regardless of whether unconfiguring NetworkManager failed.
