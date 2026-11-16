@@ -119,21 +119,34 @@ def _command_stop(
     )
 
 
+def _validate_nginx_args(args: argparse.Namespace) -> bool:
+    nginx_args = [args.nginx_port, args.nginx_crt_filepath, args.nginx_key_filepath]
+    if any(nginx_args) and not all(nginx_args):
+        _LOGGER.error("all --nginx-* options must be given")
+        return False
+    return True
+
+
+def _resolve_fqdn_ipv4_address(interface: str) -> ipaddress.IPv4Address:
+    return ipaddress.IPv4Address(
+        ktp_controller.net.interface_addresses(interface)["AF_INET"][0]["addr"]
+    )
+
+
+def _write_dnsmasq_hosts_entry(ipv4_addr: ipaddress.IPv4Address, fqdn: str) -> None:
+    with open(dnsmasq._DNSMASQ_HOSTS_FILE, "w", encoding="utf-8") as dnsmasq_hosts_file:
+        dnsmasq_hosts_file.write(f"{ipv4_addr} {fqdn}\n")
+
+
 def _command_set_domain(
     interface: str, network: str, number: int, args: argparse.Namespace
 ) -> int:
 
-    nginx_args = [args.nginx_port, args.nginx_crt_filepath, args.nginx_key_filepath]
-
-    if any(nginx_args) and not all(nginx_args):
-        _LOGGER.error("all --nginx-* options must be given")
+    if not _validate_nginx_args(args):
         return 1
 
-    ipv4_addr = ipaddress.IPv4Address(
-        ktp_controller.net.interface_addresses(interface)["AF_INET"][0]["addr"]
-    )
-    with open(dnsmasq._DNSMASQ_HOSTS_FILE, "w", encoding="utf-8") as dnsmasq_hosts_file:
-        dnsmasq_hosts_file.write(f"{ipv4_addr} {args.FQDN}\n")
+    ipv4_addr = _resolve_fqdn_ipv4_address(interface)
+    _write_dnsmasq_hosts_entry(ipv4_addr, args.FQDN)
 
     try:
         nm._reload_networkmanager()
