@@ -92,7 +92,7 @@ def _command_start(
         int,
         _run_regardless(
             [
-                nm._configure_nm_dnsmasq_plugin,
+                nm.configure_nm_dnsmasq_plugin,
                 lambda: dnsmasq.start_dhcp_dns_server(net),
             ],
             result_index=1,
@@ -110,7 +110,7 @@ def _command_stop(
         int,
         _run_regardless(
             [
-                nm._unconfigure_nm_dnsmasq_plugin,
+                nm.unconfigure_nm_dnsmasq_plugin,
                 dnsmasq.stop_dhcp_dns_server,
                 net.down,
             ],
@@ -163,7 +163,7 @@ def _command_set_domain(
         int,
         _run_regardless(
             [
-                nm._reload_networkmanager,
+                nm.reload_networkmanager,
                 _maybe_enable_nginx_wui_tls_reverse_proxy,
                 lambda: int(dnsmasq.kill_dnsmasq(signal.SIGHUP)),
             ],
@@ -184,7 +184,7 @@ def _command_del_domain(
         int,
         _run_regardless(
             [
-                nm._reload_networkmanager,
+                nm.reload_networkmanager,
                 ktp_controller.nginx.disable_nginx_wui_tls_reverse_proxy,
                 lambda: int(dnsmasq.kill_dnsmasq(signal.SIGHUP)),
             ],

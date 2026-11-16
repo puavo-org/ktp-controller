@@ -10,7 +10,7 @@ _LOGGER = logging.getLogger(__name__)
 _NM_CONF_FILE = "/etc/NetworkManager/dnsmasq.d/puavo-ers.conf"
 
 
-def _reload_networkmanager() -> None:
+def reload_networkmanager() -> None:
     completed_process = subprocess.run(
         ["systemctl", "reload", "NetworkManager.service"],
         capture_output=True,
@@ -21,7 +21,7 @@ def _reload_networkmanager() -> None:
         )
 
 
-def _configure_nm_dnsmasq_plugin() -> None:
+def configure_nm_dnsmasq_plugin() -> None:
     """Best-effort inclusion of the domain record in the local DNS controlled by NetworkManager"""
     try:
         with open(f"{_NM_CONF_FILE}.tmp", "w", encoding="utf-8") as nm_conf_file:
@@ -42,13 +42,13 @@ def _configure_nm_dnsmasq_plugin() -> None:
         return
     os.rename(f"{_NM_CONF_FILE}.tmp", _NM_CONF_FILE)
 
-    _reload_networkmanager()
+    reload_networkmanager()
 
 
-def _unconfigure_nm_dnsmasq_plugin() -> None:
+def unconfigure_nm_dnsmasq_plugin() -> None:
     try:
         os.unlink(_NM_CONF_FILE)
     except FileNotFoundError:
         return  # A bit weird situation, but that's ok.
 
-    _reload_networkmanager()
+    reload_networkmanager()
