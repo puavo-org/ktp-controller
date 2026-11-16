@@ -44,6 +44,39 @@ _THIS_NAME = "ktp-controller-networking"
 _LOGGER = logging.getLogger(_THIS_NAME)
 
 
+def _run_regardless(
+    steps: typing.Sequence[typing.Callable[[], typing.Any]], result_index: int
+) -> typing.Any:
+    """Run every step in order regardless of whether an earlier one raised.
+
+    steps[result_index] supplies the return value. Steps after it run as
+    pure cleanup, but a failure in one of them still overrides/propagates
+    instead of being swallowed, matching ordinary nested try/finally
+    semantics.
+    """
+
+    def after(i: int) -> None:
+        if i >= len(steps):
+            return
+        try:
+            steps[i]()
+        finally:
+            after(i + 1)
+
+    def before(i: int) -> typing.Any:
+        if i == result_index:
+            try:
+                return steps[i]()
+            finally:
+                after(i + 1)
+        try:
+            steps[i]()
+        finally:
+            return before(i + 1)  # noqa: B012 (intentional: swallow step i's failure)
+
+    return before(0)
+
+
 def _command_start(
     interface: str, network: str, number: int, args: argparse.Namespace
 ) -> int:
