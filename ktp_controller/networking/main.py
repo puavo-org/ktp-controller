@@ -29,7 +29,6 @@ import argparse
 import ipaddress
 import logging
 import os
-import os.path
 import signal
 import typing
 
