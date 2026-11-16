@@ -23,6 +23,16 @@ _KOE_ABITTI_NET_DNS_SERVERS = [
 ]
 
 
+def _render_koe_abitti_net_dns_lines() -> list[str]:
+    lines = [
+        f"server=/{_LOCAL_DOMAIN}/{koe_abitti_net_dns_server}"
+        for koe_abitti_net_dns_server in _KOE_ABITTI_NET_DNS_SERVERS
+    ]
+    if len(_KOE_ABITTI_NET_DNS_SERVERS) > 0:
+        lines.append("all-servers")
+    return lines
+
+
 def _start_dhcp_dns_server(net: ktp_controller.net.Net) -> int:
     conf_lines = [
         "port=53",
@@ -44,12 +54,7 @@ def _start_dhcp_dns_server(net: ktp_controller.net.Net) -> int:
         f"addn-hosts={_DNSMASQ_HOSTS_FILE}",
     ]
 
-    conf_lines.extend(
-        f"server=/koe.abitti.net/{koe_abitti_net_dns_server}"
-        for koe_abitti_net_dns_server in _KOE_ABITTI_NET_DNS_SERVERS
-    )
-    if len(_KOE_ABITTI_NET_DNS_SERVERS) > 0:
-        conf_lines.append("all-servers")
+    conf_lines.extend(_render_koe_abitti_net_dns_lines())
 
     try:
         user = os.environ["SUDO_USER"]
