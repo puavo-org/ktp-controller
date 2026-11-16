@@ -25,7 +25,9 @@ def test_start_dhcp_dns_server_writes_conf_file_and_invokes_dnsmasq(
         "ktp_controller.networking.dnsmasq.subprocess.check_call", return_value=None
     )
 
-    result = ktp_controller.networking.dnsmasq.start_dhcp_dns_server(_FakeNet())
+    result = ktp_controller.networking.dnsmasq.start_dhcp_dns_server(
+        _FakeNet(), allowed_wan_domains=[], ipset_name=None
+    )
 
     assert result == 0
     check_call_mock.assert_called_once_with(["dnsmasq", f"--conf-file={conf_filepath}"])
@@ -73,7 +75,9 @@ def test_start_dhcp_dns_server_adds_user_option_from_sudo_user(
         "ktp_controller.networking.dnsmasq.subprocess.check_call", return_value=None
     )
 
-    ktp_controller.networking.dnsmasq.start_dhcp_dns_server(_FakeNet())
+    ktp_controller.networking.dnsmasq.start_dhcp_dns_server(
+        _FakeNet(), allowed_wan_domains=[], ipset_name=None
+    )
 
     with open(conf_filepath, encoding="utf-8") as conf_file:
         conf_lines = conf_file.read().splitlines()
