@@ -27,13 +27,8 @@ def _configure_networkmanager() -> None:
         with open(f"{_NM_CONF_FILE}.tmp", "w", encoding="utf-8") as nm_conf_file:
             print(f"address=/{dnsmasq._LOCAL_DOMAIN}/::", file=nm_conf_file)
             print(f"addn-hosts={dnsmasq._DNSMASQ_HOSTS_FILE}", file=nm_conf_file)
-            for koe_abitti_net_dns_server in dnsmasq._KOE_ABITTI_NET_DNS_SERVERS:
-                print(
-                    f"server=/koe.abitti.net/{koe_abitti_net_dns_server}",
-                    file=nm_conf_file,
-                )
-            if len(dnsmasq._KOE_ABITTI_NET_DNS_SERVERS) > 0:
-                print("all-servers", file=nm_conf_file)
+            for line in dnsmasq._render_koe_abitti_net_dns_lines():
+                print(line, file=nm_conf_file)
     except FileNotFoundError:
         # This means that /etc/NetworkManager/dnsmasq.d does not
         # exist, which tells us that NetworkManager is most probably
