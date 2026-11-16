@@ -4,6 +4,9 @@ import os
 import subprocess
 import time
 
+# Third-party imports
+import validators
+
 # Internal imports
 import ktp_controller.net
 
@@ -33,7 +36,28 @@ def render_koe_abitti_net_dns_lines() -> list[str]:
     return lines
 
 
-def start_dhcp_dns_server(net: ktp_controller.net.Net) -> int:
+def render_ipset_lines(
+    *, allowed_wan_domains: list[str], ipset_name: str | None
+) -> list[str]:
+    if ipset_name is None:
+        return []
+
+    if len(allowed_wan_domains) == 0:
+        return []
+
+    for d in allowed_wan_domains:
+        if not validators.domain(d):
+            raise ValueError("invalid domain", d)
+
+    return [f"ipset=/{'/'.join(allowed_wan_domains)}/{ipset_name}"]
+
+
+def start_dhcp_dns_server(
+    net: ktp_controller.net.Net,
+    *,
+    allowed_wan_domains: list[str],
+    ipset_name: str | None,
+) -> int:
     conf_lines = [
         "port=53",
         f"listen-address={net.host_address}",
@@ -55,6 +79,12 @@ def start_dhcp_dns_server(net: ktp_controller.net.Net) -> int:
     ]
 
     conf_lines.extend(render_koe_abitti_net_dns_lines())
+    conf_lines.extend(
+        render_ipset_lines(
+            allowed_wan_domains=allowed_wan_domains,
+            ipset_name=ipset_name,
+        )
+    )
 
     try:
         user = os.environ["SUDO_USER"]

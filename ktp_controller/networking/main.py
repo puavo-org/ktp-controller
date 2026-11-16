@@ -39,7 +39,7 @@ import ktp_controller.networking.ipset as ipset
 import ktp_controller.networking.nm as nm
 import ktp_controller.nginx
 import ktp_controller.puavo.conf
-from ktp_controller import VERSION
+from ktp_controller import SETTINGS, VERSION
 
 _THIS_NAME = "ktp-controller-networking"
 _LOGGER = logging.getLogger(_THIS_NAME)
@@ -122,7 +122,11 @@ def _command_start(
         _run_regardless(
             [
                 nm.configure_nm_dnsmasq_plugin,
-                lambda: dnsmasq.start_dhcp_dns_server(net),
+                lambda: dnsmasq.start_dhcp_dns_server(
+                    net,
+                    allowed_wan_domains=SETTINGS.networking_allowed_wan_domains,
+                    ipset_name=_allow_to_wan_ipset_name(interface),
+                ),
             ],
             result_index=1,
         ),
