@@ -23,6 +23,41 @@ def test_destroy_ipset_invokes_ipset_destroy(mocker):
     check_call_mock.assert_called_once_with(["ipset", "destroy", "myset"])
 
 
+def test_ipset_exists_returns_true_when_ipset_list_succeeds(mocker):
+    run_mock = mocker.patch(
+        "ktp_controller.networking.ipset.subprocess.run",
+        return_value=mocker.Mock(returncode=0),
+    )
+
+    exists = ktp_controller.networking.ipset.ipset_exists("myset")
+
+    assert exists is True
+    run_mock.assert_called_once_with(
+        ["ipset", "list", "myset", "-name"], capture_output=True
+    )
+
+
+def test_ipset_exists_returns_false_when_ipset_list_fails(mocker):
+    mocker.patch(
+        "ktp_controller.networking.ipset.subprocess.run",
+        return_value=mocker.Mock(returncode=1),
+    )
+
+    exists = ktp_controller.networking.ipset.ipset_exists("myset")
+
+    assert exists is False
+
+
+def test_flush_ipset_invokes_ipset_flush(mocker):
+    check_call_mock = mocker.patch(
+        "ktp_controller.networking.ipset.subprocess.check_call", return_value=None
+    )
+
+    ktp_controller.networking.ipset.flush_ipset("myset")
+
+    check_call_mock.assert_called_once_with(["ipset", "flush", "myset"])
+
+
 def test_list_ipset_entries_parses_members_with_timeout(mocker):
     output = b"""\
 Name: myset
