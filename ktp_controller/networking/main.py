@@ -83,7 +83,7 @@ def _command_start(
     net = ktp_controller.net.Net(interface, network, number)
     net.up()
 
-    with open(dnsmasq._DNSMASQ_HOSTS_FILE, "w", encoding="utf-8"):
+    with open(dnsmasq.DNSMASQ_HOSTS_FILE, "w", encoding="utf-8"):
         pass  # truncate before start
 
     # The DHCP/DNS server must be (re)started regardless of whether
@@ -93,7 +93,7 @@ def _command_start(
         _run_regardless(
             [
                 nm._configure_nm_dnsmasq_plugin,
-                lambda: dnsmasq._start_dhcp_dns_server(net),
+                lambda: dnsmasq.start_dhcp_dns_server(net),
             ],
             result_index=1,
         ),
@@ -111,7 +111,7 @@ def _command_stop(
         _run_regardless(
             [
                 nm._unconfigure_nm_dnsmasq_plugin,
-                dnsmasq._stop_dhcp_dns_server,
+                dnsmasq.stop_dhcp_dns_server,
                 net.down,
             ],
             result_index=1,
@@ -134,7 +134,7 @@ def _resolve_fqdn_ipv4_address(interface: str) -> ipaddress.IPv4Address:
 
 
 def _write_dnsmasq_hosts_entry(ipv4_addr: ipaddress.IPv4Address, fqdn: str) -> None:
-    with open(dnsmasq._DNSMASQ_HOSTS_FILE, "w", encoding="utf-8") as dnsmasq_hosts_file:
+    with open(dnsmasq.DNSMASQ_HOSTS_FILE, "w", encoding="utf-8") as dnsmasq_hosts_file:
         dnsmasq_hosts_file.write(f"{ipv4_addr} {fqdn}\n")
 
 
@@ -165,7 +165,7 @@ def _command_set_domain(
             [
                 nm._reload_networkmanager,
                 _maybe_enable_nginx_wui_tls_reverse_proxy,
-                lambda: int(dnsmasq._kill_dnsmasq(signal.SIGHUP)),
+                lambda: int(dnsmasq.kill_dnsmasq(signal.SIGHUP)),
             ],
             result_index=2,
         ),
@@ -175,7 +175,7 @@ def _command_set_domain(
 def _command_del_domain(
     interface: str, network: str, number: int, args: argparse.Namespace
 ) -> int:
-    with open(dnsmasq._DNSMASQ_HOSTS_FILE, "w", encoding="utf-8"):
+    with open(dnsmasq.DNSMASQ_HOSTS_FILE, "w", encoding="utf-8"):
         pass  # just truncate
 
     # dnsmasq must always be signalled to reload regardless of whether
@@ -186,7 +186,7 @@ def _command_del_domain(
             [
                 nm._reload_networkmanager,
                 ktp_controller.nginx.disable_nginx_wui_tls_reverse_proxy,
-                lambda: int(dnsmasq._kill_dnsmasq(signal.SIGHUP)),
+                lambda: int(dnsmasq.kill_dnsmasq(signal.SIGHUP)),
             ],
             result_index=2,
         ),

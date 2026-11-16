@@ -11,33 +11,33 @@ _THIS_NAME = "ktp-controller-networking"
 _LOGGER = logging.getLogger(__name__)
 _DNSMASQ_PID_FILE = f"/run/{_THIS_NAME}-dnsmasq.pid"
 _DNSMASQ_LEASES_FILE = f"/var/lib/{_THIS_NAME}-dnsmasq.leases"
-_DNSMASQ_HOSTS_FILE = f"/var/lib/{_THIS_NAME}-dnsmasq.hosts"
+DNSMASQ_HOSTS_FILE = f"/var/lib/{_THIS_NAME}-dnsmasq.hosts"
 _DNSMASQ_CONF_FILE = f"/var/lib/{_THIS_NAME}-dnsmasq.conf"
-_LOCAL_DOMAIN = "koe.abitti.net"
+LOCAL_DOMAIN = "koe.abitti.net"
 
 
-_KOE_ABITTI_NET_DNS_SERVERS = [
+KOE_ABITTI_NET_DNS_SERVERS = [
     "9.9.9.9",
     "1.1.1.1",
     "8.8.8.8",
 ]
 
 
-def _render_koe_abitti_net_dns_lines() -> list[str]:
+def render_koe_abitti_net_dns_lines() -> list[str]:
     lines = [
-        f"server=/{_LOCAL_DOMAIN}/{koe_abitti_net_dns_server}"
-        for koe_abitti_net_dns_server in _KOE_ABITTI_NET_DNS_SERVERS
+        f"server=/{LOCAL_DOMAIN}/{koe_abitti_net_dns_server}"
+        for koe_abitti_net_dns_server in KOE_ABITTI_NET_DNS_SERVERS
     ]
-    if len(_KOE_ABITTI_NET_DNS_SERVERS) > 0:
+    if len(KOE_ABITTI_NET_DNS_SERVERS) > 0:
         lines.append("all-servers")
     return lines
 
 
-def _start_dhcp_dns_server(net: ktp_controller.net.Net) -> int:
+def start_dhcp_dns_server(net: ktp_controller.net.Net) -> int:
     conf_lines = [
         "port=53",
         f"listen-address={net.host_address}",
-        f"domain={_LOCAL_DOMAIN},{net.network}",
+        f"domain={LOCAL_DOMAIN},{net.network}",
         "domain-needed",
         "bogus-priv",
         "no-hosts",
@@ -51,10 +51,10 @@ def _start_dhcp_dns_server(net: ktp_controller.net.Net) -> int:
         "log-dhcp",
         "log-debug",
         f"pid-file={_DNSMASQ_PID_FILE}",
-        f"addn-hosts={_DNSMASQ_HOSTS_FILE}",
+        f"addn-hosts={DNSMASQ_HOSTS_FILE}",
     ]
 
-    conf_lines.extend(_render_koe_abitti_net_dns_lines())
+    conf_lines.extend(render_koe_abitti_net_dns_lines())
 
     try:
         user = os.environ["SUDO_USER"]
@@ -79,7 +79,7 @@ def _start_dhcp_dns_server(net: ktp_controller.net.Net) -> int:
     return 0
 
 
-def _kill_dnsmasq(sig: int) -> bool:
+def kill_dnsmasq(sig: int) -> bool:
     with open(_DNSMASQ_PID_FILE, encoding="ascii") as dnsmasq_pid_file:
         dnsmasq_pid = int(dnsmasq_pid_file.read().strip())
 
@@ -92,19 +92,19 @@ def _kill_dnsmasq(sig: int) -> bool:
     return False
 
 
-def _stop_dhcp_dns_server() -> int:
+def stop_dhcp_dns_server() -> int:
     # First gently.
-    if _kill_dnsmasq(15):
+    if kill_dnsmasq(15):
         return 0
 
     # Give it some time to die.
     for _ in range(4):
         time.sleep(0.5)
-        if _kill_dnsmasq(0):
+        if kill_dnsmasq(0):
             return 0
 
     # Then with force.
-    if _kill_dnsmasq(9):
+    if kill_dnsmasq(9):
         _LOGGER.error("failed to kill dnsmasq gracefully!")
         return 1
 

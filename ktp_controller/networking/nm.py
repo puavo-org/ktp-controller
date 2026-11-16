@@ -25,9 +25,9 @@ def _configure_nm_dnsmasq_plugin() -> None:
     """Best-effort inclusion of the domain record in the local DNS controlled by NetworkManager"""
     try:
         with open(f"{_NM_CONF_FILE}.tmp", "w", encoding="utf-8") as nm_conf_file:
-            print(f"address=/{dnsmasq._LOCAL_DOMAIN}/::", file=nm_conf_file)
-            print(f"addn-hosts={dnsmasq._DNSMASQ_HOSTS_FILE}", file=nm_conf_file)
-            for line in dnsmasq._render_koe_abitti_net_dns_lines():
+            print(f"address=/{dnsmasq.LOCAL_DOMAIN}/::", file=nm_conf_file)
+            print(f"addn-hosts={dnsmasq.DNSMASQ_HOSTS_FILE}", file=nm_conf_file)
+            for line in dnsmasq.render_koe_abitti_net_dns_lines():
                 print(line, file=nm_conf_file)
     except FileNotFoundError:
         # This means that /etc/NetworkManager/dnsmasq.d does not

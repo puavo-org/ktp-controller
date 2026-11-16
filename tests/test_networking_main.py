@@ -131,11 +131,9 @@ class TestCommandStart:
             "ktp_controller.networking.nm._configure_nm_dnsmasq_plugin"
         )
         start_mock = mocker.patch(
-            "ktp_controller.networking.dnsmasq._start_dhcp_dns_server", return_value=0
+            "ktp_controller.networking.dnsmasq.start_dhcp_dns_server", return_value=0
         )
-        mocker.patch(
-            "ktp_controller.networking.dnsmasq._DNSMASQ_HOSTS_FILE", os.devnull
-        )
+        mocker.patch("ktp_controller.networking.dnsmasq.DNSMASQ_HOSTS_FILE", os.devnull)
 
         result = ktp_controller.networking.main._command_start(
             "eth0", "10.0.0.0/24", 0, _domain_args()
@@ -154,11 +152,9 @@ class TestCommandStart:
             side_effect=OSError("boom"),
         )
         start_mock = mocker.patch(
-            "ktp_controller.networking.dnsmasq._start_dhcp_dns_server", return_value=0
+            "ktp_controller.networking.dnsmasq.start_dhcp_dns_server", return_value=0
         )
-        mocker.patch(
-            "ktp_controller.networking.dnsmasq._DNSMASQ_HOSTS_FILE", os.devnull
-        )
+        mocker.patch("ktp_controller.networking.dnsmasq.DNSMASQ_HOSTS_FILE", os.devnull)
 
         result = ktp_controller.networking.main._command_start(
             "eth0", "10.0.0.0/24", 0, _domain_args()
@@ -178,7 +174,7 @@ class TestCommandStop:
             "ktp_controller.networking.nm._unconfigure_nm_dnsmasq_plugin"
         )
         stop_mock = mocker.patch(
-            "ktp_controller.networking.dnsmasq._stop_dhcp_dns_server", return_value=0
+            "ktp_controller.networking.dnsmasq.stop_dhcp_dns_server", return_value=0
         )
 
         result = ktp_controller.networking.main._command_stop(
@@ -196,7 +192,7 @@ class TestCommandStop:
         mocker.patch("ktp_controller.net.Net", return_value=net)
         mocker.patch("ktp_controller.networking.nm._unconfigure_nm_dnsmasq_plugin")
         mocker.patch(
-            "ktp_controller.networking.dnsmasq._stop_dhcp_dns_server", return_value=0
+            "ktp_controller.networking.dnsmasq.stop_dhcp_dns_server", return_value=0
         )
 
         with pytest.raises(OSError, match="boom"):
@@ -221,7 +217,7 @@ class TestCommandSetDomain:
     def test_happy_path_writes_hosts_entry_and_signals_dnsmasq(self, mocker, testdir):
         hosts_filepath = os.path.join(testdir, "dnsmasq.hosts")
         mocker.patch(
-            "ktp_controller.networking.dnsmasq._DNSMASQ_HOSTS_FILE", hosts_filepath
+            "ktp_controller.networking.dnsmasq.DNSMASQ_HOSTS_FILE", hosts_filepath
         )
         mocker.patch(
             "ktp_controller.net.interface_addresses",
@@ -234,7 +230,7 @@ class TestCommandSetDomain:
             "ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy"
         )
         kill_mock = mocker.patch(
-            "ktp_controller.networking.dnsmasq._kill_dnsmasq", return_value=False
+            "ktp_controller.networking.dnsmasq.kill_dnsmasq", return_value=False
         )
 
         result = ktp_controller.networking.main._command_set_domain(
@@ -254,7 +250,7 @@ class TestCommandSetDomain:
     ):
         hosts_filepath = os.path.join(testdir, "dnsmasq.hosts")
         mocker.patch(
-            "ktp_controller.networking.dnsmasq._DNSMASQ_HOSTS_FILE", hosts_filepath
+            "ktp_controller.networking.dnsmasq.DNSMASQ_HOSTS_FILE", hosts_filepath
         )
         mocker.patch(
             "ktp_controller.net.interface_addresses",
@@ -265,7 +261,7 @@ class TestCommandSetDomain:
             "ktp_controller.nginx.enable_nginx_wui_tls_reverse_proxy"
         )
         mocker.patch(
-            "ktp_controller.networking.dnsmasq._kill_dnsmasq", return_value=False
+            "ktp_controller.networking.dnsmasq.kill_dnsmasq", return_value=False
         )
 
         ktp_controller.networking.main._command_set_domain(
@@ -287,7 +283,7 @@ class TestCommandSetDomain:
     def test_dnsmasq_still_signalled_when_reloading_nm_fails(self, mocker, testdir):
         hosts_filepath = os.path.join(testdir, "dnsmasq.hosts")
         mocker.patch(
-            "ktp_controller.networking.dnsmasq._DNSMASQ_HOSTS_FILE", hosts_filepath
+            "ktp_controller.networking.dnsmasq.DNSMASQ_HOSTS_FILE", hosts_filepath
         )
         mocker.patch(
             "ktp_controller.net.interface_addresses",
@@ -298,7 +294,7 @@ class TestCommandSetDomain:
             side_effect=OSError("boom"),
         )
         kill_mock = mocker.patch(
-            "ktp_controller.networking.dnsmasq._kill_dnsmasq", return_value=True
+            "ktp_controller.networking.dnsmasq.kill_dnsmasq", return_value=True
         )
 
         result = ktp_controller.networking.main._command_set_domain(
@@ -315,7 +311,7 @@ class TestCommandDelDomain:
         with open(hosts_filepath, "w", encoding="utf-8") as hosts_file:
             hosts_file.write("10.123.45.6 host.example.invalid\n")
         mocker.patch(
-            "ktp_controller.networking.dnsmasq._DNSMASQ_HOSTS_FILE", hosts_filepath
+            "ktp_controller.networking.dnsmasq.DNSMASQ_HOSTS_FILE", hosts_filepath
         )
         reload_mock = mocker.patch(
             "ktp_controller.networking.nm._reload_networkmanager"
@@ -324,7 +320,7 @@ class TestCommandDelDomain:
             "ktp_controller.nginx.disable_nginx_wui_tls_reverse_proxy"
         )
         kill_mock = mocker.patch(
-            "ktp_controller.networking.dnsmasq._kill_dnsmasq", return_value=False
+            "ktp_controller.networking.dnsmasq.kill_dnsmasq", return_value=False
         )
 
         result = ktp_controller.networking.main._command_del_domain(
@@ -342,7 +338,7 @@ class TestCommandDelDomain:
     def test_dnsmasq_still_signalled_when_reloading_nm_fails(self, mocker, testdir):
         hosts_filepath = os.path.join(testdir, "dnsmasq.hosts")
         mocker.patch(
-            "ktp_controller.networking.dnsmasq._DNSMASQ_HOSTS_FILE", hosts_filepath
+            "ktp_controller.networking.dnsmasq.DNSMASQ_HOSTS_FILE", hosts_filepath
         )
         mocker.patch(
             "ktp_controller.networking.nm._reload_networkmanager",
@@ -350,7 +346,7 @@ class TestCommandDelDomain:
         )
         mocker.patch("ktp_controller.nginx.disable_nginx_wui_tls_reverse_proxy")
         kill_mock = mocker.patch(
-            "ktp_controller.networking.dnsmasq._kill_dnsmasq", return_value=True
+            "ktp_controller.networking.dnsmasq.kill_dnsmasq", return_value=True
         )
 
         result = ktp_controller.networking.main._command_del_domain(

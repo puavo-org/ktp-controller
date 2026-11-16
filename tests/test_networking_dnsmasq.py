@@ -27,7 +27,7 @@ def test_start_dhcp_dns_server_writes_conf_file_and_invokes_dnsmasq(
         "ktp_controller.networking.dnsmasq.subprocess.check_call", return_value=None
     )
 
-    result = ktp_controller.networking.dnsmasq._start_dhcp_dns_server(_FakeNet())
+    result = ktp_controller.networking.dnsmasq.start_dhcp_dns_server(_FakeNet())
 
     assert result == 0
     check_call_mock.assert_called_once_with(["dnsmasq", f"--conf-file={conf_filepath}"])
@@ -52,7 +52,7 @@ def test_start_dhcp_dns_server_writes_conf_file_and_invokes_dnsmasq(
         "log-dhcp",
         "log-debug",
         f"pid-file={ktp_controller.networking.dnsmasq._DNSMASQ_PID_FILE}",
-        f"addn-hosts={ktp_controller.networking.dnsmasq._DNSMASQ_HOSTS_FILE}",
+        f"addn-hosts={ktp_controller.networking.dnsmasq.DNSMASQ_HOSTS_FILE}",
         "server=/koe.abitti.net/9.9.9.9",
         "server=/koe.abitti.net/1.1.1.1",
         "server=/koe.abitti.net/8.8.8.8",
@@ -77,7 +77,7 @@ def test_start_dhcp_dns_server_adds_user_option_from_sudo_user(
         "ktp_controller.networking.dnsmasq.subprocess.check_call", return_value=None
     )
 
-    ktp_controller.networking.dnsmasq._start_dhcp_dns_server(_FakeNet())
+    ktp_controller.networking.dnsmasq.start_dhcp_dns_server(_FakeNet())
 
     with open(conf_filepath, encoding="utf-8") as conf_file:
         conf_lines = conf_file.read().splitlines()
