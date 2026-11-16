@@ -133,7 +133,7 @@ class TestCommandStart:
         start_mock = mocker.patch(
             "ktp_controller.networking.dnsmasq.start_dhcp_dns_server", return_value=0
         )
-        mocker.patch("ktp_controller.networking.dnsmasq.DNSMASQ_HOSTS_FILE", os.devnull)
+        mocker.patch("ktp_controller.networking.dnsmasq.HOSTS_FILE", os.devnull)
 
         result = ktp_controller.networking.main._command_start(
             "eth0", "10.0.0.0/24", 0, _domain_args()
@@ -154,7 +154,7 @@ class TestCommandStart:
         start_mock = mocker.patch(
             "ktp_controller.networking.dnsmasq.start_dhcp_dns_server", return_value=0
         )
-        mocker.patch("ktp_controller.networking.dnsmasq.DNSMASQ_HOSTS_FILE", os.devnull)
+        mocker.patch("ktp_controller.networking.dnsmasq.HOSTS_FILE", os.devnull)
 
         result = ktp_controller.networking.main._command_start(
             "eth0", "10.0.0.0/24", 0, _domain_args()
@@ -214,9 +214,7 @@ class TestCommandSetDomain:
 
     def test_happy_path_writes_hosts_entry_and_signals_dnsmasq(self, mocker, testdir):
         hosts_filepath = os.path.join(testdir, "dnsmasq.hosts")
-        mocker.patch(
-            "ktp_controller.networking.dnsmasq.DNSMASQ_HOSTS_FILE", hosts_filepath
-        )
+        mocker.patch("ktp_controller.networking.dnsmasq.HOSTS_FILE", hosts_filepath)
         mocker.patch(
             "ktp_controller.net.interface_addresses",
             return_value={"AF_INET": [{"addr": "10.123.45.6"}]},
@@ -245,9 +243,7 @@ class TestCommandSetDomain:
         self, mocker, testdir
     ):
         hosts_filepath = os.path.join(testdir, "dnsmasq.hosts")
-        mocker.patch(
-            "ktp_controller.networking.dnsmasq.DNSMASQ_HOSTS_FILE", hosts_filepath
-        )
+        mocker.patch("ktp_controller.networking.dnsmasq.HOSTS_FILE", hosts_filepath)
         mocker.patch(
             "ktp_controller.net.interface_addresses",
             return_value={"AF_INET": [{"addr": "10.123.45.6"}]},
@@ -278,9 +274,7 @@ class TestCommandSetDomain:
 
     def test_dnsmasq_still_signalled_when_reloading_nm_fails(self, mocker, testdir):
         hosts_filepath = os.path.join(testdir, "dnsmasq.hosts")
-        mocker.patch(
-            "ktp_controller.networking.dnsmasq.DNSMASQ_HOSTS_FILE", hosts_filepath
-        )
+        mocker.patch("ktp_controller.networking.dnsmasq.HOSTS_FILE", hosts_filepath)
         mocker.patch(
             "ktp_controller.net.interface_addresses",
             return_value={"AF_INET": [{"addr": "10.123.45.6"}]},
@@ -306,9 +300,7 @@ class TestCommandDelDomain:
         hosts_filepath = os.path.join(testdir, "dnsmasq.hosts")
         with open(hosts_filepath, "w", encoding="utf-8") as hosts_file:
             hosts_file.write("10.123.45.6 host.example.invalid\n")
-        mocker.patch(
-            "ktp_controller.networking.dnsmasq.DNSMASQ_HOSTS_FILE", hosts_filepath
-        )
+        mocker.patch("ktp_controller.networking.dnsmasq.HOSTS_FILE", hosts_filepath)
         reload_mock = mocker.patch("ktp_controller.networking.nm.reload_networkmanager")
         disable_tls_mock = mocker.patch(
             "ktp_controller.nginx.disable_nginx_wui_tls_reverse_proxy"
@@ -331,9 +323,7 @@ class TestCommandDelDomain:
 
     def test_dnsmasq_still_signalled_when_reloading_nm_fails(self, mocker, testdir):
         hosts_filepath = os.path.join(testdir, "dnsmasq.hosts")
-        mocker.patch(
-            "ktp_controller.networking.dnsmasq.DNSMASQ_HOSTS_FILE", hosts_filepath
-        )
+        mocker.patch("ktp_controller.networking.dnsmasq.HOSTS_FILE", hosts_filepath)
         mocker.patch(
             "ktp_controller.networking.nm.reload_networkmanager",
             side_effect=OSError("boom"),

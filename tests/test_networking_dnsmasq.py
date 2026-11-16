@@ -18,9 +18,7 @@ def test_start_dhcp_dns_server_writes_conf_file_and_invokes_dnsmasq(
     mocker, testdir, monkeypatch
 ):
     conf_filepath = os.path.join(testdir, "dnsmasq.conf")
-    monkeypatch.setattr(
-        ktp_controller.networking.dnsmasq, "_DNSMASQ_CONF_FILE", conf_filepath
-    )
+    monkeypatch.setattr(ktp_controller.networking.dnsmasq, "_CONF_FILE", conf_filepath)
     monkeypatch.delenv("SUDO_USER", raising=False)
 
     check_call_mock = mocker.patch(
@@ -44,15 +42,15 @@ def test_start_dhcp_dns_server_writes_conf_file_and_invokes_dnsmasq(
         "no-hosts",
         "bind-interfaces",
         "except-interface=lo",
-        f"dhcp-leasefile={ktp_controller.networking.dnsmasq._DNSMASQ_LEASES_FILE}",
+        f"dhcp-leasefile={ktp_controller.networking.dnsmasq._LEASES_FILE}",
         "dhcp-range=10.123.45.10,10.123.45.254,1h",
         "dhcp-option=option:dns-server,10.123.45.1",
         "dhcp-option=option:domain-name",
         "log-queries",
         "log-dhcp",
         "log-debug",
-        f"pid-file={ktp_controller.networking.dnsmasq._DNSMASQ_PID_FILE}",
-        f"addn-hosts={ktp_controller.networking.dnsmasq.DNSMASQ_HOSTS_FILE}",
+        f"pid-file={ktp_controller.networking.dnsmasq._PID_FILE}",
+        f"addn-hosts={ktp_controller.networking.dnsmasq.HOSTS_FILE}",
         "server=/koe.abitti.net/9.9.9.9",
         "server=/koe.abitti.net/1.1.1.1",
         "server=/koe.abitti.net/8.8.8.8",
@@ -64,9 +62,7 @@ def test_start_dhcp_dns_server_adds_user_option_from_sudo_user(
     mocker, testdir, monkeypatch
 ):
     conf_filepath = os.path.join(testdir, "dnsmasq.conf")
-    monkeypatch.setattr(
-        ktp_controller.networking.dnsmasq, "_DNSMASQ_CONF_FILE", conf_filepath
-    )
+    monkeypatch.setattr(ktp_controller.networking.dnsmasq, "_CONF_FILE", conf_filepath)
     monkeypatch.setenv("SUDO_USER", "someuser")
 
     mocker.patch(

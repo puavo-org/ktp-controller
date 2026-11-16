@@ -9,10 +9,10 @@ import ktp_controller.net
 
 _THIS_NAME = "ktp-controller-networking"
 _LOGGER = logging.getLogger(__name__)
-_DNSMASQ_PID_FILE = f"/run/{_THIS_NAME}-dnsmasq.pid"
-_DNSMASQ_LEASES_FILE = f"/var/lib/{_THIS_NAME}-dnsmasq.leases"
-DNSMASQ_HOSTS_FILE = f"/var/lib/{_THIS_NAME}-dnsmasq.hosts"
-_DNSMASQ_CONF_FILE = f"/var/lib/{_THIS_NAME}-dnsmasq.conf"
+_PID_FILE = f"/run/{_THIS_NAME}-dnsmasq.pid"
+_LEASES_FILE = f"/var/lib/{_THIS_NAME}-dnsmasq.leases"
+HOSTS_FILE = f"/var/lib/{_THIS_NAME}-dnsmasq.hosts"
+_CONF_FILE = f"/var/lib/{_THIS_NAME}-dnsmasq.conf"
 LOCAL_DOMAIN = "koe.abitti.net"
 
 
@@ -43,15 +43,15 @@ def start_dhcp_dns_server(net: ktp_controller.net.Net) -> int:
         "no-hosts",
         "bind-interfaces",
         "except-interface=lo",
-        f"dhcp-leasefile={_DNSMASQ_LEASES_FILE}",
+        f"dhcp-leasefile={_LEASES_FILE}",
         f"dhcp-range={net.dhcp_hosts[0]},{net.dhcp_hosts[-1]},1h",
         f"dhcp-option=option:dns-server,{net.host_address}",
         "dhcp-option=option:domain-name",
         "log-queries",
         "log-dhcp",
         "log-debug",
-        f"pid-file={_DNSMASQ_PID_FILE}",
-        f"addn-hosts={DNSMASQ_HOSTS_FILE}",
+        f"pid-file={_PID_FILE}",
+        f"addn-hosts={HOSTS_FILE}",
     ]
 
     conf_lines.extend(render_koe_abitti_net_dns_lines())
@@ -66,27 +66,25 @@ def start_dhcp_dns_server(net: ktp_controller.net.Net) -> int:
         user = subprocess.check_output(["id", "-un", user], timeout=2).decode().strip()
         conf_lines.append(f"user={user}")
 
-    with open(_DNSMASQ_CONF_FILE, "w", encoding="utf-8") as dnsmasq_conf_file:
+    with open(_CONF_FILE, "w", encoding="utf-8") as dnsmasq_conf_file:
         for conf_line in conf_lines:
             print(conf_line, file=dnsmasq_conf_file)
 
-    args = ["dnsmasq", f"--conf-file={_DNSMASQ_CONF_FILE}"]
-    _LOGGER.info(
-        "Spawning dnsmasq with conf file %s: %s", _DNSMASQ_CONF_FILE, conf_lines
-    )
+    args = ["dnsmasq", f"--conf-file={_CONF_FILE}"]
+    _LOGGER.info("Spawning dnsmasq with conf file %s: %s", _CONF_FILE, conf_lines)
     subprocess.check_call(args)
 
     return 0
 
 
 def kill_dnsmasq(sig: int) -> bool:
-    with open(_DNSMASQ_PID_FILE, encoding="ascii") as dnsmasq_pid_file:
+    with open(_PID_FILE, encoding="ascii") as dnsmasq_pid_file:
         dnsmasq_pid = int(dnsmasq_pid_file.read().strip())
 
     try:
         os.kill(dnsmasq_pid, sig)
     except ProcessLookupError:
-        os.unlink(_DNSMASQ_PID_FILE)
+        os.unlink(_PID_FILE)
         return True
 
     return False

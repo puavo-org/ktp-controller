@@ -83,7 +83,7 @@ def _command_start(
     net = ktp_controller.net.Net(interface, network, number)
     net.up()
 
-    with open(dnsmasq.DNSMASQ_HOSTS_FILE, "w", encoding="utf-8"):
+    with open(dnsmasq.HOSTS_FILE, "w", encoding="utf-8"):
         pass  # truncate before start
 
     # The DHCP/DNS server must be (re)started regardless of whether
@@ -134,7 +134,7 @@ def _resolve_fqdn_ipv4_address(interface: str) -> ipaddress.IPv4Address:
 
 
 def _write_dnsmasq_hosts_entry(ipv4_addr: ipaddress.IPv4Address, fqdn: str) -> None:
-    with open(dnsmasq.DNSMASQ_HOSTS_FILE, "w", encoding="utf-8") as dnsmasq_hosts_file:
+    with open(dnsmasq.HOSTS_FILE, "w", encoding="utf-8") as dnsmasq_hosts_file:
         dnsmasq_hosts_file.write(f"{ipv4_addr} {fqdn}\n")
 
 
@@ -175,7 +175,7 @@ def _command_set_domain(
 def _command_del_domain(
     interface: str, network: str, number: int, args: argparse.Namespace
 ) -> int:
-    with open(dnsmasq.DNSMASQ_HOSTS_FILE, "w", encoding="utf-8"):
+    with open(dnsmasq.HOSTS_FILE, "w", encoding="utf-8"):
         pass  # just truncate
 
     # dnsmasq must always be signalled to reload regardless of whether
