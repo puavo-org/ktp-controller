@@ -104,15 +104,19 @@ def _command_stop(
     interface: str, network: str, number: int, args: argparse.Namespace
 ) -> int:
     net = ktp_controller.net.Net(interface, network, number)
-    try:
-        nm._unconfigure_nm_dnsmasq_plugin()
-    finally:
-        # The DHCP/DNS server must be stopped and the interface brought
-        # down regardless of whether unconfiguring NetworkManager failed.
-        try:
-            return dnsmasq._stop_dhcp_dns_server()  # noqa: B012
-        finally:
-            net.down()
+    # The DHCP/DNS server must be stopped and the interface brought down
+    # regardless of whether unconfiguring NetworkManager failed.
+    return typing.cast(
+        int,
+        _run_regardless(
+            [
+                nm._unconfigure_nm_dnsmasq_plugin,
+                dnsmasq._stop_dhcp_dns_server,
+                net.down,
+            ],
+            result_index=1,
+        ),
+    )
 
 
 def _command_set_domain(
