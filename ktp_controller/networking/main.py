@@ -35,6 +35,7 @@ import typing
 # Internal imports
 import ktp_controller.net
 import ktp_controller.networking.dnsmasq as dnsmasq
+import ktp_controller.networking.ipset as ipset
 import ktp_controller.networking.nm as nm
 import ktp_controller.nginx
 import ktp_controller.puavo.conf
@@ -42,6 +43,32 @@ from ktp_controller import VERSION
 
 _THIS_NAME = "ktp-controller-networking"
 _LOGGER = logging.getLogger(_THIS_NAME)
+_ALLOW_TO_WAN_IPSET_DEFAULT_TIMEOUT_SECONDS = 7200
+
+
+def _allow_to_wan_ipset_name(interface: str) -> str:
+    return f"allow_{interface}_to_wan"
+
+
+def _create_allow_to_wan_ipset(interface: str) -> None:
+    if not interface:
+        return
+    name = _allow_to_wan_ipset_name(interface)
+    if ipset.ipset_exists(name):
+        _LOGGER.warning(
+            "ipset %s already exists, flushing it instead of creating", name
+        )
+        ipset.flush_ipset(name)
+        return
+    ipset.create_ipset(name, _ALLOW_TO_WAN_IPSET_DEFAULT_TIMEOUT_SECONDS)
+
+
+def _destroy_allow_to_wan_ipset(interface: str) -> None:
+    if not interface:
+        return
+    name = _allow_to_wan_ipset_name(interface)
+    if ipset.ipset_exists(name):
+        ipset.destroy_ipset(name)
 
 
 def _run_regardless(
