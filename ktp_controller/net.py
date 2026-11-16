@@ -19,6 +19,7 @@ _LOGGER = logging.getLogger(os.path.basename(__file__))
 
 __all__ = [
     "Net",
+    "get_default_route_interface",
     "interface_addresses",
     "interfaces",
 ]
@@ -39,6 +40,18 @@ def wait_interface(interface_name: str, *, timeout: float) -> bool:
         time.sleep(0.5)
 
     return False
+
+
+def get_default_route_interface() -> str | None:
+    output = subprocess.check_output(
+        ["ip", "route", "show", "default"],
+        timeout=2,
+    ).decode()
+    for line in output.splitlines():
+        fields = line.split()
+        if "dev" in fields:
+            return fields[fields.index("dev") + 1]
+    return None
 
 
 def interfaces() -> list[str]:
