@@ -48,11 +48,13 @@ def add_rule(table: str, chain: str, *rule_args: str) -> None:
 
 def remove_rules_by_comment(table: str, chain: str, comment: str) -> None:
     output = subprocess.check_output([_IPTABLES_BIN, "-t", table, "-S", chain]).decode()
-    needle = f'--comment "{comment}"'
     for line in output.splitlines():
-        if needle not in line:
-            continue
         tokens = shlex.split(line)
+        if "--comment" not in tokens:
+            continue
+        comment_index = tokens.index("--comment") + 1
+        if comment_index >= len(tokens) or tokens[comment_index] != comment:
+            continue
         tokens[0] = "-D"
         subprocess.check_call([_IPTABLES_BIN, "-t", table, *tokens])
 

@@ -136,9 +136,12 @@ class TestAddRule:
 
 class TestRemoveRulesByComment:
     def test_removes_matching_rule_by_switching_append_to_delete(self, mocker):
+        # Real `iptables -S` only quotes a --comment value when it needs
+        # quoting (e.g. contains spaces); our comments never do, so the
+        # real output looks like this, unquoted.
         mocker.patch(
             "ktp_controller.networking.firewall.subprocess.check_output",
-            return_value=(b'-A FORWARD -m comment --comment "myset" -j ACCEPT\n'),
+            return_value=(b"-A FORWARD -m comment --comment myset -j ACCEPT\n"),
         )
         check_call_mock = mocker.patch(
             "ktp_controller.networking.firewall.subprocess.check_call"
@@ -164,10 +167,58 @@ class TestRemoveRulesByComment:
             ]
         )
 
+    def test_removes_matching_rule_with_quoted_comment(self, mocker):
+        mocker.patch(
+            "ktp_controller.networking.firewall.subprocess.check_output",
+            return_value=(b'-A FORWARD -m comment --comment "my set" -j ACCEPT\n'),
+        )
+        check_call_mock = mocker.patch(
+            "ktp_controller.networking.firewall.subprocess.check_call"
+        )
+
+        ktp_controller.networking.firewall.remove_rules_by_comment(
+            "filter", "FORWARD", "my set"
+        )
+
+        check_call_mock.assert_called_once_with(
+            [
+                "iptables",
+                "-t",
+                "filter",
+                "-D",
+                "FORWARD",
+                "-m",
+                "comment",
+                "--comment",
+                "my set",
+                "-j",
+                "ACCEPT",
+            ]
+        )
+
     def test_leaves_non_matching_rules_alone(self, mocker):
         mocker.patch(
             "ktp_controller.networking.firewall.subprocess.check_output",
-            return_value=(b'-A FORWARD -m comment --comment "othername" -j ACCEPT\n'),
+            return_value=(b"-A FORWARD -m comment --comment othername -j ACCEPT\n"),
+        )
+        check_call_mock = mocker.patch(
+            "ktp_controller.networking.firewall.subprocess.check_call"
+        )
+
+        ktp_controller.networking.firewall.remove_rules_by_comment(
+            "filter", "FORWARD", "myset"
+        )
+
+        check_call_mock.assert_not_called()
+
+    def test_leaves_rules_alone_whose_comment_only_contains_target_as_substring(
+        self, mocker
+    ):
+        mocker.patch(
+            "ktp_controller.networking.firewall.subprocess.check_output",
+            return_value=(
+                b"-A FORWARD -m comment --comment allow_myset_to_wan -j ACCEPT\n"
+            ),
         )
         check_call_mock = mocker.patch(
             "ktp_controller.networking.firewall.subprocess.check_call"
@@ -198,8 +249,8 @@ class TestRemoveRulesByComment:
         mocker.patch(
             "ktp_controller.networking.firewall.subprocess.check_output",
             return_value=(
-                b'-A FORWARD -i eth0 -m comment --comment "myset" -j ACCEPT\n'
-                b'-A FORWARD -i eth1 -m comment --comment "myset" -j DROP\n'
+                b"-A FORWARD -i eth0 -m comment --comment myset -j ACCEPT\n"
+                b"-A FORWARD -i eth1 -m comment --comment myset -j DROP\n"
             ),
         )
         check_call_mock = mocker.patch(
