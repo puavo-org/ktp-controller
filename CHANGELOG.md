@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Networking: allow LAN clients limited internet access during an exam,
+  restricted to a configurable allowlist of WAN domains (new
+  `networking_allowed_wan_domains` setting, defaulting to domains
+  needed for Windows/ChromeOS network connectivity checks and Abitti2
+  update/attestation services). Resolved IPs are tracked in an ipset
+  and only matching LAN->WAN traffic is forwarded/NATed; everything
+  else is dropped and logged. All IPv6 forwarding from the LAN
+  interface is dropped.
+
+  The default set of allowed WAN domains is:
+    - dns.msftncsi.com
+    - www.msftncsi.com
+    - www.msftconnecttest.com
+    - ipv6.msftconnecttest.com
+    - endpoint.security.microsoft.com
+    - smartscreen-prod.microsoft.com
+    - smartscreen.microsoft.com
+    - wdcp.microsoft.com
+    - wdcpalt.microsoft.com
+    - wd.microsoft.com
+    - ctldl.windowsupdate.com
+    - crl.microsoft.com
+    - chromeos-staging.abitti.fi
+    - chromeos.abitti.fi
+    - register.appattest.apple.com
+    - m.google.com
+    - chromeos-ca.gstatic.com
+    - clients3.google.com
+    - www.googleapis.com
+
+### Changed
+
+- Updated dependencies.
+
 ## [0.9.0] - 2026-11-14
 
 ### Added
