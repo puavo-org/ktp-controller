@@ -128,8 +128,8 @@ def _command_start(
 
     net = ktp_controller.net.Net(interface, network, number)
     net.up()
-    net.enable_forwarding()
     _enable_wan_forwarding_rules(interface)
+    net.enable_forwarding()
 
     with open(dnsmasq.HOSTS_FILE, "w", encoding="utf-8"):
         pass  # truncate before start
@@ -164,8 +164,8 @@ def _command_stop(
             [
                 nm.unconfigure_nm_dnsmasq_plugin,
                 dnsmasq.stop_dhcp_dns_server,
-                lambda: _disable_wan_forwarding_rules(interface),
                 net.disable_forwarding,
+                lambda: _disable_wan_forwarding_rules(interface),
                 net.down,
                 lambda: _destroy_allow_to_wan_ipset(interface),
             ],

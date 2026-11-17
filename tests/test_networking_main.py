@@ -228,8 +228,8 @@ class TestCommandStart:
         assert calls == [
             "ipset.create",
             "net.up",
-            "net.enable_forwarding",
             "firewall.enable_forwarding",
+            "net.enable_forwarding",
         ]
 
     def test_flushes_existing_ipset_and_logs_warning(self, mocker, caplog):
@@ -375,8 +375,8 @@ class TestCommandStop:
         destroy_mock.assert_called_once_with("allow_eth0_to_wan")
         disable_forwarding_mock.assert_called_once_with("allow_eth0_to_wan")
         assert calls == [
-            "firewall.disable_forwarding",
             "net.disable_forwarding",
+            "firewall.disable_forwarding",
             "net.down",
             "ipset.destroy",
         ]
