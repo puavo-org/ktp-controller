@@ -504,3 +504,55 @@ class TestDisableForwarding:
             mocker.call("filter", "FORWARD", "myset"),
         ]
         flush_and_delete_mock.assert_called_once_with("filter", "myset")
+
+
+class TestEnableIpv6ForwardingDrop:
+    def test_propagates_require_interface_failure(self, mocker):
+        mocker.patch(
+            "ktp_controller.networking.firewall.require_interface",
+            side_effect=ValueError("interface does not exist"),
+        )
+
+        with pytest.raises(ValueError, match="interface does not exist"):
+            ktp_controller.networking.firewall.enable_ipv6_forwarding_drop(
+                "eth0", "myset"
+            )
+
+    def test_removes_old_comment_rule_then_adds_drop_rule_via_ip6tables(self, mocker):
+        mocker.patch("ktp_controller.networking.firewall.require_interface")
+        remove_mock = mocker.patch(
+            "ktp_controller.networking.firewall.remove_rules_by_comment"
+        )
+        add_rule_mock = mocker.patch("ktp_controller.networking.firewall.add_rule")
+
+        ktp_controller.networking.firewall.enable_ipv6_forwarding_drop("eth0", "myset")
+
+        remove_mock.assert_called_once_with(
+            "filter", "FORWARD", "myset", binary="/usr/sbin/ip6tables-nft"
+        )
+        add_rule_mock.assert_called_once_with(
+            "filter",
+            "FORWARD",
+            "--in-interface",
+            "eth0",
+            "--match",
+            "comment",
+            "--comment",
+            "myset",
+            "--jump",
+            "DROP",
+            binary="/usr/sbin/ip6tables-nft",
+        )
+
+
+class TestDisableIpv6ForwardingDrop:
+    def test_removes_rule_by_comment_via_ip6tables(self, mocker):
+        remove_mock = mocker.patch(
+            "ktp_controller.networking.firewall.remove_rules_by_comment"
+        )
+
+        ktp_controller.networking.firewall.disable_ipv6_forwarding_drop("myset")
+
+        remove_mock.assert_called_once_with(
+            "filter", "FORWARD", "myset", binary="/usr/sbin/ip6tables-nft"
+        )
