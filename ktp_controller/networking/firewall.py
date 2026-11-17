@@ -62,3 +62,128 @@ def flush_and_delete_chain(table: str, chain: str) -> None:
         return
     flush_chain(table, chain)
     delete_chain(table, chain)
+
+
+def enable_forwarding(lan: str, wan: str, ipset_name: str) -> None:
+    chain = ipset_name
+    comment = ipset_name
+
+    require_interface(wan)
+    require_interface(lan)
+    if wan == lan:
+        raise ValueError("WAN and LAN interface must be different", wan)
+
+    _LOGGER.info("recreating filter chain %r", chain)
+    remove_rules_by_comment("nat", "POSTROUTING", comment)
+    remove_rules_by_comment("filter", "FORWARD", comment)
+    recreate_chain("filter", chain)
+
+    # Log new allowlisted flows (rate-limited to avoid log flooding)
+    add_rule(
+        "filter",
+        chain,
+        "--match",
+        "conntrack",
+        "--ctstate",
+        "NEW",
+        "--match",
+        "set",
+        "--match-set",
+        ipset_name,
+        "dst",
+        "--match",
+        "limit",
+        "--limit",
+        "30/second",
+        "--limit-burst",
+        "100",
+        "--jump",
+        "LOG",
+        "--log-prefix",
+        f"{ipset_name} ",
+        "--log-level",
+        "6",
+    )
+
+    # Allow only ipset allowlisted destinations
+    add_rule(
+        "filter",
+        chain,
+        "--match",
+        "set",
+        "--match-set",
+        ipset_name,
+        "dst",
+        "--jump",
+        "ACCEPT",
+    )
+
+    # Drop everything else
+    add_rule("filter", chain, "--jump", "DROP")
+
+    # Allow return traffic for established connections
+    add_rule(
+        "filter",
+        "FORWARD",
+        "--in-interface",
+        wan,
+        "--out-interface",
+        lan,
+        "--match",
+        "comment",
+        "--comment",
+        comment,
+        "--match",
+        "conntrack",
+        "--ctstate",
+        "RELATED,ESTABLISHED",
+        "--jump",
+        "ACCEPT",
+    )
+
+    # Enforce allowlist for new LAN->WAN traffic
+    add_rule(
+        "filter",
+        "FORWARD",
+        "--in-interface",
+        lan,
+        "--out-interface",
+        wan,
+        "--match",
+        "comment",
+        "--comment",
+        comment,
+        "--jump",
+        chain,
+    )
+
+    # NAT only for allowlisted destinations
+    add_rule(
+        "nat",
+        "POSTROUTING",
+        "--out-interface",
+        wan,
+        "--match",
+        "comment",
+        "--comment",
+        comment,
+        "--match",
+        "set",
+        "--match-set",
+        ipset_name,
+        "dst",
+        "--jump",
+        "MASQUERADE",
+    )
+
+    _LOGGER.info("internet forwarding enabled: LAN %r -> WAN %r", lan, wan)
+
+
+def disable_forwarding(ipset_name: str) -> None:
+    chain = ipset_name
+    comment = ipset_name
+
+    _LOGGER.info("removing forwarding rules")
+    remove_rules_by_comment("nat", "POSTROUTING", comment)
+    remove_rules_by_comment("filter", "FORWARD", comment)
+    flush_and_delete_chain("filter", chain)
