@@ -137,6 +137,9 @@ class TestCommandStart:
         enable_forwarding_mock = mocker.patch(
             "ktp_controller.networking.firewall.enable_forwarding"
         )
+        enable_ipv6_drop_mock = mocker.patch(
+            "ktp_controller.networking.firewall.enable_ipv6_forwarding_drop"
+        )
         configure_mock = mocker.patch(
             "ktp_controller.networking.nm.configure_nm_dnsmasq_plugin"
         )
@@ -156,6 +159,7 @@ class TestCommandStart:
         enable_forwarding_mock.assert_called_once_with(
             "eth0", "wan0", "allow_eth0_to_wan"
         )
+        enable_ipv6_drop_mock.assert_called_once_with("eth0", "allow_eth0_to_wan")
         configure_mock.assert_called_once_with()
         start_mock.assert_called_once_with(
             net,
@@ -172,6 +176,7 @@ class TestCommandStart:
             "ktp_controller.net.get_default_route_interface", return_value="wan0"
         )
         mocker.patch("ktp_controller.networking.firewall.enable_forwarding")
+        mocker.patch("ktp_controller.networking.firewall.enable_ipv6_forwarding_drop")
         mocker.patch(
             "ktp_controller.networking.nm.configure_nm_dnsmasq_plugin",
             side_effect=OSError("boom"),
@@ -214,6 +219,12 @@ class TestCommandStart:
                 "firewall.enable_forwarding"
             ),
         )
+        mocker.patch(
+            "ktp_controller.networking.firewall.enable_ipv6_forwarding_drop",
+            side_effect=lambda *args, **kwargs: calls.append(
+                "firewall.enable_ipv6_forwarding_drop"
+            ),
+        )
         mocker.patch("ktp_controller.networking.nm.configure_nm_dnsmasq_plugin")
         mocker.patch(
             "ktp_controller.networking.dnsmasq.start_dhcp_dns_server", return_value=0
@@ -229,6 +240,7 @@ class TestCommandStart:
             "ipset.create",
             "net.up",
             "firewall.enable_forwarding",
+            "firewall.enable_ipv6_forwarding_drop",
             "net.enable_forwarding",
         ]
 
@@ -242,6 +254,7 @@ class TestCommandStart:
             "ktp_controller.net.get_default_route_interface", return_value="wan0"
         )
         mocker.patch("ktp_controller.networking.firewall.enable_forwarding")
+        mocker.patch("ktp_controller.networking.firewall.enable_ipv6_forwarding_drop")
         mocker.patch("ktp_controller.networking.nm.configure_nm_dnsmasq_plugin")
         mocker.patch(
             "ktp_controller.networking.dnsmasq.start_dhcp_dns_server", return_value=0
@@ -269,6 +282,9 @@ class TestCommandStart:
         enable_forwarding_mock = mocker.patch(
             "ktp_controller.networking.firewall.enable_forwarding"
         )
+        enable_ipv6_drop_mock = mocker.patch(
+            "ktp_controller.networking.firewall.enable_ipv6_forwarding_drop"
+        )
         mocker.patch("ktp_controller.networking.nm.configure_nm_dnsmasq_plugin")
         mocker.patch(
             "ktp_controller.networking.dnsmasq.start_dhcp_dns_server", return_value=0
@@ -283,6 +299,7 @@ class TestCommandStart:
         create_mock.assert_not_called()
         flush_mock.assert_not_called()
         enable_forwarding_mock.assert_not_called()
+        enable_ipv6_drop_mock.assert_not_called()
 
     def test_ipset_creation_failure_aborts_start_before_net_up(self, mocker):
         net = mocker.Mock()
@@ -310,6 +327,9 @@ class TestCommandStop:
         disable_forwarding_mock = mocker.patch(
             "ktp_controller.networking.firewall.disable_forwarding"
         )
+        disable_ipv6_drop_mock = mocker.patch(
+            "ktp_controller.networking.firewall.disable_ipv6_forwarding_drop"
+        )
         unconfigure_mock = mocker.patch(
             "ktp_controller.networking.nm.unconfigure_nm_dnsmasq_plugin"
         )
@@ -325,6 +345,7 @@ class TestCommandStop:
         unconfigure_mock.assert_called_once_with()
         stop_mock.assert_called_once_with()
         disable_forwarding_mock.assert_called_once_with("allow_eth0_to_wan")
+        disable_ipv6_drop_mock.assert_called_once_with("allow_eth0_to_wan")
         net.disable_forwarding.assert_called_once_with()
         net.down.assert_called_once_with()
 
@@ -334,6 +355,7 @@ class TestCommandStop:
         mocker.patch("ktp_controller.net.Net", return_value=net)
         mocker.patch("ktp_controller.networking.ipset.ipset_exists", return_value=False)
         mocker.patch("ktp_controller.networking.firewall.disable_forwarding")
+        mocker.patch("ktp_controller.networking.firewall.disable_ipv6_forwarding_drop")
         mocker.patch("ktp_controller.networking.nm.unconfigure_nm_dnsmasq_plugin")
         mocker.patch(
             "ktp_controller.networking.dnsmasq.stop_dhcp_dns_server", return_value=0
@@ -363,6 +385,12 @@ class TestCommandStop:
                 "firewall.disable_forwarding"
             ),
         )
+        disable_ipv6_drop_mock = mocker.patch(
+            "ktp_controller.networking.firewall.disable_ipv6_forwarding_drop",
+            side_effect=lambda *args, **kwargs: calls.append(
+                "firewall.disable_ipv6_forwarding_drop"
+            ),
+        )
         mocker.patch("ktp_controller.networking.nm.unconfigure_nm_dnsmasq_plugin")
         mocker.patch(
             "ktp_controller.networking.dnsmasq.stop_dhcp_dns_server", return_value=0
@@ -374,9 +402,11 @@ class TestCommandStop:
 
         destroy_mock.assert_called_once_with("allow_eth0_to_wan")
         disable_forwarding_mock.assert_called_once_with("allow_eth0_to_wan")
+        disable_ipv6_drop_mock.assert_called_once_with("allow_eth0_to_wan")
         assert calls == [
             "net.disable_forwarding",
             "firewall.disable_forwarding",
+            "firewall.disable_ipv6_forwarding_drop",
             "net.down",
             "ipset.destroy",
         ]
@@ -387,6 +417,7 @@ class TestCommandStop:
         mocker.patch("ktp_controller.networking.ipset.ipset_exists", return_value=False)
         destroy_mock = mocker.patch("ktp_controller.networking.ipset.destroy_ipset")
         mocker.patch("ktp_controller.networking.firewall.disable_forwarding")
+        mocker.patch("ktp_controller.networking.firewall.disable_ipv6_forwarding_drop")
         mocker.patch("ktp_controller.networking.nm.unconfigure_nm_dnsmasq_plugin")
         mocker.patch(
             "ktp_controller.networking.dnsmasq.stop_dhcp_dns_server", return_value=0
@@ -408,6 +439,9 @@ class TestCommandStop:
         disable_forwarding_mock = mocker.patch(
             "ktp_controller.networking.firewall.disable_forwarding"
         )
+        disable_ipv6_drop_mock = mocker.patch(
+            "ktp_controller.networking.firewall.disable_ipv6_forwarding_drop"
+        )
         mocker.patch("ktp_controller.networking.nm.unconfigure_nm_dnsmasq_plugin")
         mocker.patch(
             "ktp_controller.networking.dnsmasq.stop_dhcp_dns_server", return_value=0
@@ -420,6 +454,7 @@ class TestCommandStop:
         exists_mock.assert_not_called()
         destroy_mock.assert_not_called()
         disable_forwarding_mock.assert_not_called()
+        disable_ipv6_drop_mock.assert_not_called()
 
     def test_ipset_destroy_still_runs_when_net_down_fails(self, mocker):
         net = mocker.Mock()
@@ -428,6 +463,7 @@ class TestCommandStop:
         mocker.patch("ktp_controller.networking.ipset.ipset_exists", return_value=True)
         destroy_mock = mocker.patch("ktp_controller.networking.ipset.destroy_ipset")
         mocker.patch("ktp_controller.networking.firewall.disable_forwarding")
+        mocker.patch("ktp_controller.networking.firewall.disable_ipv6_forwarding_drop")
         mocker.patch("ktp_controller.networking.nm.unconfigure_nm_dnsmasq_plugin")
         mocker.patch(
             "ktp_controller.networking.dnsmasq.stop_dhcp_dns_server", return_value=0
@@ -449,6 +485,7 @@ class TestCommandStop:
             side_effect=OSError("boom"),
         )
         mocker.patch("ktp_controller.networking.firewall.disable_forwarding")
+        mocker.patch("ktp_controller.networking.firewall.disable_ipv6_forwarding_drop")
         mocker.patch("ktp_controller.networking.nm.unconfigure_nm_dnsmasq_plugin")
         mocker.patch(
             "ktp_controller.networking.dnsmasq.stop_dhcp_dns_server", return_value=0

@@ -80,12 +80,14 @@ def _enable_wan_forwarding_rules(interface: str) -> None:
         ktp_controller.net.get_default_route_interface(),
         _allow_to_wan_ipset_name(interface),
     )
+    firewall.enable_ipv6_forwarding_drop(interface, _allow_to_wan_ipset_name(interface))
 
 
 def _disable_wan_forwarding_rules(interface: str) -> None:
     if not interface:
         return
     firewall.disable_forwarding(_allow_to_wan_ipset_name(interface))
+    firewall.disable_ipv6_forwarding_drop(_allow_to_wan_ipset_name(interface))
 
 
 def _run_regardless(
