@@ -141,6 +141,27 @@ class TestAddRule:
             ]
         )
 
+    def test_add_rule_honors_binary_override(self, mocker):
+        check_call_mock = mocker.patch(
+            "ktp_controller.networking.firewall.subprocess.check_call"
+        )
+
+        ktp_controller.networking.firewall.add_rule(
+            "filter", "mychain", "--jump", "DROP", binary="/usr/sbin/ip6tables-nft"
+        )
+
+        check_call_mock.assert_called_once_with(
+            [
+                "/usr/sbin/ip6tables-nft",
+                "-t",
+                "filter",
+                "-A",
+                "mychain",
+                "--jump",
+                "DROP",
+            ]
+        )
+
 
 class TestRemoveRulesByComment:
     def test_removes_matching_rule_by_switching_append_to_delete(self, mocker):
@@ -252,6 +273,35 @@ class TestRemoveRulesByComment:
         )
 
         check_call_mock.assert_not_called()
+
+    def test_honors_binary_override(self, mocker):
+        mocker.patch(
+            "ktp_controller.networking.firewall.subprocess.check_output",
+            return_value=(b"-A FORWARD -m comment --comment myset -j DROP\n"),
+        )
+        check_call_mock = mocker.patch(
+            "ktp_controller.networking.firewall.subprocess.check_call"
+        )
+
+        ktp_controller.networking.firewall.remove_rules_by_comment(
+            "filter", "FORWARD", "myset", binary="/usr/sbin/ip6tables-nft"
+        )
+
+        check_call_mock.assert_called_once_with(
+            [
+                "/usr/sbin/ip6tables-nft",
+                "-t",
+                "filter",
+                "-D",
+                "FORWARD",
+                "-m",
+                "comment",
+                "--comment",
+                "myset",
+                "-j",
+                "DROP",
+            ]
+        )
 
     def test_removes_every_matching_rule(self, mocker):
         mocker.patch(
