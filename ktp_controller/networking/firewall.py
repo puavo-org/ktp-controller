@@ -195,3 +195,28 @@ def disable_forwarding(ipset_name: str) -> None:
     remove_rules_by_comment("nat", "POSTROUTING", comment)
     remove_rules_by_comment("filter", "FORWARD", comment)
     flush_and_delete_chain("filter", chain)
+
+
+def enable_ipv6_forwarding_drop(lan: str, comment: str) -> None:
+    require_interface(lan)
+
+    _LOGGER.info("dropping all IPv6 forwarding from %r", lan)
+    remove_rules_by_comment("filter", "FORWARD", comment, binary=_IP6TABLES_BIN)
+    add_rule(
+        "filter",
+        "FORWARD",
+        "--in-interface",
+        lan,
+        "--match",
+        "comment",
+        "--comment",
+        comment,
+        "--jump",
+        "DROP",
+        binary=_IP6TABLES_BIN,
+    )
+
+
+def disable_ipv6_forwarding_drop(comment: str) -> None:
+    _LOGGER.info("removing IPv6 forwarding drop rule")
+    remove_rules_by_comment("filter", "FORWARD", comment, binary=_IP6TABLES_BIN)
