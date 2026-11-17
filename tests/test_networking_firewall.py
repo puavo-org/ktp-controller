@@ -39,7 +39,7 @@ class TestChainExists:
 
         assert exists is True
         run_mock.assert_called_once_with(
-            ["iptables", "-t", "filter", "-L", "mychain", "-n"],
+            ["/usr/sbin/iptables-nft", "-t", "filter", "-L", "mychain", "-n"],
             capture_output=True,
         )
 
@@ -63,7 +63,7 @@ class TestChainManagement:
         ktp_controller.networking.firewall.create_chain("filter", "mychain")
 
         check_call_mock.assert_called_once_with(
-            ["iptables", "-t", "filter", "-N", "mychain"]
+            ["/usr/sbin/iptables-nft", "-t", "filter", "-N", "mychain"]
         )
 
     def test_flush_chain_invokes_iptables_flush(self, mocker):
@@ -74,7 +74,7 @@ class TestChainManagement:
         ktp_controller.networking.firewall.flush_chain("filter", "mychain")
 
         check_call_mock.assert_called_once_with(
-            ["iptables", "-t", "filter", "-F", "mychain"]
+            ["/usr/sbin/iptables-nft", "-t", "filter", "-F", "mychain"]
         )
 
     def test_delete_chain_invokes_iptables_delete_chain(self, mocker):
@@ -85,7 +85,7 @@ class TestChainManagement:
         ktp_controller.networking.firewall.delete_chain("filter", "mychain")
 
         check_call_mock.assert_called_once_with(
-            ["iptables", "-t", "filter", "-X", "mychain"]
+            ["/usr/sbin/iptables-nft", "-t", "filter", "-X", "mychain"]
         )
 
     def test_recreate_chain_flushes_and_deletes_existing_chain_before_creating(
@@ -130,7 +130,15 @@ class TestAddRule:
         )
 
         check_call_mock.assert_called_once_with(
-            ["iptables", "-t", "filter", "-A", "mychain", "--jump", "ACCEPT"]
+            [
+                "/usr/sbin/iptables-nft",
+                "-t",
+                "filter",
+                "-A",
+                "mychain",
+                "--jump",
+                "ACCEPT",
+            ]
         )
 
 
@@ -153,7 +161,7 @@ class TestRemoveRulesByComment:
 
         check_call_mock.assert_called_once_with(
             [
-                "iptables",
+                "/usr/sbin/iptables-nft",
                 "-t",
                 "filter",
                 "-D",
@@ -182,7 +190,7 @@ class TestRemoveRulesByComment:
 
         check_call_mock.assert_called_once_with(
             [
-                "iptables",
+                "/usr/sbin/iptables-nft",
                 "-t",
                 "filter",
                 "-D",

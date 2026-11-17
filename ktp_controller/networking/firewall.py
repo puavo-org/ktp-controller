@@ -7,7 +7,7 @@ import subprocess
 import ktp_controller.net
 
 _LOGGER = logging.getLogger(__name__)
-_IPTABLES_BIN = "iptables"
+_IPTABLES_BIN = "/usr/sbin/iptables-nft"
 
 
 def require_interface(interface: str | None) -> None:
