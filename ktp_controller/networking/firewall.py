@@ -64,11 +64,12 @@ def flush_and_delete_chain(table: str, chain: str) -> None:
     delete_chain(table, chain)
 
 
-def enable_forwarding(lan: str, wan: str, ipset_name: str) -> None:
+def enable_forwarding(lan: str, wan: str | None, ipset_name: str) -> None:
     chain = ipset_name
     comment = ipset_name
 
     require_interface(wan)
+    assert wan is not None  # require_interface() raised otherwise
     require_interface(lan)
     if wan == lan:
         raise ValueError("WAN and LAN interface must be different", wan)

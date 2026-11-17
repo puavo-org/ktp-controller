@@ -35,6 +35,7 @@ import typing
 # Internal imports
 import ktp_controller.net
 import ktp_controller.networking.dnsmasq as dnsmasq
+import ktp_controller.networking.firewall as firewall
 import ktp_controller.networking.ipset as ipset
 import ktp_controller.networking.nm as nm
 import ktp_controller.nginx
@@ -69,6 +70,22 @@ def _destroy_allow_to_wan_ipset(interface: str) -> None:
     name = _allow_to_wan_ipset_name(interface)
     if ipset.ipset_exists(name):
         ipset.destroy_ipset(name)
+
+
+def _enable_wan_forwarding_rules(interface: str) -> None:
+    if not interface:
+        return
+    firewall.enable_forwarding(
+        interface,
+        ktp_controller.net.get_default_route_interface(),
+        _allow_to_wan_ipset_name(interface),
+    )
+
+
+def _disable_wan_forwarding_rules(interface: str) -> None:
+    if not interface:
+        return
+    firewall.disable_forwarding(_allow_to_wan_ipset_name(interface))
 
 
 def _run_regardless(
@@ -111,6 +128,8 @@ def _command_start(
 
     net = ktp_controller.net.Net(interface, network, number)
     net.up()
+    net.enable_forwarding()
+    _enable_wan_forwarding_rules(interface)
 
     with open(dnsmasq.HOSTS_FILE, "w", encoding="utf-8"):
         pass  # truncate before start
@@ -145,6 +164,8 @@ def _command_stop(
             [
                 nm.unconfigure_nm_dnsmasq_plugin,
                 dnsmasq.stop_dhcp_dns_server,
+                lambda: _disable_wan_forwarding_rules(interface),
+                net.disable_forwarding,
                 net.down,
                 lambda: _destroy_allow_to_wan_ipset(interface),
             ],
