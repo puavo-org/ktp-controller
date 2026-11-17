@@ -104,7 +104,7 @@ All fields are always present.
 
 | Field                     | Type                                                | Description                                                                                   | Example                          | Notes              |
 | ------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------- | ------------------ |
-| `version`                 | `string`                                            |                                                                                               |                                  | const: `0.10.0rc1` |
+| `version`                 | `string`                                            |                                                                                               |                                  | const: `0.10.0rc2` |
 | `started_at`              | `datetime`                                          | When the program has started.                                                                 | `"2026-05-03T16:28:51.975+0000"` |                    |
 | `is_auto_control_enabled` | `boolean`                                           |                                                                                               | `true`                           |                    |
 | `cached_files`            | [CachedFiles](#cachedfiles)                         |                                                                                               |                                  |                    |
@@ -184,6 +184,7 @@ All fields are always present.
 | `supported_locales`                                | `array` of `string` |             |         |              |
 | `wui_tls_port`                                     | `integer`           |             |         |              |
 | `allow_cross_site_requests_from_localhost_to_wui`  | `boolean`           |             |         |              |
+| `networking_allowed_wan_domains`                   | `array` of `string` |             |         |              |
 
 #### KTPControllerStats
 
