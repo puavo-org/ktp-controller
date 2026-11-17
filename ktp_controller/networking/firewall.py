@@ -8,6 +8,7 @@ import ktp_controller.net
 
 _LOGGER = logging.getLogger(__name__)
 _IPTABLES_BIN = "/usr/sbin/iptables-nft"
+_IP6TABLES_BIN = "/usr/sbin/ip6tables-nft"
 
 
 def require_interface(interface: str | None) -> None:
@@ -42,12 +43,16 @@ def recreate_chain(table: str, chain: str) -> None:
     create_chain(table, chain)
 
 
-def add_rule(table: str, chain: str, *rule_args: str) -> None:
-    subprocess.check_call([_IPTABLES_BIN, "-t", table, "-A", chain, *rule_args])
+def add_rule(
+    table: str, chain: str, *rule_args: str, binary: str = _IPTABLES_BIN
+) -> None:
+    subprocess.check_call([binary, "-t", table, "-A", chain, *rule_args])
 
 
-def remove_rules_by_comment(table: str, chain: str, comment: str) -> None:
-    output = subprocess.check_output([_IPTABLES_BIN, "-t", table, "-S", chain]).decode()
+def remove_rules_by_comment(
+    table: str, chain: str, comment: str, *, binary: str = _IPTABLES_BIN
+) -> None:
+    output = subprocess.check_output([binary, "-t", table, "-S", chain]).decode()
     for line in output.splitlines():
         tokens = shlex.split(line)
         if "--comment" not in tokens:
@@ -56,7 +61,7 @@ def remove_rules_by_comment(table: str, chain: str, comment: str) -> None:
         if comment_index >= len(tokens) or tokens[comment_index] != comment:
             continue
         tokens[0] = "-D"
-        subprocess.check_call([_IPTABLES_BIN, "-t", table, *tokens])
+        subprocess.check_call([binary, "-t", table, *tokens])
 
 
 def flush_and_delete_chain(table: str, chain: str) -> None:
