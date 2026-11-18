@@ -23,7 +23,7 @@ _LOGGER = logging.getLogger(__name__)
 
 WUI_UPSTREAM_URL = f"http://{SETTINGS.wui_host}:{SETTINGS.wui_port}"
 
-PUAVO_HOST_CRT_FILEPATH = "/etc/puavo/certs/host.crt"
+PUAVO_HOST_CRT_FILEPATH = "/etc/puavo/certs/hostorgcabundle.pem"
 PUAVO_HOST_KEY_FILEPATH = "/etc/puavo/certs/host.key"
 
 
