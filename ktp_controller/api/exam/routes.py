@@ -321,6 +321,41 @@ async def _get_locked_db_exam_packages(
     return db_locked_exam_packages
 
 
+def _serialize_db_exam_package(
+    db_exam_package: models.ScheduledExamPackage,
+) -> dict[str, typing.Any]:
+    return {
+        "external_id": db_exam_package.external_id,
+        "start_time": db_exam_package.start_time.replace(tzinfo=datetime.UTC),
+        "end_time": db_exam_package.end_time.replace(tzinfo=datetime.UTC),
+        "lock_time": (
+            None
+            if db_exam_package.lock_time is None
+            else db_exam_package.lock_time.replace(tzinfo=datetime.UTC)
+        ),
+        "locked": db_exam_package.locked,
+        "scheduled_exam_external_ids": [
+            se.external_id for se in db_exam_package.scheduled_exams
+        ],
+        "state": db_exam_package.state,
+        "state_changed_at": (
+            None
+            if db_exam_package.state_changed_at is None
+            else db_exam_package.state_changed_at.replace(tzinfo=datetime.UTC)
+        ),
+        "started_at": (
+            None
+            if db_exam_package.started_at is None
+            else db_exam_package.started_at.replace(tzinfo=datetime.UTC)
+        ),
+        "archived_at": (
+            None
+            if db_exam_package.archived_at is None
+            else db_exam_package.archived_at.replace(tzinfo=datetime.UTC)
+        ),
+    }
+
+
 @router.post(
     "/get_locked_exam_packages",
     response_model=list[schemas.ScheduledExamPackage],
@@ -331,40 +366,7 @@ async def _get_locked_exam_packages(
 ) -> list[dict[str, typing.Any]]:
     db_locked_exam_packages = await _get_locked_db_exam_packages(db)
     return [
-        {
-            "external_id": db_locked_exam_package.external_id,
-            "start_time": db_locked_exam_package.start_time.replace(
-                tzinfo=datetime.UTC
-            ),
-            "end_time": db_locked_exam_package.end_time.replace(tzinfo=datetime.UTC),
-            "lock_time": (
-                None
-                if db_locked_exam_package.lock_time is None
-                else db_locked_exam_package.lock_time.replace(tzinfo=datetime.UTC)
-            ),
-            "locked": db_locked_exam_package.locked,
-            "scheduled_exam_external_ids": [
-                se.external_id for se in db_locked_exam_package.scheduled_exams
-            ],
-            "state": db_locked_exam_package.state,
-            "state_changed_at": (
-                None
-                if db_locked_exam_package.state_changed_at is None
-                else db_locked_exam_package.state_changed_at.replace(
-                    tzinfo=datetime.UTC
-                )
-            ),
-            "started_at": (
-                None
-                if db_locked_exam_package.started_at is None
-                else db_locked_exam_package.started_at.replace(tzinfo=datetime.UTC)
-            ),
-            "archived_at": (
-                None
-                if db_locked_exam_package.archived_at is None
-                else db_locked_exam_package.archived_at.replace(tzinfo=datetime.UTC)
-            ),
-        }
+        _serialize_db_exam_package(db_locked_exam_package)
         for db_locked_exam_package in db_locked_exam_packages
     ]
 
@@ -383,6 +385,39 @@ async def _get_current_exam_package(
         return None
 
     return db_locked_exam_packages[0]
+
+
+async def _get_upcoming_db_exam_packages(
+    db: sqlalchemy.orm.Session,
+) -> list[models.ScheduledExamPackage]:
+    utcnow = ktp_controller.utils.utcnow()
+
+    return (
+        db.query(models.ScheduledExamPackage)
+        .filter_by(current=False)
+        .filter_by(state=None)
+        .filter(models.ScheduledExamPackage.end_time >= utcnow)
+        .order_by(
+            models.ScheduledExamPackage.start_time.asc(),
+            models.ScheduledExamPackage.dbid.asc(),
+        )
+        .all()
+    )
+
+
+@router.post(
+    "/get_upcoming_exam_packages",
+    response_model=list[schemas.ScheduledExamPackage],
+    summary="Get upcoming exam packages",
+)
+async def _get_upcoming_exam_packages(
+    db: sqlalchemy.orm.Session = fastapi.Depends(get_db),
+) -> list[dict[str, typing.Any]]:
+    db_upcoming_exam_packages = await _get_upcoming_db_exam_packages(db)
+    return [
+        _serialize_db_exam_package(db_upcoming_exam_package)
+        for db_upcoming_exam_package in db_upcoming_exam_packages
+    ]
 
 
 @router.post(
