@@ -250,6 +250,7 @@ def _get_upcoming_exam_package_info(
         start_time=first_upcoming_exam_package["start_time"],
         end_time=first_upcoming_exam_package["end_time"],
         locked=first_upcoming_exam_package["locked"],
+        now=ktp_controller.utils.utcnow(),
     )
 
 

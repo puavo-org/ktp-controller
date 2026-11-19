@@ -159,3 +159,26 @@ class UpcomingExamPackageInfo(ktp_controller.pydantic.BaseModel):
     start_time: ktp_controller.pydantic.DateTime
     end_time: ktp_controller.pydantic.DateTime
     locked: pydantic.StrictBool
+    # The wall-clock time the above fields' lateness is judged against,
+    # kept alongside them so severity reflects the exact moment the
+    # package list was fetched instead of a second, slightly later,
+    # wall-clock read.
+    now: ktp_controller.pydantic.DateTime
+
+    @property
+    def start_severity(self) -> ktp_controller.wui.schemas.Severity | None:
+        if self.now > self.start_time:
+            return ktp_controller.wui.schemas.Severity.ERROR
+        return None
+
+    @property
+    def end_severity(self) -> ktp_controller.wui.schemas.Severity | None:
+        if self.now > self.end_time:
+            return ktp_controller.wui.schemas.Severity.WARNING
+        return None
+
+    @property
+    def severity(self) -> ktp_controller.wui.schemas.Severity | None:
+        return ktp_controller.wui.schemas.highest_severity(
+            [self.start_severity, self.end_severity]
+        )
