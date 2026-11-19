@@ -1178,9 +1178,107 @@ def test_landing_view_shows_upcoming_exam_package_fields(
     assert response.status_code == 200
     card = _tag_by_id(response.text, "article", "upcoming-exam-package-card")
     assert 'id="upcoming-exam-package-scheduled-start"' in card
+    assert 'data-scheduled-start="' in card
     assert 'id="upcoming-exam-package-scheduled-end"' in card
+    assert 'data-scheduled-end="' in card
     locked_cell = _tag_by_id(card, "td", "upcoming-exam-package-locked")
     assert expected_locked_text in locked_cell
+    assert "value-warning" not in card
+    assert "value-error" not in card
+
+
+def test_landing_view_shows_error_for_late_upcoming_exam_package_start(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[
+            _upcoming_exam_package(
+                start_time=(
+                    ktp_controller.utils.utcnow() - datetime.timedelta(minutes=5)
+                ).isoformat()
+            )
+        ],
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    header = _header_tag(response.text, "Upcoming exam package")
+    assert 'class="value-error"' in header
+    start_cell = _tag_by_id(
+        response.text, "td", "upcoming-exam-package-scheduled-start-cell"
+    )
+    assert 'class="value-error"' in start_cell
+    assert "severity-icon" in start_cell
+    end_cell = _tag_by_id(
+        response.text, "td", "upcoming-exam-package-scheduled-end-cell"
+    )
+    assert "value-warning" not in end_cell
+    assert "value-error" not in end_cell
+
+
+def test_landing_view_shows_warning_for_overdue_upcoming_exam_package_end(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[
+            _upcoming_exam_package(
+                end_time=(
+                    ktp_controller.utils.utcnow() - datetime.timedelta(minutes=5)
+                ).isoformat()
+            )
+        ],
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    header = _header_tag(response.text, "Upcoming exam package")
+    assert 'class="value-warning"' in header
+    start_cell = _tag_by_id(
+        response.text, "td", "upcoming-exam-package-scheduled-start-cell"
+    )
+    assert "value-warning" not in start_cell
+    assert "value-error" not in start_cell
+    end_cell = _tag_by_id(
+        response.text, "td", "upcoming-exam-package-scheduled-end-cell"
+    )
+    assert 'class="value-warning"' in end_cell
+    assert "severity-icon" in end_cell
 
 
 def test_landing_view_upcoming_exam_package_card_self_refreshes(
