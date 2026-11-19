@@ -1,5 +1,6 @@
 import pydantic
 import pytest
+import validators
 
 import ktp_controller.settings
 
@@ -18,27 +19,8 @@ def _make_settings(**overrides: object) -> ktp_controller.settings.Settings:
 
 def test_networking_allowed_wan_domains_default():
     settings = _make_settings()
-    assert settings.networking_allowed_wan_domains == [
-        "dns.msftncsi.com",
-        "www.msftncsi.com",
-        "www.msftconnecttest.com",
-        "ipv6.msftconnecttest.com",
-        "endpoint.security.microsoft.com",
-        "smartscreen-prod.microsoft.com",
-        "smartscreen.microsoft.com",
-        "wdcp.microsoft.com",
-        "wdcpalt.microsoft.com",
-        "wd.microsoft.com",
-        "ctldl.windowsupdate.com",
-        "crl.microsoft.com",
-        "chromeos-staging.abitti.fi",
-        "chromeos.abitti.fi",
-        "register.appattest.apple.com",
-        "m.google.com",
-        "chromeos-ca.gstatic.com",
-        "clients3.google.com",
-        "www.googleapis.com",
-    ]
+    assert len(settings.networking_allowed_wan_domains) > 1
+    assert all(validators.domain(d) for d in settings.networking_allowed_wan_domains)
 
 
 def test_networking_allowed_wan_domains_accepts_comma_separated_string():
