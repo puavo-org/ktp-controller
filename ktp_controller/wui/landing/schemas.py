@@ -17,6 +17,7 @@ __all__ = [
     "calculate_disk_space_stage",
     "HostInfo",
     "ExamPackageInfo",
+    "UpcomingExamPackageInfo",
 ]
 
 _MIB = 1024**2
@@ -152,3 +153,9 @@ class ExamPackageInfo(ktp_controller.pydantic.BaseModel):
         return ktp_controller.wui.schemas.highest_severity(
             [self.start_severity, self.end_severity]
         )
+
+
+class UpcomingExamPackageInfo(ktp_controller.pydantic.BaseModel):
+    start_time: ktp_controller.pydantic.DateTime
+    end_time: ktp_controller.pydantic.DateTime
+    locked: pydantic.StrictBool

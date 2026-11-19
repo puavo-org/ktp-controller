@@ -46,6 +46,10 @@ def test_landing_view_allowed_with_permission(
         return_value=make_status_report(),
     )
     mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
         return_value=[],
     )
@@ -120,6 +124,10 @@ def test_landing_view_shows_footer_domains(
         ),
     )
     mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
         return_value=[],
     )
@@ -158,6 +166,10 @@ def test_landing_view_shows_placeholder_without_status_report(
         return_value=None,
     )
     mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
         return_value=[],
     )
@@ -184,6 +196,10 @@ def test_landing_view_shows_placeholder_without_abitti2_version(
         return_value=make_status_report(abitti2_version=None),
     )
     mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
         return_value=[],
     )
@@ -208,6 +224,10 @@ def test_landing_view_shows_placeholder_without_abitti2_domain(
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
         return_value=make_status_report(abitti2_domain=None),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -238,6 +258,10 @@ def test_landing_view_shows_warning_for_soon_expiring_cert(
                 ktp_controller.utils.utcnow() + datetime.timedelta(days=1)
             ).isoformat()
         ),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -292,6 +316,10 @@ def test_landing_view_shows_cert_expiry_caption(
         ),
     )
     mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
         return_value=[],
     )
@@ -322,6 +350,10 @@ def test_landing_view_no_warning_for_cert_expiring_far_in_the_future(
                 ktp_controller.utils.utcnow() + datetime.timedelta(days=30)
             ).isoformat()
         ),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -366,6 +398,10 @@ def test_landing_view_shows_question_marks_without_cert(
         return_value=make_status_report(abitti2_cert_expires_at=None),
     )
     mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
         return_value=[],
     )
@@ -393,6 +429,10 @@ def test_landing_view_shows_question_marks_without_host_release(
         return_value=make_status_report(puavo_os_image_release=None),
     )
     mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
         return_value=[],
     )
@@ -417,6 +457,10 @@ def test_landing_view_shows_question_marks_without_hostname(
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
         return_value=make_status_report(hostname=None),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -464,6 +508,10 @@ def test_landing_view_shows_free_disk_space_stage(
         ),
     )
     mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
         return_value=[],
     )
@@ -507,6 +555,10 @@ def test_landing_view_shows_warning_for_host_uptime(
         return_value=make_status_report(uptime=uptime),
     )
     mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
         return_value=[],
     )
@@ -537,6 +589,10 @@ def test_landing_view_shows_question_marks_without_host_uptime(
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
         return_value=make_status_report(uptime=None),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -574,6 +630,10 @@ def test_landing_view_shows_question_marks_without_home_disk_usage(
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
         return_value=make_status_report(disk_usage=disk_usage),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -627,6 +687,10 @@ def test_landing_view_renders_student_state_counts(
         return_value=make_status_report(),
     )
     mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
         return_value=_raw_abitti2_stats_messages(
             [
@@ -664,6 +728,10 @@ def test_landing_view_student_state_counts_present_in_htmx_partial(
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
         return_value=make_status_report(),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -720,6 +788,10 @@ def test_landing_view_shows_placeholder_without_current_exam_package(
         return_value=make_status_report(),
     )
     mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
         return_value=[],
     )
@@ -746,6 +818,10 @@ def test_landing_view_shows_current_exam_package_fields(
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
         return_value=make_status_report(current_exam_package=_exam_package()),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -788,6 +864,10 @@ def test_landing_view_shows_error_for_late_exam_package_start(
         ),
     )
     mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
         return_value=[],
     )
@@ -826,6 +906,10 @@ def test_landing_view_shows_warning_for_exam_package_overtime(
                 ).isoformat(),
             )
         ),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -867,6 +951,10 @@ def test_landing_view_no_warning_for_exam_package_past_end_when_not_running(
         ),
     )
     mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
         return_value=[],
     )
@@ -895,6 +983,10 @@ def test_landing_view_current_exam_package_card_self_refreshes(
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
         return_value=make_status_report(),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",
@@ -950,6 +1042,10 @@ def test_current_exam_package_route_returns_partial(
         "ktp_controller.api.client.get_last_status_report",
         return_value=make_status_report(current_exam_package=_exam_package()),
     )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -973,6 +1069,10 @@ def test_landing_view_honors_forwarded_prefix(
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",
         return_value=make_status_report(),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
     )
     mocker.patch(
         "ktp_controller.api.client.get_raw_abitti2_stats_messages",

@@ -67,6 +67,7 @@ _CARDS = (
     _Card(key="abitti2_info", required_permission=None),
     _Card(key="host_info", required_permission=None),
     _Card(key="current_exam_package_info", required_permission=None),
+    _Card(key="upcoming_exam_package_info", required_permission=None),
 )
 
 
@@ -239,6 +240,19 @@ def _get_exam_package_info(
     )
 
 
+def _get_upcoming_exam_package_info(
+    upcoming_exam_packages: list[dict[str, typing.Any]],
+) -> schemas.UpcomingExamPackageInfo | None:
+    if not upcoming_exam_packages:
+        return None
+    first_upcoming_exam_package = upcoming_exam_packages[0]
+    return schemas.UpcomingExamPackageInfo(
+        start_time=first_upcoming_exam_package["start_time"],
+        end_time=first_upcoming_exam_package["end_time"],
+        locked=first_upcoming_exam_package["locked"],
+    )
+
+
 def get_nav_severity(
     report: dict[str, typing.Any] | None, locale: str
 ) -> ktp_controller.wui.schemas.Severity | None:
@@ -263,6 +277,9 @@ async def _get_landing(
     ),
 ) -> fastapi.responses.HTMLResponse:
     report = await ktp_controller.api.client.get_last_status_report()
+    upcoming_exam_packages = (
+        await ktp_controller.api.client.get_upcoming_exam_packages()
+    )
 
     request.state.locale = session.locale
     _ = ktp_controller.wui.i18n.get_gettext(session.locale)
@@ -281,6 +298,9 @@ async def _get_landing(
         "abitti2_info": _get_abitti2_info(report, session.locale),
         "host_info": _get_host_info(report),
         "current_exam_package_info": _get_exam_package_info(report),
+        "upcoming_exam_package_info": _get_upcoming_exam_package_info(
+            upcoming_exam_packages
+        ),
         "exam_package_state_labels": _get_exam_package_state_labels(_),
         "nav_severity": get_nav_severity(report, session.locale),
         "current_path": request.url.path,
@@ -326,4 +346,30 @@ async def _get_exam_package_card(
     }
     return _templates.TemplateResponse(
         request, name="partials/current_exam_package_card.html.j2", context=context
+    )
+
+
+@router.get("/upcoming_exam_package", response_class=fastapi.responses.HTMLResponse)
+@ktp_controller.wui.auth.require_permission("wui.landing.view")
+async def _get_upcoming_exam_package_card(
+    request: fastapi.Request,
+    session: ktp_controller.wui.auth.Session = fastapi.Depends(
+        ktp_controller.wui.auth.get_current_session
+    ),
+) -> fastapi.responses.HTMLResponse:
+    upcoming_exam_packages = (
+        await ktp_controller.api.client.get_upcoming_exam_packages()
+    )
+
+    request.state.locale = session.locale
+    _ = ktp_controller.wui.i18n.get_gettext(session.locale)
+
+    context = {
+        "upcoming_exam_package_info": _get_upcoming_exam_package_info(
+            upcoming_exam_packages
+        ),
+        "locale": session.locale,
+    }
+    return _templates.TemplateResponse(
+        request, name="partials/upcoming_exam_package_card.html.j2", context=context
     )

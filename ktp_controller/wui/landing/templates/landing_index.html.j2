@@ -163,6 +163,10 @@
         {% include "partials/current_exam_package_card.html.j2" %}
         {% endif %}
 
+        {% if "upcoming_exam_package_info" in visible_card_keys %}
+        {% include "partials/upcoming_exam_package_card.html.j2" %}
+        {% endif %}
+
     </div>
 
 {% endblock %}

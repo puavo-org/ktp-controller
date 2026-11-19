@@ -1,0 +1,25 @@
+<article id="upcoming-exam-package-card"
+         hx-get="{{ prefix }}/upcoming_exam_package"
+         hx-trigger="live-update from:body throttle:2s"
+         hx-target="this"
+         hx-swap="outerHTML">
+    <header>{{ _("Upcoming exam package") }}</header>
+    {% if upcoming_exam_package_info %}
+    <table class="landing-card-table">
+        <tr>
+            <td>{{ _("Scheduled start time") }}</td>
+            <td id="upcoming-exam-package-scheduled-start">{{ upcoming_exam_package_info.start_time|localize_datetime(locale) }}</td>
+        </tr>
+        <tr>
+            <td>{{ _("Scheduled end time") }}</td>
+            <td id="upcoming-exam-package-scheduled-end">{{ upcoming_exam_package_info.end_time|localize_datetime(locale) }}</td>
+        </tr>
+        <tr>
+            <td>{{ _("Locked") }}</td>
+            <td id="upcoming-exam-package-locked">{{ _("Yes") if upcoming_exam_package_info.locked else _("No") }}</td>
+        </tr>
+    </table>
+    {% else %}
+    <p>{{ _("Not available yet.") }}</p>
+    {% endif %}
+</article>
