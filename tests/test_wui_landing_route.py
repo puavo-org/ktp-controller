@@ -1094,3 +1094,172 @@ def test_landing_view_honors_forwarded_prefix(
     assert response.status_code == 200
     assert b'href="/remote/12345/static/app.css"' in response.content
     assert b'action="/remote/12345/logout"' in response.content
+
+
+def _upcoming_exam_package(*, start_time=None, end_time=None, locked=False):
+    now = ktp_controller.utils.utcnow()
+    if start_time is None:
+        start_time = (now + datetime.timedelta(hours=1)).isoformat()
+    if end_time is None:
+        end_time = (now + datetime.timedelta(hours=1, minutes=30)).isoformat()
+    return {"start_time": start_time, "end_time": end_time, "locked": locked}
+
+
+def test_landing_view_shows_placeholder_without_upcoming_exam_package(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    card = _tag_by_id(response.text, "article", "upcoming-exam-package-card")
+    assert "Not available yet." in card
+    assert 'id="upcoming-exam-package-locked"' not in card
+
+
+@pytest.mark.parametrize(
+    ("locked", "expected_locked_text"),
+    [
+        pytest.param(True, ">Yes<", id="locked"),
+        pytest.param(False, ">No<", id="unlocked"),
+    ],
+)
+def test_landing_view_shows_upcoming_exam_package_fields(
+    wui_client,
+    override_session,
+    mocker,
+    make_status_report,
+    locked,
+    expected_locked_text,
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[_upcoming_exam_package(locked=locked)],
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    card = _tag_by_id(response.text, "article", "upcoming-exam-package-card")
+    assert 'id="upcoming-exam-package-scheduled-start"' in card
+    assert 'id="upcoming-exam-package-scheduled-end"' in card
+    locked_cell = _tag_by_id(card, "td", "upcoming-exam-package-locked")
+    assert expected_locked_text in locked_cell
+
+
+def test_landing_view_upcoming_exam_package_card_self_refreshes(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_raw_abitti2_stats_messages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/")
+
+    assert response.status_code == 200
+    card = _tag_by_id(response.text, "article", "upcoming-exam-package-card")
+    assert 'hx-get="/upcoming_exam_package"' in card
+    assert 'hx-trigger="live-update from:body throttle:2s"' in card
+    assert 'hx-target="this"' in card
+    assert 'hx-swap="outerHTML"' in card
+
+
+def test_upcoming_exam_package_route_requires_login(wui_client):
+    response = wui_client.get("/upcoming_exam_package")
+
+    assert response.status_code == 303
+    assert response.headers["location"].startswith("/login")
+
+
+def test_upcoming_exam_package_route_forbidden_without_permission(
+    wui_client, override_session
+):
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset(),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/upcoming_exam_package")
+
+    assert response.status_code == 403
+
+
+def test_upcoming_exam_package_route_returns_partial(
+    wui_client, override_session, mocker
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[_upcoming_exam_package(locked=True)],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/upcoming_exam_package")
+
+    assert response.status_code == 200
+    assert "<html" not in response.text
+    assert 'id="upcoming-exam-package-card"' in response.text
+    assert ">Yes<" in response.text

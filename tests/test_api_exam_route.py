@@ -860,3 +860,121 @@ def test_set_current_exam_package_state__multiple_locked_packages(
             assert_response(response, expected_status_code=200)
             assert response.json() == state
             state = next_state
+
+
+def test_get_upcoming_exam_packages__empty_database(client, testdb, utcnow):
+    assert testdb.query(models.ScheduledExamPackage).all() == []
+
+    response = client.post("/api/v1/exam/get_upcoming_exam_packages")
+    assert_response(response, expected_status_code=200)
+
+    assert response.json() == []
+
+
+def test_get_upcoming_exam_packages__unlocked_package_is_included(
+    client, testdb, utcnow
+):
+    eom_exam_info = get_synthetic_exam_info(
+        start_time=utcnow + datetime.timedelta(hours=1), utcnow=utcnow
+    )
+    api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
+        eom_exam_info
+    )
+    assert not api_exam_info["scheduled_exam_packages"][0]["locked"]
+
+    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
+    assert_response(response, expected_status_code=200)
+
+    response = client.post("/api/v1/exam/get_upcoming_exam_packages")
+    assert_response(response, expected_status_code=200)
+
+    assert response.json() == api_exam_info["scheduled_exam_packages"]
+
+
+def test_get_upcoming_exam_packages__locked_package_is_included(client, testdb, utcnow):
+    eom_exam_info = get_synthetic_exam_info(
+        start_time=utcnow + datetime.timedelta(minutes=15), utcnow=utcnow
+    )
+    api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
+        eom_exam_info
+    )
+    assert api_exam_info["scheduled_exam_packages"][0]["locked"]
+
+    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
+    assert_response(response, expected_status_code=200)
+
+    response = client.post("/api/v1/exam/get_upcoming_exam_packages")
+    assert_response(response, expected_status_code=200)
+
+    assert response.json() == api_exam_info["scheduled_exam_packages"]
+
+
+def test_get_upcoming_exam_packages__current_package_is_excluded(
+    client, testdb, utcnow
+):
+    eom_exam_info = get_synthetic_exam_info(
+        start_time=utcnow + datetime.timedelta(minutes=15), utcnow=utcnow
+    )
+    api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
+        eom_exam_info
+    )
+
+    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
+    assert_response(response, expected_status_code=200)
+
+    # Promotes the package to current.
+    response = client.post("/api/v1/exam/get_current_exam_package")
+    assert_response(response, expected_status_code=200)
+    assert response.json() == api_exam_info["scheduled_exam_packages"][0]
+
+    response = client.post("/api/v1/exam/get_upcoming_exam_packages")
+    assert_response(response, expected_status_code=200)
+
+    assert response.json() == []
+
+
+def test_get_upcoming_exam_packages__package_past_its_end_time_is_excluded(
+    client, testdb, utcnow
+):
+    eom_exam_info = get_synthetic_exam_info(
+        start_time=utcnow - datetime.timedelta(days=1), utcnow=utcnow
+    )
+    api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
+        eom_exam_info
+    )
+
+    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
+    assert_response(response, expected_status_code=200)
+
+    response = client.post("/api/v1/exam/get_upcoming_exam_packages")
+    assert_response(response, expected_status_code=200)
+
+    assert response.json() == []
+
+
+def test_get_upcoming_exam_packages__ordered_by_start_time(client, testdb, utcnow):
+    later_eom_exam_info = get_synthetic_exam_info(
+        start_time=utcnow + datetime.timedelta(hours=2), utcnow=utcnow
+    )
+    later_api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
+        later_eom_exam_info
+    )
+    response = client.post("/api/v1/exam/save_exam_info", json=later_api_exam_info)
+    assert_response(response, expected_status_code=200)
+
+    sooner_eom_exam_info = get_synthetic_exam_info(
+        start_time=utcnow + datetime.timedelta(hours=1), utcnow=utcnow
+    )
+    sooner_api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
+        sooner_eom_exam_info
+    )
+    response = client.post("/api/v1/exam/save_exam_info", json=sooner_api_exam_info)
+    assert_response(response, expected_status_code=200)
+
+    response = client.post("/api/v1/exam/get_upcoming_exam_packages")
+    assert_response(response, expected_status_code=200)
+
+    assert response.json() == [
+        sooner_api_exam_info["scheduled_exam_packages"][0],
+        later_api_exam_info["scheduled_exam_packages"][0],
+    ]
