@@ -18,6 +18,16 @@ body.app-shell > footer.container {
 body.app-shell > main.container {
   flex: 1 1 auto;
   overflow-y: auto;
+  /* Explicit rather than relying on the default: pairing overflow-y:auto
+     with overflow-x left as "visible" would make the browser force
+     overflow-x's used value to "auto" too (per the CSS overflow spec,
+     the same pairing rule documented on .landing-card-table-scroll
+     below), turning main into an unintended horizontal scroll
+     container for any future content that happens to overflow it.
+     "clip" states that outcome up front -- main was never meant to
+     scroll sideways, just to clip -- instead of leaving it as a latent
+     side effect someone has to rediscover. */
+  overflow-x: clip;
   min-height: 0; /* lets this flex item shrink below its content height so overflow-y:auto actually scrolls */
   min-width: 0; /* flex items default to min-width:auto, which would otherwise keep this as wide as its widest content (e.g. a grid/table) instead of the available viewport width, breaking fluid reflow */
   /* Pico's .container has padding:0 from its 576px breakpoint upward
