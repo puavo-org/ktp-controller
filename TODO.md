@@ -6,8 +6,3 @@ TODO2 and so on. When an item is done, remove it from this document.
 When adding new items, always update the following line to define the
 ID of the next TODO item.
 Next ID: TODO54
-
-## TODO53
-
-WUI: I want the footer to be always visible on every page, i.e. float
-at the bottom of the screen.

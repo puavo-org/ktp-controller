@@ -1,4 +1,27 @@
 /* Shared across all invigilator pages (formerly _base.html.j2 <style>) */
+
+/* _base.html.j2: app-shell layout so the footer stays pinned to the
+   bottom of the viewport; main becomes the scrollable region instead
+   of the whole page. */
+html, body.app-shell {
+  height: 100%;
+}
+body.app-shell {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+body.app-shell > header.container,
+body.app-shell > footer.container {
+  flex-shrink: 0;
+}
+body.app-shell > main.container {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0; /* lets this flex item shrink below its content height so overflow-y:auto actually scrolls */
+  min-width: 0; /* flex items default to min-width:auto, which would otherwise keep this as wide as its widest content (e.g. a grid/table) instead of the available viewport width, breaking fluid reflow */
+}
+
 .modal-overlay {
   display: none;
   position: fixed;
