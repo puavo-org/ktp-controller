@@ -32,6 +32,7 @@
                 </span>
             </header>
             {% if controller_info %}
+            <div class="landing-card-table-scroll">
             <table class="landing-card-table">
                 <tr>
                     <td>{{ _("Version") }}</td>
@@ -74,6 +75,7 @@
                     </td>
                 </tr>
             </table>
+            </div>
             {% else %}
             <p>{{ _("Not available yet.") }}</p>
             {% endif %}
@@ -84,6 +86,7 @@
         <article>
             {{ severity_macros.card_header(_("Abitti2"), abitti2_info.severity if abitti2_info else None) }}
             {% if abitti2_info and abitti2_info.version and abitti2_info.server_name %}
+            <div class="landing-card-table-scroll">
             <table class="landing-card-table">
                 <tr>
                     <td>{{ _("Version") }}</td>
@@ -107,6 +110,7 @@
                     </td>
                 </tr>
             </table>
+            </div>
             {% else %}
             <p>{{ _("Not available yet.") }}</p>
             {% endif %}
@@ -117,6 +121,7 @@
         <article>
             {{ severity_macros.card_header(_("Host system"), host_info.severity if host_info else None) }}
             {% if host_info %}
+            <div class="landing-card-table-scroll">
             <table class="landing-card-table">
                 <tr>
                     <td>{{ _("Version") }}</td>
@@ -154,6 +159,7 @@
                     </td>
                 </tr>
             </table>
+            </div>
             {% else %}
             <p>{{ _("Not available yet.") }}</p>
             {% endif %}
