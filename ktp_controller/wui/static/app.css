@@ -60,6 +60,12 @@ header.container {
 }
 header nav {
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: var(--pico-spacing);
+}
+header nav > ul,
+header nav .state-counts ul {
+  flex-wrap: wrap;
 }
 header form {
   margin-bottom: 0;
