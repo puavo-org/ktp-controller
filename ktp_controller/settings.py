@@ -7,7 +7,13 @@ import typing
 
 # Third-party imports
 import validators
-from pydantic import NonNegativeInt, PositiveInt, StrictBool, field_validator
+from pydantic import (
+    NonNegativeInt,
+    PositiveInt,
+    StrictBool,
+    field_validator,
+    model_validator,
+)
 from pydantic.fields import FieldInfo
 from pydantic_settings import (
     BaseSettings,
@@ -124,6 +130,8 @@ class Settings(BaseSettings):
         "clients3.google.com",
         "www.googleapis.com",
     ]
+    wui_wifi_ssid: str | None = None
+    wui_wifi_passphrase: str | None = None
 
     @field_validator("supported_locales", mode="before")
     @classmethod
@@ -192,6 +200,15 @@ class Settings(BaseSettings):
             if not domain_validation_result:
                 raise ValueError("invalid domain name", domain)
         return v
+
+    @model_validator(mode="after")
+    def _validate_wui_wifi_ssid_and_passphrase(self) -> "Settings":
+        if (self.wui_wifi_ssid is None) != (self.wui_wifi_passphrase is None):
+            raise ValueError(
+                "wui_wifi_ssid and wui_wifi_passphrase must be either both set "
+                "or both unset"
+            )
+        return self
 
     @classmethod
     def settings_customise_sources(
