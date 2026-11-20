@@ -378,10 +378,22 @@ header nav ul.locale-nav {
 .landing-card-table-scroll {
   /* overflow-x on <table> itself is a no-op in Chromium: the table just
      grows past its container instead of scrolling. A wrapper div is the
-     only reliable way to scope the scrollbar to just this table instead
+     only reliable way to scope clipping to just this table instead
      of the whole page, for when the nowrap label column (below) is
-     still wider than a narrow card. */
-  overflow-x: auto;
+     still wider than a narrow card.
+     Deliberately "clip" rather than "auto", and deliberately overflow-x
+     only: pairing a non-"visible" overflow-x (hidden/auto/scroll) with
+     overflow-y:visible makes the browser force overflow-y's used value
+     to "auto" too (per the CSS overflow spec), clipping a
+     [data-tooltip] bubble that pops up above this wrapper's own box
+     (e.g. for the table's first row) even though nothing here needs to
+     scroll vertically. "clip" is exempt from that pairing rule, at the
+     cost of the horizontal scrollbar "auto" used to offer for genuinely
+     too-wide content -- acceptable since this is just a defensive
+     fallback (see landing-card-table below for the actual overflow
+     source it's guarding against). */
+  overflow-x: clip;
+  overflow-y: visible;
 }
 .landing-card-table {
   width: 100%;
@@ -390,14 +402,21 @@ header nav ul.locale-nav {
 .landing-card-table td {
   border-bottom: none;
   padding: 0.25rem 0.75rem;
-  /* Pico's [data-tooltip] renders its hover bubble as an always-laid-out
-     (opacity:0 until hover), absolutely positioned, nowrap pseudo-element
-     sized to the full tooltip text. Even invisible, it still counts
-     toward an ancestor's scrollable overflow, forcing the table (and
-     everything above it) wider than any visible content requires.
-     Clipping it here contains that without affecting real cell content,
-     which never needs to overflow its own cell. */
-  overflow: hidden;
+}
+/* Pico's [data-tooltip] renders its hover bubble as an always-laid-out
+   (opacity:0 until hover), absolutely positioned, nowrap pseudo-element
+   sized to the full tooltip text. Even invisible, it still counts
+   toward an ancestor's scrollable overflow, forcing the table (and
+   everything above it) wider than any visible content requires -- and
+   once actually shown on hover, the same nowrap sizing could make it
+   wider than its card. Capping its width and letting it wrap keeps it
+   within the card horizontally without having to clip (and thus
+   potentially cut off) the bubble itself when shown. */
+.landing-card-table [data-tooltip]::before {
+  max-width: 14rem;
+  white-space: normal;
+  overflow-wrap: break-word;
+  text-align: left;
 }
 .landing-card-table td:first-child {
   text-align: right;
