@@ -1036,6 +1036,49 @@ def test_invigilator_view_renders_student_list_table_state_pills_in_htmx_partial
     assert '<span class="pill pill-waiting">Waiting</span>' in response.text
 
 
+def test_invigilator_view_renders_last_changed_at_for_local_time_conversion(
+    wui_client, override_session, mocker
+):
+    update_time = (
+        datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=5)
+    ).isoformat()
+    _mock_abitti2_state(mocker, update_time=update_time)
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert 'class="last-changed-value"' in response.text
+    assert 'data-last-changed="' in response.text
+    assert "static/local_last_changed_at.js" in response.text
+
+
+def test_invigilator_view_shows_dash_without_last_changed_at(
+    wui_client, override_session, mocker
+):
+    _mock_abitti2_state(mocker, update_time=None)
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert "last-changed-value" not in response.text
+
+
 def test_invigilator_view_student_state_counts_present_in_htmx_partial(
     wui_client, override_session, mocker
 ):

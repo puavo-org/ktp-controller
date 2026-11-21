@@ -842,6 +842,8 @@ def test_landing_view_shows_current_exam_package_fields(
     assert ">Running<" in card
     assert 'id="exam-package-started-at"' in card
     assert 'data-started-at="' in card
+    assert 'id="exam-package-scheduled-start-fixed"' in card
+    assert 'data-scheduled-start="' in card
     assert "static/current_exam_package.js" in response.text
     assert "value-warning" not in card
     assert "value-error" not in card
