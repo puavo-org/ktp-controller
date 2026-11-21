@@ -147,6 +147,7 @@ def _command_start(
                     net,
                     allowed_wan_domains=SETTINGS.networking_allowed_wan_domains,
                     ipset_name=_allow_to_wan_ipset_name(interface),
+                    local_dns_ttl=SETTINGS.networking_local_dns_ttl,
                 ),
             ],
             result_index=1,

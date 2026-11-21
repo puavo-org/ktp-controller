@@ -130,6 +130,7 @@ class Settings(BaseSettings):
         "clients3.google.com",
         "www.googleapis.com",
     ]
+    networking_local_dns_ttl: NonNegativeInt = 7200
     wui_wifi_ssid: str | None = None
     wui_wifi_passphrase: str | None = None
 

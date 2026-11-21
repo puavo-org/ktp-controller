@@ -26,7 +26,10 @@ def test_start_dhcp_dns_server_writes_conf_file_and_invokes_dnsmasq(
     )
 
     result = ktp_controller.networking.dnsmasq.start_dhcp_dns_server(
-        _FakeNet(), allowed_wan_domains=[], ipset_name=None
+        _FakeNet(),
+        allowed_wan_domains=[],
+        ipset_name=None,
+        local_dns_ttl=0,
     )
 
     assert result == 0
@@ -38,6 +41,8 @@ def test_start_dhcp_dns_server_writes_conf_file_and_invokes_dnsmasq(
     assert conf_lines == [
         "port=53",
         "listen-address=10.123.45.1",
+        "local-ttl=0",
+        "dhcp-ttl=0",
         "domain=koe.abitti.net,10.123.45.0/24",
         "domain-needed",
         "bogus-priv",
@@ -76,7 +81,10 @@ def test_start_dhcp_dns_server_adds_user_option_from_sudo_user(
     )
 
     ktp_controller.networking.dnsmasq.start_dhcp_dns_server(
-        _FakeNet(), allowed_wan_domains=[], ipset_name=None
+        _FakeNet(),
+        allowed_wan_domains=[],
+        ipset_name=None,
+        local_dns_ttl=0,
     )
 
     with open(conf_filepath, encoding="utf-8") as conf_file:

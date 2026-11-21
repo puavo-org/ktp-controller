@@ -165,6 +165,7 @@ class TestCommandStart:
             net,
             allowed_wan_domains=ktp_controller.SETTINGS.networking_allowed_wan_domains,
             ipset_name="allow_eth0_to_wan",
+            local_dns_ttl=7200,
         )
 
     def test_dhcp_dns_server_still_started_when_configuring_nm_fails(self, mocker):
@@ -195,6 +196,7 @@ class TestCommandStart:
             net,
             allowed_wan_domains=ktp_controller.SETTINGS.networking_allowed_wan_domains,
             ipset_name="allow_eth0_to_wan",
+            local_dns_ttl=7200,
         )
 
     def test_creates_ipset_before_bringing_net_up(self, mocker):

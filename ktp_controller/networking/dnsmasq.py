@@ -57,10 +57,13 @@ def start_dhcp_dns_server(
     *,
     allowed_wan_domains: list[str],
     ipset_name: str | None,
+    local_dns_ttl: int,
 ) -> int:
     conf_lines = [
         "port=53",
         f"listen-address={net.host_address}",
+        f"local-ttl={local_dns_ttl}",
+        "dhcp-ttl=0",
         f"domain={LOCAL_DOMAIN},{net.network}",
         "domain-needed",
         "bogus-priv",
