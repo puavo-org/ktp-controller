@@ -37,4 +37,61 @@
       setInterval(update, intervalMs);
     }, intervalMs - (Date.now() % intervalMs));
   };
+
+  function closeOverlay(overlay) {
+    overlay.classList.remove("is-visible");
+  }
+
+  KtpWui.initConfirmOverlay = function ({
+    triggerSelector,
+    overlayId,
+    yesSelector,
+    noSelector,
+    onOpen,
+    onConfirm,
+  }) {
+    let pendingTrigger = null;
+
+    document.addEventListener("click", (event) => {
+      const trigger = event.target.closest(triggerSelector);
+      if (trigger === null) {
+        return;
+      }
+      const overlay = document.getElementById(overlayId);
+      if (overlay === null) {
+        return;
+      }
+      pendingTrigger = trigger;
+      if (onOpen) {
+        onOpen(trigger);
+      }
+      overlay.classList.add("is-visible");
+    });
+
+    document.addEventListener("click", (event) => {
+      const overlay = document.getElementById(overlayId);
+      if (overlay === null || !overlay.classList.contains("is-visible")) {
+        return;
+      }
+      if (event.target.closest(yesSelector) !== null && onConfirm) {
+        onConfirm(pendingTrigger);
+      }
+      if (
+        event.target === overlay ||
+        event.target.closest(`${noSelector}, ${yesSelector}`) !== null
+      ) {
+        closeOverlay(overlay);
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+      const overlay = document.getElementById(overlayId);
+      if (overlay !== null) {
+        closeOverlay(overlay);
+      }
+    });
+  };
 })();
