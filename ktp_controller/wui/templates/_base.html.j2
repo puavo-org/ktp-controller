@@ -13,6 +13,7 @@
     <script src="{{ prefix }}/static/htmx.min.js"></script>
     <script src="{{ prefix }}/static/locale_switcher.js"></script>
     <script src="{{ prefix }}/static/ktp_wui.js"></script>
+    <script src="{{ prefix }}/static/sidebar_toggle.js"></script>
     {% block extra_scripts %}{% endblock %}
 </head>
 <body class="app-shell">
@@ -36,6 +37,14 @@
             </ul>
             {% block nav_live_status %}{% endblock %}
             <ul>
+                {% if self.sidebar() | trim %}
+                <li>
+                    <button type="button"
+                            class="sidebar-toggle-button"
+                            aria-expanded="false"
+                            aria-controls="app-sidebar">{% block sidebar_toggle_label %}{{ _("More info") }}{% endblock %}</button>
+                </li>
+                {% endif %}
                 <li>
                     <details class="dropdown">
                         <summary>{{ locale_menu.flag(locale) }} {{ user }}</summary>
@@ -55,9 +64,15 @@
         </nav>
     </header>
 
-    <main class="container">
-        {% block content %}{% endblock %}
-    </main>
+    <div class="app-shell-body">
+        <main class="container">
+            {% block content %}{% endblock %}
+        </main>
+        <aside id="app-sidebar" class="app-sidebar" hidden>
+            <button type="button" class="sidebar-close-button" aria-label="{{ _('Close') }}">×</button>
+            {% block sidebar %}{% endblock %}
+        </aside>
+    </div>
     <footer class="container">
       {% if abitti2_domain %}<span class="footer-domain">{{ abitti2_domain }}</span>{% endif %}
       {% if puavo_fqdn %}<span class="footer-domain">{{ puavo_fqdn }}</span>{% endif %}

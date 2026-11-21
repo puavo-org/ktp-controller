@@ -22,7 +22,15 @@ footer.container {
   justify-content: center;
   gap: 0.25em 1em;
 }
-body.app-shell > main.container {
+/* main and the collapsible sidebar (see below) sit side by side in a
+   row, so main is no longer a direct flex child of body.app-shell --
+   .app-shell-body is, and takes over main's former flex-sizing role. */
+body.app-shell > .app-shell-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0; /* lets this flex item shrink below its content height so the main/aside overflow:auto below actually scrolls */
+}
+.app-shell-body > main.container {
   flex: 1 1 auto;
   overflow-y: auto;
   /* Explicit rather than relying on the default: pairing overflow-y:auto
@@ -35,7 +43,7 @@ body.app-shell > main.container {
      scroll sideways, just to clip -- instead of leaving it as a latent
      side effect someone has to rediscover. */
   overflow-x: clip;
-  min-height: 0; /* lets this flex item shrink below its content height so overflow-y:auto actually scrolls */
+  min-height: 0;
   min-width: 0; /* flex items default to min-width:auto, which would otherwise keep this as wide as its widest content (e.g. a grid/table) instead of the available viewport width, breaking fluid reflow */
   /* Pico's .container has padding:0 from its 576px breakpoint upward
      (relying on margin:auto centering for outer spacing instead), so
@@ -44,6 +52,27 @@ body.app-shell > main.container {
      Match that gap here so edge items get the same amount of space. */
   padding-left: var(--pico-spacing);
   padding-right: var(--pico-spacing);
+}
+
+/* Collapsible right-docked sidebar, opted into per-page by overriding
+   _base.html.j2's "sidebar" block. Closed by default (the "hidden"
+   attribute, toggled by sidebar_toggle.js); its absence falls back to
+   the browser's native `[hidden] { display: none }` UA rule, so no
+   extra CSS is needed for the closed state. Open, it's a sibling flex
+   item of main.container above, so it pushes main's content aside
+   (reflow) rather than overlaying on top of it. */
+.app-sidebar {
+  flex: 0 0 auto;
+  width: 20rem;
+  max-width: 90vw;
+  overflow-y: auto;
+  border-left: 1px solid var(--pico-muted-border-color);
+  padding: var(--pico-spacing);
+}
+.sidebar-close-button {
+  display: block;
+  width: auto;
+  margin: 0 0 var(--pico-spacing) auto;
 }
 
 .modal-overlay {
