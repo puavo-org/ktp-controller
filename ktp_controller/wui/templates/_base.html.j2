@@ -58,12 +58,8 @@
         {% block content %}{% endblock %}
     </main>
     <footer class="container">
-      {% if abitti2_domain or puavo_fqdn %}
-      <div class="footer-domains">
-          {% if abitti2_domain %}<span class="footer-domain">{{ abitti2_domain }}</span>{% endif %}
-          {% if puavo_fqdn %}<span class="footer-domain">{{ puavo_fqdn }}</span>{% endif %}
-      </div>
-      {% endif %}
+      {% if abitti2_domain %}<span class="footer-domain">{{ abitti2_domain }}</span>{% endif %}
+      {% if puavo_fqdn %}<span class="footer-domain">{{ puavo_fqdn }}</span>{% endif %}
       <small id="page-refreshed-status"
              class="page-refreshed-status"
              data-template-one="{{ _('Page refreshed {n} second ago') }}"
