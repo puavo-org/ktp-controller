@@ -42,9 +42,13 @@ i18n-compile:
 check-i18n: i18n-compile
 	git diff --exit-code '$(project_root)/ktp_controller/wui/locale'
 
+.PHONY: check-js
+check-js:
+	node --test '$(project_root)/ktp_controller/wui/static/'*.test.js
+
 .NOTPARALLEL: check
 .PHONY: check
-check: check-format check-alembic check-types check-i18n
+check: check-format check-alembic check-types check-i18n check-js
 	uv run ruff check
 
 .combined_coverage: $(partial_coverage_files)
