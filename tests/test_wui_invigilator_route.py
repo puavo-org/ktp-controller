@@ -29,6 +29,19 @@ def _svg_tag(html, svg_class):
     return match.group(0)
 
 
+def _last_changed_value_tag(html):
+    match = re.search(r'<span[^>]*class="last-changed-value"[^>]*>', html, re.DOTALL)
+    assert match, "last-changed-value span not found in response"
+    return match.group(0)
+
+
+def _last_changed_utcoffset(html):
+    tag = _last_changed_value_tag(html)
+    match = re.search(r'data-last-changed="([^"]+)"', tag)
+    assert match, "data-last-changed attribute not found in last-changed-value span"
+    return datetime.datetime.fromisoformat(match.group(1)).utcoffset()
+
+
 @pytest.fixture(autouse=True)
 def _mock_last_status_report(mocker):
     # The invigilator/student-access-code pages don't otherwise care
@@ -251,6 +264,7 @@ def _raw_abitti2_stats_messages(
     update_time: str | None,
     exam_titles: list[str | None],
     is_connecteds: [bool],
+    exam_finished_at: str | None = None,
 ):
     if student_count > 28:
         raise ValueError("student_count cannot be more than 28")
@@ -277,7 +291,7 @@ def _raw_abitti2_stats_messages(
             "studentStatus": student_status,
             "sessionStatus": student_status.replace("-", "_"),
             "updateTime": update_time,
-            "examFinishedAt": None,
+            "examFinishedAt": exam_finished_at,
             "isConnected": is_connected,
             "examTitle": exam_title,
             "loginInitiatedOnBrowser": student_status.endswith("-browser")
@@ -327,6 +341,7 @@ def _mock_abitti2_state(
     last_accessed_media=None,
     student_statuses: list[str] | None = None,
     update_time=None,
+    exam_finished_at=None,
     exam_titles: list[str] | None = None,
     is_connecteds: list[bool] | None = None,
     student_exam_titles: list[str | None] | None = None,
@@ -354,6 +369,7 @@ def _mock_abitti2_state(
             last_accessed_media=last_accessed_media,
             student_statuses=student_statuses,
             update_time=update_time,
+            exam_finished_at=exam_finished_at,
             exam_titles=student_exam_titles,
             is_connecteds=is_connecteds,
         ),
@@ -1058,6 +1074,29 @@ def test_invigilator_view_renders_last_changed_at_for_local_time_conversion(
     assert 'class="last-changed-value"' in response.text
     assert 'data-last-changed="' in response.text
     assert "static/local_last_changed_at.js" in response.text
+    assert _last_changed_utcoffset(response.text) == datetime.timedelta(0)
+
+
+def test_invigilator_view_renders_last_changed_at_from_exam_finished_at_as_utc(
+    wui_client, override_session, mocker
+):
+    exam_finished_at = (
+        datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=5)
+    ).isoformat()
+    _mock_abitti2_state(mocker, exam_finished_at=exam_finished_at)
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert _last_changed_utcoffset(response.text) == datetime.timedelta(0)
 
 
 def test_invigilator_view_shows_dash_without_last_changed_at(
