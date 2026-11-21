@@ -94,4 +94,26 @@
       }
     });
   };
+
+  KtpWui.initHiddenToggle = function ({ attr, triggerSelector, swapTargetId, applyState }) {
+    function isHidden() {
+      return document.documentElement.getAttribute(attr) !== "false";
+    }
+
+    document.addEventListener("click", (event) => {
+      const trigger = event.target.closest(triggerSelector);
+      if (trigger === null) {
+        return;
+      }
+      document.documentElement.setAttribute(attr, String(!isHidden()));
+      applyState(isHidden());
+    });
+
+    document.addEventListener("htmx:afterSwap", (event) => {
+      if (event.detail.target.id !== swapTargetId) {
+        return;
+      }
+      applyState(isHidden());
+    });
+  };
 })();
