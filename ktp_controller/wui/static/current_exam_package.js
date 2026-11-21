@@ -151,8 +151,19 @@
     return overtime;
   }
 
+  function updateScheduledStartFixed() {
+    const el = document.getElementById("exam-package-scheduled-start-fixed");
+    if (el === null) {
+      return;
+    }
+    const scheduledStart = new Date(Date.parse(el.dataset.scheduledStart));
+    el.setAttribute("data-tooltip", formatTooltip(scheduledStart));
+    el.textContent = formatTooltip(scheduledStart);
+  }
+
   function update() {
     const late = updateScheduledStart();
+    updateScheduledStartFixed();
     updateStartedAt();
     const overtime = updateScheduledEnd();
 
