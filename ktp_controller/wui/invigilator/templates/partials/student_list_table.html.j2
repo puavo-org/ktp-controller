@@ -49,7 +49,7 @@
             <td>{{ student_list_item.name }}</td>
             <td><span class="birthday-value" data-birthday="{{ student_list_item.birthday | format_ddmmyy }}">••••••</span></td>
             <td><span class="pill pill-{{ student_list_item.state }}">{{ (student_list_item.flags | sort | map('extract', flag_labels) | join(', ')) if student_list_item.state == "has_problems" else state_labels[student_list_item.state] }}</span></td>
-            <td>{{ '-' if not student_list_item.last_changed_at else student_list_item.last_changed_at | localize_datetime(locale) }}</td>
+            <td>{% if not student_list_item.last_changed_at %}-{% else %}<span class="last-changed-value" data-last-changed="{{ student_list_item.last_changed_at.isoformat() }}">{{ student_list_item.last_changed_at|localize_datetime(locale) }}</span>{% endif %}</td>
             <td>{% if student_list_item.wants_to_use_browser %}
               <input type="hidden"
                      id="browser-permission-session-uuid-{{ student_list_item.session_uuid }}"
