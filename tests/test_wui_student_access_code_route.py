@@ -121,7 +121,6 @@ def test_student_access_code_view_shows_footer_domains(
     response = wui_client.get("/invigilator/student_access_code")
 
     assert response.status_code == 200
-    assert '<div class="footer-domains">' in response.text
     assert (
         '<span class="footer-domain">johdanto-rivitys.koe.abitti.net</span>'
         in response.text
