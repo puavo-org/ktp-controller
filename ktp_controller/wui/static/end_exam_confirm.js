@@ -1,44 +1,4 @@
 (function () {
-  function closeOverlay(overlay) {
-    overlay.classList.remove("is-visible");
-  }
-
-  let pendingButton = null;
-
-  document.addEventListener("click", (event) => {
-    const trigger = event.target.closest(".end-exam-button");
-    if (trigger === null) {
-      return;
-    }
-    const overlay = document.getElementById("end-exam-confirm-overlay");
-    if (overlay === null) {
-      return;
-    }
-    pendingButton = trigger;
-    document.getElementById("end-exam-confirm-session-uuid").value =
-      trigger.dataset.sessionUuid;
-    document.getElementById("end-exam-confirm-student-uuid").value =
-      trigger.dataset.studentUuid;
-    const name = document.getElementById("end-exam-confirm-name");
-    if (name !== null) {
-      name.textContent = trigger.dataset.name;
-    }
-    overlay.classList.add("is-visible");
-  });
-
-  document.addEventListener("click", (event) => {
-    const overlay = document.getElementById("end-exam-confirm-overlay");
-    if (overlay === null || !overlay.classList.contains("is-visible")) {
-      return;
-    }
-    if (event.target.closest(".end-exam-confirm-yes") !== null) {
-      armBusyState(pendingButton);
-    }
-    if (event.target === overlay || event.target.closest(".end-exam-confirm-no, .end-exam-confirm-yes") !== null) {
-      closeOverlay(overlay);
-    }
-  });
-
   function armBusyState(button) {
     if (button === null || !button.isConnected) {
       return;
@@ -65,13 +25,21 @@
     document.addEventListener("htmx:afterRequest", onAfterRequest);
   }
 
-  document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") {
-      return;
-    }
-    const overlay = document.getElementById("end-exam-confirm-overlay");
-    if (overlay !== null) {
-      closeOverlay(overlay);
-    }
+  KtpWui.initConfirmOverlay({
+    triggerSelector: ".end-exam-button",
+    overlayId: "end-exam-confirm-overlay",
+    yesSelector: ".end-exam-confirm-yes",
+    noSelector: ".end-exam-confirm-no",
+    onOpen: (trigger) => {
+      document.getElementById("end-exam-confirm-session-uuid").value =
+        trigger.dataset.sessionUuid;
+      document.getElementById("end-exam-confirm-student-uuid").value =
+        trigger.dataset.studentUuid;
+      const name = document.getElementById("end-exam-confirm-name");
+      if (name !== null) {
+        name.textContent = trigger.dataset.name;
+      }
+    },
+    onConfirm: armBusyState,
   });
 })();
