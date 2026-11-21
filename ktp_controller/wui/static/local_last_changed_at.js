@@ -2,10 +2,7 @@
   function applyState() {
     document.querySelectorAll(".last-changed-value").forEach((el) => {
       const parsed = new Date(Date.parse(el.dataset.lastChanged));
-      el.textContent = parsed.toLocaleString(document.documentElement.lang, {
-        dateStyle: "long",
-        timeStyle: "long",
-      });
+      el.textContent = KtpWui.formatLongDateTime(parsed);
     });
   }
 
