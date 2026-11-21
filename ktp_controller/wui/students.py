@@ -49,14 +49,14 @@ async def get_student_list_items() -> list[ktp_controller.wui.schemas.StudentLis
         update_time: datetime.datetime | None = (
             datetime.datetime.fromisoformat(
                 raw_abitti2_student["updateTime"]
-            ).astimezone()
+            ).astimezone(datetime.UTC)
             if raw_abitti2_student["updateTime"] is not None
             else None
         )
         exam_finished_at: datetime.datetime | None = (
             datetime.datetime.fromisoformat(
                 raw_abitti2_student["examFinishedAt"]
-            ).astimezone()
+            ).astimezone(datetime.UTC)
             if raw_abitti2_student["examFinishedAt"] is not None
             else None
         )
