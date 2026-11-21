@@ -170,6 +170,23 @@ msgstr ""
 "Vill du verkligen byta studerandes åtkomstkod? Den nuvarande koden slutar"
 " fungera för alla studerande som använder den."
 
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:33
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:37
+msgid "Wi-Fi info"
+msgstr "Wifi-information"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:39
+msgid "Network name (SSID)"
+msgstr "Nätverkets namn (SSID)"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:47
+msgid "Show Wi-Fi password"
+msgstr "Visa Wifi-lösenord"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:50
+msgid "Hide Wi-Fi password"
+msgstr "Dölj Wifi-lösenord"
+
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_access_code_display.html.j2:7
 msgid "No server name available"
 msgstr "Ingen server namn tillgänglig"
@@ -555,6 +572,7 @@ msgid "Username"
 msgstr "Användarnamn"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:52
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:43
 msgid "Password"
 msgstr "Lösenord"
 

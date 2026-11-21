@@ -170,6 +170,23 @@ msgstr ""
 "Vaihdetaanko kokelaan pääsykoodi varmasti? Nykyinen koodi lakkaa "
 "toimimasta kaikilta sitä käyttäviltä kokelailta."
 
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:33
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:37
+msgid "Wi-Fi info"
+msgstr "Wi-Fi-tiedot"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:39
+msgid "Network name (SSID)"
+msgstr "Verkon nimi (SSID)"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:47
+msgid "Show Wi-Fi password"
+msgstr "Näytä Wi-Fi-salasana"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:50
+msgid "Hide Wi-Fi password"
+msgstr "Piilota Wi-Fi-salasana"
+
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_access_code_display.html.j2:7
 msgid "No server name available"
 msgstr "Palvelimen nimeä ei ole saatavilla"
@@ -554,6 +571,7 @@ msgstr "Kirjautuneena käyttäjänä <strong>%(username)s</strong>."
 msgid "Username"
 msgstr "Käyttäjätunnus"
 
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:43
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:52
 msgid "Password"
 msgstr "Salasana"

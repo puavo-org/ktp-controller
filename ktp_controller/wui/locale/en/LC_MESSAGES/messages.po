@@ -168,6 +168,23 @@ msgstr ""
 "Really change the student access code? The current code will stop working"
 " for every student using it."
 
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:33
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:37
+msgid "Wi-Fi info"
+msgstr "Wi-Fi info"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:39
+msgid "Network name (SSID)"
+msgstr "Network name (SSID)"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:47
+msgid "Show Wi-Fi password"
+msgstr "Show Wi-Fi password"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:50
+msgid "Hide Wi-Fi password"
+msgstr "Hide Wi-Fi password"
+
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/partials/student_access_code_display.html.j2:7
 msgid "No server name available"
 msgstr "No server name available"
@@ -553,6 +570,7 @@ msgid "Username"
 msgstr "Username"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:52
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:43
 msgid "Password"
 msgstr "Password"
 
