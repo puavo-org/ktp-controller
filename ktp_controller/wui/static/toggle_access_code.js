@@ -1,12 +1,5 @@
 (function () {
-  const HIDDEN_ATTR = "data-access-code-hidden";
-
-  function accessCodeHidden() {
-    return document.documentElement.getAttribute(HIDDEN_ATTR) !== "false";
-  }
-
-  function applyState() {
-    const hidden = accessCodeHidden();
+  function applyState(hidden) {
     const button = document.querySelector(".toggle-access-code-button");
     if (button === null) {
       return;
@@ -20,19 +13,10 @@
     );
   }
 
-  document.addEventListener("click", (event) => {
-    const trigger = event.target.closest(".toggle-access-code-button");
-    if (trigger === null) {
-      return;
-    }
-    document.documentElement.setAttribute(HIDDEN_ATTR, String(!accessCodeHidden()));
-    applyState();
-  });
-
-  document.addEventListener("htmx:afterSwap", (event) => {
-    if (event.detail.target.id !== "student-access-code") {
-      return;
-    }
-    applyState();
+  KtpWui.initHiddenToggle({
+    attr: "data-access-code-hidden",
+    triggerSelector: ".toggle-access-code-button",
+    swapTargetId: "student-access-code",
+    applyState,
   });
 })();
