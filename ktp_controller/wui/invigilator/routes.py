@@ -19,6 +19,7 @@ import ktp_controller.wui.landing.routes
 import ktp_controller.wui.schemas
 import ktp_controller.wui.students
 import ktp_controller.wui.utils
+from ktp_controller import SETTINGS
 
 # Relative imports
 from . import schemas
@@ -289,6 +290,8 @@ async def _get_student_access_code(
         "current_path": request.url.path,
         "abitti2_domain": ktp_controller.wui.landing.routes.get_abitti2_domain(report),
         "puavo_fqdn": ktp_controller.wui.landing.routes.get_puavo_fqdn(),
+        "wui_wifi_ssid": SETTINGS.wui_wifi_ssid,
+        "wui_wifi_passphrase": SETTINGS.wui_wifi_passphrase,
     }
 
     # If the request comes from htmx, return only the code display partial
