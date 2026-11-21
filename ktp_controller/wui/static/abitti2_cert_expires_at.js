@@ -13,13 +13,7 @@
     });
 
     // "long" additionally includes the timezone name/offset.
-    el.setAttribute(
-      "data-tooltip",
-      expiresAt.toLocaleString(document.documentElement.lang, {
-        dateStyle: "long",
-        timeStyle: "long",
-      }),
-    );
+    el.setAttribute("data-tooltip", KtpWui.formatLongDateTime(expiresAt));
   }
 
   // This script runs in <head>, before <body> (and
