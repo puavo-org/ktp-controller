@@ -69,10 +69,16 @@ body.app-shell > .app-shell-body {
   border-left: 1px solid var(--pico-muted-border-color);
   padding: var(--pico-spacing);
 }
-.sidebar-close-button {
-  display: block;
-  width: auto;
-  margin: 0 0 var(--pico-spacing) auto;
+
+/* Fixed to the viewport, entirely outside header/nav's own layout, so
+   toggling its presence per-page can never change nav's width or
+   wrapping -- and with it, never shift where the locale dropdown or
+   any other nav item lands. */
+.sidebar-toggle-button {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
 }
 
 .modal-overlay {

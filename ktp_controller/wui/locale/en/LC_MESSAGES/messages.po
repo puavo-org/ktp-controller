@@ -527,7 +527,7 @@ msgstr "Connection lost at"
 msgid "The page will reload automatically once it's back."
 msgstr "The page will reload automatically once it's back."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:45
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:35
 msgid "More info"
 msgstr "More info"
 
@@ -540,10 +540,6 @@ msgstr "Language"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:39
 msgid "Log out"
 msgstr "Log out"
-
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:72
-msgid "Close"
-msgstr "Close"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:69
 #, python-brace-format

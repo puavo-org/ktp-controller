@@ -529,7 +529,7 @@ msgstr "Yhteys katkesi"
 msgid "The page will reload automatically once it's back."
 msgstr "Sivu latautuu automaattisesti uudelleen, kun yhteys palautuu."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:45
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:35
 msgid "More info"
 msgstr "Lisätietoja"
 
@@ -542,10 +542,6 @@ msgstr "Kieli"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:39
 msgid "Log out"
 msgstr "Kirjaudu ulos"
-
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:72
-msgid "Close"
-msgstr "Sulje"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:69
 #, python-brace-format

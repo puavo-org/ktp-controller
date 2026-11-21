@@ -11,7 +11,7 @@
 
   KtpWui.initHiddenToggle({
     attr: "data-sidebar-hidden",
-    triggerSelector: ".sidebar-toggle-button, .sidebar-close-button",
+    triggerSelector: ".sidebar-toggle-button",
     swapTargetId: "app-sidebar",
     applyState,
   });
