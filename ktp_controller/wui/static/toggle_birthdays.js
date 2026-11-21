@@ -1,13 +1,5 @@
 (function () {
-  const HIDDEN_ATTR = "data-birthdays-hidden";
-
-  function birthdaysHidden() {
-    return document.documentElement.getAttribute(HIDDEN_ATTR) !== "false";
-  }
-
-  function applyState() {
-    const hidden = birthdaysHidden();
-
+  function applyState(hidden) {
     document.querySelectorAll(".birthday-value").forEach((el) => {
       el.textContent = hidden
         ? "•".repeat(el.dataset.birthday.length)
@@ -22,24 +14,15 @@
           "aria-label",
           hidden ? button.dataset.showLabel : button.dataset.hideLabel
         );
-        button.querySelector(".icon-eye-open").toggleAttribute("hidden", !hidden);
-        button.querySelector(".icon-eye-closed").toggleAttribute("hidden", hidden);
+        KtpWui.setHidden(button.querySelector(".icon-eye-open"), !hidden);
+        KtpWui.setHidden(button.querySelector(".icon-eye-closed"), hidden);
       });
   }
 
-  document.addEventListener("click", (event) => {
-    const trigger = event.target.closest(".toggle-birthday-visibility-button");
-    if (trigger === null) {
-      return;
-    }
-    document.documentElement.setAttribute(HIDDEN_ATTR, String(!birthdaysHidden()));
-    applyState();
-  });
-
-  document.addEventListener("htmx:afterSwap", (event) => {
-    if (event.detail.target.id !== "student-list-groups") {
-      return;
-    }
-    applyState();
+  KtpWui.initHiddenToggle({
+    attr: "data-birthdays-hidden",
+    triggerSelector: ".toggle-birthday-visibility-button",
+    swapTargetId: "student-list-groups",
+    applyState,
   });
 })();
