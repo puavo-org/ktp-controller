@@ -8,11 +8,6 @@ ID of the next TODO item.
 Next ID: TODO58
 
 
-## TODO56
-
-WUI: look at all JavaScript files. Identify refactoring opportunities.
-
-
 ## TODO57
 
 WUI: ktp_controller/wui/students.py parses Abitti2's raw-stats
