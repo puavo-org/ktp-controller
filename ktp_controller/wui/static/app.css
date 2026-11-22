@@ -162,6 +162,9 @@ header .logo {
 .footer-domain {
   font-size: 0.5rem;
 }
+.footer-exam-time {
+  font-size: 0.5rem;
+}
 
 /* Shared component patterns, reused by more than one template below.
    Standardization rule: an #id selector is used only when that id
