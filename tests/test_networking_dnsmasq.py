@@ -69,6 +69,73 @@ def test_start_dhcp_dns_server_writes_conf_file_and_invokes_dnsmasq(
     ]
 
 
+def test_start_dhcp_dns_server_appends_host_default_nameservers(
+    mocker, testdir, monkeypatch
+):
+    conf_filepath = os.path.join(testdir, "dnsmasq.conf")
+    monkeypatch.setattr(ktp_controller.networking.dnsmasq, "_CONF_FILE", conf_filepath)
+    monkeypatch.delenv("SUDO_USER", raising=False)
+
+    mocker.patch(
+        "ktp_controller.networking.dnsmasq.subprocess.check_call", return_value=None
+    )
+    mocker.patch(
+        "ktp_controller.networking.dnsmasq.ktp_controller.net.get_default_nameservers",
+        return_value=["192.168.1.1"],
+    )
+
+    ktp_controller.networking.dnsmasq.start_dhcp_dns_server(
+        _FakeNet(),
+        allowed_wan_domains=[],
+        ipset_name=None,
+        local_dns_ttl=0,
+    )
+
+    with open(conf_filepath, encoding="utf-8") as conf_file:
+        conf_lines = conf_file.read().splitlines()
+
+    assert conf_lines[-5:] == [
+        "server=/koe.abitti.net/9.9.9.9",
+        "server=/koe.abitti.net/1.1.1.1",
+        "server=/koe.abitti.net/8.8.8.8",
+        "server=/koe.abitti.net/192.168.1.1",
+        "all-servers",
+    ]
+
+
+def test_start_dhcp_dns_server_does_not_duplicate_host_nameserver_matching_hardcoded_one(
+    mocker, testdir, monkeypatch
+):
+    conf_filepath = os.path.join(testdir, "dnsmasq.conf")
+    monkeypatch.setattr(ktp_controller.networking.dnsmasq, "_CONF_FILE", conf_filepath)
+    monkeypatch.delenv("SUDO_USER", raising=False)
+
+    mocker.patch(
+        "ktp_controller.networking.dnsmasq.subprocess.check_call", return_value=None
+    )
+    mocker.patch(
+        "ktp_controller.networking.dnsmasq.ktp_controller.net.get_default_nameservers",
+        return_value=["8.8.8.8"],
+    )
+
+    ktp_controller.networking.dnsmasq.start_dhcp_dns_server(
+        _FakeNet(),
+        allowed_wan_domains=[],
+        ipset_name=None,
+        local_dns_ttl=0,
+    )
+
+    with open(conf_filepath, encoding="utf-8") as conf_file:
+        conf_lines = conf_file.read().splitlines()
+
+    assert conf_lines[-4:] == [
+        "server=/koe.abitti.net/9.9.9.9",
+        "server=/koe.abitti.net/1.1.1.1",
+        "server=/koe.abitti.net/8.8.8.8",
+        "all-servers",
+    ]
+
+
 def test_start_dhcp_dns_server_adds_user_option_from_sudo_user(
     mocker, testdir, monkeypatch
 ):
