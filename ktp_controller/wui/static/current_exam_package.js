@@ -8,7 +8,7 @@
       return false;
     }
     const scheduledStart = Date.parse(el.dataset.scheduledStart);
-    el.setAttribute("data-tooltip", KtpWui.formatLongDateTime(new Date(scheduledStart)));
+    el.setAttribute("data-tooltip", KtpWui.formatShortDateTime(new Date(scheduledStart)));
 
     const seconds = Math.round((scheduledStart - Date.now()) / 1000);
     const late = seconds < 0;
@@ -49,7 +49,7 @@
       return;
     }
     const startedAt = Date.parse(el.dataset.startedAt);
-    el.setAttribute("data-tooltip", KtpWui.formatLongDateTime(new Date(startedAt)));
+    el.setAttribute("data-tooltip", KtpWui.formatShortDateTime(new Date(startedAt)));
 
     const seconds = Math.max(0, Math.round((Date.now() - startedAt) / 1000));
     let text;
@@ -89,7 +89,7 @@
       return false;
     }
     const scheduledEnd = Date.parse(el.dataset.scheduledEnd);
-    el.setAttribute("data-tooltip", KtpWui.formatLongDateTime(new Date(scheduledEnd)));
+    el.setAttribute("data-tooltip", KtpWui.formatShortDateTime(new Date(scheduledEnd)));
 
     const seconds = Math.round((scheduledEnd - Date.now()) / 1000);
     const overdue = seconds < 0;
@@ -132,8 +132,8 @@
       return;
     }
     const scheduledStart = new Date(Date.parse(el.dataset.scheduledStart));
-    el.setAttribute("data-tooltip", KtpWui.formatLongDateTime(scheduledStart));
-    el.textContent = KtpWui.formatLongDateTime(scheduledStart);
+    el.setAttribute("data-tooltip", KtpWui.formatShortDateTime(scheduledStart));
+    el.textContent = KtpWui.formatShortDateTime(scheduledStart);
   }
 
   function update() {

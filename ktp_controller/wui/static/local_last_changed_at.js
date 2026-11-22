@@ -2,7 +2,7 @@
   function applyState() {
     document.querySelectorAll(".last-changed-value").forEach((el) => {
       const parsed = new Date(Date.parse(el.dataset.lastChanged));
-      el.textContent = KtpWui.formatLongDateTime(parsed);
+      el.textContent = KtpWui.formatShortDateTime(parsed);
     });
   }
 

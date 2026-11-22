@@ -50,3 +50,9 @@ test("formatLongDateTime returns a non-empty string containing the year", () => 
   assert.ok(formatted.length > 0);
   assert.match(formatted, /2026/);
 });
+
+test("formatShortDateTime returns a non-empty string containing the year", () => {
+  const formatted = KtpWui.formatLongDateTime(new Date("2023-03-05T12:00:00Z"));
+  assert.ok(formatted.length > 0);
+  assert.match(formatted, /2023/);
+});

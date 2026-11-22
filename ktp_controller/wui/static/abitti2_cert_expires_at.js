@@ -12,8 +12,7 @@
       dateStyle: "short",
     });
 
-    // "long" additionally includes the timezone name/offset.
-    el.setAttribute("data-tooltip", KtpWui.formatLongDateTime(expiresAt));
+    el.setAttribute("data-tooltip", KtpWui.formatShortDateTime(expiresAt));
   }
 
   // This script runs in <head>, before <body> (and

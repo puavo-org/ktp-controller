@@ -25,6 +25,7 @@ __all__ = [
     "get_ngettext",
     "localize_date",
     "localize_datetime",
+    "localize_time",
     "negotiate_locale",
     "template_context_processor",
 ]
@@ -158,3 +159,6 @@ def localize_datetime(dt: datetime.datetime, locale: str) -> str:
 
 def localize_date(dt: datetime.datetime, locale: str) -> str:
     return babel.dates.format_date(dt, format="short", locale=locale)
+
+def localize_time(dt: datetime.datetime, locale: str) -> str:
+    return babel.dates.format_time(dt, format="short", locale=locale)

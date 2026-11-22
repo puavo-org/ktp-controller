@@ -27,6 +27,13 @@
     });
   };
 
+  KtpWui.formatShortDateTime = function (date) {
+    return date.toLocaleString(document.documentElement.lang, {
+      dateStyle: "short",
+      timeStyle: "short",
+    });
+  };
+
   KtpWui.startTicking = function (update, intervalMs) {
     // This runs in <head>, before <body> (and the elements `update`
     // looks for) exist, so this first call is a no-op.

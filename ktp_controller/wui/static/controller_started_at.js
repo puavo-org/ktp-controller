@@ -7,7 +7,7 @@
       return;
     }
     const startedAt = Date.parse(el.dataset.startedAt);
-    el.setAttribute("data-tooltip", KtpWui.formatLongDateTime(new Date(startedAt)));
+    el.setAttribute("data-tooltip", KtpWui.formatShortDateTime(new Date(startedAt)));
 
     const seconds = Math.max(0, Math.round((Date.now() - startedAt) / 1000));
     let text;
