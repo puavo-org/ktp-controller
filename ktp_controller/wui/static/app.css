@@ -63,7 +63,7 @@ body.app-shell > .app-shell-body {
    (reflow) rather than overlaying on top of it. */
 .app-sidebar {
   flex: 0 0 auto;
-  width: 20rem;
+  width: 25rem;
   max-width: 90vw;
   overflow-y: auto;
   border-left: 1px solid var(--pico-muted-border-color);
