@@ -5,7 +5,7 @@ TODO2 and so on. When an item is done, remove it from this document.
 
 When adding new items, always update the following line to define the
 ID of the next TODO item.
-Next ID: TODO60
+Next ID: TODO61
 
 
 ## TODO58
@@ -24,3 +24,12 @@ addition, I want to append the hosts's default nameserver (if there's
 one defined) to the list.
 
 This item Closes #68, add that to the final connecting commit.
+
+
+## TODO60
+
+WUI: top nav bar: emphasize ( or display a small indicator on ) the
+link of currently displayed page. I.e. if the browser is at
+/invigilator/student_access_code, then the "Student access code" link
+in the navbar should be somehow emphasized or indicated as the
+current.
