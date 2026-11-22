@@ -30,25 +30,18 @@
     {% endif %}
 {% endblock %}
 
-{% block sidebar_toggle_label %}{{ _("Wi-Fi info") }}{% endblock %}
-
 {% block sidebar %}
 {% if wui_wifi_ssid %}
-    <h3>{{ _("Wi-Fi info") }}</h3>
-    <p>
-        <strong>{{ _("Network name (SSID)") }}</strong><br>
-        {{ wui_wifi_ssid }}
-    </p>
-    <p>
-        <strong>{{ _("Password") }}</strong><br>
-        <button type="button"
+   <h3>{{ _("Network name (SSID)") }}</h3>
+   <p class="wifi-ssid-text">{{ wui_wifi_ssid }}</p>
+   <h3>{{ _("Password") }}</h3>
+   <button type="button"
                 class="wifi-passphrase-text toggle-wifi-passphrase-button"
                 aria-pressed="false"
                 aria-label="{{ _('Show Wi-Fi password') }}"
                 data-wifi-passphrase="{{ wui_wifi_passphrase }}"
                 data-show-label="{{ _('Show Wi-Fi password') }}"
-                data-hide-label="{{ _('Hide Wi-Fi password') }}">{{ "•" * (wui_wifi_passphrase | length) }}</button>
-    </p>
+                data-hide-label="{{ _('Hide Wi-Fi password') }}">{{ "•" * 12 }}</button>
 {% endif %}
 {% endblock %}
 

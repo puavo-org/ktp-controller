@@ -5,7 +5,7 @@
       return;
     }
     const passphrase = button.dataset.wifiPassphrase;
-    button.textContent = hidden ? "•".repeat(passphrase.length) : passphrase;
+    button.textContent = hidden ? "•".repeat(12) : passphrase;
     button.setAttribute("aria-pressed", String(!hidden));
     button.setAttribute(
       "aria-label",
