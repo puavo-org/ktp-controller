@@ -132,7 +132,6 @@
       return;
     }
     const scheduledStart = new Date(Date.parse(el.dataset.scheduledStart));
-    el.setAttribute("data-tooltip", KtpWui.formatShortDateTime(scheduledStart));
     el.textContent = KtpWui.formatShortDateTime(scheduledStart);
   }
 

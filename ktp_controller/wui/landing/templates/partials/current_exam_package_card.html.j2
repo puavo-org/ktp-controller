@@ -33,7 +33,6 @@
             <td id="exam-package-scheduled-start-cell"{% if start_severity %} class="value-{{ start_severity }}"{% endif %}>
                 {% if current_exam_package_info.started_at %}
                 <span id="exam-package-scheduled-start-fixed"
-                      data-tooltip="{{ current_exam_package_info.scheduled_start_time|localize_datetime(locale) }}"
                       data-scheduled-start="{{ current_exam_package_info.scheduled_start_time.isoformat() }}">{{ current_exam_package_info.scheduled_start_time|localize_time(locale) }}</span>
                 {% else %}
                 <span class="value-with-icon">
