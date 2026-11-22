@@ -27,8 +27,10 @@ from . import schemas
 __all__ = [
     "router",
     "get_abitti2_domain",
+    "get_exam_package_info",
     "get_nav_severity",
     "get_puavo_fqdn",
+    "get_upcoming_exam_package_info",
 ]
 
 _LOGGER = logging.getLogger(__name__)
@@ -224,7 +226,7 @@ def _get_exam_package_state_labels(
     }
 
 
-def _get_exam_package_info(
+def get_exam_package_info(
     report: dict[str, typing.Any] | None,
 ) -> schemas.ExamPackageInfo | None:
     if report is None:
@@ -241,7 +243,7 @@ def _get_exam_package_info(
     )
 
 
-def _get_upcoming_exam_package_info(
+def get_upcoming_exam_package_info(
     upcoming_exam_packages: list[dict[str, typing.Any]],
 ) -> schemas.UpcomingExamPackageInfo | None:
     if not upcoming_exam_packages:
@@ -264,7 +266,7 @@ def get_nav_severity(
             _get_controller_info(report),
             _get_abitti2_info(report, locale),
             _get_host_info(report),
-            _get_exam_package_info(report),
+            get_exam_package_info(report),
         )
         if info is not None
     )
@@ -299,8 +301,8 @@ async def _get_landing(
         "controller_info": _get_controller_info(report),
         "abitti2_info": _get_abitti2_info(report, session.locale),
         "host_info": _get_host_info(report),
-        "current_exam_package_info": _get_exam_package_info(report),
-        "upcoming_exam_package_info": _get_upcoming_exam_package_info(
+        "current_exam_package_info": get_exam_package_info(report),
+        "upcoming_exam_package_info": get_upcoming_exam_package_info(
             upcoming_exam_packages
         ),
         "exam_package_state_labels": _get_exam_package_state_labels(_),
@@ -342,7 +344,7 @@ async def _get_exam_package_card(
     _ = ktp_controller.wui.i18n.get_gettext(session.locale)
 
     context = {
-        "current_exam_package_info": _get_exam_package_info(report),
+        "current_exam_package_info": get_exam_package_info(report),
         "exam_package_state_labels": _get_exam_package_state_labels(_),
         "locale": session.locale,
     }
@@ -367,7 +369,7 @@ async def _get_upcoming_exam_package_card(
     _ = ktp_controller.wui.i18n.get_gettext(session.locale)
 
     context = {
-        "upcoming_exam_package_info": _get_upcoming_exam_package_info(
+        "upcoming_exam_package_info": get_upcoming_exam_package_info(
             upcoming_exam_packages
         ),
         "locale": session.locale,
