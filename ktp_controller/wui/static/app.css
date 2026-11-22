@@ -156,10 +156,10 @@ header .logo {
   display: block;
 }
 .page-refreshed-status {
-  font-size: 0.5rem;
+  font-size: 0.6rem;
 }
 .footer-domain {
-  font-size: 0.5rem;
+  font-size: 0.6rem;
 }
 /* #footer-exam-times (partials/footer_exam_times.html.j2) is a single
    self-refreshing htmx fragment, but its two labeled spans should lay
@@ -170,7 +170,7 @@ header .logo {
   display: contents;
 }
 .footer-exam-time {
-  font-size: 0.5rem;
+  font-size: 0.6rem;
 }
 
 /* Shared component patterns, reused by more than one template below.
