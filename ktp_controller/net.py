@@ -19,10 +19,13 @@ _LOGGER = logging.getLogger(os.path.basename(__file__))
 
 __all__ = [
     "Net",
+    "get_default_nameservers",
     "get_default_route_interface",
     "interface_addresses",
     "interfaces",
 ]
+
+_RESOLV_CONF_FILEPATH = "/etc/resolv.conf"
 
 
 def wait_interface(interface_name: str, *, timeout: float) -> bool:
@@ -52,6 +55,60 @@ def get_default_route_interface() -> str | None:
         if "dev" in fields:
             return fields[fields.index("dev") + 1]
     return None
+
+
+def _nmcli_nameservers(interface: str) -> list[str]:
+    try:
+        output = subprocess.check_output(
+            ["nmcli", "-t", "-f", "IP4.DNS", "device", "show", interface],
+            timeout=2,
+        ).decode()
+    except (FileNotFoundError, subprocess.SubprocessError):
+        return []
+    nameservers = []
+    for line in output.splitlines():
+        _, _, nameserver = line.partition(":")
+        if nameserver:
+            nameservers.append(nameserver)
+    return nameservers
+
+
+def _resolv_conf_nameservers() -> list[str]:
+    try:
+        with open(_RESOLV_CONF_FILEPATH, encoding="utf-8") as resolv_conf_file:
+            lines = resolv_conf_file.readlines()
+    except FileNotFoundError:
+        return []
+    return [
+        fields[1]
+        for fields in (line.split() for line in lines)
+        if len(fields) >= 2 and fields[0] == "nameserver"
+    ]
+
+
+def _is_usable_nameserver(nameserver: str) -> bool:
+    try:
+        return not ipaddress.ip_address(nameserver).is_loopback
+    except ValueError:
+        return False
+
+
+def get_default_nameservers() -> list[str]:
+    """Host's own default/upstream nameservers, loopback-filtered and de-duplicated.
+
+    Combines NetworkManager's view of the default-route interface's DNS
+    servers with /etc/resolv.conf, since NetworkManager is not always
+    present or managing the relevant interface.
+    """
+    interface = get_default_route_interface()
+    candidates = (_nmcli_nameservers(interface) if interface else []) + (
+        _resolv_conf_nameservers()
+    )
+    nameservers: list[str] = []
+    for candidate in candidates:
+        if candidate not in nameservers and _is_usable_nameserver(candidate):
+            nameservers.append(candidate)
+    return nameservers
 
 
 def interfaces() -> list[str]:
