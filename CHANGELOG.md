@@ -6,43 +6,100 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.10.0rc2] - 2026-11-17
+## [0.10.0] - 2026-11-22
 
 ### Added
 
-- Networking: allow LAN clients limited internet access during an exam,
-  restricted to a configurable allowlist of WAN domains (new
-  `networking_allowed_wan_domains` setting, defaulting to domains
-  needed for Windows/ChromeOS network connectivity checks and Abitti2
-  update/attestation services). Resolved IPs are tracked in an ipset
-  and only matching LAN->WAN traffic is forwarded/NATed; everything
-  else is dropped and logged. All IPv6 forwarding from the LAN
-  interface is dropped.
+- Web UI:
 
-  The default set of allowed WAN domains is:
-    - dns.msftncsi.com
-    - www.msftncsi.com
-    - www.msftconnecttest.com
-    - ipv6.msftconnecttest.com
-    - endpoint.security.microsoft.com
-    - smartscreen-prod.microsoft.com
-    - smartscreen.microsoft.com
-    - wdcp.microsoft.com
-    - wdcpalt.microsoft.com
-    - wd.microsoft.com
-    - ctldl.windowsupdate.com
-    - crl.microsoft.com
-    - chromeos-staging.abitti.fi
-    - chromeos.abitti.fi
-    - register.appattest.apple.com
-    - m.google.com
-    - chromeos-ca.gstatic.com
-    - clients3.google.com
-    - www.googleapis.com
+    - Show the next upcoming scheduled exam package on the landing
+      page (scheduled start/end time with a live countdown), in
+      addition to the current one.
+
+    - Show the current exam's scheduled end time and the next exam's
+      scheduled start time in the shared page footer, updating live.
+
+    - Invigilator view: show the configured Wi-Fi SSID and passphrase
+      in a new collapsible sidebar on the student access code
+      page. The passphrase renders masked by default, with a reveal
+      toggle (new `wui_wifi_ssid`/`wui_wifi_passphrase` settings).
+
+    - Highlight the current page's link in the top nav bar.
+
+- Networking:
+
+    - Also resolve `koe.abitti.net` using the host's own default
+      nameservers, in addition to the hardcoded server list, so a
+      non-standard network environment on the controller host itself
+      still resolves it.
+
+    - Allow LAN clients limited internet access during an exam,
+      restricted to a configurable allowlist of WAN domains (new
+      `networking_allowed_wan_domains` setting, defaulting to domains
+      needed for Windows/ChromeOS network connectivity checks and
+      Abitti2 update/attestation services). Resolved IPs are tracked
+      in an ipset and only matching LAN->WAN traffic is
+      forwarded/NATed; everything else is dropped and logged. All IPv6
+      forwarding from the LAN interface is dropped.
+
+      The default set of allowed WAN domains is:
+        - dns.msftncsi.com
+        - www.msftncsi.com
+        - www.msftconnecttest.com
+        - ipv6.msftconnecttest.com
+        - endpoint.security.microsoft.com
+        - smartscreen-prod.microsoft.com
+        - smartscreen.microsoft.com
+        - wdcp.microsoft.com
+        - wdcpalt.microsoft.com
+        - wd.microsoft.com
+        - ctldl.windowsupdate.com
+        - crl.microsoft.com
+        - chromeos-staging.abitti.fi
+        - chromeos.abitti.fi
+        - register.appattest.apple.com
+        - m.google.com
+        - chromeos-ca.gstatic.com
+        - clients3.google.com
+        - www.googleapis.com
 
 ### Changed
 
 - Updated dependencies.
+
+- Networking:
+
+    - Puavo device FQDN nginx servers now present
+      `hostorgcabundle.pem`, letting organisation-agnostic
+      Exam-O-Matic verify the peer certificate with just the root CA
+      certificate.
+
+    - Local domain DNS responses now use a 7200s TTL.
+
+- Web UI:
+
+    - Shorter date/time display format.
+
+    - The "scheduled start" time (once the exam has started) and the
+      student "last changed at" timestamp are now shown in the
+      browser's local timezone instead of the static server-rendered
+      value.
+
+    - The shared footer is now pinned to the bottom of the viewport.
+
+### Fixed
+
+- Web UI:
+
+    - Student "last changed at" and exam-finished timestamps (derived
+      from Abitti2 raw stats) are now parsed as UTC instead of the
+      server's local system timezone, like every other timestamp in
+      the system.
+
+    - Fixed several narrow-viewport layout bugs: the top nav
+      overflowed the page instead of wrapping, the landing page's card
+      grid overflowed its container, and card tooltips rendered as a
+      barely-visible sliver instead of the full bubble.
 
 
 ## [0.9.0] - 2026-11-14
