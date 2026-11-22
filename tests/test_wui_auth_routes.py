@@ -73,6 +73,22 @@ def test_get_login_omits_exam_server_domains_when_unavailable(wui_client, mocker
     assert b'class="footer-domain"' not in response.content
 
 
+def test_get_login_does_not_show_exam_package_footer(wui_client, mocker):
+    # login.html.j2 doesn't extend _base.html.j2, so it has its own,
+    # separate footer that never gained the current/next exam package
+    # times the shared footer shows on every other page.
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=_status_report(),
+    )
+
+    response = wui_client.get("/login")
+
+    assert response.status_code == 200
+    assert "footer-exam-times" not in response.text
+    assert "static/footer_exam_times.js" not in response.text
+
+
 def test_get_login_tolerates_status_report_fetch_failure(wui_client, mocker):
     mocker.patch(
         "ktp_controller.api.client.get_last_status_report",

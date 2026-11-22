@@ -3,14 +3,19 @@ import datetime
 import pytest
 import starlette.testclient
 
+import ktp_controller.utils
 import ktp_controller.wui.auth
 import ktp_controller.wui.main
-from tests.html_helpers import _nav_item_tag
+from tests.html_helpers import _nav_item_tag, _tag_by_id
+from tests.test_wui_landing_route import _exam_package, _upcoming_exam_package
 
 
 @pytest.fixture(autouse=True)
 def _mock_last_status_report(mocker):
     mocker.patch("ktp_controller.api.client.get_last_status_report", return_value=None)
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages", return_value=[]
+    )
 
 
 def test_ws_rejects_without_session(wui_client, mocker):
@@ -242,3 +247,223 @@ def test_nav_status_not_current_when_on_another_page(wui_client, override_sessio
     assert response.status_code == 200
     nav_item = _nav_item_tag(response.text, "Exam server")
     assert "aria-current" not in nav_item
+
+
+def test_footer_exam_times_requires_login(wui_client):
+    response = wui_client.get("/footer_exam_times")
+
+    assert response.status_code == 303
+    assert response.headers["location"].startswith("/login")
+
+
+def test_footer_exam_times_forbidden_without_either_view_permission(
+    wui_client, override_session
+):
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset(),
+        )
+    )
+
+    response = wui_client.get("/footer_exam_times")
+
+    assert response.status_code == 403
+
+
+@pytest.mark.parametrize("permission", ["wui.invigilator.view", "wui.landing.view"])
+def test_footer_exam_times_allowed_with_either_view_permission(
+    wui_client, override_session, permission
+):
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({permission}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/footer_exam_times")
+
+    assert response.status_code == 200
+    assert "<html" not in response.text
+    assert 'id="footer-exam-times"' in response.text
+
+
+def test_footer_exam_times_shows_dash_without_current_or_upcoming_package(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/footer_exam_times")
+
+    assert response.status_code == 200
+    assert 'id="footer-current-exam-ends"' not in response.text
+    assert 'id="footer-next-exam-starts"' not in response.text
+    assert "Current exam ends: -" in response.text
+    assert "Next exam starts: -" in response.text
+
+
+def test_footer_exam_times_shows_current_package_end_time(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(current_exam_package=_exam_package()),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/footer_exam_times")
+
+    assert response.status_code == 200
+    assert 'id="footer-current-exam-ends"' in response.text
+    assert 'data-scheduled-end="' in response.text
+
+
+def test_footer_exam_times_shows_upcoming_package_start_time_when_present(
+    wui_client, override_session, mocker, make_status_report
+):
+    # The current package has already started, so without the upcoming
+    # package present, "Next exam starts" would otherwise fall back to
+    # nothing (see test_footer_exam_times_shows_dash_for_already_running_...).
+    upcoming_package = _upcoming_exam_package()
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(current_exam_package=_exam_package()),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[upcoming_package],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/footer_exam_times")
+
+    assert response.status_code == 200
+    next_starts = _tag_by_id(response.text, "span", "footer-next-exam-starts")
+    assert upcoming_package["start_time"][:16] in next_starts
+
+
+def test_footer_exam_times_falls_back_to_current_package_start_time(
+    wui_client, override_session, mocker, make_status_report
+):
+    now = ktp_controller.utils.utcnow()
+    not_yet_started_start_time = (now + datetime.timedelta(minutes=10)).isoformat()
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(
+            current_exam_package=_exam_package(
+                state="ready",
+                scheduled_start_time=not_yet_started_start_time,
+                started_at=None,
+            )
+        ),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/footer_exam_times")
+
+    assert response.status_code == 200
+    next_starts = _tag_by_id(response.text, "span", "footer-next-exam-starts")
+    assert not_yet_started_start_time[:16] in next_starts
+
+
+def test_footer_exam_times_shows_dash_for_already_running_current_package_without_upcoming(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(current_exam_package=_exam_package()),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/footer_exam_times")
+
+    assert response.status_code == 200
+    assert 'id="footer-next-exam-starts"' not in response.text
+
+
+def test_footer_exam_times_self_refreshes(
+    wui_client, override_session, mocker, make_status_report
+):
+    mocker.patch(
+        "ktp_controller.api.client.get_last_status_report",
+        return_value=make_status_report(),
+    )
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages",
+        return_value=[],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.landing.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/footer_exam_times")
+
+    assert response.status_code == 200
+    assert 'hx-get="/footer_exam_times"' in response.text
+    assert 'hx-trigger="live-update from:body throttle:2s"' in response.text
+    assert 'hx-target="this"' in response.text
+    assert 'hx-swap="outerHTML"' in response.text
