@@ -32,6 +32,7 @@ _templates = fastapi.templating.Jinja2Templates(
 _templates.env.autoescape = True
 _templates.env.add_extension("jinja2.ext.i18n")
 _templates.env.install_null_translations(newstyle=True)  # type: ignore[attr-defined]
+_templates.env.filters["localize_datetime"] = ktp_controller.wui.i18n.localize_datetime
 
 
 def _has_live_update_permission(session: ktp_controller.wui.auth.Session) -> bool:
@@ -78,6 +79,42 @@ async def _get_nav_status(
 
     return _templates.TemplateResponse(
         request, name="partials/nav_exam_server_link.html.j2", context=context
+    )
+
+
+@router.get("/footer_exam_times", response_class=fastapi.responses.HTMLResponse)
+async def _get_footer_exam_times(
+    request: fastapi.Request,
+    session: ktp_controller.wui.auth.Session = fastapi.Depends(
+        ktp_controller.wui.auth.get_current_session
+    ),
+) -> fastapi.responses.HTMLResponse:
+    if not _has_live_update_permission(session):
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_403_FORBIDDEN, detail="Forbidden"
+        )
+
+    report = await ktp_controller.api.client.get_last_status_report()
+    upcoming_exam_packages = (
+        await ktp_controller.api.client.get_upcoming_exam_packages()
+    )
+
+    request.state.locale = session.locale
+
+    context = {
+        "current_exam_package_info": ktp_controller.wui.landing.routes.get_exam_package_info(
+            report
+        ),
+        "upcoming_exam_package_info": (
+            ktp_controller.wui.landing.routes.get_upcoming_exam_package_info(
+                upcoming_exam_packages
+            )
+        ),
+        "locale": session.locale,
+    }
+
+    return _templates.TemplateResponse(
+        request, name="partials/footer_exam_times.html.j2", context=context
     )
 
 
