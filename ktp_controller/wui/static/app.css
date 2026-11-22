@@ -126,6 +126,10 @@ header nav > ul,
 header nav .state-counts ul {
   flex-wrap: wrap;
 }
+header nav a[aria-current="page"] {
+  font-weight: bold;
+  text-decoration: underline;
+}
 header form {
   margin-bottom: 0;
 }
