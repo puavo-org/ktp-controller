@@ -50,6 +50,9 @@ def _mock_last_status_report(mocker):
     # exercising nav_severity itself override this with their own
     # mocker.patch(...).
     mocker.patch("ktp_controller.api.client.get_last_status_report", return_value=None)
+    mocker.patch(
+        "ktp_controller.api.client.get_upcoming_exam_packages", return_value=[]
+    )
 
 
 def test_invigilator_view_requires_login(wui_client):

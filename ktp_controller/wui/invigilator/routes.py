@@ -134,6 +134,9 @@ async def _get_invigilator(
     )
 
     report = await ktp_controller.api.client.get_last_status_report()
+    upcoming_exam_packages = (
+        await ktp_controller.api.client.get_upcoming_exam_packages()
+    )
 
     exams = await _get_exams()
 
@@ -240,6 +243,14 @@ async def _get_invigilator(
         "current_path": request.url.path,
         "abitti2_domain": ktp_controller.wui.landing.routes.get_abitti2_domain(report),
         "puavo_fqdn": ktp_controller.wui.landing.routes.get_puavo_fqdn(),
+        "current_exam_package_info": ktp_controller.wui.landing.routes.get_exam_package_info(
+            report
+        ),
+        "upcoming_exam_package_info": (
+            ktp_controller.wui.landing.routes.get_upcoming_exam_package_info(
+                upcoming_exam_packages
+            )
+        ),
     }
 
     # If the request comes from htmx, return only the table partial
@@ -272,6 +283,9 @@ async def _get_student_access_code(
     )
 
     report = await ktp_controller.api.client.get_last_status_report()
+    upcoming_exam_packages = (
+        await ktp_controller.api.client.get_upcoming_exam_packages()
+    )
 
     request.state.locale = session.locale
     _ = ktp_controller.wui.i18n.get_gettext(session.locale)
@@ -290,6 +304,14 @@ async def _get_student_access_code(
         "current_path": request.url.path,
         "abitti2_domain": ktp_controller.wui.landing.routes.get_abitti2_domain(report),
         "puavo_fqdn": ktp_controller.wui.landing.routes.get_puavo_fqdn(),
+        "current_exam_package_info": ktp_controller.wui.landing.routes.get_exam_package_info(
+            report
+        ),
+        "upcoming_exam_package_info": (
+            ktp_controller.wui.landing.routes.get_upcoming_exam_package_info(
+                upcoming_exam_packages
+            )
+        ),
         "wui_wifi_ssid": SETTINGS.wui_wifi_ssid,
         "wui_wifi_passphrase": SETTINGS.wui_wifi_passphrase,
     }
