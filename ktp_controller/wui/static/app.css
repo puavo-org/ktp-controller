@@ -50,8 +50,7 @@ body.app-shell > .app-shell-body {
      content sits flush against main's own edges with none of the
      breathing room a grid's own column-gap gives between siblings.
      Match that gap here so edge items get the same amount of space. */
-  padding-left: var(--pico-spacing);
-  padding-right: var(--pico-spacing);
+  padding: var(--pico-spacing);
 }
 
 /* Collapsible right-docked sidebar, opted into per-page by overriding
