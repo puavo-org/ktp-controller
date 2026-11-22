@@ -80,6 +80,7 @@
     <footer class="container">
       {% if abitti2_domain %}<span class="footer-domain">{{ abitti2_domain }}</span>{% endif %}
       {% if puavo_fqdn %}<span class="footer-domain">{{ puavo_fqdn }}</span>{% endif %}
+      {% include "partials/footer_exam_times.html.j2" %}
       <small id="page-refreshed-status"
              class="page-refreshed-status"
              data-template-one="{{ _('Page refreshed {n} second ago') }}"
