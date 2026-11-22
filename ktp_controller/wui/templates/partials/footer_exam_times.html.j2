@@ -1,0 +1,49 @@
+{% set next_start_time = upcoming_exam_package_info.start_time if upcoming_exam_package_info else (current_exam_package_info.scheduled_start_time if current_exam_package_info and not current_exam_package_info.started_at else None) %}
+{# Self-refreshing: carries its own hx-* attributes so they're re-emitted
+   on every swap and the live-update trigger stays wired. #}
+<span id="footer-exam-times"
+      hx-get="{{ prefix }}/footer_exam_times"
+      hx-trigger="live-update from:body throttle:2s"
+      hx-target="this"
+      hx-swap="outerHTML">
+    <span class="footer-exam-time">{{ _("Current exam ends") }}:
+        {%- if current_exam_package_info %}
+        <span id="footer-current-exam-ends"
+              data-tooltip="{{ current_exam_package_info.scheduled_end_time|localize_datetime(locale) }}"
+              data-scheduled-end="{{ current_exam_package_info.scheduled_end_time.isoformat() }}"
+              data-in-minutes-one="{{ _('in {n} minute') }}"
+              data-in-minutes-other="{{ _('in {n} minutes') }}"
+              data-in-hours-one="{{ _('in {n} hour') }}"
+              data-in-hours-other="{{ _('in {n} hours') }}"
+              data-in-days-one="{{ _('in {n} day') }}"
+              data-in-days-other="{{ _('in {n} days') }}"
+              data-minutes-one="{{ _('{n} minute ago') }}"
+              data-minutes-other="{{ _('{n} minutes ago') }}"
+              data-hours-one="{{ _('{n} hour ago') }}"
+              data-hours-other="{{ _('{n} hours ago') }}"
+              data-days-one="{{ _('{n} day ago') }}"
+              data-days-other="{{ _('{n} days ago') }}"></span>
+        {%- else %} -
+        {%- endif %}
+    </span>
+    <span class="footer-exam-time">{{ _("Next exam starts") }}:
+        {%- if next_start_time %}
+        <span id="footer-next-exam-starts"
+              data-tooltip="{{ next_start_time|localize_datetime(locale) }}"
+              data-scheduled-start="{{ next_start_time.isoformat() }}"
+              data-in-minutes-one="{{ _('in {n} minute') }}"
+              data-in-minutes-other="{{ _('in {n} minutes') }}"
+              data-in-hours-one="{{ _('in {n} hour') }}"
+              data-in-hours-other="{{ _('in {n} hours') }}"
+              data-in-days-one="{{ _('in {n} day') }}"
+              data-in-days-other="{{ _('in {n} days') }}"
+              data-late-minutes-one="{{ _('{n} minute late') }}"
+              data-late-minutes-other="{{ _('{n} minutes late') }}"
+              data-late-hours-one="{{ _('{n} hour late') }}"
+              data-late-hours-other="{{ _('{n} hours late') }}"
+              data-late-days-one="{{ _('{n} day late') }}"
+              data-late-days-other="{{ _('{n} days late') }}"></span>
+        {%- else %} -
+        {%- endif %}
+    </span>
+</span>

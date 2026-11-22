@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-22 21:50+0200\n"
+"POT-Creation-Date: 2026-11-22 21:51+0200\n"
 "PO-Revision-Date: 2026-09-27 20:42+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv\n"
@@ -326,6 +326,7 @@ msgstr "för {n} sekunder sedan"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:64
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:86
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:54
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:20
 #, python-brace-format
 msgid "{n} minute ago"
 msgstr "för {n} minut sedan"
@@ -335,6 +336,7 @@ msgstr "för {n} minut sedan"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:65
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:87
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:55
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:21
 #, python-brace-format
 msgid "{n} minutes ago"
 msgstr "för {n} minuter sedan"
@@ -344,6 +346,7 @@ msgstr "för {n} minuter sedan"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:66
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:88
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:56
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:22
 #, python-brace-format
 msgid "{n} hour ago"
 msgstr "för {n} timme sedan"
@@ -353,6 +356,7 @@ msgstr "för {n} timme sedan"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:67
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:89
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:57
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:23
 #, python-brace-format
 msgid "{n} hours ago"
 msgstr "för {n} timmar sedan"
@@ -362,6 +366,7 @@ msgstr "för {n} timmar sedan"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:68
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:90
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:58
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:24
 #, python-brace-format
 msgid "{n} day ago"
 msgstr "för {n} dag sedan"
@@ -371,6 +376,7 @@ msgstr "för {n} dag sedan"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:69
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:91
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:59
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:25
 #, python-brace-format
 msgid "{n} days ago"
 msgstr "för {n} dagar sedan"
@@ -422,6 +428,8 @@ msgstr "Schemalagd starttid"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:80
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:25
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:48
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:14
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:34
 #, python-brace-format
 msgid "in {n} minute"
 msgstr "om {n} minut"
@@ -430,6 +438,8 @@ msgstr "om {n} minut"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:81
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:26
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:49
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:15
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:35
 #, python-brace-format
 msgid "in {n} minutes"
 msgstr "om {n} minuter"
@@ -438,6 +448,8 @@ msgstr "om {n} minuter"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:82
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:27
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:50
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:16
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:36
 #, python-brace-format
 msgid "in {n} hour"
 msgstr "om {n} timme"
@@ -446,6 +458,8 @@ msgstr "om {n} timme"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:83
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:28
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:51
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:17
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:37
 #, python-brace-format
 msgid "in {n} hours"
 msgstr "om {n} timmar"
@@ -454,6 +468,8 @@ msgstr "om {n} timmar"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:84
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:29
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:52
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:18
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:38
 #, python-brace-format
 msgid "in {n} day"
 msgstr "om {n} dag"
@@ -462,42 +478,50 @@ msgstr "om {n} dag"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:85
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:30
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:53
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:19
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:39
 #, python-brace-format
 msgid "in {n} days"
 msgstr "om {n} dagar"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:48
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:31
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:40
 #, python-brace-format
 msgid "{n} minute late"
 msgstr "{n} minut försenad"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:49
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:32
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:41
 #, python-brace-format
 msgid "{n} minutes late"
 msgstr "{n} minuter försenad"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:50
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:33
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:42
 #, python-brace-format
 msgid "{n} hour late"
 msgstr "{n} timme försenad"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:51
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:34
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:43
 #, python-brace-format
 msgid "{n} hours late"
 msgstr "{n} timmar försenad"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:52
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:35
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:44
 #, python-brace-format
 msgid "{n} day late"
 msgstr "{n} dag försenad"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:53
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:36
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:45
 #, python-brace-format
 msgid "{n} days late"
 msgstr "{n} dagar försenad"
@@ -568,6 +592,14 @@ msgstr "Användarnamn"
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:54
 msgid "Log in"
 msgstr "Logga in"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:9
+msgid "Current exam ends"
+msgstr "Aktuellt provpaket slutar"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/footer_exam_times.html.j2:29
+msgid "Next exam starts"
+msgstr "Nästa provpaket börjar"
 
 #~ msgid "Really end exam for %(name)s?"
 #~ msgstr "Avsluta verkligen provet för %(name)s?"
