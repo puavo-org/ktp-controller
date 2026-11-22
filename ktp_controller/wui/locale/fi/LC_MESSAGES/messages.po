@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-19 22:32+0200\n"
+"POT-Creation-Date: 2026-11-22 18:55+0200\n"
 "PO-Revision-Date: 2026-09-26 19:02+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fi\n"
@@ -42,54 +42,54 @@ msgstr "Ongelmia"
 msgid "Finished"
 msgstr "Päättänyt"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:186
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:93
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:128
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:187
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:94
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:131
 msgid "Name"
 msgstr "Nimi"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:187
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:188
 msgid "Birthday"
 msgstr "Syntymäaika"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:188
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:189
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:21
 msgid "State"
 msgstr "Tila"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:189
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:190
 msgid "Last changed at"
 msgstr "Viimeksi muuttunut"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:196
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:197
 msgid "Allowed to use browsers"
 msgstr "Saa käyttää selainta"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:197
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:198
 msgid "Last played audio"
 msgstr "Viimeksi kuunneltu äänite"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:198
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:199
 msgid "Action"
 msgstr "Toiminto"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:204
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:205
 msgid "Disconnected"
 msgstr "Yhteys katkennut"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:205
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:206
 msgid "Idle"
 msgstr "Jouten"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:206
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:207
 msgid "Waiting for auth"
 msgstr "Odottaa tunnistautumista"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:207
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:208
 msgid "Undefined exam"
 msgstr "Tuntematon koe"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:208
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/routes.py:209
 msgid "Unknown issue"
 msgstr "Tuntematon ongelma"
 
@@ -97,25 +97,25 @@ msgstr "Tuntematon ongelma"
 msgid "Invigilator's view"
 msgstr "Valvojan näkymä"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:24
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:25
 msgid "Really end exam for <strong id=\"end-exam-confirm-name\"></strong>?"
 msgstr ""
 "Päätetäänkö varmasti kokelaan <strong id=\"end-exam-confirm-"
 "name\"></strong> koe?"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:31
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:24
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:32
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:25
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:66
 msgid "Yes"
 msgstr "Kyllä"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:32
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:25
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:33
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:26
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:66
 msgid "No"
 msgstr "Ei"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:40
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:41
 msgid ""
 "Allow student <strong id=\"allow-audio-replay-confirm-name\"></strong> to"
 " replay audio <strong id=\"allow-audio-replay-confirm-last-"
@@ -127,42 +127,36 @@ msgstr ""
 "audio\"></strong> uudelleenkuuntelu kokeessa <strong id=\"allow-audio-"
 "replay-confirm-exam-title\"></strong>?"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:46
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:47
 msgid "Allow"
 msgstr "Salli"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:47
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:48
 msgid "Cancel"
 msgstr "Peruuta"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:57
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:33
-msgid "Exams"
-msgstr "Kokeet"
-
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:64
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:63
 msgid "Filter by student name or birthday..."
 msgstr "Suodata kokelaan nimen tai syntymäajan mukaan..."
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:76
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:75
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:77
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:78
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:79
 msgid "Expand all"
 msgstr "Laajenna kaikki"
 
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:76
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:77
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:78
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/invigilator_index.html.j2:79
 msgid "Collapse all"
 msgstr "Pienennä kaikki"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:3
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:34
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:34
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:49
 msgid "Student access code"
 msgstr "Kokelaiden pääsykoodi"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:20
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:21
 msgid ""
 "Really change the student access code? The current code will stop working"
 " for every student using it."
@@ -179,7 +173,13 @@ msgstr "Wi-Fi-tiedot"
 msgid "Network name (SSID)"
 msgstr "Verkon nimi (SSID)"
 
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:43
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:52
+msgid "Password"
+msgstr "Salasana"
+
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:47
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:49
 msgid "Show Wi-Fi password"
 msgstr "Näytä Wi-Fi-salasana"
 
@@ -294,102 +294,101 @@ msgid "Archived"
 msgstr "Arkistoitu"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:4
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:22
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:9
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:32
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/partials/nav_exam_server_link.html.j2:11
 msgid "Exam server"
 msgstr "Koepalvelin"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:30
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:28
 msgid "Controller info"
 msgstr "Ohjaimen tiedot"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:37
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:89
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:122
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:36
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:90
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:125
 msgid "Version"
 msgstr "Versio"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:41
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:132
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:59
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:40
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:135
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:61
 msgid "Started at"
 msgstr "Käynnistetty"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:47
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:46
 #, python-brace-format
 msgid "{n} second ago"
 msgstr "{n} sekunti sitten"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:48
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:47
 #, python-brace-format
 msgid "{n} seconds ago"
 msgstr "{n} sekuntia sitten"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:49
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:137
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:63
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:85
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:48
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:140
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:65
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:87
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:54
 #, python-brace-format
 msgid "{n} minute ago"
 msgstr "{n} minuutti sitten"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:50
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:138
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:64
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:86
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:49
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:141
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:66
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:88
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:55
 #, python-brace-format
 msgid "{n} minutes ago"
 msgstr "{n} minuuttia sitten"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:51
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:139
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:65
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:87
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:50
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:142
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:67
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:89
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:56
 #, python-brace-format
 msgid "{n} hour ago"
 msgstr "{n} tunti sitten"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:52
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:140
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:66
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:88
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:51
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:143
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:68
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:90
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:57
 #, python-brace-format
 msgid "{n} hours ago"
 msgstr "{n} tuntia sitten"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:53
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:141
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:67
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:89
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:52
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:144
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:69
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:91
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:58
 #, python-brace-format
 msgid "{n} day ago"
 msgstr "{n} päivä sitten"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:54
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:142
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:68
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:90
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:53
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:145
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:70
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:92
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:59
 #, python-brace-format
 msgid "{n} days ago"
 msgstr "{n} päivää sitten"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:60
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:71
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:59
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:70
 msgid "Auto control"
 msgstr "Automaattiohjaus"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:78
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:111
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:158
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:97
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:113
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:162
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:99
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:70
 msgid "Not available yet."
 msgstr "Ei vielä saatavilla."
@@ -398,15 +397,15 @@ msgstr "Ei vielä saatavilla."
 msgid "Abitti2"
 msgstr "Abitti2"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:97
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:98
 msgid "Certificate expires"
 msgstr "Varmenne vanhenee"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:118
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:120
 msgid "Host system"
 msgstr "Isäntäjärjestelmä"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:148
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/landing_index.html.j2:151
 msgid "Free disk space"
 msgstr "Vapaa levytila"
 
@@ -424,91 +423,91 @@ msgstr " (yliajalla)"
 msgid "Scheduled start time"
 msgstr "Ajoitettu alkamisaika"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:41
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:79
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:43
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:81
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:25
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:48
 #, python-brace-format
 msgid "in {n} minute"
 msgstr "{n} minuutin kuluttua"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:42
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:80
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:44
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:82
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:26
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:49
 #, python-brace-format
 msgid "in {n} minutes"
 msgstr "{n} minuutin kuluttua"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:43
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:81
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:45
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:83
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:27
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:50
 #, python-brace-format
 msgid "in {n} hour"
 msgstr "{n} tunnin kuluttua"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:44
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:82
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:46
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:84
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:28
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:51
 #, python-brace-format
 msgid "in {n} hours"
 msgstr "{n} tunnin kuluttua"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:45
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:83
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:47
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:85
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:29
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:52
 #, python-brace-format
 msgid "in {n} day"
 msgstr "{n} päivän kuluttua"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:46
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:84
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:48
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:86
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:30
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:53
 #, python-brace-format
 msgid "in {n} days"
 msgstr "{n} päivän kuluttua"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:47
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:49
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:31
 #, python-brace-format
 msgid "{n} minute late"
 msgstr "{n} minuutti myöhässä"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:48
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:50
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:32
 #, python-brace-format
 msgid "{n} minutes late"
 msgstr "{n} minuuttia myöhässä"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:49
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:51
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:33
 #, python-brace-format
 msgid "{n} hour late"
 msgstr "{n} tunti myöhässä"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:50
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:52
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:34
 #, python-brace-format
 msgid "{n} hours late"
 msgstr "{n} tuntia myöhässä"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:51
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:53
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:35
 #, python-brace-format
 msgid "{n} day late"
 msgstr "{n} päivä myöhässä"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:52
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:54
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:36
 #, python-brace-format
 msgid "{n} days late"
 msgstr "{n} päivää myöhässä"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:72
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/current_exam_package_card.html.j2:74
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/landing/templates/partials/upcoming_exam_package_card.html.j2:42
 msgid "Scheduled end time"
 msgstr "Ajoitettu päättymisaika"
@@ -521,11 +520,11 @@ msgstr "Tuleva koepaketti"
 msgid "Locked"
 msgstr "Lukittu"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:21
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:23
 msgid "Connection lost at"
 msgstr "Yhteys katkesi"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:22
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:24
 msgid "The page will reload automatically once it's back."
 msgstr "Sivu latautuu automaattisesti uudelleen, kun yhteys palautuu."
 
@@ -533,22 +532,26 @@ msgstr "Sivu latautuu automaattisesti uudelleen, kun yhteys palautuu."
 msgid "More info"
 msgstr "Lisätietoja"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:43
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:48
+msgid "Exams"
+msgstr "Kokeet"
+
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:58
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:24
 msgid "Language"
 msgstr "Kieli"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:47
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:62
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:39
 msgid "Log out"
 msgstr "Kirjaudu ulos"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:69
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:85
 #, python-brace-format
 msgid "Page refreshed {n} second ago"
 msgstr "Sivu päivitetty {n} sekunti sitten"
 
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:70
+#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/_base.html.j2:86
 #, python-brace-format
 msgid "Page refreshed {n} seconds ago"
 msgstr "Sivu päivitetty {n} sekuntia sitten"
@@ -566,11 +569,6 @@ msgstr "Kirjautuneena käyttäjänä <strong>%(username)s</strong>."
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:50
 msgid "Username"
 msgstr "Käyttäjätunnus"
-
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/invigilator/templates/student_access_code.html.j2:43
-#: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:52
-msgid "Password"
-msgstr "Salasana"
 
 #: /home/puavo-ers/ktp-controller/ktp_controller/wui/templates/login.html.j2:54
 msgid "Log in"
