@@ -45,8 +45,8 @@
             <ul>
                 <li>{{ logo.img(prefix) }}</li>
                 {% include "partials/nav_exam_server_link.html.j2" %}
-                <li><a href="{{ prefix }}/invigilator/" {% if request.url.path == prefix + "/invigilator/" %}aria-current="page"{% endif %}>{{ _("Exams") }}</a></li>
-                <li><a href="{{ prefix }}/invigilator/student_access_code" {% if request.url.path == prefix + "/invigilator/student_access_code" %}aria-current="page"{% endif %}>{{ _("Student access code") }}</a></li>
+                <li><a href="{{ prefix }}/invigilator/" {% if current_path == prefix + "/invigilator/" %}aria-current="page"{% endif %}>{{ _("Exams") }}</a></li>
+                <li><a href="{{ prefix }}/invigilator/student_access_code" {% if current_path == prefix + "/invigilator/student_access_code" %}aria-current="page"{% endif %}>{{ _("Student access code") }}</a></li>
             </ul>
             {% block nav_live_status %}{% endblock %}
             <ul>
