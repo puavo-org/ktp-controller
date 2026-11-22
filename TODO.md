@@ -15,11 +15,3 @@ UTC timezone. It must be changed to display it in browser-local
 timezone instead and to display the timezone offset too, just like
 tooltips.
 
-
-## TODO60
-
-WUI: top nav bar: emphasize ( or display a small indicator on ) the
-link of currently displayed page. I.e. if the browser is at
-/invigilator/student_access_code, then the "Student access code" link
-in the navbar should be somehow emphasized or indicated as the
-current.
