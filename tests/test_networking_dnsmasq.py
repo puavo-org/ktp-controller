@@ -24,6 +24,10 @@ def test_start_dhcp_dns_server_writes_conf_file_and_invokes_dnsmasq(
     check_call_mock = mocker.patch(
         "ktp_controller.networking.dnsmasq.subprocess.check_call", return_value=None
     )
+    mocker.patch(
+        "ktp_controller.networking.dnsmasq.ktp_controller.net.get_default_nameservers",
+        return_value=[],
+    )
 
     result = ktp_controller.networking.dnsmasq.start_dhcp_dns_server(
         _FakeNet(),
@@ -78,6 +82,10 @@ def test_start_dhcp_dns_server_adds_user_option_from_sudo_user(
     )
     mocker.patch(
         "ktp_controller.networking.dnsmasq.subprocess.check_call", return_value=None
+    )
+    mocker.patch(
+        "ktp_controller.networking.dnsmasq.ktp_controller.net.get_default_nameservers",
+        return_value=[],
     )
 
     ktp_controller.networking.dnsmasq.start_dhcp_dns_server(

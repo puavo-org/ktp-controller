@@ -80,7 +80,12 @@ def start_dhcp_dns_server(
         f"addn-hosts={HOSTS_FILE}",
     ]
 
-    conf_lines.extend(render_koe_abitti_net_dns_lines())
+    dns_servers = list(KOE_ABITTI_NET_DNS_SERVERS)
+    for nameserver in ktp_controller.net.get_default_nameservers():
+        if nameserver not in dns_servers:
+            dns_servers.append(nameserver)
+
+    conf_lines.extend(render_koe_abitti_net_dns_lines(dns_servers))
     conf_lines.extend(
         render_ipset_lines(
             allowed_wan_domains=allowed_wan_domains,
