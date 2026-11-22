@@ -16,16 +16,6 @@ timezone instead and to display the timezone offset too, just like
 tooltips.
 
 
-## TODO59
-
-Networking/dnsmasq: currently dnsmasq uses three upstream servers:
-9.9.9.9, 8.8.8.8 and 1.1.1.1 to resolve koe.abitti.net addresses. In
-addition, I want to append the hosts's default nameserver (if there's
-one defined) to the list.
-
-This item Closes #68, add that to the final connecting commit.
-
-
 ## TODO60
 
 WUI: top nav bar: emphasize ( or display a small indicator on ) the
