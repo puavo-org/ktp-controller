@@ -26,12 +26,11 @@ KOE_ABITTI_NET_DNS_SERVERS = [
 ]
 
 
-def render_koe_abitti_net_dns_lines() -> list[str]:
-    lines = [
-        f"server=/{LOCAL_DOMAIN}/{koe_abitti_net_dns_server}"
-        for koe_abitti_net_dns_server in KOE_ABITTI_NET_DNS_SERVERS
-    ]
-    if len(KOE_ABITTI_NET_DNS_SERVERS) > 0:
+def render_koe_abitti_net_dns_lines(
+    dns_servers: list[str] = KOE_ABITTI_NET_DNS_SERVERS,
+) -> list[str]:
+    lines = [f"server=/{LOCAL_DOMAIN}/{dns_server}" for dns_server in dns_servers]
+    if len(dns_servers) > 0:
         lines.append("all-servers")
     return lines
 
