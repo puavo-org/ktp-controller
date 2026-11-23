@@ -35,7 +35,7 @@ def render_koe_abitti_net_dns_lines(
     return lines
 
 
-def render_ipset_lines(
+def _render_ipset_lines(
     *, allowed_wan_domains: list[str], ipset_name: str | None
 ) -> list[str]:
     if ipset_name is None:
@@ -87,7 +87,7 @@ def start_dhcp_dns_server(
 
     conf_lines.extend(render_koe_abitti_net_dns_lines(dns_servers))
     conf_lines.extend(
-        render_ipset_lines(
+        _render_ipset_lines(
             allowed_wan_domains=allowed_wan_domains,
             ipset_name=ipset_name,
         )
