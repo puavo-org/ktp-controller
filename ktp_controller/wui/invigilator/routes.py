@@ -127,9 +127,16 @@ async def _get_invigilator(
         ktp_controller.wui.auth.get_current_session
     ),
 ) -> fastapi.responses.HTMLResponse:
+
+    def _getkey(x: typing.Any) -> typing.Any:
+        key = getattr(x, sort_by)
+        if isinstance(key, str):
+            return key.lower()  # Case-insensitive sorting
+        return key
+
     student_list_items = sorted(
         await ktp_controller.wui.students.get_student_list_items(),
-        key=lambda x: getattr(x, sort_by),
+        key=_getkey,
         reverse=order == "desc",
     )
 
