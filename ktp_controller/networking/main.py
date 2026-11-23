@@ -47,14 +47,18 @@ _LOGGER = logging.getLogger(_THIS_NAME)
 _ALLOW_TO_WAN_IPSET_DEFAULT_TIMEOUT_SECONDS = 7200
 
 
-def _allow_to_wan_ipset_name(interface: str) -> str:
-    return f"allow_{interface}_to_wan"
+def _allow_to_wan_ipset_name(interface: str) -> str | None:
+    if ipset.is_ipset_available():
+        return f"allow_{interface}_to_wan"
+    return None
 
 
 def _create_allow_to_wan_ipset(interface: str) -> None:
     if not interface:
         return
     name = _allow_to_wan_ipset_name(interface)
+    if name is None:
+        return
     if ipset.ipset_exists(name):
         _LOGGER.warning(
             "ipset %s already exists, flushing it instead of creating", name
@@ -68,6 +72,8 @@ def _destroy_allow_to_wan_ipset(interface: str) -> None:
     if not interface:
         return
     name = _allow_to_wan_ipset_name(interface)
+    if name is None:
+        return
     if ipset.ipset_exists(name):
         ipset.destroy_ipset(name)
 
@@ -75,19 +81,26 @@ def _destroy_allow_to_wan_ipset(interface: str) -> None:
 def _enable_wan_forwarding_rules(interface: str) -> None:
     if not interface:
         return
+    ipset_name = _allow_to_wan_ipset_name(interface)
+    if ipset_name is None:
+        return
+
     firewall.enable_forwarding(
         interface,
         ktp_controller.net.get_default_route_interface(),
-        _allow_to_wan_ipset_name(interface),
+        ipset_name,
     )
-    firewall.enable_ipv6_forwarding_drop(interface, _allow_to_wan_ipset_name(interface))
+    firewall.enable_ipv6_forwarding_drop(interface, ipset_name)
 
 
 def _disable_wan_forwarding_rules(interface: str) -> None:
     if not interface:
         return
-    firewall.disable_forwarding(_allow_to_wan_ipset_name(interface))
-    firewall.disable_ipv6_forwarding_drop(_allow_to_wan_ipset_name(interface))
+    ipset_name = _allow_to_wan_ipset_name(interface)
+    if ipset_name is None:
+        return
+    firewall.disable_forwarding(ipset_name)
+    firewall.disable_ipv6_forwarding_drop(ipset_name)
 
 
 def _run_regardless(

@@ -5,6 +5,23 @@ import subprocess
 _LOGGER = logging.getLogger(__name__)
 _IPSET_BIN = "ipset"
 
+_IPSET_AVAILABLE: bool | None = None
+
+
+def is_ipset_available() -> bool:
+    global _IPSET_AVAILABLE
+    if _IPSET_AVAILABLE is None:
+        try:
+            subprocess.run([_IPSET_BIN], capture_output=True, timeout=3)
+        except OSError as _ipset_not_available_error:
+            _LOGGER.warning(
+                "ipset is not available: %s", str(_ipset_not_available_error)
+            )
+            _IPSET_AVAILABLE = False
+        else:
+            _IPSET_AVAILABLE = True
+    return _IPSET_AVAILABLE
+
 
 def create_ipset(name: str, default_timeout: int) -> None:
     _LOGGER.info("Creating ipset %s with default timeout %d", name, default_timeout)
