@@ -26,6 +26,16 @@ def _domain_args(
     )
 
 
+@pytest.fixture(autouse=True)
+def _ipset_available(mocker):
+    # The ipset/firewalling tests below assume ipset tooling is present,
+    # regardless of whether the host running the test suite actually has
+    # a working `ipset` binary.
+    mocker.patch(
+        "ktp_controller.networking.ipset.is_ipset_available", return_value=True
+    )
+
+
 class TestRunRegardless:
     def test_returns_result_step_value_when_all_succeed(self):
         calls = []
