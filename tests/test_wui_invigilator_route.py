@@ -268,6 +268,7 @@ def _raw_abitti2_stats_messages(
     exam_titles: list[str | None],
     is_connecteds: [bool],
     exam_finished_at: str | None = None,
+    student_names: list[tuple[str, str]] | None = None,
 ):
     if student_count > 28:
         raise ValueError("student_count cannot be more than 28")
@@ -279,17 +280,24 @@ def _raw_abitti2_stats_messages(
     exam_title_iter = itertools.cycle(exam_titles)
     student_status_iter = itertools.cycle(student_statuses)
     is_connected_iter = itertools.cycle(is_connecteds)
+    student_name_iter = (
+        itertools.cycle(student_names) if student_names is not None else None
+    )
 
     for index in range(student_count):
         index += 1
         exam_title = next(exam_title_iter)
         student_status = next(student_status_iter)
         is_connected = next(is_connected_iter)
+        if student_name_iter is not None:
+            first_names, last_name = next(student_name_iter)
+        else:
+            first_names, last_name = f"Maija{index}", "Meikäläinen"
         student = {
             "studentUuid": f"{index:08d}-1111-1111-1111-111111111111",
             "sessionUuid": f"{index:08d}-2222-2222-2222-222222222222",
-            "firstNames": f"Maija{index}",
-            "lastName": "Meikäläinen",
+            "firstNames": first_names,
+            "lastName": last_name,
             "studentBd": f"{index:02d}0105",
             "studentStatus": student_status,
             "sessionStatus": student_status.replace("-", "_"),
@@ -348,6 +356,7 @@ def _mock_abitti2_state(
     exam_titles: list[str] | None = None,
     is_connecteds: list[bool] | None = None,
     student_exam_titles: list[str | None] | None = None,
+    student_names: list[tuple[str, str]] | None = None,
 ):
     if exam_titles is None:
         exam_titles = ["Matematiikka"]
@@ -375,6 +384,7 @@ def _mock_abitti2_state(
             exam_finished_at=exam_finished_at,
             exam_titles=student_exam_titles,
             is_connecteds=is_connecteds,
+            student_names=student_names,
         ),
     )
     mocker.patch(
@@ -1599,3 +1609,30 @@ def test_invigilator_view_sortable_columns_and_filter_target_student_list_groups
     # 1 from the name/birthday filter input, 4 from the sortable columns
     # (name, birthday, state, last changed at).
     assert response.text.count('hx-target="#student-list-groups"') == 5
+
+
+def test_invigilator_view_sorts_student_names_case_insensitively(
+    wui_client, override_session, mocker
+):
+    # Byte-value ("ordinal") sorting would put "Bob" and "Charlie"
+    # (uppercase first letters) before "alice" (lowercase); humans
+    # expect "alice" first regardless of case. See issue #71.
+    _mock_abitti2_state(
+        mocker,
+        student_count=3,
+        student_names=[("Oskari", "Bob"), ("Oskari", "alice"), ("Oskari", "Charlie")],
+    )
+    override_session(
+        ktp_controller.wui.auth.Session(
+            session_id="test-session",
+            username="alice",
+            permissions=frozenset({"wui.invigilator.view"}),
+            locale="en",
+        )
+    )
+
+    response = wui_client.get("/invigilator/")
+
+    assert response.status_code == 200
+    assert response.text.index("alice, Oskari") < response.text.index("Bob, Oskari")
+    assert response.text.index("Bob, Oskari") < response.text.index("Charlie, Oskari")
