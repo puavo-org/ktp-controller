@@ -313,6 +313,44 @@ class TestCommandStart:
         enable_forwarding_mock.assert_not_called()
         enable_ipv6_drop_mock.assert_not_called()
 
+    def test_skips_ipset_handling_when_ipset_not_available(self, mocker):
+        net = mocker.Mock()
+        mocker.patch("ktp_controller.net.Net", return_value=net)
+        mocker.patch(
+            "ktp_controller.networking.ipset.is_ipset_available", return_value=False
+        )
+        exists_mock = mocker.patch("ktp_controller.networking.ipset.ipset_exists")
+        create_mock = mocker.patch("ktp_controller.networking.ipset.create_ipset")
+        flush_mock = mocker.patch("ktp_controller.networking.ipset.flush_ipset")
+        enable_forwarding_mock = mocker.patch(
+            "ktp_controller.networking.firewall.enable_forwarding"
+        )
+        enable_ipv6_drop_mock = mocker.patch(
+            "ktp_controller.networking.firewall.enable_ipv6_forwarding_drop"
+        )
+        mocker.patch("ktp_controller.networking.nm.configure_nm_dnsmasq_plugin")
+        start_mock = mocker.patch(
+            "ktp_controller.networking.dnsmasq.start_dhcp_dns_server", return_value=0
+        )
+        mocker.patch("ktp_controller.networking.dnsmasq.HOSTS_FILE", os.devnull)
+
+        result = ktp_controller.networking.main._command_start(
+            "eth0", "10.0.0.0/24", 0, _domain_args()
+        )
+
+        assert result == 0
+        exists_mock.assert_not_called()
+        create_mock.assert_not_called()
+        flush_mock.assert_not_called()
+        enable_forwarding_mock.assert_not_called()
+        enable_ipv6_drop_mock.assert_not_called()
+        start_mock.assert_called_once_with(
+            net,
+            allowed_wan_domains=ktp_controller.SETTINGS.networking_allowed_wan_domains,
+            ipset_name=None,
+            local_dns_ttl=7200,
+        )
+
     def test_ipset_creation_failure_aborts_start_before_net_up(self, mocker):
         net = mocker.Mock()
         mocker.patch("ktp_controller.net.Net", return_value=net)
@@ -467,6 +505,38 @@ class TestCommandStop:
         destroy_mock.assert_not_called()
         disable_forwarding_mock.assert_not_called()
         disable_ipv6_drop_mock.assert_not_called()
+
+    def test_skips_ipset_handling_when_ipset_not_available(self, mocker):
+        net = mocker.Mock()
+        mocker.patch("ktp_controller.net.Net", return_value=net)
+        mocker.patch(
+            "ktp_controller.networking.ipset.is_ipset_available", return_value=False
+        )
+        exists_mock = mocker.patch("ktp_controller.networking.ipset.ipset_exists")
+        destroy_mock = mocker.patch("ktp_controller.networking.ipset.destroy_ipset")
+        disable_forwarding_mock = mocker.patch(
+            "ktp_controller.networking.firewall.disable_forwarding"
+        )
+        disable_ipv6_drop_mock = mocker.patch(
+            "ktp_controller.networking.firewall.disable_ipv6_forwarding_drop"
+        )
+        mocker.patch("ktp_controller.networking.nm.unconfigure_nm_dnsmasq_plugin")
+        stop_mock = mocker.patch(
+            "ktp_controller.networking.dnsmasq.stop_dhcp_dns_server", return_value=0
+        )
+
+        result = ktp_controller.networking.main._command_stop(
+            "eth0", "10.0.0.0/24", 0, _domain_args()
+        )
+
+        assert result == 0
+        exists_mock.assert_not_called()
+        destroy_mock.assert_not_called()
+        disable_forwarding_mock.assert_not_called()
+        disable_ipv6_drop_mock.assert_not_called()
+        net.disable_forwarding.assert_called_once_with()
+        net.down.assert_called_once_with()
+        stop_mock.assert_called_once_with()
 
     def test_ipset_destroy_still_runs_when_net_down_fails(self, mocker):
         net = mocker.Mock()
