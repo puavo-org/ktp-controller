@@ -65,5 +65,5 @@ class StudentListItem(pydantic.BaseModel):
     student_uuid: pydantic.StrictStr
     session_uuid: pydantic.StrictStr
     is_allowed_to_use_browser: pydantic.StrictBool | None
-    last_audio: pydantic.StrictInt | None
+    last_audio: pydantic.StrictStr | None
     wants_to_use_browser: pydantic.StrictBool

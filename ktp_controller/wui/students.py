@@ -74,8 +74,8 @@ async def get_student_list_items() -> list[ktp_controller.wui.schemas.StudentLis
 
         exam_title: str = raw_abitti2_student["examTitle"]
 
-        last_audio: int | None = (
-            int(raw_abitti2_student.get("lastAccessedMedia") or 0)
+        last_audio: str | None = (
+            (raw_abitti2_student.get("lastAccessedMedia") or "")
             if audio_in_some_exam
             else None
         )
