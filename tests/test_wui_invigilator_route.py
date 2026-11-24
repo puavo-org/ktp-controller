@@ -877,7 +877,7 @@ def test_invigilator_view_shows_empty_cell_when_last_audio_is_zero(
 def test_invigilator_view_shows_allow_audio_replay_button_with_permission(
     wui_client, override_session, mocker
 ):
-    _mock_abitti2_state(mocker, audio_in_some_exam=True, last_accessed_media="3")
+    _mock_abitti2_state(mocker, audio_in_some_exam=True, last_accessed_media="3.1")
     override_session(
         ktp_controller.wui.auth.Session(
             session_id="test-session",
@@ -895,7 +895,7 @@ def test_invigilator_view_shows_allow_audio_replay_button_with_permission(
     assert "Last played audio" in response.text
     assert "Allow replaying audio 3" in response.text
     assert 'data-student-uuid="00000001-1111-1111-1111-111111111111"' in response.text
-    assert 'data-last-audio="3"' in response.text
+    assert 'data-last-audio="3.1"' in response.text
     assert 'data-exam-title="Matematiikka"' in response.text
     assert "allow-audio-replay-confirm-overlay" in response.text
 
