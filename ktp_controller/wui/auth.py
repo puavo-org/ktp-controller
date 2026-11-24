@@ -35,7 +35,7 @@ __all__ = [
 # Constants:
 
 
-SESSION_COOKIE_NAME = "ktp_controller_session"
+SESSION_COOKIE_NAME = f"ktp_controller_session_{SETTINGS.id}"
 
 _SESSION_STORE = ktp_controller.redis.SessionStore("wui", SETTINGS.session_ttl_sec)
 
