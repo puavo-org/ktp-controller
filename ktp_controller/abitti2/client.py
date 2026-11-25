@@ -1,4 +1,5 @@
 # Standard library imports
+import asyncio
 import hashlib
 import logging
 import os
@@ -216,6 +217,13 @@ async def end_student_exam(*, session_uuid: str, student_uuid: str) -> None:
     )
 
 
+def _write_and_hash_chunk(
+    dest_file: typing.IO[bytes], sha256sum: "hashlib._Hash", chunk: bytes
+) -> None:
+    dest_file.write(chunk)
+    sha256sum.update(chunk)
+
+
 async def download_answers_file(dest_filepath: str, **kwargs: typing.Any) -> str:
     sha256sum = hashlib.sha256()
     host = ktp_controller.abitti2.naksu2.read_domain()
@@ -225,7 +233,9 @@ async def download_answers_file(dest_filepath: str, **kwargs: typing.Any) -> str
         ABITTI2_SUPERVISOR_USERNAME,
         ktp_controller.abitti2.naksu2.read_supervisor_passphrase(),
     )
-    kwargs["chunk_size"] = 4096
+    # Big enough that offloading each chunk to a worker thread (below) is
+    # worth its overhead, even for a multi-gigabyte answers file.
+    kwargs["chunk_size"] = 262144
 
     with ktp_controller.utils.open_atomic_write(
         dest_filepath,
@@ -234,8 +244,13 @@ async def download_answers_file(dest_filepath: str, **kwargs: typing.Any) -> str
     ) as dest_file:
         try:
             async for chunk in ktp_controller.httpx2.stream_read(url, **kwargs):
-                dest_file.write(chunk)
-                sha256sum.update(chunk)
+                # Writing to disk and hashing are blocking calls. Run them
+                # in a worker thread so a large (or slowly-written-to-disk)
+                # answers file can't starve the event loop and, with it,
+                # unrelated tasks like the websocket keepalive to the API.
+                await asyncio.to_thread(
+                    _write_and_hash_chunk, dest_file, sha256sum, chunk
+                )
 
         except httpx2.ConnectTimeout as connect_timeout:
             raise TimeoutError("Connect timed out.") from connect_timeout
