@@ -375,6 +375,11 @@ def find_archived_dirs(
             archived_at, archived_dirpath = _get_archived_dirpath(
                 basedirpath.joinpath(archive_filepath)
             )
+        except FileNotFoundError:
+            # The sentinel file was removed between the glob() scan
+            # above and this open() call, so the directory is already
+            # gone. There's nothing to clean up here.
+            continue
         except Exception as e:
             if exceptions is None:
                 raise
