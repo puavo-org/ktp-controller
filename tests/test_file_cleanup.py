@@ -135,3 +135,50 @@ def test_cleanup_old_archived_exam_package_dirs(testdir):
         exam_package_external_ids[0],
         exam_package_external_ids[-1],
     }
+
+
+def test_find_archived_dirs_ignores_sentinel_removed_after_glob(testdir, monkeypatch):
+    basedir = os.path.join(
+        testdir,
+        f"test_find_archived_dirs_ignores_sentinel_removed_after_glob_{ktp_controller.utils.utcnow_str()}.d",
+    )
+
+    exam_package_external_id = _EXAM_PACKAGE_EXTERNAL_IDS[0]
+    exam_package_dirpath = pathlib.Path(basedir, exam_package_external_id)
+    exam_package_dirpath.mkdir(parents=True)
+
+    sentinel_filepath = exam_package_dirpath / ".archived"
+    dt = ktp_controller.utils.utcnow() - datetime.timedelta(days=2)
+    sentinel_filepath.write_text(
+        ktp_controller.utils.strfdt(dt) + "\n", encoding="utf-8"
+    )
+
+    # Simulate the sentinel file (and its directory) disappearing
+    # between glob()'s directory listing and the subsequent open()
+    # call, by making _get_archived_dirpath raise as if the file was
+    # already gone.
+    real_get_archived_dirpath = ktp_controller.files._get_archived_dirpath
+
+    def _get_archived_dirpath_simulating_race(archive_filepath):
+        if pathlib.Path(archive_filepath) == sentinel_filepath:
+            raise FileNotFoundError(archive_filepath)
+        return real_get_archived_dirpath(archive_filepath)
+
+    monkeypatch.setattr(
+        ktp_controller.files,
+        "_get_archived_dirpath",
+        _get_archived_dirpath_simulating_race,
+    )
+
+    exceptions: list[Exception] = []
+    archived_dirs = list(
+        ktp_controller.files.find_archived_dirs(
+            basedirpath=basedir,
+            exceptions=exceptions,
+        )
+    )
+
+    # The vanished sentinel is silently skipped: it's not yielded for
+    # deletion and it's not recorded as a failure.
+    assert archived_dirs == []
+    assert exceptions == []
