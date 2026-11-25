@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [0.10.2] - 2026-11-25
+
+### Fixed
+
+- Resolved an issue where downloading large answers files (several
+  GiB) from Abitti2 caused vicious cycle of exhausting the task
+  handling -> causing KTP Controller to restart -> retry the download.
+
+- Avoid polluting the log with spurious **false** cleanup failures.
+
+
 ## [0.10.1] - 2026-11-24
 
 ### Fixed
