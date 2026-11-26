@@ -63,6 +63,7 @@ def _run_networking(*args: str) -> None:
     subprocess.check_call(
         [
             "sudo",
+            "--preserve-env=_KTPC_PROD_MODE",
             "-n",
             "/opt/ktp-controller/bin/ktp-controller-networking",
             *list(args),
