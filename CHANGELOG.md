@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.10.3] - 2026-11-26
+
+### Fixed
+
+- Resolved an issue which has caused:
+
+  1. `~/ktp-jako` to contain broken symlinks
+
+  2. exam files, exam packages and answers files to get stored into
+     `~/.puavo/puavo-ers/ktp-controller`
+
+  The issue was a regression introduced in `v0.8.0`.
+
+  Before `v0.8.0`, and again from this release on, exam files, exam
+  packages and answers files are located at
+  `~/.local/share/ktp-controller`.
+
+
 ## [0.10.2] - 2026-11-25
 
 ### Fixed
@@ -158,13 +176,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       the last time the browser received any data from the backend.
 
     - Allow requests originating from Exam-O-Matic via HTTPS.
-    
+
     - Maximum inactive session time increased from 30min to 4h.
 
     - Invigilator view: the student access code now renders masked by
       default, with a toggle button to reveal/hide it. The choice is
       preserved across the view's periodic live updates.
-      
+
     - Display current exam package information on the landing page.
 
 - CLI: add `shutdown-wait` subcommand to the command line
