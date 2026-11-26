@@ -22,6 +22,10 @@ else:
 
 _LOGS_DIR = os.path.join(WORKDIR, "logs")
 
+_LOGGER = logging.getLogger(__name__)
+
+_LEGACY_DATA_DIR = os.path.join(HOMEDIR, ".puavo", "puavo-ers", "ktp-controller")
+
 # All exam files will be stored here like so:
 # ~/.local/share/ktp-controller/exam-files/FILE_UUID/exam-file_FILE_SHA256.mex
 _EXAM_FILE_DIR = os.path.join(DATADIR, "exam-files")
@@ -38,6 +42,56 @@ ANSWERS_FILE_DIR = os.path.join(DATADIR, "answers-files")
 DUMMY_EXAM_FILE_FILEPATH = os.path.join(DATADIR, "dummy-exam-file.mex")
 
 DUMMY_EXAM_PACKAGE_FILEPATH = os.path.join(DATADIR, "dummy-exam-package.zip")
+
+
+def migrate_legacy_data_dirs() -> None:
+    """Best-effort migration of exam-files, exam-packages and
+    answers-files directories from the legacy
+    ~/.puavo/puavo-ers/ktp-controller location to their current
+    locations under DATADIR.
+
+    Only does anything when running in prod mode on Puavo OS.
+    Directories that already exist at the destination are left
+    untouched at the legacy location. Failures are logged but never
+    raised, so that failure to migrate one directory does not prevent
+    migration of others.
+
+    """
+    if not (is_prod_mode() and ktp_controller.utils.is_puavo_os()):
+        return
+
+    for legacy_basedir_name, new_basedir in (
+        ("exam-files", _EXAM_FILE_DIR),
+        ("exam-packages", _EXAM_PACKAGE_DIR),
+        ("answers-files", ANSWERS_FILE_DIR),
+    ):
+        legacy_basedir = os.path.join(_LEGACY_DATA_DIR, legacy_basedir_name)
+
+        try:
+            dirnames = os.listdir(legacy_basedir)
+        except FileNotFoundError:
+            continue
+        except Exception:
+            _LOGGER.exception("Failed to list legacy directory '%s'", legacy_basedir)
+            continue
+
+        for dirname in dirnames:
+            src_dirpath = os.path.join(legacy_basedir, dirname)
+            dst_dirpath = os.path.join(new_basedir, dirname)
+
+            if not os.path.isdir(src_dirpath):
+                continue
+
+            if os.path.exists(dst_dirpath):
+                continue
+
+            try:
+                os.makedirs(new_basedir, exist_ok=True)
+                shutil.move(src_dirpath, dst_dirpath)
+            except Exception:
+                _LOGGER.exception(
+                    "Failed to move '%s' to '%s'", src_dirpath, dst_dirpath
+                )
 
 
 def create_user_friendly_data_dir() -> None:
