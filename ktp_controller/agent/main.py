@@ -1626,6 +1626,13 @@ class Agent:
 
 
 def _run(args: argparse.Namespace) -> int:
+    try:
+        ktp_controller.files.migrate_legacy_data_dirs()
+    except Exception:
+        _LOGGER.exception(
+            "failed to migrate legacy data directories, which is really strange, but it's not fatal"
+        )
+
     utcnow = ktp_controller.utils.utcnow()
 
     if ktp_controller.utils.is_puavo_os():
