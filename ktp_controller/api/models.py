@@ -66,7 +66,7 @@ class ExamFileInfo(Base):  # type: ignore
         autoincrement=True,
     )
     dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         default=ktp_controller.utils.utcnow,
         nullable=False,
     )
@@ -94,7 +94,7 @@ class ExamFileInfo(Base):  # type: ignore
         nullable=False,
     )
     modified_at: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         default=ktp_controller.utils.utcnow,
         nullable=False,
     )
@@ -114,7 +114,7 @@ class ScheduledExam(Base):  # type: ignore
         autoincrement=True,
     )
     dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         default=ktp_controller.utils.utcnow,
         nullable=False,
         index=True,
@@ -142,15 +142,15 @@ class ScheduledExam(Base):  # type: ignore
         nullable=False,
     )
     start_time: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         nullable=False,
     )
     end_time: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         nullable=False,
     )
     modified_at: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         default=ktp_controller.utils.utcnow,
         nullable=False,
     )
@@ -172,7 +172,7 @@ class ScheduledExamPackage(Base):  # type: ignore
         autoincrement=True,
     )
     dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         default=ktp_controller.utils.utcnow,
         nullable=False,
         index=True,
@@ -185,15 +185,15 @@ class ScheduledExamPackage(Base):  # type: ignore
         unique=True,
     )
     start_time: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         nullable=False,
     )
     end_time: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         nullable=False,
     )
     lock_time: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         nullable=True,
     )
     locked: Mapped[bool] = mapped_column(
@@ -212,19 +212,19 @@ class ScheduledExamPackage(Base):  # type: ignore
         nullable=True,
     )
     state_changed_at: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         nullable=True,
     )
     started_at: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         nullable=True,
     )
     archived_at: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         nullable=True,
     )
     aborted_at: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         nullable=True,
     )
 
@@ -255,7 +255,7 @@ class ExamInfo(Base):  # type: ignore
         autoincrement=True,
     )
     dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         default=ktp_controller.utils.utcnow,
         nullable=False,
         index=True,
@@ -284,7 +284,7 @@ class StatusReport(Base):  # type: ignore
         autoincrement=True,
     )
     dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         default=ktp_controller.utils.utcnow,
         nullable=False,
         index=True,
@@ -338,7 +338,7 @@ class User(Base):  # type: ignore
         autoincrement=True,
     )
     dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         default=ktp_controller.utils.utcnow,
         nullable=False,
         index=True,
@@ -366,7 +366,7 @@ class Role(Base):  # type: ignore
         autoincrement=True,
     )
     dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         default=ktp_controller.utils.utcnow,
         nullable=False,
         index=True,
@@ -397,7 +397,7 @@ class Permission(Base):  # type: ignore
         autoincrement=True,
     )
     dbrow_created_at: Mapped[datetime.datetime] = mapped_column(
-        sqlalchemy.DateTime,
+        UTCDateTime,
         default=ktp_controller.utils.utcnow,
         nullable=False,
         index=True,
