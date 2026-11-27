@@ -205,7 +205,7 @@ def test_save_exam_info__real_anonymized_input_start_time_and_end_time_switched_
             {
                 "type": "value_error",
                 "loc": ["body", "scheduled_exam_packages", 0],
-                "msg": "Value error, ('start_time >= end_time', datetime.datetime(2025, 5, 28, 11, 15, tzinfo=TzInfo(0)), datetime.datetime(2025, 5, 28, 5, 0, tzinfo=TzInfo(0)))",
+                "msg": "Value error, ('start_time >= end_time', datetime.datetime(2025, 5, 28, 11, 15, tzinfo=datetime.timezone.utc), datetime.datetime(2025, 5, 28, 5, 0, tzinfo=datetime.timezone.utc))",
                 "input": {
                     "external_id": "49cdca0d-3d77-4fe1-a69b-b89a7ddf46f0",
                     "start_time": "2025-05-28T11:15:00.000+0000",
@@ -225,6 +225,112 @@ def test_save_exam_info__real_anonymized_input_start_time_and_end_time_switched_
             }
         ]
     }
+
+
+def test_save_exam_info__real_anonymized_input_with_non_utc_offset_timestamps(
+    client, testdb, utcnow
+):
+    # Regression test: timestamps sent with a non-UTC offset must be
+    # converted to the equivalent UTC instant, not have their offset
+    # silently dropped, since they end up in DB columns which do not
+    # store timezone information.
+    assert testdb.query(models.ExamInfo).all() == []
+
+    eom_exam_info = read_exam_info("REQ1.json")
+
+    api_exam_info = ktp_controller.api.client.eom_exam_info_to_api_exam_info(
+        eom_exam_info
+    )
+
+    def to_plus_two_offset(utc_iso_string: str) -> str:
+        return (
+            datetime.datetime.fromisoformat(utc_iso_string)
+            .astimezone(datetime.timezone(datetime.timedelta(hours=2)))
+            .isoformat()
+        )
+
+    scheduled_exam = api_exam_info["scheduled_exams"][0]
+    scheduled_exam["start_time"] = to_plus_two_offset(scheduled_exam["start_time"])
+    scheduled_exam["end_time"] = to_plus_two_offset(scheduled_exam["end_time"])
+    scheduled_exam["modified_at"] = to_plus_two_offset(scheduled_exam["modified_at"])
+    scheduled_exam["exam_file_info"]["modified_at"] = to_plus_two_offset(
+        scheduled_exam["exam_file_info"]["modified_at"]
+    )
+
+    scheduled_exam_package = api_exam_info["scheduled_exam_packages"][0]
+    scheduled_exam_package["start_time"] = to_plus_two_offset(
+        scheduled_exam_package["start_time"]
+    )
+    scheduled_exam_package["end_time"] = to_plus_two_offset(
+        scheduled_exam_package["end_time"]
+    )
+    scheduled_exam_package["lock_time"] = to_plus_two_offset(
+        scheduled_exam_package["lock_time"]
+    )
+
+    response = client.post("/api/v1/exam/save_exam_info", json=api_exam_info)
+    assert_response(response, expected_status_code=200)
+
+    # The values, as the API will have normalized and echoed them back
+    # to UTC, are what must have actually been stored.
+    expected_scheduled_exam = ktp_controller.api.exam.schemas.ScheduledExam(
+        **api_exam_info["scheduled_exams"][0]
+    ).model_dump()
+    expected_scheduled_exam_package = (
+        ktp_controller.api.exam.schemas.ScheduledExamPackage(
+            **api_exam_info["scheduled_exam_packages"][0]
+        ).model_dump()
+    )
+
+    db_scheduled_exam = (
+        testdb.query(models.ScheduledExam)
+        .filter_by(external_id=eom_exam_info["schedules"][0]["id"])
+        .one()
+    )
+    assert db_scheduled_exam.start_time.replace(
+        tzinfo=datetime.UTC
+    ) == datetime.datetime.fromisoformat(expected_scheduled_exam["start_time"])
+    assert db_scheduled_exam.end_time.replace(
+        tzinfo=datetime.UTC
+    ) == datetime.datetime.fromisoformat(expected_scheduled_exam["end_time"])
+    assert db_scheduled_exam.modified_at.replace(
+        tzinfo=datetime.UTC
+    ) == datetime.datetime.fromisoformat(expected_scheduled_exam["modified_at"])
+    assert db_scheduled_exam.exam_file_info.modified_at.replace(
+        tzinfo=datetime.UTC
+    ) == datetime.datetime.fromisoformat(
+        expected_scheduled_exam["exam_file_info"]["modified_at"]
+    )
+
+    db_scheduled_exam_package = (
+        testdb.query(models.ScheduledExamPackage)
+        .filter_by(
+            external_id=api_exam_info["scheduled_exam_packages"][0]["external_id"]
+        )
+        .one()
+    )
+    assert db_scheduled_exam_package.lock_time.replace(
+        tzinfo=datetime.UTC
+    ) == datetime.datetime.fromisoformat(expected_scheduled_exam_package["lock_time"])
+
+    assert (
+        client.post(
+            "/api/v1/exam/get_scheduled_exam",
+            json={"external_id": eom_exam_info["schedules"][0]["id"]},
+        ).json()
+        == expected_scheduled_exam
+    )
+    assert (
+        client.post(
+            "/api/v1/exam/get_scheduled_exam_package",
+            json={
+                "external_id": api_exam_info["scheduled_exam_packages"][0][
+                    "external_id"
+                ]
+            },
+        ).json()
+        == expected_scheduled_exam_package
+    )
 
 
 def test_get_current_exam_package__empty_database(client, testdb, utcnow):
