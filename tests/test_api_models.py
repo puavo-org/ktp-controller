@@ -33,14 +33,21 @@ def test_utcdatetime_converts_non_utc_offset_to_utc_instant(testdb):
     )
 
     # Stored values must be the UTC-converted instant, not the
-    # wall-clock numbers with the offset silently dropped.
-    assert db_package.start_time == datetime.datetime(2025, 5, 28, 11, 15)
-    assert db_package.end_time == datetime.datetime(2025, 5, 28, 11, 45)
-    assert db_package.lock_time == datetime.datetime(2025, 5, 28, 11, 0)
-    assert db_package.start_time.tzinfo is None
+    # wall-clock numbers with the offset silently dropped, and read
+    # back as timezone-aware UTC.
+    assert db_package.start_time == datetime.datetime(
+        2025, 5, 28, 11, 15, tzinfo=datetime.UTC
+    )
+    assert db_package.end_time == datetime.datetime(
+        2025, 5, 28, 11, 45, tzinfo=datetime.UTC
+    )
+    assert db_package.lock_time == datetime.datetime(
+        2025, 5, 28, 11, 0, tzinfo=datetime.UTC
+    )
+    assert db_package.start_time.tzinfo == datetime.UTC
 
 
-def test_utcdatetime_stores_naive_value_unchanged(testdb):
+def test_utcdatetime_treats_naive_value_as_already_utc(testdb):
     naive = datetime.datetime(2025, 5, 28, 11, 15)
 
     testdb.add(
@@ -62,5 +69,5 @@ def test_utcdatetime_stores_naive_value_unchanged(testdb):
         .one()
     )
 
-    assert db_package.start_time == naive
+    assert db_package.start_time == naive.replace(tzinfo=datetime.UTC)
     assert db_package.lock_time is None
