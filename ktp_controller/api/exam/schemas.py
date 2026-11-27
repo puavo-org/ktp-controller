@@ -33,16 +33,16 @@ class ExamFileInfo(ktp_controller.pydantic.BaseModel):
     size: ktp_controller.pydantic.StrictPositiveInt
     sha256: ktp_controller.pydantic.StrictSHA256String
     decrypt_code: pydantic.StrictStr
-    modified_at: ktp_controller.pydantic.DateTime
+    modified_at: ktp_controller.pydantic.UTCDateTime
 
 
 class ScheduledExam(ktp_controller.pydantic.BaseModel):
     external_id: pydantic.StrictStr
     exam_title: pydantic.StrictStr
-    start_time: ktp_controller.pydantic.DateTime
-    end_time: ktp_controller.pydantic.DateTime
+    start_time: ktp_controller.pydantic.UTCDateTime
+    end_time: ktp_controller.pydantic.UTCDateTime
     exam_file_info: ExamFileInfo
-    modified_at: ktp_controller.pydantic.DateTime
+    modified_at: ktp_controller.pydantic.UTCDateTime
 
     @pydantic.model_validator(mode="after")
     def check_times(self) -> Self:
@@ -64,9 +64,9 @@ class ScheduledExamPackageState(enum.StrEnum):
 
 class ScheduledExamPackage(ktp_controller.pydantic.BaseModel):
     external_id: pydantic.StrictStr
-    start_time: ktp_controller.pydantic.DateTime
-    end_time: ktp_controller.pydantic.DateTime
-    lock_time: ktp_controller.pydantic.DateTime | None
+    start_time: ktp_controller.pydantic.UTCDateTime
+    end_time: ktp_controller.pydantic.UTCDateTime
+    lock_time: ktp_controller.pydantic.UTCDateTime | None
     locked: pydantic.StrictBool
     scheduled_exam_external_ids: list[pydantic.StrictStr]
     state: ScheduledExamPackageState | None
