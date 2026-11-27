@@ -548,9 +548,7 @@ def test_get_current_exam_package__current_unprepared_package_past_end_time_is_a
 
     # Simulate time passing without the package ever getting
     # prepared: its end_time is now in the past.
-    db_exam_package.end_time = (utcnow - datetime.timedelta(minutes=1)).replace(
-        tzinfo=None
-    )
+    db_exam_package.end_time = utcnow - datetime.timedelta(minutes=1)
     testdb.commit()
 
     response = client.post("/api/v1/exam/get_current_exam_package")
@@ -601,9 +599,7 @@ def test_get_current_exam_package__aborted_package_promotes_next_locked_package(
         .filter_by(external_id=external_id1)
         .one()
     )
-    db_exam_package1.end_time = (utcnow - datetime.timedelta(minutes=1)).replace(
-        tzinfo=None
-    )
+    db_exam_package1.end_time = utcnow - datetime.timedelta(minutes=1)
     testdb.commit()
 
     response = client.post("/api/v1/exam/get_current_exam_package")
@@ -653,12 +649,8 @@ def test_get_current_exam_package__current_prepared_package_past_end_time_is_not
     # Simulate the package having already been prepared (state is no
     # longer None) before its end_time passed.
     db_exam_package.state = "ready"
-    db_exam_package.start_time = (utcnow - datetime.timedelta(minutes=2)).replace(
-        tzinfo=None
-    )
-    db_exam_package.end_time = (utcnow - datetime.timedelta(minutes=1)).replace(
-        tzinfo=None
-    )
+    db_exam_package.start_time = utcnow - datetime.timedelta(minutes=2)
+    db_exam_package.end_time = utcnow - datetime.timedelta(minutes=1)
     testdb.commit()
 
     response = client.post("/api/v1/exam/get_current_exam_package")
