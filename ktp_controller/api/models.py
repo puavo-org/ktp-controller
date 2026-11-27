@@ -23,10 +23,34 @@ __all__ = [
     "ScheduledExamPackage",
     "StatusReport",
     "User",
+    "UTCDateTime",
 ]
 
 
 # Types:
+
+
+class UTCDateTime(sqlalchemy.TypeDecorator[datetime.datetime]):
+    """A DateTime column that always stores the UTC instant.
+
+    The underlying column stays a plain (timezone-naive) DateTime, so
+    no schema migration is needed. A timezone-aware value assigned to
+    it, from anywhere (not just via a Pydantic-validated schema), is
+    converted to UTC before being stored; a naive value is stored as
+    is, assumed to already be UTC, per this codebase's convention.
+    """
+
+    impl = sqlalchemy.DateTime
+    cache_ok = True
+
+    def process_bind_param(
+        self,
+        value: datetime.datetime | None,
+        dialect: sqlalchemy.engine.interfaces.Dialect,
+    ) -> datetime.datetime | None:
+        if value is not None and value.tzinfo is not None:
+            value = value.astimezone(datetime.UTC).replace(tzinfo=None)
+        return value
 
 
 Base = sqlalchemy.orm.declarative_base()
