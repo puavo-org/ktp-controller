@@ -18,6 +18,7 @@ __all__ = [
     "StrictSHA256String",
     "BaseModel",
     "DateTime",
+    "UTCDateTime",
     # Utils:
     "json_serializable",
 ]
@@ -61,6 +62,24 @@ def _dt_to_str(dt: str | datetime.datetime) -> str:
 
 DateTime = typing.Annotated[
     pydantic.AwareDatetime,
+    pydantic.PlainSerializer(
+        _dt_to_str,
+        return_type=str,
+    ),
+]
+
+
+def _to_utc(dt: datetime.datetime) -> datetime.datetime:
+    return dt.astimezone(datetime.UTC)
+
+
+# Like DateTime, but also normalizes any accepted timezone to UTC.
+# Use this for values that get persisted as-is into a naive (no
+# timezone) DB column, where only the UTC offset keeps the stored
+# instant correct.
+UTCDateTime = typing.Annotated[
+    pydantic.AwareDatetime,
+    pydantic.AfterValidator(_to_utc),
     pydantic.PlainSerializer(
         _dt_to_str,
         return_type=str,
