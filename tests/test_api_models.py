@@ -71,3 +71,27 @@ def test_utcdatetime_treats_naive_value_as_already_utc(testdb):
 
     assert db_package.start_time == naive.replace(tzinfo=datetime.UTC)
     assert db_package.lock_time is None
+
+
+def test_utcdatetime_read_back_values_are_timezone_aware(testdb):
+    testdb.add(
+        models.ScheduledExamPackage(
+            dbid=None,
+            external_id="pkg-read",
+            start_time=datetime.datetime(2025, 5, 28, 11, 15),
+            end_time=datetime.datetime(2025, 5, 28, 11, 45),
+            lock_time=None,
+            locked=False,
+        )
+    )
+    testdb.commit()
+    testdb.expire_all()
+
+    db_package = (
+        testdb.query(models.ScheduledExamPackage)
+        .filter_by(external_id="pkg-read")
+        .one()
+    )
+
+    assert db_package.start_time.tzinfo == datetime.UTC
+    assert db_package.end_time.tzinfo == datetime.UTC
