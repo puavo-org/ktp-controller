@@ -31,13 +31,15 @@ __all__ = [
 
 
 class UTCDateTime(sqlalchemy.TypeDecorator[datetime.datetime]):
-    """A DateTime column that always stores the UTC instant.
+    """A DateTime column that always stores and returns the UTC instant.
 
     The underlying column stays a plain (timezone-naive) DateTime, so
     no schema migration is needed. A timezone-aware value assigned to
     it, from anywhere (not just via a Pydantic-validated schema), is
     converted to UTC before being stored; a naive value is stored as
-    is, assumed to already be UTC, per this codebase's convention.
+    is, assumed to already be UTC, per this codebase's convention. A
+    value read back from the DB is always returned as timezone-aware
+    UTC.
     """
 
     impl = sqlalchemy.DateTime
@@ -50,6 +52,15 @@ class UTCDateTime(sqlalchemy.TypeDecorator[datetime.datetime]):
     ) -> datetime.datetime | None:
         if value is not None and value.tzinfo is not None:
             value = value.astimezone(datetime.UTC).replace(tzinfo=None)
+        return value
+
+    def process_result_value(
+        self,
+        value: datetime.datetime | None,
+        dialect: sqlalchemy.engine.interfaces.Dialect,
+    ) -> datetime.datetime | None:
+        if value is not None and value.tzinfo is None:
+            value = value.replace(tzinfo=datetime.UTC)
         return value
 
 
