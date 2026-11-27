@@ -1,5 +1,8 @@
 import datetime
 
+import pytest
+import sqlalchemy.exc
+
 import ktp_controller.api.models as models
 
 # These tests exercise UTCDateTime directly at the SQLAlchemy layer,
@@ -47,7 +50,7 @@ def test_utcdatetime_converts_non_utc_offset_to_utc_instant(testdb):
     assert db_package.start_time.tzinfo == datetime.UTC
 
 
-def test_utcdatetime_treats_naive_value_as_already_utc(testdb):
+def test_utcdatetime_rejects_naive_value(testdb):
     naive = datetime.datetime(2025, 5, 28, 11, 15)
 
     testdb.add(
@@ -60,26 +63,20 @@ def test_utcdatetime_treats_naive_value_as_already_utc(testdb):
             locked=False,
         )
     )
-    testdb.commit()
-    testdb.expire_all()
 
-    db_package = (
-        testdb.query(models.ScheduledExamPackage)
-        .filter_by(external_id="pkg-naive")
-        .one()
-    )
-
-    assert db_package.start_time == naive.replace(tzinfo=datetime.UTC)
-    assert db_package.lock_time is None
+    with pytest.raises(sqlalchemy.exc.StatementError, match="naive datetime"):
+        testdb.commit()
 
 
 def test_utcdatetime_read_back_values_are_timezone_aware(testdb):
+    aware = datetime.datetime(2025, 5, 28, 11, 15, tzinfo=datetime.UTC)
+
     testdb.add(
         models.ScheduledExamPackage(
             dbid=None,
             external_id="pkg-read",
-            start_time=datetime.datetime(2025, 5, 28, 11, 15),
-            end_time=datetime.datetime(2025, 5, 28, 11, 45),
+            start_time=aware,
+            end_time=aware + datetime.timedelta(minutes=30),
             lock_time=None,
             locked=False,
         )

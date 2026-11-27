@@ -36,8 +36,8 @@ class UTCDateTime(sqlalchemy.TypeDecorator[datetime.datetime]):
     The underlying column stays a plain (timezone-naive) DateTime, so
     no schema migration is needed. A timezone-aware value assigned to
     it, from anywhere (not just via a Pydantic-validated schema), is
-    converted to UTC before being stored; a naive value is stored as
-    is, assumed to already be UTC, per this codebase's convention. A
+    converted to UTC before being stored; a naive value is rejected,
+    since there would be no way to tell which instant it refers to. A
     value read back from the DB is always returned as timezone-aware
     UTC.
     """
@@ -50,9 +50,11 @@ class UTCDateTime(sqlalchemy.TypeDecorator[datetime.datetime]):
         value: datetime.datetime | None,
         dialect: sqlalchemy.engine.interfaces.Dialect,
     ) -> datetime.datetime | None:
-        if value is not None and value.tzinfo is not None:
-            value = value.astimezone(datetime.UTC).replace(tzinfo=None)
-        return value
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            raise ValueError("naive datetime is not allowed", value)
+        return value.astimezone(datetime.UTC).replace(tzinfo=None)
 
     def process_result_value(
         self,
