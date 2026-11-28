@@ -25,7 +25,9 @@ async def set_exam_info(
         json={
             "exam_title": exam_title,
             "start_time": (
-                utcnow + datetime.timedelta(seconds=seconds_until_start)
+                (utcnow + datetime.timedelta(seconds=seconds_until_start)).astimezone(
+                    datetime.timezone(datetime.timedelta(hours=3))
+                )
             ).isoformat(),
             "duration_seconds": duration_seconds,
             "lock_time_duration_seconds": lock_time_duration_seconds,
