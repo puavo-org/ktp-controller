@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.10.4] - 2026-11-28
+
+### Fixed
+
+- Fixed datetime normalization issue which has caused non-UTC exam
+  schedule timestamps to be interpreted as UTC timestamps.
+
+  Related to https://github.com/opinsys/koejakaja/issues/85
+
+
 ## [0.10.3] - 2026-11-26
 
 ### Fixed
